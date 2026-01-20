@@ -173,6 +173,7 @@ public interface Arguments extends Iterable<Object> {
      * </ul>
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the raw value at that index.
      */
     Object optAny(int index, Object def);
@@ -184,6 +185,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkBoolean(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the boolean value at the specified index.
      * @throws IllegalArgumentException if the argument exists and is not a boolean.
      */
@@ -196,6 +198,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkInteger(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the integer value at the specified index.
      * @throws IllegalArgumentException if the argument exists but is not a number.
      */
@@ -208,6 +211,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkLong(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the long value at the specified index.
      * @throws IllegalArgumentException if the argument exists but is not a number.
      * @since OpenComputers 1.8.0
@@ -221,6 +225,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkDouble(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the double value at the specified index.
      * @throws IllegalArgumentException if the argument exists and is not a number.
      */
@@ -236,6 +241,7 @@ public interface Arguments extends Iterable<Object> {
      * using UTF-8 encoding.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the boolean value at the specified index.
      * @throws IllegalArgumentException if the argument exists and is not a string.
      */
@@ -248,6 +254,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkByteArray(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the byte array at the specified index.
      * @throws IllegalArgumentException if the argument exists and is not a byte array.
      */
@@ -260,6 +267,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkTable(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the table at the specified index.
      * @throws IllegalArgumentException if the argument exists and is not a table.
      */
@@ -272,6 +280,7 @@ public interface Arguments extends Iterable<Object> {
      * like {@link #checkItemStack(int)} otherwise.
      *
      * @param index the index from which to get the argument.
+     * @param def Default value
      * @return the item stack at the specified index.
      * @throws IllegalArgumentException if the argument exists and is not an item stack.
      */

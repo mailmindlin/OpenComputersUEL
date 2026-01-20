@@ -17,6 +17,7 @@ public interface Agent extends MachineHost, Rotatable {
      * provided by containers installed in the robot, if any.
      * <br>
      * If an agent has no equipment slots this will be a zero-sized inventory.
+     * @return Agent's equiptment inventory
      */
     IInventory equipmentInventory();
 
