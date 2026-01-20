@@ -1,0 +1,48 @@
+// Add any additional repositories for your dependencies here
+
+repositories {
+	maven {
+		name = "BlameJared"
+		url = "https://maven.blamejared.com"
+	}
+	maven {
+		name = "progwml6"
+		url = "http://dvs1.progwml6.com/files/maven/"
+		allowInsecureProtocol = true
+	}
+	maven {
+		name = "cil"
+		url = "http://maven.cil.li/"
+		allowInsecureProtocol = true
+	}
+	maven {
+		name = "CoFH"
+		url = "http://maven.covers1624.net"
+		allowInsecureProtocol = true
+	}
+	maven {
+		name = "chickenbones"
+		url = "http://chickenbones.net/maven/"
+		allowInsecureProtocol = true
+	}
+	maven {
+		name "tterrag"
+		url "https://maven.tterrag.com/"
+	}
+	maven {
+		name "buildcraft"
+		url "https://mod-buildcraft.com/maven/"
+	}
+	maven {
+		name = "Cleanroom"
+		url 'https://maven.cleanroommc.com'
+	}
+    maven {
+        name = "CurseForge"
+        url = "https://minecraft.curseforge.com/api/maven/"
+        metadataSources {
+            mavenPom()
+            artifact()
+        }
+    }
+}
