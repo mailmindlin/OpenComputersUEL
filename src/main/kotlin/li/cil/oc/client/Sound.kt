@@ -235,7 +235,8 @@ object Sound {
 
     fun play(name: String) {
       val resourceName = "${Settings.resourceDomain}:$name"
-      val sound = manager!!.sndHandler.getAccessor(ResourceLocation(resourceName))
+      val sound = manager!!.sndHandler
+        .getAccessor(ResourceLocation(resourceName))!!
       // Specified return type because apparently this is ambiguous according to Jenkins. I don't even.
       val resource: net.minecraft.client.audio.Sound = sound.cloneEntry()
       val soundLocation = resource.soundAsOggLocation

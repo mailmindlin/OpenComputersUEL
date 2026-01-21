@@ -86,20 +86,20 @@ object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, 
         GlStateManager.pushMatrix()
         GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5)
 
-        when (hologram.yaw) {
+        when (hologram.yaw ?: EnumFacing.SOUTH) {
             EnumFacing.WEST -> GL11.glRotatef(-90f, 0f, 1f, 0f)
             EnumFacing.NORTH -> GL11.glRotatef(180f, 0f, 1f, 0f)
             EnumFacing.EAST -> GL11.glRotatef(90f, 0f, 1f, 0f)
             else -> {} // No yaw.
         }
-        when (hologram.pitch) {
+        when (hologram.pitch ?: EnumFacing.NORTH) {
             EnumFacing.DOWN -> GL11.glRotatef(90f, 1f, 0f, 0f)
             EnumFacing.UP -> GL11.glRotatef(-90f, 1f, 0f, 0f)
             else -> {} // No pitch.
         }
 
         GlStateManager.rotate(hologram.rotationAngle, hologram.rotationX, hologram.rotationY, hologram.rotationZ)
-        GlStateManager.rotate(hologram.rotationSpeed * (hologram.world.totalWorldTime % (360 * 20 - 1) + f) / 20f, hologram.rotationSpeedX, hologram.rotationSpeedY, hologram.rotationSpeedZ)
+        GlStateManager.rotate(hologram.rotationSpeed * (hologram.world?.totalWorldTime ?: 0L % (360 * 20 - 1) + f) / 20f, hologram.rotationSpeedX, hologram.rotationSpeedY, hologram.rotationSpeedZ)
 
         GlStateManager.scale(1.001, 1.001, 1.001) // Avoid z-fighting with other blocks.
         GlStateManager.translate(
@@ -110,8 +110,9 @@ object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, 
 
         // Do a bit of flickering, because that's what holograms do!
         if (Settings.get.hologramFlickerFrequency > 0 && random.nextDouble() < Settings.get.hologramFlickerFrequency) {
-            GlStateManager.scale(1 + random.nextGaussian() * 0.01, 1 + random.nextGaussian() * 0.001, 1 + random.nextGaussian() * 0.01)
-            GlStateManager.translate(random.nextGaussian() * 0.01, random.nextGaussian() * 0.01, random.nextGaussian() * 0.01)
+            val rand = java.util.Random()
+            GlStateManager.scale(1 + rand.nextGaussian() * 0.01, 1 + rand.nextGaussian() * 0.001, 1 + rand.nextGaussian() * 0.01)
+            GlStateManager.translate(rand.nextGaussian() * 0.01, rand.nextGaussian() * 0.01, rand.nextGaussian() * 0.01)
         }
 
         // After the below scaling, hologram is drawn inside a [0..48]x[0..32]x[0..48] box

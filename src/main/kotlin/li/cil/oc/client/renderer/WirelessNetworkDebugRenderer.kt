@@ -20,11 +20,11 @@ object WirelessNetworkDebugRenderer {
         if (Settings.rTreeDebugRenderer) {
             RenderState.checkError(javaClass.name + ".onRenderWorldLastEvent: entering (aka: wasntme)")
 
-            val world = OCObfuscationReflectionHelper.getPrivateValue(
+            val world: World = OCObfuscationReflectionHelper.getPrivateValue(
                 net.minecraft.client.renderer.RenderGlobal::class.java,
                 e.context,
                 "field_72769_h"
-            ) as World
+            )
 
             WirelessNetwork.dimensions[world.provider.dimension]?.let { tree ->
                 val mc = Minecraft.getMinecraft()
@@ -82,7 +82,7 @@ object WirelessNetworkDebugRenderer {
                 }
 
                 GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE)
-                for ((bounds, level) in tree.allBounds) {
+                for ((bounds, level) in tree.allBounds()) {
                     val (min, max) = bounds
                     val (minX, minY, minZ) = min
                     val (maxX, maxY, maxZ) = max

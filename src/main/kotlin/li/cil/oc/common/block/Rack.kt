@@ -4,6 +4,7 @@ import li.cil.oc.Settings
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
+import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.tileentity.Rack as TERack
 import li.cil.oc.common.tileentity.TileEntity as TETileEntity
 import net.minecraft.block.state.IBlockState
@@ -22,7 +23,7 @@ import net.minecraftforge.common.property.ExtendedBlockState
 import net.minecraftforge.common.property.IExtendedBlockState
 
 class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GUI {
-    override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Facing), arrayOf(property.PropertyTile.Tile))
+    override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Facing), arrayOf(PropertyTile))
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta))
 
@@ -31,7 +32,7 @@ class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GU
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
         val extendedState = if (state is IExtendedBlockState && tileEntity is TETileEntity) {
-            state.withProperty(property.PropertyTile.Tile, tileEntity)
+            state.withProperty(PropertyTile, tileEntity)
         } else state
         return extendedState.withProperty(PropertyRotatable.Facing, getFacing(world, pos))
     }

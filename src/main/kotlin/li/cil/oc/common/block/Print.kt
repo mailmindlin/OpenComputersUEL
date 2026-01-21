@@ -39,12 +39,12 @@ class Print(protected val tileTag: KClass<TEPrint> = TEPrint::class) : RedstoneA
 
     // ----------------------------------------------------------------------- //
 
-    override fun createBlockState() = ExtendedBlockState(this, emptyArray(), arrayOf(PropertyTile.Tile))
+    override fun createBlockState() = ExtendedBlockState(this, emptyArray(), arrayOf(PropertyTile))
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
         return if (state is IExtendedBlockState && tileEntity is TEPrint) {
-            state.withProperty(property.PropertyTile.Tile, tileEntity)
+            state.withProperty(PropertyTile, tileEntity)
         } else state
     }
 
@@ -52,7 +52,7 @@ class Print(protected val tileTag: KClass<TEPrint> = TEPrint::class) : RedstoneA
 
     override fun canRenderInLayer(state: IBlockState, layer: BlockRenderLayer): Boolean = layer == BlockRenderLayer.CUTOUT_MIPPED
 
-    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipBody(metadata, stack, world, tooltip, advanced)
         val data = PrintData(stack)
         data.tooltip?.let { s ->
@@ -60,7 +60,7 @@ class Print(protected val tileTag: KClass<TEPrint> = TEPrint::class) : RedstoneA
         }
     }
 
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, advanced)
         val data = PrintData(stack)
         if (data.isBeaconBase) {

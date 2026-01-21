@@ -8,10 +8,11 @@ import li.cil.oc.api.driver.item.UpgradeRenderer.MountPointName
 import li.cil.oc.api.event.RobotRenderEvent
 import li.cil.oc.client.Textures
 import li.cil.oc.common.EventHandler
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Robot
+import li.cil.oc.common.tileentity.RobotProxy
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.StackOption
-import li.cil.oc.util.StackOption.SomeStack
+import li.cil.oc.util.SomeStack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GLAllocation
@@ -35,7 +36,7 @@ import org.lwjgl.opengl.GL11
 import kotlin.math.max
 import kotlin.math.sin
 
-object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
+object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
     private val displayList = GLAllocation.generateDisplayLists(2)
 
     private val mountPoints = Array(7) { i ->
@@ -217,7 +218,7 @@ object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
         mountPoints[6].rotation.setW(0f)
     }
 
-    fun renderChassis(robot: tileentity.Robot? = null, offset: Double = 0.0, isRunningOverride: Boolean = false) {
+    fun renderChassis(robot: Robot? = null, offset: Double = 0.0, isRunningOverride: Boolean = false) {
         val isRunning = robot?.isRunning ?: isRunningOverride
 
         val vStep = 1.0f / 32.0f
@@ -333,7 +334,7 @@ object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
             GlStateManager.rotate(90 * remaining, 0f, robot.turnAxis.toFloat(), 0f)
         }
 
-        when (robot.yaw) {
+        when (robot.yaw()) {
             EnumFacing.WEST -> GlStateManager.rotate(-90f, 0f, 1f, 0f)
             EnumFacing.NORTH -> GlStateManager.rotate(180f, 0f, 1f, 0f)
             EnumFacing.EAST -> GlStateManager.rotate(90f, 0f, 1f, 0f)
@@ -348,7 +349,7 @@ object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
         if (MinecraftForgeClient.getRenderPass() == 0 && !robot.renderingErrored && x * x + y * y + z * z < 24 * 24) {
             when (val stackOpt = StackOption(robot.getStackInSlot(0))) {
                 is SomeStack -> {
-                    val stack = stackOpt.stack
+                    val stack = stackOpt.value
 
                     RenderState.pushAttrib()
                     GlStateManager.pushMatrix()
@@ -404,7 +405,7 @@ object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
                         Minecraft.getMinecraft().itemRenderer.renderItem(Minecraft.getMinecraft().player, stack, TransformType.THIRD_PERSON_RIGHT_HAND)
                     } catch (e: Throwable) {
                         OpenComputers.log.warn("Failed rendering equipped item.", e)
-                        robot.renderingErrored = true
+                        robot.proxy().renderingErrored = true
                     }
                     GlStateManager.enableCull()
                     GlStateManager.disableRescaleNormal()
@@ -419,9 +420,9 @@ object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
                 val wildcardRenderers = mutableListOf<Pair<ItemStack, UpgradeRenderer>>()
                 val slotMapping = arrayOfNulls<Pair<ItemStack, UpgradeRenderer>>(mountPoints.size)
 
-                val renderers = (robot.componentSlots + robot.containerSlots).map { robot.getStackInSlot(it) }
-                    .filter { !it.isEmpty && it.item is UpgradeRenderer }
-                    .map { it to (it.item as UpgradeRenderer) }
+                val renderers = (robot.componentSlots() + robot.containerSlots()).map { robot.getStackInSlot(it) }
+                    .filter { !it.isEmpty() && it.item is UpgradeRenderer }
+                    .map { Pair(it, it.item as UpgradeRenderer) }
 
                 for ((stack, renderer) in renderers) {
                     val preferredSlot = renderer.computePreferredMountPoint(stack, robot, availableSlots)
@@ -449,7 +450,7 @@ object RobotRenderer : TileEntitySpecialRenderer<tileentity.RobotProxy>() {
                             GlStateManager.popMatrix()
                         } catch (e: Throwable) {
                             OpenComputers.log.warn("Failed rendering equipped upgrade.", e)
-                            robot.renderingErrored = true
+                            robot.proxy().renderingErrored = true
                         }
                     }
                 }

@@ -5,7 +5,9 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Drone as InternalDrone
+import li.cil.oc.api.internal.Rotatable as InternalRotatable
+import li.cil.oc.api.internal.Tablet as InternalTablet
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -36,13 +38,13 @@ object PistonTraits {
     }
 
     interface RotatableLike : ExtendAware {
-        val rotatable: internal.Rotatable
+        val rotatable: InternalRotatable
         override fun pushDirection(args: Arguments, index: Int): EnumFacing =
-            (rotatable as internal.Rotatable).toGlobal(args.optSideForAction(index, EnumFacing.SOUTH))
+            (rotatable as InternalRotatable).toGlobal(args.optSideForAction(index, EnumFacing.SOUTH))
     }
 
     interface TabletLike : ExtendAware {
-        val tablet: internal.Tablet
+        val tablet: InternalTablet
         override fun pushOrigin(side: EnumFacing): BlockPosition =
             if (side == EnumFacing.DOWN && tablet.player().eyeHeight > 1)
                 BlockPosition(host).offset(EnumFacing.DOWN)
@@ -124,17 +126,17 @@ abstract class UpgradeStickyPiston(host: EnvironmentHost) : UpgradePiston(host) 
 }
 
 object UpgradePiston {
-    class Drone(drone: internal.Drone) : UpgradePiston(drone), PistonTraits.DroneLike
+    class Drone(drone: InternalDrone) : UpgradePiston(drone), PistonTraits.DroneLike
 
-    open class Rotatable(override val rotatable: internal.Rotatable) : UpgradePiston(rotatable), PistonTraits.RotatableLike
+    open class Rotatable(override val rotatable: InternalRotatable) : UpgradePiston(rotatable), PistonTraits.RotatableLike
 
-    class Tablet(override val tablet: internal.Tablet) : Rotatable(tablet), PistonTraits.TabletLike
+    class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
 }
 
 object UpgradeStickyPiston {
-    class Drone(drone: internal.Drone) : UpgradeStickyPiston(drone), PistonTraits.DroneLike
+    class Drone(drone: InternalDrone) : UpgradeStickyPiston(drone), PistonTraits.DroneLike
 
-    open class Rotatable(override val rotatable: internal.Rotatable) : UpgradeStickyPiston(rotatable), PistonTraits.RotatableLike
+    open class Rotatable(override val rotatable: InternalRotatable) : UpgradeStickyPiston(rotatable), PistonTraits.RotatableLike
 
-    class Tablet(override val tablet: internal.Tablet) : Rotatable(tablet), PistonTraits.TabletLike
+    class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
 }

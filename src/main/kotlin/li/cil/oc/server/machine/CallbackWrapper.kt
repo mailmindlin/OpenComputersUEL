@@ -36,7 +36,7 @@ internal object CallbackWrapper {
       emitConstructor(cw)
       emitCode(m, cw)
       cw.visitEnd()
-      GeneratedClassLoader.addClass(className, cw.toByteArray)
+      GeneratedClassLoader.addClass(className, cw.toByteArray())
     }
 
     GeneratedClassLoader.findClass(className).newInstance() as Any

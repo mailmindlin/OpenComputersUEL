@@ -1,7 +1,7 @@
 package li.cil.oc.client.renderer.tileentity
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Disassembler
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import org.lwjgl.opengl.GL11
 
-object DisassemblerRenderer : TileEntitySpecialRenderer<tileentity.Disassembler>() {
-    override fun render(disassembler: tileentity.Disassembler, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
+object DisassemblerRenderer : TileEntitySpecialRenderer<Disassembler>() {
+    override fun render(disassembler: Disassembler, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         if (disassembler.isActive) {

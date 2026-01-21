@@ -4,12 +4,13 @@ import com.google.common.base.Strings
 import li.cil.oc.Settings
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.client.Textures
-import li.cil.oc.common.block
+import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.item.data.PrintData
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Print
 import li.cil.oc.util.Color
 import li.cil.oc.util.ExtendedAABB
-import li.cil.oc.util.ExtendedAABB.AABBExtensions
+import li.cil.oc.util.max
+import li.cil.oc.util.min
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
@@ -27,15 +28,15 @@ object PrintModel : SmartBlockModelBase() {
 
     override fun getQuads(state: IBlockState?, side: EnumFacing?, rand: Long): List<BakedQuad> {
         if (state is IExtendedBlockState) {
-            val tile = state.getValue(block.property.PropertyTile.Tile)
-            if (tile is tileentity.Print) {
+            val tile = state.getValue(PropertyTile)
+            if (tile is Print) {
                 val faces = mutableListOf<BakedQuad>()
 
                 for (shape in tile.shapes) {
                     if (!Strings.isNullOrEmpty(shape.texture)) {
-                        val bounds = shape.bounds.rotateTowards(tile.facing)
+                        val bounds = shape.bounds.rotateTowards(tile.facing())
                         val texture = resolveTexture(shape.texture)
-                        faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, shape.tint ?: White))
+                        faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, shape.tint?.toInt() ?: White))
                     }
                 }
 
@@ -65,12 +66,12 @@ object PrintModel : SmartBlockModelBase() {
             for (shape in shapes) {
                 val bounds = shape.bounds
                 val texture = resolveTexture(shape.texture)
-                faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, shape.tint ?: White))
+                faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, shape.tint?.toInt() ?: White))
             }
             if (shapes.isEmpty()) {
                 val bounds = ExtendedAABB.unitBounds
                 val texture = resolveTexture("${Settings.resourceDomain}:blocks/white")
-                faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, Color.rgbValues(EnumDyeColor.LIME)))
+                faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, Color.rgbValues(EnumDyeColor.LIME).toInt() ?: White))
             }
 
             return faces

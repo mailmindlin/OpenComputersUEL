@@ -60,20 +60,20 @@ abstract class TextureFontRenderer {
         // color to reduce the number of quads we have to draw.
         GL11.glBegin(GL11.GL_QUADS)
         for (y in 0 until min(viewportHeight, buffer.height)) {
-            val color = buffer.color(y)
-            var cbg = 0x000000
+            val color = buffer.color[y]
+            var cbg = 0x000000u
             var x = 0
             var width = 0
             for (col in color.map { PackedColor.unpackBackground(it, format) }.takeWhile { x + width < viewportWidth }) {
                 if (col != cbg) {
-                    drawQuad(cbg, x, y, width)
+                    drawQuad(cbg.toInt(), x, y, width)
                     cbg = col
                     x += width
                     width = 0
                 }
                 width = width + 1
             }
-            drawQuad(cbg, x, y, width)
+            drawQuad(cbg.toInt(), x, y, width)
         }
         GL11.glEnd()
 
@@ -81,20 +81,20 @@ abstract class TextureFontRenderer {
 
         GL11.glEnable(GL11.GL_TEXTURE_2D)
 
-        if (Settings.get().textLinearFiltering) {
+        if (Settings.get.textLinearFiltering) {
             GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
         }
 
         // Foreground second. We only have to flush when the color changes, so
         // unless every char has a different color this should be quite efficient.
         for (y in 0 until min(viewportHeight, buffer.height)) {
-            val line = buffer.buffer(y)
-            val color = buffer.color(y)
+            val line = buffer.buffer[y]
+            val color = buffer.color[y]
             val ty = y * charHeight
             for (i in 0 until textureCount) {
                 bindTexture(i)
                 GL11.glBegin(GL11.GL_QUADS)
-                var cfg = -1
+                var cfg = (-1).toUInt()
                 var tx = 0f
                 for (n in 0 until viewportWidth) {
                     val ch = line[n]
@@ -103,9 +103,9 @@ abstract class TextureFontRenderer {
                     if (col != cfg) {
                         cfg = col
                         GL11.glColor3f(
-                            ((cfg and 0xFF0000) shr 16) / 255f,
-                            ((cfg and 0x00FF00) shr 8) / 255f,
-                            ((cfg and 0x0000FF) shr 0) / 255f
+                            ((cfg and 0xFF0000u) shr 16).toInt() / 255f,
+                            ((cfg and 0x00FF00u) shr 8).toInt() / 255f,
+                            ((cfg and 0x0000FFu) shr 0).toInt() / 255f
                         )
                     }
                     // Don't render whitespace.

@@ -41,7 +41,7 @@ object HighlightRenderer {
         val blockPos = BlockPosition(hitInfo.blockPos, world)
 
         if (hitInfo.typeOfHit == RayTraceResult.Type.BLOCK && Items.get(e.player.heldItemMainhand) == tablet) {
-            val isAir = world.isAirBlock(blockPos)
+            val isAir = world.isAirBlock(blockPos.toBlockPos())
             if (!isAir) {
                 val block = world.getBlock(blockPos)
                 val bounds = block.getSelectedBoundingBox(world.getBlockState(hitInfo.blockPos), world, hitInfo.blockPos)
@@ -69,8 +69,9 @@ object HighlightRenderer {
                     val sx = 1 - abs(sideHit.xOffset)
                     val sy = 1 - abs(sideHit.yOffset)
                     val sz = 1 - abs(sideHit.zOffset)
-                    GlStateManager.scale(1 + random.nextGaussian() * 0.01, 1 + random.nextGaussian() * 0.001, 1 + random.nextGaussian() * 0.01)
-                    GlStateManager.translate(random.nextGaussian() * 0.01 * sx, random.nextGaussian() * 0.01 * sy, random.nextGaussian() * 0.01 * sz)
+                    val rand = java.util.Random()
+                    GlStateManager.scale(1 + rand.nextGaussian() * 0.01, 1 + rand.nextGaussian() * 0.001, 1 + rand.nextGaussian() * 0.01)
+                    GlStateManager.translate(rand.nextGaussian() * 0.01 * sx, rand.nextGaussian() * 0.01 * sy, rand.nextGaussian() * 0.01 * sz)
                 }
 
                 val t = Tessellator.getInstance()

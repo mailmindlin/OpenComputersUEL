@@ -25,7 +25,7 @@ object DiskDriveRenderer : TileEntitySpecialRenderer<DiskDrive>() {
 
         GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5)
 
-        when (drive.yaw) {
+        when (drive.yaw ?: EnumFacing.SOUTH) {
             EnumFacing.WEST -> GlStateManager.rotate(-90f, 0f, 1f, 0f)
             EnumFacing.NORTH -> GlStateManager.rotate(180f, 0f, 1f, 0f)
             EnumFacing.EAST -> GlStateManager.rotate(90f, 0f, 1f, 0f)
@@ -39,7 +39,7 @@ object DiskDriveRenderer : TileEntitySpecialRenderer<DiskDrive>() {
             GlStateManager.rotate(90f, -1f, 0f, 0f)
             GlStateManager.scale(0.5f, 0.5f, 0.5f)
 
-            val brightness = drive.world.getCombinedLight(drive.pos.offset(drive.facing), 0)
+            val brightness = drive.world.getCombinedLight(drive.pos.offset(drive.facing() ?: EnumFacing.SOUTH), 0)
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (brightness % 65536).toFloat(), (brightness / 65536).toFloat())
 
             // This is very 'meh', but item frames do it like this, too!

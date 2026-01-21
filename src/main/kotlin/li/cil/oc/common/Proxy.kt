@@ -17,7 +17,7 @@ import li.cil.oc.common.recipe.Recipes
 import li.cil.oc.integration.Mods
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
-import li.cil.oc.server.machine.Machine
+import li.cil.oc.server.machine.MachineCompanion
 import li.cil.oc.server.machine.luac.LuaStateFactory
 import li.cil.oc.server.machine.luac.NativeLua52Architecture
 import li.cil.oc.server.machine.luac.NativeLua53Architecture
@@ -79,7 +79,7 @@ open class Proxy {
         api.API.driver = Registry
         api.API.fileSystem = FileSystem
         api.API.items = Items
-        api.API.machine = Machine
+        api.API.machine = MachineCompanion
         api.API.nanomachines = Nanomachines
         api.API.network = NetworkObject
 

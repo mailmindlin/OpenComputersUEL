@@ -530,7 +530,9 @@ object Textures {
 
     override val basePath = "blocks/%s"
 
-    override fun loader(map: TextureMap, loc: ResourceLocation) = map.registerSprite(loc)
+    override fun loader(map: TextureMap, loc: ResourceLocation): Unit {
+      map.registerSprite(loc)
+    }
   }
 
   fun bind(location: ResourceLocation): Unit {

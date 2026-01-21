@@ -156,8 +156,8 @@ abstract class SimpleBlock(material: Material = Material.IRON) : BlockContainer(
 
     override fun recolorBlock(world: World, pos: BlockPos, side: EnumFacing, color: EnumDyeColor): Boolean {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is Colored && tileEntity.getColor() != Color.rgbValues(color)) {
-            tileEntity.setColor(Color.rgbValues(color))
+        return if (tileEntity is Colored && tileEntity.getColor().toUInt() != Color.rgbValues(color)) {
+            tileEntity.setColor(Color.rgbValues(color).toInt())
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
             true // Blame Vexatos.
         } else super.recolorBlock(world, pos, side, color)
@@ -169,7 +169,7 @@ abstract class SimpleBlock(material: Material = Material.IRON) : BlockContainer(
         val heldItem = player.getHeldItem(hand)
         val tileEntity = world.getTileEntity(pos)
         return if (tileEntity is Colored && Color.isDye(heldItem)) {
-            tileEntity.setColor(Color.rgbValues(Color.dyeColor(heldItem)))
+            tileEntity.setColor(Color.rgbValues(Color.dyeColor(heldItem)).toInt())
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
             if (!player.capabilities.isCreativeMode && tileEntity.consumesDye) {
                 heldItem.splitStack(1)

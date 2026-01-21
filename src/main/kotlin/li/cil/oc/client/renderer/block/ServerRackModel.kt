@@ -3,8 +3,8 @@ package li.cil.oc.client.renderer.block
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.api.event.RackMountableRenderEvent
 import li.cil.oc.client.Textures
-import li.cil.oc.common.block
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.block.property.PropertyTile
+import li.cil.oc.common.tileentity.Rack
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
@@ -23,9 +23,9 @@ class ServerRackModel(val parent: IBakedModel) : SmartBlockModelBase() {
 
     override fun getQuads(state: IBlockState?, side: EnumFacing?, rand: Long): List<BakedQuad> {
         if (state is IExtendedBlockState) {
-            val tile = state.getValue(block.property.PropertyTile.Tile)
-            if (tile is tileentity.Rack) {
-                val facing = tile.facing
+            val tile = state.getValue(PropertyTile)
+            if (tile is Rack) {
+                val facing = tile.facing()
                 val faces = mutableListOf<BakedQuad>()
 
                 for (enumSide in EnumFacing.values()) {

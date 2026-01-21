@@ -12,7 +12,7 @@ import li.cil.oc.api.network.*
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.event.BlockChangeHandler
 import li.cil.oc.common.event.BlockChangeHandler.ChangeListener
-import li.cil.oc.server.network.Network as ServerNetwork
+import li.cil.oc.server.network.NetworkObject as ServerNetwork
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedWorld.getTileEntity
 import net.minecraft.nbt.NBTTagCompound

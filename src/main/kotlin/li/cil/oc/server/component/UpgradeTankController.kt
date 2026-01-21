@@ -5,6 +5,7 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
+import li.cil.oc.api.internal.Agent
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
@@ -39,8 +40,8 @@ object UpgradeTankController {
     }
 
     sealed class Drone(val host: EnvironmentHost) : ManagedEnvironmentKt(), TankInventoryControl, WorldTankAnalytics, Common {
-        private val agent: internal.Agent
-            get() = host as internal.Agent
+        private val agent: Agent
+            get() = host as Agent
 
         override val node = Network.newNode(this, Visibility.Network)
             .withComponent("tank_controller", Visibility.Neighbors)

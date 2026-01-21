@@ -56,7 +56,7 @@ object ThreadPoolFactory {
 class SafeThreadPool(val name: String, val threads: Int) {
     private var _threadPool: ScheduledExecutorService? = null
 
-    fun withPool(f: (ScheduledExecutorService) -> Future<*>?, requiresPool: Boolean = true): Future<*>? {
+    fun withPool(requiresPool: Boolean = true, f: (ScheduledExecutorService) -> Future<*>?): Future<*>? {
         val pool = _threadPool
         if (pool == null) {
             OpenComputers.log.warn("Error handling file saving: Did the server never start?")

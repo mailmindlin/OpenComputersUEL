@@ -12,7 +12,7 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Robot as RobotTileEntity
 import li.cil.oc.server.component.traits.*
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedArguments.checkSideAny
@@ -62,7 +62,7 @@ object UpgradeInventoryController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    class Robot(val host: tileentity.Robot) : AbstractManagedEnvironment(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
+    class Robot(val host: RobotTileEntity) : AbstractManagedEnvironment(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
         override val node = Network.newNode(this, Visibility.Network)
             .withComponent("inventory_controller", Visibility.Neighbors)
             .create()

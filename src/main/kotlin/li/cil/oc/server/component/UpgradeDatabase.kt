@@ -6,7 +6,7 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Database
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -19,7 +19,7 @@ import li.cil.oc.util.StackOption
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 
-class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), internal.Database, DeviceInfo {
+class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, DeviceInfo {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("database")
         .create()

@@ -5,6 +5,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.event.SignChangeEvent
+import li.cil.oc.api.internal.Robot as InternalRobot
+import li.cil.oc.api.internal.Tablet as InternalTablet
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
@@ -43,7 +45,7 @@ abstract class UpgradeSign : AbstractManagedEnvironment(), DeviceInfoKt {
     protected fun setValue(tileEntity: TileEntitySign?, text: String): Array<Any?> {
         return if (tileEntity != null) {
             val player = when (host) {
-                is internal.Robot -> (host as internal.Robot).player()
+                is InternalRobot -> (host as InternalRobot).player()
                 else -> FakePlayerFactory.get(host.world() as WorldServer, Settings.get.fakePlayerProfile)
             }
 
@@ -103,7 +105,7 @@ abstract class UpgradeSign : AbstractManagedEnvironment(), DeviceInfoKt {
             if (sourceHost is Machine) {
                 val machineHost = sourceHost.host()
                 val data = message.data
-                if (machineHost is internal.Tablet && data.size >= 8 &&
+                if (machineHost is InternalTablet && data.size >= 8 &&
                     data[0] is NBTTagCompound && data[1] is ItemStack && data[2] is EntityPlayer &&
                     data[3] is BlockPosition && data[4] is EnumFacing &&
                     data[5] is Float && data[6] is Float && data[7] is Float

@@ -66,7 +66,7 @@ object EmptyStack : StackOption() {
     override fun get(): ItemStack = ItemStack.EMPTY
 }
 
-data class SomeStack(private val stack: ItemStack) : StackOption() {
+data class SomeStack(val stack: ItemStack) : StackOption() {
     override val isEmpty: Boolean = stack.isEmpty
     override fun get(): ItemStack = stack
 }
@@ -77,4 +77,4 @@ sealed class Either<out L, out R> {
     data class Right<R>(val value: R) : Either<Nothing, R>()
 }
 
-fun ItemStack?.asStackOption(): StackOption = StackOption.apply(this)
+fun ItemStack?.asStackOption(): StackOption = StackOption(this)

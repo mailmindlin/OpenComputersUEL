@@ -18,7 +18,7 @@ import net.minecraftforge.common.property.ExtendedBlockState
 import net.minecraftforge.common.property.IExtendedBlockState
 
 class Waypoint : RedstoneAware() {
-    override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Pitch, PropertyRotatable.Yaw), arrayOf(PropertyTile.Tile))
+    override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Pitch, PropertyRotatable.Yaw), arrayOf(PropertyTile))
 
     override fun getMetaFromState(state: IBlockState): Int = (state.getValue(PropertyRotatable.Pitch).ordinal shl 2) or state.getValue(PropertyRotatable.Yaw).horizontalIndex
 
@@ -28,7 +28,7 @@ class Waypoint : RedstoneAware() {
         val tileEntity = world.getTileEntity(pos)
         return if (state is IExtendedBlockState && tileEntity is TEScreen) {
             state
-                .withProperty(property.PropertyTile.Tile, tileEntity)
+                .withProperty(PropertyTile, tileEntity)
                 .withProperty(PropertyRotatable.Pitch, tileEntity.pitch)
                 .withProperty(PropertyRotatable.Yaw, tileEntity.yaw)
         } else state

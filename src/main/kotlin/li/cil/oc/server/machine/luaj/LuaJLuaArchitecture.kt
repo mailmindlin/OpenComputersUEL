@@ -137,11 +137,9 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
             LuaValue.varargsOf(LuaValue.TRUE, LuaValue.valueOf(0))
           }
         }
-        else machine.popSignal() match {
-          case signal if signal != null =>
-            thread.resume(LuaValue.varargsOf(Array(LuaValue.valueOf(signal.name)) ++ signal.args.map(LuaClosure.toLuaValue)))
-          case _ =>
-            thread.resume(LuaValue.NONE)
+        else when (val signal = machine.popSignal()) {
+          null -> thread.resume(LuaValue.NONE)
+          else -> thread.resume(LuaValue.varargsOf(arrayOf(LuaValue.valueOf(signal.name())) ++ signal.args.map(LuaClosure::toLuaValue)))
         }
       }
 
@@ -151,14 +149,14 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
         // call. The protocol is that a closure is pushed that is then called
         // from the main server thread, and returns a table, which is in turn
         // passed to the originating coroutine.yield().
-        if (results.narg == 2 && results.isfunction(2)) {
+        if (results.narg() == 2 && results.isfunction(2)) {
           synchronizedCall = results.checkfunction(2)
           new ExecutionResult.SynchronizedCall()
         }
         // Check if we are shutting down, and if so if we're rebooting. This
         // is signalled by boolean values, where `false` means shut down,
         // `true` means reboot (i.e shutdown then start again).
-        else if (results.narg == 2 && results.`type`(2) == LuaValue.TBOOLEAN) {
+        else if (results.narg() == 2 && results.type(2) == LuaValue.TBOOLEAN) {
           new ExecutionResult.Shutdown(results.toboolean(2))
         }
         else {
@@ -166,7 +164,7 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
           // resuming the state again. Note that the sleep may be interrupted
           // early if a signal arrives in the meantime. If we have something
           // else we just process the next signal or wait for one.
-          val ticks = if (results.narg == 2 && results.isnumber(2)) (results.todouble(2) * 20).toInt else Int.MaxValue
+          val ticks = if (results.narg() == 2 && results.isnumber(2)) (results.todouble(2) * 20).toInt else Int.MaxValue
           new ExecutionResult.Sleep(ticks)
         }
       }

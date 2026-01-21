@@ -215,11 +215,11 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
             return false
         }
 
-        private fun getConnectionColor(tileEntity: TileEntity?): Int {
+        private fun getConnectionColor(tileEntity: TileEntity?): UInt {
             if (tileEntity != null) {
                 if (tileEntity.hasCapability(Capabilities.ColoredCapability, null)) {
                     val colored = tileEntity.getCapability(Capabilities.ColoredCapability, null)
-                    if (colored != null && colored.controlsConnectivity) return colored.color
+                    if (colored != null && colored.controlsConnectivity()) return colored.color.toUInt()
                 }
             }
             return Color.rgbValues(EnumDyeColor.SILVER)

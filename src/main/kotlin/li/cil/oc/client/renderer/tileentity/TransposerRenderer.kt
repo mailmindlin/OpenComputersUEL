@@ -1,7 +1,7 @@
 package li.cil.oc.client.renderer.tileentity
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Transposer
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -10,8 +10,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import org.lwjgl.opengl.GL11
 import kotlin.math.max
 
-object TransposerRenderer : TileEntitySpecialRenderer<tileentity.Transposer>() {
-    override fun render(transposer: tileentity.Transposer, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
+object TransposerRenderer : TileEntitySpecialRenderer<Transposer>() {
+    override fun render(transposer: Transposer, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         val activity = max(0.0, 1 - (System.currentTimeMillis() - transposer.lastOperation) / 1000.0)

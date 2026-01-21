@@ -1,9 +1,9 @@
 package li.cil.oc.client.renderer.block
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common.block
+import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.item.data.PrintData
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.NetSplitter
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
@@ -23,8 +23,8 @@ object NetSplitterModel : SmartBlockModelBase() {
 
     override fun getQuads(state: IBlockState?, side: EnumFacing?, rand: Long): List<BakedQuad> {
         if (state is IExtendedBlockState) {
-            val tile = state.getValue(block.property.PropertyTile.Tile)
-            if (tile is tileentity.NetSplitter) {
+            val tile = state.getValue(PropertyTile)
+            if (tile is NetSplitter) {
                 val faces = mutableListOf<BakedQuad>()
 
                 faces.addAll(BaseModel)

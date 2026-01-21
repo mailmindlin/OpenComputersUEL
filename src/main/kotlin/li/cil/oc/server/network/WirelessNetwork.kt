@@ -16,7 +16,7 @@ val WirelessEndpoint.y: Int inline get() = this.y()
 val WirelessEndpoint.z: Int inline get() = this.z()
 
 object WirelessNetwork {
-  private val dimensions = mutableMapOf<Int, RTree<WirelessEndpoint>>()
+  internal val dimensions = mutableMapOf<Int, RTree<WirelessEndpoint>>()
 
   @SubscribeEvent
   fun onWorldUnload(e: WorldEvent.Unload) {

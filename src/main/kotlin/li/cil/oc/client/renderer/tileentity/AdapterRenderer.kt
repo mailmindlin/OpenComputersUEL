@@ -1,7 +1,7 @@
 package li.cil.oc.client.renderer.tileentity
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Adapter
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -11,8 +11,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.util.EnumFacing
 import org.lwjgl.opengl.GL11
 
-object AdapterRenderer : TileEntitySpecialRenderer<tileentity.Adapter>() {
-    override fun render(adapter: tileentity.Adapter, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
+object AdapterRenderer : TileEntitySpecialRenderer<Adapter>() {
+    override fun render(adapter: Adapter, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         if (adapter.openSides.contains(true)) {

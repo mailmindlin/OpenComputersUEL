@@ -7,6 +7,7 @@ import li.cil.oc.common.Tier
 import li.cil.oc.server.component.DebugCard
 import li.cil.oc.util.InternetFilteringRule
 import li.cil.oc.api.internal.TextBuffer.ColorDepth
+import net.minecraft.util.ResourceLocation
 import org.apache.commons.codec.binary.Hex
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.versioning.DefaultArtifactVersion
@@ -540,9 +541,12 @@ class Settings(val config: Config) {
 
     companion object {
         const val resourceDomain: String = "opencomputers"
+        @Deprecated(message = "Use ResourceLocation", replaceWith = ReplaceWith("namespace()"))
         const val namespace: String = "oc:"
         const val savePath: String = "opencomputers/"
         const val scriptPath: String = "/assets/$resourceDomain/lua/"
+
+        internal fun namespace(value: String): ResourceLocation = ResourceLocation("oc", value)
 
         @JvmField
         val screenResolutionsByTier: Array<Pair<Int, Int>> = arrayOf(50 to 16, 80 to 25, 160 to 50)

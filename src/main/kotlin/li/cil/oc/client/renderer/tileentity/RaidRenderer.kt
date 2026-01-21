@@ -26,7 +26,7 @@ object RaidRenderer : TileEntitySpecialRenderer<Raid>() {
 
         GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5)
 
-        when (raid.yaw) {
+        when (raid.yaw ?: EnumFacing.SOUTH) {
             EnumFacing.WEST -> GlStateManager.rotate(-90f, 0f, 1f, 0f)
             EnumFacing.NORTH -> GlStateManager.rotate(180f, 0f, 1f, 0f)
             EnumFacing.EAST -> GlStateManager.rotate(90f, 0f, 1f, 0f)
@@ -44,7 +44,7 @@ object RaidRenderer : TileEntitySpecialRenderer<Raid>() {
 
         run {
             val icon = Textures.getSprite(Textures.Block.RaidFrontError)
-            for (slot in 0 until raid.sizeInventory) {
+            for (slot in 0 until raid.getSizeInventory()) {
                 if (!raid.presence[slot]) {
                     renderSlot(r, slot, icon)
                 }
@@ -53,8 +53,8 @@ object RaidRenderer : TileEntitySpecialRenderer<Raid>() {
 
         run {
             val icon = Textures.getSprite(Textures.Block.RaidFrontActivity)
-            for (slot in 0 until raid.sizeInventory) {
-                if (System.currentTimeMillis() - raid.lastAccess < 400 && raid.world.rand.nextDouble() > 0.1 && slot == (raid.lastAccess % raid.sizeInventory).toInt()) {
+            for (slot in 0 until raid.getSizeInventory()) {
+                if (System.currentTimeMillis() - raid.lastAccess < 400 && raid.world.rand.nextDouble() > 0.1 && slot == (raid.lastAccess % raid.getSizeInventory()).toInt()) {
                     renderSlot(r, slot, icon)
                 }
             }

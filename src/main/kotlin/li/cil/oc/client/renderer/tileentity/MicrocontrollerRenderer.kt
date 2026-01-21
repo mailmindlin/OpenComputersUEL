@@ -27,7 +27,7 @@ object MicrocontrollerRenderer : TileEntitySpecialRenderer<Microcontroller>() {
 
         GlStateManager.translate(x + 0.5, y + 0.5, z + 0.5)
 
-        when (mcu.yaw) {
+        when (mcu.facing()?.opposite) {
             EnumFacing.WEST -> GlStateManager.rotate(-90f, 0f, 1f, 0f)
             EnumFacing.NORTH -> GlStateManager.rotate(180f, 0f, 1f, 0f)
             EnumFacing.EAST -> GlStateManager.rotate(90f, 0f, 1f, 0f)

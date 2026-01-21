@@ -156,9 +156,9 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
                         val bg = PackedColor.unpackBackground(color, data.format)
                         val fg = PackedColor.unpackForeground(color, data.format)
                         acc += when {
-                            char == ' '.code -> if (bg == 0) 0 else 1
-                            char == 0x2588 -> if (fg == 0) 0 else 1
-                            fg == 0 && bg == 0 -> 0
+                            char == ' '.code -> if (bg == 0u) 0 else 1
+                            char == 0x2588 -> if (fg == 0u) 0 else 1
+                            fg == 0u && bg == 0u -> 0
                             else -> 1
                         }
                     }

@@ -15,12 +15,12 @@ import net.minecraftforge.common.property.ExtendedBlockState
 import net.minecraftforge.common.property.IExtendedBlockState
 
 class NetSplitter : RedstoneAware() {
-    override fun createBlockState() = ExtendedBlockState(this, emptyArray(), arrayOf(PropertyTile.Tile))
+    override fun createBlockState() = ExtendedBlockState(this, emptyArray(), arrayOf(PropertyTile))
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
         return if (state is IExtendedBlockState && tileEntity is TENetSplitter) {
-            state.withProperty(property.PropertyTile.Tile, tileEntity)
+            state.withProperty(PropertyTile, tileEntity)
         } else state
     }
 

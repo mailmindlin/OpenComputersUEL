@@ -1,6 +1,6 @@
 package li.cil.oc.server.component.traits
 
-import li.cil.oc.api
+import li.cil.oc.api.Driver
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -62,7 +62,7 @@ interface ItemInventoryControl : InventoryAware {
     fun withItemInventory(slot: Int, f: (IItemHandler) -> Array<Any?>): Array<Any?> {
         val stack = inventory.getStackInSlot(slot)
         if (stack is ItemStack) {
-            val itemHandler = api.Driver.itemHandlerFor(stack, fakePlayer)
+            val itemHandler = Driver.itemHandlerFor(stack, fakePlayer)
             if (itemHandler is IItemHandler) {
                 return f(itemHandler)
             }

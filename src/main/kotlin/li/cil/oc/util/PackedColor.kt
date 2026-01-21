@@ -193,21 +193,21 @@ object PackedColor {
     const val BackgroundMask = 0x000000FFu
 
     @JvmStatic
-    fun pack(foreground: Color, background: Color, format: ColorFormat): Short {
-        return (((format.deflate(foreground).toInt() and 0xFF) shl ForegroundShift) or (format.deflate(background).toInt() and 0xFF)).toShort()
+    fun pack(foreground: Color, background: Color, format: ColorFormat): UShort {
+        return (((format.deflate(foreground).toUInt() and 0xFFu) shl ForegroundShift) or (format.deflate(background).toUInt() and 0xFFu)).toUShort()
     }
 
     @JvmStatic
-    fun extractForeground(color: Short): UInt = (color.toInt().toUInt() and 0xFFFFu) shr ForegroundShift
+    fun extractForeground(color: UShort): UInt = (color.toUInt() and 0xFFFFu) shr ForegroundShift
 
     @JvmStatic
-    fun extractBackground(color: Short): UInt = color.toInt().toUInt() and BackgroundMask
+    fun extractBackground(color: UShort): UInt = color.toUInt() and BackgroundMask
 
     @JvmStatic
-    fun unpackForeground(color: Short, format: ColorFormat): UInt =
+    fun unpackForeground(color: UShort, format: ColorFormat): UInt =
         format.inflate(extractForeground(color))
 
     @JvmStatic
-    fun unpackBackground(color: Short, format: ColorFormat): UInt =
+    fun unpackBackground(color: UShort, format: ColorFormat): UInt =
         format.inflate(extractBackground(color))
 }

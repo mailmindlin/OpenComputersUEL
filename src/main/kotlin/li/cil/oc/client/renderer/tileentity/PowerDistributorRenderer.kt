@@ -1,7 +1,7 @@
 package li.cil.oc.client.renderer.tileentity
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.PowerDistributor
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -9,8 +9,8 @@ import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import org.lwjgl.opengl.GL11
 
-object PowerDistributorRenderer : TileEntitySpecialRenderer<tileentity.PowerDistributor>() {
-    override fun render(distributor: tileentity.PowerDistributor, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
+object PowerDistributorRenderer : TileEntitySpecialRenderer<PowerDistributor>() {
+    override fun render(distributor: PowerDistributor, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         if (distributor.globalBuffer > 0) {

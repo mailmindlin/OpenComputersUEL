@@ -1,6 +1,7 @@
 package li.cil.oc.common.tileentity.traits.delegates
 
 import li.cil.oc.Settings
+import li.cil.oc.common.tileentity.traits.Colored
 import li.cil.oc.common.tileentity.traits.TileEntityTrait
 import li.cil.oc.server.PacketSender
 import li.cil.oc.util.Color
@@ -15,7 +16,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
  */
 class ColoredDelegate(
     private val tileEntity: TileEntityTrait,
-    defaultColor: Int = Color.rgbValues(EnumDyeColor.SILVER),
+    defaultColor: UInt = Color.rgbValues(EnumDyeColor.SILVER),
     private val onChanged: () -> Unit = {}
 ) {
     var color: Int = defaultColor

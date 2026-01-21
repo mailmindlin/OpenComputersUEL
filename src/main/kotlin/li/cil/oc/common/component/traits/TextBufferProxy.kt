@@ -26,7 +26,7 @@ interface TextBufferProxy: TextBuffer {
     override fun setPaletteColor(index: Int, color: Int) {
         val format = data.format
         if (format is PackedColor.MutablePaletteFormat) {
-            format.set(index, color)
+            format.set(index.toUInt(), color.toUInt())
             onBufferPaletteChange(index)
         } else {
             throw Exception("palette not available")
@@ -35,8 +35,8 @@ interface TextBufferProxy: TextBuffer {
 
     override fun getPaletteColor(index: Int): Int {
         val format = data.format
-        return if (format is PackedColor.MutablePaletteFormat) {
-            format.get(index)
+        if (format is PackedColor.MutablePaletteFormat) {
+            return format[index.toUInt()].toInt()
         } else {
             throw Exception("palette not available")
         }
@@ -47,14 +47,14 @@ interface TextBufferProxy: TextBuffer {
     override fun setForegroundColor(color: Int) = setForegroundColor(color, false)
 
     override fun setForegroundColor(color: Int, isFromPalette: Boolean) {
-        val value = PackedColor.Color(color, isFromPalette)
+        val value = PackedColor.Color(color.toUInt(), isFromPalette)
         if (data.foreground != value) {
             data.foreground = value
             onBufferColorChange()
         }
     }
 
-    override fun getForegroundColor(): Int = data.foreground.value
+    override fun getForegroundColor(): Int = data.foreground.value.toInt()
 
     override fun isForegroundFromPalette(): Boolean = data.foreground.isPalette
 
@@ -68,7 +68,7 @@ interface TextBufferProxy: TextBuffer {
         }
     }
 
-    override fun getBackgroundColor(): Int = data.background.value
+    override fun getBackgroundColor(): Int = data.background.value.toInt()
 
     override fun isBackgroundFromPalette(): Boolean = data.background.isPalette
 
@@ -101,7 +101,7 @@ interface TextBufferProxy: TextBuffer {
         }
     }
 
-    fun set(col: Int, row: Int, s: String, vertical: Boolean) {
+    override fun set(col: Int, row: Int, s: String, vertical: Boolean) {
         val sLength = ExtendedUnicodeHelper.length(s)
         if (col < data.width && (col >= 0 || -col < sLength)) {
             // Make sure the string isn't longer than it needs to be, in particular to
@@ -127,7 +127,7 @@ interface TextBufferProxy: TextBuffer {
             PackedColor.extractForeground(color(column, row))
         } else {
             PackedColor.unpackForeground(color(column, row), data.format)
-        }
+        }.toInt()
 
     override fun isForegroundFromPalette(column: Int, row: Int): Boolean =
         data.format.isFromPalette(PackedColor.extractForeground(color(column, row)))
@@ -137,7 +137,7 @@ interface TextBufferProxy: TextBuffer {
             PackedColor.extractBackground(color(column, row))
         } else {
             PackedColor.unpackBackground(color(column, row), data.format)
-        }
+        }.toInt()
 
     override fun isBackgroundFromPalette(column: Int, row: Int): Boolean =
         data.format.isFromPalette(PackedColor.extractBackground(color(column, row)))
@@ -171,8 +171,8 @@ interface TextBufferProxy: TextBuffer {
         for (y in row until minOf(row + color.size, data.height)) {
             val line = color[y - row]
             for (x in col until minOf(col + line.size, data.width)) {
-                val packedBackground = data.format.deflate(PackedColor.Color(line[x - col])) and 0x00FF
-                val packedForeground = data.color[y][x].toInt() and 0xFF00
+                val packedBackground = data.format.deflate(PackedColor.Color(line[x - col].toUInt())).toUInt() and 0x00FFu
+                val packedForeground = data.color[y][x].toUInt() and 0xFF00u
                 data.color[y][x] = (packedForeground or packedBackground).toShort()
             }
         }

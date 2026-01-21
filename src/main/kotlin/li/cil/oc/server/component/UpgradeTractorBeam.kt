@@ -22,27 +22,25 @@ import kotlin.math.floor
 
 object UpgradeTractorBeam {
 
-    abstract class Common : AbstractManagedEnvironment(), DeviceInfo {
+    abstract class Common : ManagedEnvironmentKt(), DeviceInfoKt {
         override val node = Network.newNode(this, Visibility.Network)
             .withComponent("tractor_beam")
             .create()
 
         private val pickupRadius = 3
 
-        private val deviceInfo = mapOf(
+        override val deviceInfo = mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Tractor beam",
             DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
             DeviceAttribute.Product to "T313-K1N.3515"
         )
 
-        override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
-
         protected abstract val position: BlockPosition
 
         protected abstract fun collectItem(item: EntityItem)
 
-        private val world get() = position.world.get()
+        private val world get() = position.world!!
 
         @Callback(doc = "function():boolean -- Tries to pick up a random item in the robots' vicinity.")
         fun suck(context: Context, args: Arguments): Array<Any?> {

@@ -27,7 +27,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
 
     private var _background: PackedColor.Color = PackedColor.Color(0x000000u)
 
-    private var packed: Short = PackedColor.pack(_foreground, _background, _format)
+    private var packed: UShort = PackedColor.pack(_foreground, _background, _format)
 
     var foreground: PackedColor.Color
         get() = _foreground
@@ -52,10 +52,10 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
                 for (row in 0 until height) {
                     val rowColor = color[row]
                     for (col in 0 until width) {
-                        val packed = rowColor[col]
+                        val packed = rowColor[col].toUShort()
                         val fg = PackedColor.Color(PackedColor.unpackForeground(packed, _format))
                         val bg = PackedColor.Color(PackedColor.unpackBackground(packed, _format))
-                        rowColor[col] = PackedColor.pack(fg, bg, value)
+                        rowColor[col] = PackedColor.pack(fg, bg, value).toShort()
                     }
                 }
                 _format = value
@@ -63,7 +63,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
             }
         }
 
-    var color: Array<ShortArray> = Array(height) { ShortArray(width) { packed } }
+    var color: Array<ShortArray> = Array(height) { ShortArray(width) { packed.toShort() } }
 
     var buffer: Array<IntArray> = Array(height) { IntArray(width) { 0x20 } }
 
@@ -83,7 +83,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
         val h = max(ih, 1)
         if (width != w || height != h) {
             val newBuffer = Array(h) { IntArray(w) { 0x20 } }
-            val newColor = Array(h) { ShortArray(w) { packed } }
+            val newColor = Array(h) { ShortArray(w) { packed.toShort() } }
             for (y in 0 until min(h, height)) {
                 System.arraycopy(buffer[y], 0, newBuffer[y], 0, min(w, width))
                 System.arraycopy(color[y], 0, newColor[y], 0, min(w, width))
@@ -117,7 +117,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
                         val line = buffer[y]
                         val lineColor = color[y]
                         val c = s.codePointAt(cx)
-                        changed = changed || (line[col] != c) || (lineColor[col] != packed)
+                        changed = changed || (line[col] != c) || (lineColor[col] != packed.toShort())
                         setChar(line, lineColor, col, c)
                         cx = s.offsetByCodePoints(cx, 1)
                     }
@@ -135,7 +135,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
                 for (x in bx until min(col + sLength, width)) {
                     if (bx < line.size) {
                         val c = s.codePointAt(cx)
-                        changed = changed || (line[bx] != c) || (lineColor[bx] != packed)
+                        changed = changed || (line[bx] != c) || (lineColor[bx] != packed.toShort())
                         setChar(line, lineColor, bx, c)
                         bx += max(1, FontUtils.wcwidth(c))
                         cx = s.offsetByCodePoints(cx, 1)
@@ -158,7 +158,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
             var bx = max(col, 0)
             for (x in bx until min(col + w, width)) {
                 if (bx < line.size) {
-                    changed = changed || (line[bx] != c) || (lineColor[bx] != packed)
+                    changed = changed || (line[bx] != c) || (lineColor[bx] != packed.toShort())
                     setChar(line, lineColor, bx, c)
                     bx += max(1, FontUtils.wcwidth(c))
                 }
@@ -233,7 +233,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
             val dstColorLine = color[rowIndex + yOffset]
             for (xOffset in 0 until w) {
                 val srcChar = src.buffer[fromRow + yOffset - 1][fromCol + xOffset - 1]
-                var srcColor = src.color[fromRow + yOffset - 1][fromCol + xOffset - 1]
+                var srcColor = src.color[fromRow + yOffset - 1][fromCol + xOffset - 1].toUShort()
 
                 if (this.format.depth != src.format.depth) {
                     val fg = PackedColor.Color(PackedColor.unpackForeground(srcColor, src.format))
@@ -241,10 +241,10 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
                     srcColor = PackedColor.pack(fg, bg, format)
                 }
 
-                if (srcChar != dstCharLine[colIndex + xOffset] || srcColor != dstColorLine[colIndex + xOffset]) {
+                if (srcChar != dstCharLine[colIndex + xOffset] || srcColor != dstColorLine[colIndex + xOffset].toUShort()) {
                     changed = true
                     dstCharLine[colIndex + xOffset] = srcChar
-                    dstColorLine[colIndex + xOffset] = srcColor
+                    dstColorLine[colIndex + xOffset] = srcColor.toShort()
                 }
             }
         }
@@ -258,10 +258,10 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
             return
         }
         line[x] = c
-        lineColor[x] = packed
+        lineColor[x] = packed.toShort()
         for (x1 in x + 1 until x + FontUtils.wcwidth(c)) {
             line[x1] = ' '.code
-            lineColor[x1] = packed
+            lineColor[x1] = packed.toShort()
         }
         if (x > 0 && FontUtils.wcwidth(line[x - 1]) > 1) {
             // remove previous wide char (but don't change its color)
