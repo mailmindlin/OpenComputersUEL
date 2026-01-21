@@ -44,6 +44,7 @@ import org.lwjgl.input.Keyboard
 
 object PacketHandler : CommonPacketHandler() {
     @SubscribeEvent
+    @Suppress("unused")
     fun onPacket(e: ClientCustomPacketEvent) {
         onPacketData(e.manager.netHandler, e.packet.payload(), Minecraft.getMinecraft().player)
     }

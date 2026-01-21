@@ -44,6 +44,7 @@ abstract class ComponentTracker {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onWorldUnload(e: WorldEvent.Unload) {
         clear(e.world)
     }

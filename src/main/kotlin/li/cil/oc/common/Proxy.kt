@@ -178,6 +178,7 @@ open class Proxy {
     )
 
     @SubscribeEvent
+    @Suppress("unused")
     fun missingBlockMappings(e: MissingMappings<Block>) {
         for (missing in e.mappings) {
             val name = blockRenames[missing.key.path]
@@ -194,6 +195,7 @@ open class Proxy {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun missingItemMappings(e: MissingMappings<Item>) {
         for (missing in e.mappings) {
             val name = itemRenames[missing.key.path]

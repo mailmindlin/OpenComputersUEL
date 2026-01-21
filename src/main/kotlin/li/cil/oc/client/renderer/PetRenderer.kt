@@ -41,6 +41,7 @@ object PetRenderer {
     private var rendering: Triple<Double, Double, Double>? = null
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onPlayerRender(e: RenderPlayerEvent.Pre) {
         val uuid = e.entityPlayer.uniqueID.toString()
         if (hidden.contains(uuid) || !entitledPlayers.contains(uuid)) return
@@ -86,6 +87,7 @@ object PetRenderer {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
+    @Suppress("unused")
     fun onRobotRender(e: RobotRenderEvent) {
         rendering?.let { (r, g, b) ->
             GlStateManager.color(r.toFloat(), g.toFloat(), b.toFloat())
@@ -140,6 +142,7 @@ object PetRenderer {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun tickStart(e: ClientTickEvent) {
         petLocations.cleanUp()
         for (pet in petLocations.asMap().values) {

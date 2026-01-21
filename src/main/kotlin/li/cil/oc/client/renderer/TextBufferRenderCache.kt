@@ -119,6 +119,7 @@ object TextBufferRenderCache : Callable<Int>, RemovalListener<TextBufferRenderDa
     // ----------------------------------------------------------------------- //
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onTick(e: ClientTickEvent) {
         cache.cleanUp()
     }

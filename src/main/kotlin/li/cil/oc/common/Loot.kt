@@ -103,6 +103,7 @@ object Loot {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun initForWorld(e: WorldEvent.Load) {
         if (!e.world.isRemote && e.world.provider.dimension == 0) {
             worldDisks.clear()

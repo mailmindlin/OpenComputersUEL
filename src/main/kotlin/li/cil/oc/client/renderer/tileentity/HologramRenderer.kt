@@ -376,5 +376,6 @@ object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, 
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onTick(e: ClientTickEvent) = cache.cleanUp()
 }

@@ -330,6 +330,7 @@ object EventHandler {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun clientLoggedIn(e: ClientConnectedToServerEvent) {
         PetRenderer.isInitialized = false
         PetRenderer.hidden.clear()
@@ -341,6 +342,7 @@ object EventHandler {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onBlockBreak(e: BlockEvent.BreakEvent) {
         when (val te = e.world.getTileEntity(e.pos)) {
             is tileentity.Case -> {
@@ -358,21 +360,25 @@ object EventHandler {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onPlayerRespawn(e: PlayerRespawnEvent) {
         keyboards.forEach { it.releasePressedKeys(e.player) }
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onPlayerChangedDimension(e: PlayerChangedDimensionEvent) {
         keyboards.forEach { it.releasePressedKeys(e.player) }
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onPlayerLogout(e: PlayerLoggedOutEvent) {
         keyboards.forEach { it.releasePressedKeys(e.player) }
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onEntityJoinWorld(e: EntityJoinWorldEvent) {
         if (Settings.get.giveManualToNewPlayers && !e.world.isRemote) {
             val entity = e.entity
@@ -394,6 +400,7 @@ object EventHandler {
     private val tablet by lazy { api.Items.get(Constants.ItemName.Tablet) }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onCrafting(e: ItemCraftedEvent) {
         var didRecraft = false
 
@@ -447,6 +454,7 @@ object EventHandler {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onPickup(e: ItemPickupEvent) {
         val entity = e.originalEntity
         val stack = entity?.item
@@ -499,6 +507,7 @@ object EventHandler {
     // synchronize what we're doing here to avoid race conditions (e.g. when
     // disposing networks, where this actually triggered an assert).
     @SubscribeEvent
+    @Suppress("unused")
     @Synchronized
     fun onWorldUnload(e: WorldEvent.Unload) {
         if (!e.world.isRemote) {
@@ -520,6 +529,7 @@ object EventHandler {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onChunkUnload(e: ChunkEvent.Unload) {
         if (!e.world.isRemote) {
             for (entityList in e.chunk.entityLists) {

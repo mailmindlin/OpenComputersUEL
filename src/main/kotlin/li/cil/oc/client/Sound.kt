@@ -117,6 +117,7 @@ object Sound {
   }
 
   @SubscribeEvent
+  @Suppress("unused")
   fun onSoundLoad(event: SoundLoadEvent) {
     manager = event.manager
   }
@@ -124,6 +125,7 @@ object Sound {
   private var hasPreloaded = Settings.get.soundVolume <= 0
 
   @SubscribeEvent
+  @Suppress("unused")
   fun onTick(e: ClientTickEvent) {
     if (soundSystem != null) {
       if (!hasPreloaded) {
@@ -159,6 +161,7 @@ object Sound {
   }
 
   @SubscribeEvent
+  @Suppress("unused")
   fun onWorldUnload(event: WorldEvent.Unload) {
     synchronized(commandQueue) { commandQueue.clear() }
     synchronized(sources) {

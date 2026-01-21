@@ -243,6 +243,7 @@ object SaveHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
+    @Suppress("unused")
     fun onWorldLoad(e: WorldEvent.Load) {
         if (!e.world.isRemote) {
             // Touch all externally saved data when loading, to avoid it getting
@@ -269,6 +270,7 @@ object SaveHandler {
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
+    @Suppress("unused")
     fun onWorldSave(e: WorldEvent.Save) {
         stateSaveHandler.withPool { pool ->
             pool.submit { cleanSaveData() }

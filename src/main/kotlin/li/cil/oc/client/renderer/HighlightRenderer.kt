@@ -32,6 +32,7 @@ object HighlightRenderer {
     val tablet by lazy { Items.get(Constants.ItemName.Tablet) }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onDrawBlockHighlight(e: DrawBlockHighlightEvent) {
         if (e.target == null || e.target.blockPos == null) return
 

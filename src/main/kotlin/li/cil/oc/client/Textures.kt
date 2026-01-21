@@ -555,6 +555,7 @@ object Textures {
   fun getSprite(location: ResourceLocation): TextureAtlasSprite = getSprite(location.toString())
 
   @SubscribeEvent
+  @Suppress("unused")
   fun onTextureStitchPre(e: TextureStitchEvent.Pre): Unit {
     Font.init(e.map)
     GUI.init(e.map)

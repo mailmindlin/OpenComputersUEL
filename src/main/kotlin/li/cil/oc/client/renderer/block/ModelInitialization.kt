@@ -53,6 +53,7 @@ object ModelInitialization {
     }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onModelRegistration(event: ModelRegistryEvent) {
         registerItems()
         registerSubItems()
@@ -134,6 +135,7 @@ object ModelInitialization {
     // -----------------------------------------------------------------------
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onModelBake(e: ModelBakeEvent) {
         val registry = e.modelRegistry as RegistrySimple<ModelResourceLocation, IBakedModel>
 

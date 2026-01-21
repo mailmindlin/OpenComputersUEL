@@ -17,6 +17,7 @@ object MFUTargetRenderer {
     private val mfu by lazy { Items.get(Constants.ItemName.MFU) }
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onRenderWorldLastEvent(e: RenderWorldLastEvent) {
         val mc = Minecraft.getMinecraft()
         val player = mc.player

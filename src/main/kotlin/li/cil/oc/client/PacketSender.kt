@@ -14,6 +14,7 @@ import net.minecraft.init.SoundEvents
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
 
+/** Client -> Server packets */
 object PacketSender {
   // Timestamp after which the next clipboard message may be sent. Used to
   // avoid spamming large packets on key repeat.

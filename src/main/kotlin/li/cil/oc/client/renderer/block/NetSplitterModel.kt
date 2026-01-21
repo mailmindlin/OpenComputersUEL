@@ -71,6 +71,7 @@ object NetSplitterModel : SmartBlockModelBase() {
     private var BaseModel = emptyArray<BakedQuad>()
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onTextureStitch(e: TextureStitchEvent.Post) {
         BaseModel = generateBaseModel()
     }

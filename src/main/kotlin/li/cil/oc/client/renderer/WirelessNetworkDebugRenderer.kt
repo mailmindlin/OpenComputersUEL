@@ -15,6 +15,7 @@ object WirelessNetworkDebugRenderer {
     val colors = intArrayOf(0xFF0000, 0x00FFFF, 0x00FF00, 0x0000FF, 0xFF00FF, 0xFFFF00, 0xFFFFFF, 0x000000)
 
     @SubscribeEvent
+    @Suppress("unused")
     fun onRenderWorldLastEvent(e: RenderWorldLastEvent) {
         if (Settings.rTreeDebugRenderer) {
             RenderState.checkError(javaClass.name + ".onRenderWorldLastEvent: entering (aka: wasntme)")
