@@ -2,7 +2,7 @@ package li.cil.oc.common.template
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.IMC
 import li.cil.oc.api.internal.Robot
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
@@ -59,7 +59,7 @@ object RobotTemplate : Template() {
     @JvmStatic
     fun register() {
         // Tier 1
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Robot (Tier 1)",
             "li.cil.oc.common.template.RobotTemplate.selectTier1",
             "li.cil.oc.common.template.RobotTemplate.validate",
@@ -80,7 +80,7 @@ object RobotTemplate : Template() {
         )
 
         // Tier 2
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Robot (Tier 2)",
             "li.cil.oc.common.template.RobotTemplate.selectTier2",
             "li.cil.oc.common.template.RobotTemplate.validate",
@@ -101,7 +101,7 @@ object RobotTemplate : Template() {
         )
 
         // Tier 3
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Robot (Tier 3)",
             "li.cil.oc.common.template.RobotTemplate.selectTier3",
             "li.cil.oc.common.template.RobotTemplate.validate",
@@ -123,7 +123,7 @@ object RobotTemplate : Template() {
         )
 
         // Creative
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Robot (Creative)",
             "li.cil.oc.common.template.RobotTemplate.selectCreative",
             "li.cil.oc.common.template.RobotTemplate.validate",
@@ -145,7 +145,7 @@ object RobotTemplate : Template() {
         )
 
         // Disassembler
-        api.IMC.registerDisassemblerTemplate(
+        IMC.registerDisassemblerTemplate(
             "Robot",
             "li.cil.oc.common.template.RobotTemplate.selectDisassembler",
             "li.cil.oc.common.template.RobotTemplate.disassemble"

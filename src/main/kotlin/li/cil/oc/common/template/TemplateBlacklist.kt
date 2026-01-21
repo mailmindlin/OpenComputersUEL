@@ -2,7 +2,7 @@ package li.cil.oc.common.template
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.IMC
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
@@ -41,7 +41,7 @@ object TemplateBlacklist {
 
     @JvmStatic
     fun register() {
-        api.IMC.registerAssemblerFilter("li.cil.oc.common.template.TemplateBlacklist.filter")
+        IMC.registerAssemblerFilter("li.cil.oc.common.template.TemplateBlacklist.filter")
     }
 
     @JvmStatic

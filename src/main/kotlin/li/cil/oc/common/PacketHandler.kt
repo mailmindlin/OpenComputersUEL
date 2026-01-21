@@ -4,11 +4,10 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.block.RobotAfterimage
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedWorld.blockExists
-import li.cil.oc.util.ExtendedWorld.getTileEntity
+import li.cil.oc.util.blockExists
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
@@ -77,24 +76,24 @@ abstract class PacketHandler {
         val packetType: PacketType = PacketType(readByte())
 
         inline fun <reified T> getTileEntity(dimension: Int, x: Int, y: Int, z: Int): T? {
-            val w = world(player, dimension)
-            if (w != null && w.blockExists(BlockPosition(x, y, z))) {
-                val t = w.getTileEntity(BlockPosition(x, y, z))
-                if (t != null && T::class.java.isAssignableFrom(t.javaClass)) {
-                    return t as T
-                }
-                // In case a robot moved away before the packet arrived. This is
-                // mostly used when the robot *starts* moving while the client sends
-                // a request to the server.
-                val afterimageBlock = api.Items.get(Constants.BlockName.RobotAfterimage)?.block()
-                if (afterimageBlock is RobotAfterimage) {
-                    val robot = afterimageBlock.findMovingRobot(w, BlockPos(x, y, z))
-                    if (robot != null && T::class.java.isAssignableFrom(robot.proxy.javaClass)) {
-                        return robot.proxy as T
-                    }
+            val w = world(player, dimension) ?: return null
+            val pos = BlockPos(x, y, z)
+            if (!w.isBlockLoaded(pos))
+                return null
+            val t = w.getTileEntity(pos)
+            if (t != null && T::class.java.isAssignableFrom(t.javaClass)) {
+                return t as T
+            }
+            // In case a robot moved away before the packet arrived. This is
+            // mostly used when the robot *starts* moving while the client sends
+            // a request to the server.
+            val afterimageBlock = ApiItems.get(Constants.BlockName.RobotAfterimage)?.block()
+            if (afterimageBlock is RobotAfterimage) {
+                val robot = afterimageBlock.findMovingRobot(w, pos)
+                if (robot != null && T::class.java.isAssignableFrom(robot.proxy.javaClass)) {
+                    return robot.proxy as T
                 }
             }
-            return null
         }
 
         inline fun <reified T> getEntity(dimension: Int, id: Int): T? {

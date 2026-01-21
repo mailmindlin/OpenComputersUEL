@@ -1,7 +1,7 @@
 package li.cil.oc.common.template
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.IMC
 import li.cil.oc.common.item.data.NavigationUpgradeData
 import net.minecraft.item.ItemStack
 
@@ -20,7 +20,7 @@ object NavigationUpgradeTemplate {
     @JvmStatic
     fun register() {
         // Disassembler
-        api.IMC.registerDisassemblerTemplate(
+        IMC.registerDisassemblerTemplate(
             "Navigation Upgrade",
             "li.cil.oc.common.template.NavigationUpgradeTemplate.selectDisassembler",
             "li.cil.oc.common.template.NavigationUpgradeTemplate.disassemble"

@@ -2,7 +2,7 @@ package li.cil.oc.common.template
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.IMC
 import li.cil.oc.api.internal.Tablet
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
@@ -73,7 +73,7 @@ object TabletTemplate : Template() {
     @JvmStatic
     fun register() {
         // Tier 1
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Tablet (Tier 1)",
             "li.cil.oc.common.template.TabletTemplate.selectTier1",
             "li.cil.oc.common.template.TabletTemplate.validate",
@@ -94,7 +94,7 @@ object TabletTemplate : Template() {
         )
 
         // Tier 2
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Tablet (Tier 2)",
             "li.cil.oc.common.template.TabletTemplate.selectTier2",
             "li.cil.oc.common.template.TabletTemplate.validate",
@@ -115,7 +115,7 @@ object TabletTemplate : Template() {
         )
 
         // Creative
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Tablet (Creative)",
             "li.cil.oc.common.template.TabletTemplate.selectCreative",
             "li.cil.oc.common.template.TabletTemplate.validate",
@@ -136,7 +136,7 @@ object TabletTemplate : Template() {
         )
 
         // Disassembler
-        api.IMC.registerDisassemblerTemplate(
+        IMC.registerDisassemblerTemplate(
             "Tablet",
             "li.cil.oc.common.template.TabletTemplate.selectDisassembler",
             "li.cil.oc.common.template.TabletTemplate.disassemble"

@@ -2,7 +2,7 @@ package li.cil.oc.common.template
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.IMC
 import li.cil.oc.api.internal.Drone
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
@@ -62,7 +62,7 @@ object DroneTemplate : Template() {
     @JvmStatic
     fun register() {
         // Tier 1
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Drone (Tier 1)",
             "li.cil.oc.common.template.DroneTemplate.selectTier1",
             "li.cil.oc.common.template.DroneTemplate.validate",
@@ -82,7 +82,7 @@ object DroneTemplate : Template() {
         )
 
         // Tier 2
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Drone (Tier 2)",
             "li.cil.oc.common.template.DroneTemplate.selectTier2",
             "li.cil.oc.common.template.DroneTemplate.validate",
@@ -102,7 +102,7 @@ object DroneTemplate : Template() {
         )
 
         // Creative
-        api.IMC.registerAssemblerTemplate(
+        IMC.registerAssemblerTemplate(
             "Drone (Creative)",
             "li.cil.oc.common.template.DroneTemplate.selectTierCreative",
             "li.cil.oc.common.template.DroneTemplate.validate",
@@ -122,7 +122,7 @@ object DroneTemplate : Template() {
         )
 
         // Disassembler
-        api.IMC.registerDisassemblerTemplate(
+        IMC.registerDisassemblerTemplate(
             "Drone",
             "li.cil.oc.common.template.DroneTemplate.selectDisassembler",
             "li.cil.oc.common.template.DroneTemplate.disassemble"

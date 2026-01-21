@@ -1,7 +1,7 @@
 package li.cil.oc.common.template
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.IMC
 import li.cil.oc.common.inventory.ServerInventory
 import net.minecraft.item.ItemStack
 
@@ -26,7 +26,7 @@ object ServerTemplate {
     @JvmStatic
     fun register() {
         // Disassembler
-        api.IMC.registerDisassemblerTemplate(
+        IMC.registerDisassemblerTemplate(
             "Server",
             "li.cil.oc.common.template.ServerTemplate.selectDisassembler",
             "li.cil.oc.common.template.ServerTemplate.disassemble"
