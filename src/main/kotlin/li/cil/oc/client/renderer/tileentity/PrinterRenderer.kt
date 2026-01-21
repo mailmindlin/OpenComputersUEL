@@ -24,7 +24,7 @@ object PrinterRenderer : TileEntitySpecialRenderer<Printer>() {
             GlStateManager.rotate((System.currentTimeMillis() % 20000) / 20000f * 360, 0f, 1f, 0f)
             GlStateManager.scale(0.75, 0.75, 0.75)
 
-            val brightness = printer.world.getCombinedLight(printer.pos, 0)
+            val brightness = printer.world!!.getCombinedLight(printer.pos, 0)
             OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (brightness % 65536).toFloat(), (brightness / 65536).toFloat())
 
             Textures.Block.bind()

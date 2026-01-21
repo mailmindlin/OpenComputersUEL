@@ -5,7 +5,7 @@ import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import org.lwjgl.opengl.GL11
 
-class ProgressBar(override val x: Int, override val y: Int) : Widget() {
+open class ProgressBar(override val x: Int, override val y: Int) : Widget() {
     override val width: Int = 140
 
     override val height: Int = 12

@@ -79,8 +79,8 @@ object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, 
         GlStateManager.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE)
 
         val playerDistSq = x * x + y * y + z * z
-        val maxDistSq = hologram.getMaxRenderDistanceSquared
-        val fadeDistSq = hologram.getFadeStartDistanceSquared
+        val maxDistSq = hologram.getMaxRenderDistanceSquared()
+        val fadeDistSq = hologram.getFadeStartDistanceSquared()
         RenderState.setBlendAlpha(0.75f * (if (playerDistSq > fadeDistSq) maxOf(0.0, 1 - ((playerDistSq - fadeDistSq) / (maxDistSq - fadeDistSq))).toFloat() else 1f))
 
         GlStateManager.pushMatrix()

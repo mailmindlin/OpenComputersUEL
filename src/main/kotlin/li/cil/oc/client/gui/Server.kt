@@ -62,7 +62,7 @@ class Server(
         )
         if (powerButton?.isMouseOver == true) {
             val tooltip = mutableListOf<String>()
-            val lines = if (inventoryContainer.isRunning) Localization.Computer.TurnOff.lines else Localization.Computer.TurnOn.lines
+            val lines = if (inventoryContainer.isRunning) Localization.Computer.TurnOff().lines() else Localization.Computer.TurnOn().lines()
             tooltip.addAll(lines.toList())
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }

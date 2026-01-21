@@ -49,7 +49,7 @@ class Assembler(
     }
 
     private val canBuild: Boolean
-        get() = !inventoryContainer.isAssembling && (validate()?.first ?: false)
+        get() = !inventoryContainer.isAssembling() && (validate()?.first ?: false)
 
     override fun actionPerformed(button: GuiButton) {
         if (button.id == 0 && canBuild) {
@@ -69,18 +69,18 @@ class Assembler(
 
     override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
         RenderState.pushAttrib()
-        if (!inventoryContainer.isAssembling) {
+        if (!inventoryContainer.isAssembling()) {
             val message = when {
-                !inventoryContainer.getSlot(0).hasStack -> Localization.Assembler.InsertTemplate
+                !inventoryContainer.getSlot(0).hasStack -> Localization.Assembler.InsertTemplate()
                 else -> when (val i = info) {
-                    null -> if (inventoryContainer.getSlot(0).hasStack) Localization.Assembler.CollectResult else ""
+                    null -> if (inventoryContainer.getSlot(0).hasStack) Localization.Assembler.CollectResult() else ""
                     else -> i.second?.unformattedText ?: ""
                 }
             }
             fontRenderer.drawString(message, 30, 94, 0x404040)
             if (runButton?.isMouseOver == true) {
                 val tooltip = mutableListOf<String>()
-                tooltip.add(Localization.Assembler.Run)
+                tooltip.add(Localization.Assembler.Run())
                 info?.let { (valid, _, warnings) ->
                     if (valid && warnings.isNotEmpty()) {
                         tooltip.addAll(warnings.map { it.unformattedText })
@@ -90,8 +90,8 @@ class Assembler(
             }
         } else if (isPointInRegion(progress.x, progress.y, progress.width, progress.height, mouseX, mouseY)) {
             val tooltip = mutableListOf<String>()
-            val timeRemaining = formatTime(inventoryContainer.assemblyRemainingTime)
-            tooltip.add(Localization.Assembler.Progress(inventoryContainer.assemblyProgress, timeRemaining))
+            val timeRemaining = formatTime(inventoryContainer.assemblyRemainingTime())
+            tooltip.add(Localization.Assembler.Progress(inventoryContainer.assemblyProgress(), timeRemaining))
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }
         RenderState.popAttrib()
@@ -110,8 +110,8 @@ class Assembler(
         GlStateManager.color(1f, 1f, 1f) // Required under Linux.
         Textures.bind(Textures.GUI.RobotAssembler)
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
-        progress.level = if (inventoryContainer.isAssembling) {
-            inventoryContainer.assemblyProgress / 100.0
+        progress.level = if (inventoryContainer.isAssembling()) {
+            inventoryContainer.assemblyProgress() / 100.0
         } else {
             0.0
         }

@@ -51,12 +51,12 @@ class Printer(
         RenderState.pushAttrib()
         if (isPointInRegion(materialBar.x, materialBar.y, materialBar.width, materialBar.height, mouseX, mouseY)) {
             val tooltip = mutableListOf<String>()
-            tooltip.add("${inventoryContainer.amountMaterial}/${printer.maxAmountMaterial}")
+            tooltip.add("${inventoryContainer.amountMaterial()}/${printer.maxAmountMaterial}")
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }
         if (isPointInRegion(inkBar.x, inkBar.y, inkBar.width, inkBar.height, mouseX, mouseY)) {
             val tooltip = mutableListOf<String>()
-            tooltip.add("${inventoryContainer.amountInk}/${printer.maxAmountInk}")
+            tooltip.add("${inventoryContainer.amountInk()}/${printer.maxAmountInk}")
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }
         RenderState.popAttrib()
@@ -66,9 +66,9 @@ class Printer(
         GlStateManager.color(1f, 1f, 1f)
         Textures.bind(Textures.GUI.Printer)
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
-        materialBar.level = inventoryContainer.amountMaterial / printer.maxAmountMaterial.toDouble()
-        inkBar.level = inventoryContainer.amountInk / printer.maxAmountInk.toDouble()
-        progressBar.level = inventoryContainer.progress
+        materialBar.level = inventoryContainer.amountMaterial() / printer.maxAmountMaterial.toDouble()
+        inkBar.level = inventoryContainer.amountInk() / printer.maxAmountInk.toDouble()
+        progressBar.level = inventoryContainer.progress()
         drawWidgets()
         drawInventorySlots()
     }

@@ -90,12 +90,12 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
     }
 
     private fun sideName(side: EnumFacing) = when (side) {
-        EnumFacing.UP -> Localization.Rack.Top
-        EnumFacing.DOWN -> Localization.Rack.Bottom
-        EnumFacing.WEST -> Localization.Rack.Right
-        EnumFacing.EAST -> Localization.Rack.Left
-        EnumFacing.NORTH -> Localization.Rack.Back
-        else -> Localization.Rack.None
+        EnumFacing.UP -> Localization.Rack.Top()
+        EnumFacing.DOWN -> Localization.Rack.Bottom()
+        EnumFacing.WEST -> Localization.Rack.Right()
+        EnumFacing.EAST -> Localization.Rack.Left()
+        EnumFacing.NORTH -> Localization.Rack.Back()
+        else -> Localization.Rack.None()
     }
 
     private fun encodeButtonId(mountable: Int, connectable: Int, bus: Int): Int {
@@ -135,14 +135,14 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
                 }
             }
         }
-        relayButton?.displayString = if (rack.isRelayEnabled) Localization.Rack.RelayEnabled else Localization.Rack.RelayDisabled
+        relayButton?.displayString = if (rack.isRelayEnabled) Localization.Rack.RelayEnabled() else Localization.Rack.RelayDisabled()
         super.drawScreen(mouseX, mouseY, dt)
     }
 
     override fun initGui() {
         super.initGui()
 
-        relayButton = ImageButton(0, guiLeft + 101, guiTop + 96, 65, 18, Textures.GUI.ButtonRelay, Localization.Rack.RelayDisabled, textIndent = 18)
+        relayButton = ImageButton(0, guiLeft + 101, guiTop + 96, 65, 18, Textures.GUI.ButtonRelay, Localization.Rack.RelayDisabled(), textIndent = 18)
         add(buttonList, relayButton!!)
 
         val (mw, mh) = hoverMasterSize
@@ -260,12 +260,12 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
         }
 
         if (mouseX >= guiLeft + 122 && mouseY >= guiTop + 20 && mouseX < guiLeft + 158 && mouseY < guiTop + 20 + 5 * 11) {
-            val tooltip = Localization.Rack.OrientationTooltip.lines().toMutableList()
+            val tooltip = Localization.Rack.OrientationTooltip().lines().toMutableList()
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }
 
         if (relayButton?.isMouseOver == true) {
-            val tooltip = Localization.Rack.RelayModeTooltip.lines().toMutableList()
+            val tooltip = Localization.Rack.RelayModeTooltip().lines().toMutableList()
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }
 

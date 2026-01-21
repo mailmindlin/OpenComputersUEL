@@ -42,8 +42,8 @@ interface InputBuffer : DisplayBuffer {
             Textures.bind(Textures.GUI.KeyboardMissing)
             GlStateManager.disableDepth()
 
-            val x = bufferX + buffer!!.renderWidth - 16
-            val y = bufferY + buffer!!.renderHeight - 16
+            val x = bufferX + buffer!!.renderWidth() - 16
+            val y = bufferY + buffer!!.renderHeight() - 16
 
             val t = Tessellator.getInstance()
             val r = t.buffer
@@ -70,7 +70,7 @@ interface InputBuffer : DisplayBuffer {
     }
 
     fun handleKeyboardInputBuffer(screen: Any) {
-        if (screen is GuiContainer && ItemSearch.isInputFocused) return
+        if (screen is GuiContainer && ItemSearch.isInputFocused()) return
 
         val code = Keyboard.getEventKey()
         if (buffer != null && code != Keyboard.KEY_ESCAPE && code != Keyboard.KEY_F11) {

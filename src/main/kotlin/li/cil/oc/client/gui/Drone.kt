@@ -67,7 +67,7 @@ class Drone(
 
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         powerButton?.toggled = drone.isRunning
-        bufferRenderer.dirty = drone.statusText.lines.withIndex().any { (i, line) ->
+        bufferRenderer.dirty = drone.statusText.lines().withIndex().any { (i, line) ->
             buffer.set(0, i, line, vertical = false)
         }
         super.drawScreen(mouseX, mouseY, dt)
@@ -102,7 +102,7 @@ class Drone(
         RenderState.pushAttrib()
         if (isPointInRegion(power.x, power.y, power.width, power.height, mouseX, mouseY)) {
             val tooltip = mutableListOf<String>()
-            val format = Localization.Computer.Power + ": %d%% (%d/%d)"
+            val format = Localization.Computer.Power() + ": %d%% (%d/%d)"
             tooltip.add(
                 format.format(
                     drone.globalBuffer * 100 / maxOf(drone.globalBufferSize, 1),
@@ -114,7 +114,7 @@ class Drone(
         }
         if (powerButton?.isMouseOver == true) {
             val tooltip = mutableListOf<String>()
-            val lines = if (drone.isRunning) Localization.Computer.TurnOff.lines else Localization.Computer.TurnOn.lines
+            val lines = if (drone.isRunning) Localization.Computer.TurnOff().lines() else Localization.Computer.TurnOn().lines()
             tooltip.addAll(lines.toList())
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }

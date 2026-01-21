@@ -2,16 +2,16 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Driver
 import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.client.Textures
 import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.gui.BufferRenderer
 import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.container
-import li.cil.oc.common.tileentity
-import li.cil.oc.integration.opencomputers
+import li.cil.oc.common.container.Robot as ContainerRobot
+import li.cil.oc.common.tileentity.Robot as TileEntityRobot
+import li.cil.oc.integration.opencomputers.DriverKeyboard
 import li.cil.oc.util.RenderState
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
@@ -24,20 +24,21 @@ import org.lwjgl.opengl.GL11
 import kotlin.math.min
 import kotlin.math.max
 import kotlin.math.round
+import kotlin.math.sign
 
 class Robot(
     playerInventory: InventoryPlayer,
-    val robot: tileentity.Robot
-) : DynamicGuiContainer<container.Robot>(container.Robot(playerInventory, robot)), li.cil.oc.client.gui.traits.InputBuffer {
+    val robot: TileEntityRobot
+) : DynamicGuiContainer<ContainerRobot>(ContainerRobot(playerInventory, robot)), li.cil.oc.client.gui.traits.InputBuffer {
 
     override val buffer: TextBuffer? = robot.components
         .filterNotNull()
-        .filterIsInstance<api.internal.TextBuffer>()
+        .filterIsInstance<TextBuffer>()
         .firstOrNull()
 
     override val hasKeyboard: Boolean = robot.info.components
-        .map { api.Driver.driverFor(it, robot.javaClass) }
-        .contains(opencomputers.DriverKeyboard)
+        .map { Driver.driverFor(it, robot.javaClass) }
+        .contains(DriverKeyboard)
 
     private val withScreenHeight = 256
     private val noScreenHeight = 108
@@ -65,10 +66,10 @@ class Robot(
     private val maxBufferHeight = 140.0
 
     private val bufferRenderWidth: Double
-        get() = min(maxBufferWidth, TextBufferRenderCache.renderer.charRenderWidth * Settings.screenResolutionsByTier(0)._1)
+        get() = (TextBufferRenderCache.renderer.charRenderWidth * Settings.screenResolutionsByTier[0].first).toDouble().coerceAtMost(maxBufferWidth)
 
     private val bufferRenderHeight: Double
-        get() = min(maxBufferHeight, TextBufferRenderCache.renderer.charRenderHeight * Settings.screenResolutionsByTier(0)._2)
+        get() = (TextBufferRenderCache.renderer.charRenderHeight * Settings.screenResolutionsByTier[0].second).toDouble().coerceAtMost(maxBufferHeight)
 
     override val bufferX: Int
         get() = (8 + (maxBufferWidth - bufferRenderWidth) / 2).toInt()
@@ -131,13 +132,13 @@ class Robot(
             BufferRenderer.drawBackground()
             GlStateManager.popMatrix()
             RenderState.makeItBlend()
-            val scaleX = bufferRenderWidth / buf.renderWidth
-            val scaleY = bufferRenderHeight / buf.renderHeight
+            val scaleX = bufferRenderWidth / buf.renderWidth()
+            val scaleY = bufferRenderHeight / buf.renderHeight()
             val scale = min(scaleX, scaleY)
             if (scaleX > scale) {
-                GlStateManager.translate((buf.renderWidth * (scaleX - scale) / 2).toFloat(), 0f, 0f)
+                GlStateManager.translate((buf.renderWidth() * (scaleX - scale) / 2).toFloat(), 0f, 0f)
             } else if (scaleY > scale) {
-                GlStateManager.translate(0f, (buf.renderHeight * (scaleY - scale) / 2).toFloat(), 0f)
+                GlStateManager.translate(0f, (buf.renderHeight() * (scaleY - scale) / 2).toFloat(), 0f)
             }
             GlStateManager.scale(scale, scale, scale)
             GlStateManager.scale(this.scale, this.scale, 1.0)
@@ -150,7 +151,7 @@ class Robot(
         RenderState.pushAttrib()
         if (isPointInRegion(power.x, power.y, power.width, power.height, mouseX, mouseY)) {
             val tooltip = mutableListOf<String>()
-            val format = Localization.Computer.Power + ": %d%% (%d/%d)"
+            val format = Localization.Computer.Power() + ": %d%% (%d/%d)"
             tooltip.add(
                 format.format(
                     ((robot.globalBuffer / robot.globalBufferSize) * 100).toInt(),
@@ -162,7 +163,7 @@ class Robot(
         }
         if (powerButton?.isMouseOver == true) {
             val tooltip = mutableListOf<String>()
-            val lines = if (robot.isRunning) Localization.Computer.TurnOff.lines else Localization.Computer.TurnOn.lines
+            val lines = if (robot.isRunning) Localization.Computer.TurnOff().lines() else Localization.Computer.TurnOn().lines()
             tooltip.addAll(lines.toList())
             copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
         }

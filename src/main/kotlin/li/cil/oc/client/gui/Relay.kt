@@ -72,38 +72,38 @@ class Relay(
         )
 
         fontRenderer.drawString(
-            Localization.Switch.TransferRate,
+            Localization.Switch.TransferRate(),
             14, 20, 0x404040
         )
         fontRenderer.drawString(
-            Localization.Switch.PacketsPerCycle,
+            Localization.Switch.PacketsPerCycle(),
             14, 39, 0x404040
         )
         fontRenderer.drawString(
-            Localization.Switch.QueueSize,
+            Localization.Switch.QueueSize(),
             14, 58, 0x404040
         )
 
         fontRenderer.drawString(
-            format.format(20f / inventoryContainer.relayDelay),
+            format.format(20f / inventoryContainer.relayDelay()),
             108, 20, 0x404040
         )
         fontRenderer.drawString(
-            "${inventoryContainer.packetsPerCycleAvg} / ${inventoryContainer.relayAmount}",
+            "${inventoryContainer.packetsPerCycleAvg()} / ${inventoryContainer.relayAmount()}",
             108, 39,
             thresholdBasedColor(
-                inventoryContainer.packetsPerCycleAvg,
-                kotlin.math.ceil(inventoryContainer.relayAmount / 2f).toInt(),
-                inventoryContainer.relayAmount
+                inventoryContainer.packetsPerCycleAvg(),
+                kotlin.math.ceil(inventoryContainer.relayAmount() / 2f).toInt(),
+                inventoryContainer.relayAmount()
             )
         )
         fontRenderer.drawString(
-            "${inventoryContainer.queueSize} / ${inventoryContainer.maxQueueSize}",
+            "${inventoryContainer.queueSize()} / ${inventoryContainer.maxQueueSize()}",
             108, 58,
             thresholdBasedColor(
-                inventoryContainer.queueSize,
-                inventoryContainer.maxQueueSize / 2,
-                inventoryContainer.maxQueueSize
+                inventoryContainer.queueSize(),
+                inventoryContainer.maxQueueSize() / 2,
+                inventoryContainer.maxQueueSize()
             )
         )
     }

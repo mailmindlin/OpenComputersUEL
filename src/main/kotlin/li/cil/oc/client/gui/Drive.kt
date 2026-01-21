@@ -60,14 +60,14 @@ class Drive(
         unmanagedButton = ImageButton(
             1, guiLeft + 91, guiTop + 11, 74, 18,
             Textures.GUI.ButtonDriveMode,
-            text = Localization.Drive.Unmanaged,
+            text = Localization.Drive.Unmanaged(),
             textColor = 0x608060,
             canToggle = true
         )
         lockedButton = ImageButton(
             2, guiLeft + 11, guiTop + windowHeight - 42, 44, 18,
             Textures.GUI.ButtonDriveMode,
-            text = Localization.Drive.ReadOnlyLock,
+            text = Localization.Drive.ReadOnlyLock(),
             textColor = 0x608060,
             canToggle = true
         )
@@ -84,12 +84,12 @@ class Drive(
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         super.drawScreen(mouseX, mouseY, dt)
         fontRenderer.drawSplitString(
-            Localization.Drive.Warning,
+            Localization.Drive.Warning(),
             guiLeft + 11, guiTop + 37,
             xSize - 20, 0x404040
         )
         fontRenderer.drawSplitString(
-            Localization.Drive.LockWarning,
+            Localization.Drive.LockWarning(),
             guiLeft + 61, guiTop + windowHeight - 48,
             xSize - 68, 0x404040
         )
