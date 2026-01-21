@@ -22,12 +22,12 @@ class Cable : TileEntityBase(), Environment, NotAnalyzable, ImmibisMicroblock, C
     override fun getNode(): Node = node
 
     init {
-        setColor(Color.rgbValues(EnumDyeColor.SILVER))
+        setColor(Color.rgbValues(EnumDyeColor.SILVER).toInt())
     }
 
     fun createItemStack(): ItemStack {
         val stack = ApiItems.get(Constants.BlockName.Cable).createItemStack(1)
-        if (color != Color.rgbValues(EnumDyeColor.SILVER)) {
+        if (color != Color.rgbValues(EnumDyeColor.SILVER).toInt()) {
             ItemColorizer.setColor(stack, color)
         }
         return stack
