@@ -1,7 +1,7 @@
 package li.cil.oc.common.block
 
 import li.cil.oc.common.block.property.PropertyTile
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.NetSplitter as TENetSplitter
 import li.cil.oc.integration.util.Wrench
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
@@ -19,7 +19,7 @@ class NetSplitter : RedstoneAware() {
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
-        return if (state is IExtendedBlockState && tileEntity is tileentity.NetSplitter) {
+        return if (state is IExtendedBlockState && tileEntity is TENetSplitter) {
             state.withProperty(property.PropertyTile.Tile, tileEntity)
         } else state
     }
@@ -30,7 +30,7 @@ class NetSplitter : RedstoneAware() {
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, meta: Int) = tileentity.NetSplitter()
+    override fun createNewTileEntity(world: World, meta: Int) = TENetSplitter()
 
     // ----------------------------------------------------------------------- //
 
@@ -39,7 +39,7 @@ class NetSplitter : RedstoneAware() {
         if (Wrench.holdsApplicableWrench(player, pos)) {
             val sideToToggle = if (player.isSneaking) side.opposite else side
             val tileEntity = world.getTileEntity(pos)
-            if (tileEntity is tileentity.NetSplitter) {
+            if (tileEntity is TENetSplitter) {
                 if (!world.isRemote) {
                     val oldValue = tileEntity.openSides(sideToToggle.ordinal)
                     tileEntity.setSideOpen(sideToToggle, !oldValue)

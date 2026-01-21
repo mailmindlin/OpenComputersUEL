@@ -1,6 +1,6 @@
 package li.cil.oc.client.renderer.markdown
 
-import li.cil.oc.api
+import li.cil.oc.api.Manual
 import li.cil.oc.client.renderer.markdown.segment.*
 import li.cil.oc.util.RenderState
 import net.minecraft.client.Minecraft
@@ -160,7 +160,7 @@ object Document {
 
     private fun imageSegment(s: Segment, m: MatchResult): Segment {
         return try {
-            val renderer = api.Manual.imageFor(m.groupValues[2])
+            val renderer = Manual.imageFor(m.groupValues[2])
             if (renderer != null) {
                 RenderSegment(s, m.groupValues[1], renderer)
             } else {

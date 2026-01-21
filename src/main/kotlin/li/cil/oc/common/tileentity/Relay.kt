@@ -5,8 +5,9 @@ import dan200.computercraft.api.peripheral.IComputerAccess
 import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Driver
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
@@ -21,8 +22,8 @@ import li.cil.oc.api.network.WirelessEndpoint
 import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.common.item
 import li.cil.oc.common.item.Delegator
+import li.cil.oc.common.Memory
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.opencomputers.DriverLinkedCard
 import li.cil.oc.server.PacketSender
@@ -37,9 +38,9 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
 class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.PowerAcceptor, Analyzable, WirelessEndpoint, QuantumNetwork.QuantumNode {
-    val WirelessNetworkCardTier1: ItemInfo by lazy { api.Items.get(Constants.ItemName.WirelessNetworkCardTier1) }
-    val WirelessNetworkCardTier2: ItemInfo by lazy { api.Items.get(Constants.ItemName.WirelessNetworkCardTier2) }
-    val LinkedCard: ItemInfo by lazy { api.Items.get(Constants.ItemName.LinkedCard) }
+    val WirelessNetworkCardTier1: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier1) }
+    val WirelessNetworkCardTier2: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier2) }
+    val LinkedCard: ItemInfo by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }
 
     @JvmField
     var strength: Double = maxWirelessRange
@@ -66,7 +67,7 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
 
     @JvmField
     val componentNodes: Array<Component> = Array(6) {
-        api.Network.newNode(this, Visibility.Network)
+        ApiNetwork.newNode(this, Visibility.Network)
             .withComponent("relay")
             .create()
     }
@@ -184,7 +185,7 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
         if (isWirelessEnabled && strength > 0 && (sourceSide != null || isRepeater)) {
             val cost = wirelessCostPerRange
             if (tryChangeBuffer(-strength * cost)) {
-                api.Network.sendWirelessPacket(this, strength, packet)
+                ApiNetwork.sendWirelessPacket(this, strength, packet)
             }
         }
 
@@ -203,14 +204,14 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Plug): Connector = api.Network.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Plug): Connector = ApiNetwork.newNode(plug, Visibility.Network)
         .withConnector(Math.round(Settings.get.bufferAccessPoint).toDouble())
         .create()
 
     override fun onPlugConnect(plug: Plug, node: Node) {
         super.onPlugConnect(plug, node)
         if (node == plug.node) {
-            api.Network.joinWirelessNetwork(this)
+            ApiNetwork.joinWirelessNetwork(this)
         }
         if (plug.isPrimary)
             plug.node.connect(componentNodes[plug.side.ordinal])
@@ -221,7 +222,7 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
     override fun onPlugDisconnect(plug: Plug, node: Node) {
         super.onPlugDisconnect(plug, node)
         if (node == plug.node) {
-            api.Network.leaveWirelessNetwork(this)
+            ApiNetwork.leaveWirelessNetwork(this)
         }
         if (plug.isPrimary && node != plug.node)
             plug.node.connect(componentNodes[plug.side.ordinal])
@@ -244,7 +245,7 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
             }
             driver != null && driver.slot(stack) == Slot.Memory -> {
                 relayAmount = Math.max(1, relayBaseAmount + (Delegator.subItem(stack)?.let { subItem ->
-                    if (subItem is item.Memory) (subItem.tier + 1) * relayAmountPerUpgrade
+                    if (subItem is Memory) (subItem.tier + 1) * relayAmountPerUpgrade
                     else (driver.tier(stack) + 1) * (relayAmountPerUpgrade * 2)
                 } ?: (driver.tier(stack) + 1) * (relayAmountPerUpgrade * 2)))
             }
@@ -252,7 +253,7 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
                 maxQueueSize = Math.max(1, queueBaseSize + (driver.tier(stack) + 1) * queueSizePerUpgrade)
             }
             driver != null && driver.slot(stack) == Slot.Card -> {
-                val descriptor = api.Items.get(stack)
+                val descriptor = ApiItems.get(stack)
                 if (descriptor == WirelessNetworkCardTier1 || descriptor == WirelessNetworkCardTier2) {
                     wirelessTier = if (descriptor == WirelessNetworkCardTier1) Tier.One else Tier.Two
                 }
@@ -290,9 +291,9 @@ class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.
         val provided = InventorySlots.relay[slot]
         val tierSatisfied = driver.slot(stack) == provided.slot && driver.tier(stack) <= provided.tier
         val cardTypeSatisfied = if (provided.slot == Slot.Card) {
-            api.Items.get(stack) == WirelessNetworkCardTier1 ||
-                api.Items.get(stack) == WirelessNetworkCardTier2 ||
-                api.Items.get(stack) == LinkedCard
+            ApiItems.get(stack) == WirelessNetworkCardTier1 ||
+                ApiItems.get(stack) == WirelessNetworkCardTier2 ||
+                ApiItems.get(stack) == LinkedCard
         } else true
         return tierSatisfied && cardTypeSatisfied
     }

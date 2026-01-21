@@ -3,8 +3,8 @@ package li.cil.oc.client.gui
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.container
-import li.cil.oc.common.tileentity.Rack as TERack
+import li.cil.oc.common.container.Rack as ContainerRack
+import li.cil.oc.common.tileentity.Rack as TileEntityRack
 import li.cil.oc.util.RenderState
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
@@ -14,8 +14,8 @@ import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.util.EnumFacing
 import org.lwjgl.opengl.GL11
 
-class Rack(playerInventory: InventoryPlayer, val rack: TERack) :
-    DynamicGuiContainer<container.Rack>(container.Rack(playerInventory, rack)) {
+class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
+    DynamicGuiContainer<ContainerRack>(ContainerRack(playerInventory, rack)) {
 
     init {
         ySize = 210

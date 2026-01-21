@@ -1,9 +1,9 @@
 package li.cil.oc.common.tileentity
 
 import java.util.UUID
-import li.cil.oc.api
-import li.cil.oc.api.internal
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.internal.MultiTank
+import li.cil.oc.api.internal.Robot as InternalRobot
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -31,7 +31,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
 import net.minecraftforge.fluids.capability.IFluidTankProperties
 
-class RobotProxy(val robot: Robot = Robot()) : TileEntityBase(), traits.Computer(), traits.PowerInformation, traits.RotatableTile, ISidedInventory, IFluidHandler, internal.Robot {
+class RobotProxy(val robot: Robot = Robot()) : TileEntityBase(), traits.Computer(), traits.PowerInformation, traits.RotatableTile, ISidedInventory, IFluidHandler, InternalRobot {
 
     // ----------------------------------------------------------------------- //
 
@@ -41,7 +41,7 @@ class RobotProxy(val robot: Robot = Robot()) : TileEntityBase(), traits.Computer
         return super.getCapability(capability, facing)
     }
 
-    override val node: Component = api.Network.newNode(this, Visibility.Network)
+    override val node: Component = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("robot", Visibility.Neighbors)
         .create()
 

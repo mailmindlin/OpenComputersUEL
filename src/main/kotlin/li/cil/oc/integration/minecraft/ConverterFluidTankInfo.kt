@@ -1,9 +1,9 @@
 package li.cil.oc.integration.minecraft
 
-import li.cil.oc.api
+import li.cil.oc.api.driver.Converter
 import net.minecraftforge.fluids.FluidTankInfo
 
-object ConverterFluidTankInfo : api.driver.Converter {
+object ConverterFluidTankInfo : Converter {
     override fun convert(value: Any?, output: MutableMap<Any, Any>) {
         when (value) {
             is FluidTankInfo -> {

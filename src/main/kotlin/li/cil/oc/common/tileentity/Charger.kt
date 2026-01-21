@@ -3,8 +3,9 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Driver
+import li.cil.oc.Nanomachines
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -31,7 +32,7 @@ import java.util.EnumSet
 
 class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, traits.RedstoneAware, traits.Rotatable, traits.ComponentInventory, traits.Tickable, Analyzable, traits.StateAware, DeviceInfo {
     @JvmField
-    val node: Connector = api.Network.newNode(this, Visibility.None)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
         .create()
 
@@ -76,10 +77,10 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
         // TODO Refine to only report working if present robots/drones actually *need* power.
         return when {
             connectors.isNotEmpty() -> {
-                if (hasPower) EnumSet.of(api.util.StateAware.State.IsWorking)
-                else EnumSet.of(api.util.StateAware.State.CanWork)
+                if (hasPower) EnumSet.of(StateAware.State.IsWorking)
+                else EnumSet.of(StateAware.State.CanWork)
             }
-            else -> EnumSet.noneOf(api.util.StateAware.State::class.java)
+            else -> EnumSet.noneOf(StateAware.State::class.java)
         }
     }
 
@@ -271,7 +272,7 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
 
         val players = world.getEntitiesWithinAABB(EntityPlayer::class.java, bounds)
 
-        val chargeablePlayers = players.filter { api.Nanomachines.hasController(it) }.map { PlayerChargeable(it) }
+        val chargeablePlayers = players.filter { Nanomachines.hasController(it) }.map { PlayerChargeable(it) }
 
         // Only update list when we have to, keeps pointless block updates to a minimum.
         val newConnectors = robots + drones + chargeablePlayers
@@ -332,7 +333,7 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
             get() = Vec3d(player.posX, player.posY, player.posZ)
 
         override fun changeBuffer(delta: Double): Double {
-            val controller = api.Nanomachines.getController(player)
+            val controller = Nanomachines.getController(player)
             return if (controller is Controller) {
                 controller.changeBuffer(delta)
             } else {

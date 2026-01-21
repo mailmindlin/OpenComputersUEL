@@ -2,17 +2,24 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.*
 import li.cil.oc.api.Driver
-import li.cil.oc.api.driver.item
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.item.Container
+import li.cil.oc.api.driver.item.Inventory as DriverInventory
 import li.cil.oc.api.event.RobotAnalyzeEvent
 import li.cil.oc.api.event.RobotMoveEvent
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Keyboard as InternalKeyboard
 import li.cil.oc.api.internal.MultiTank
+import li.cil.oc.api.internal.Robot as InternalRobot
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 import li.cil.oc.api.network.*
-import li.cil.oc.client.gui
+import li.cil.oc.client.gui.Robot as RobotGui
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.Slot
+import li.cil.oc.common.Sound
 import li.cil.oc.common.Tier
+import li.cil.oc.common.block.RobotAfterimage
+import li.cil.oc.common.block.RobotProxy as RobotProxyBlock
 import li.cil.oc.common.inventory.InventoryProxy
 import li.cil.oc.common.inventory.InventorySelection
 import li.cil.oc.common.inventory.TankSelection
@@ -23,7 +30,8 @@ import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.integration.opencomputers.DriverScreen
 import li.cil.oc.server.agent
 import li.cil.oc.server.agent.Player
-import li.cil.oc.server.component
+import li.cil.oc.server.component.GraphicsCard
+import li.cil.oc.server.component.Robot as RobotComponent
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedNBT.extendedNBT
@@ -62,7 +70,7 @@ import java.util.UUID
 // robot moves we only create a new proxy tile entity, hook the instance of this
 // class that was held by the old proxy to it and can then safely forget the
 // old proxy, which will be cleaned up by Minecraft like any other tile entity.
-class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidHandler, internal.Robot, InventorySelection, TankSelection {
+class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidHandler, InternalRobot, InventorySelection, TankSelection {
     @JvmField
     var proxy: RobotProxy? = null
 
@@ -70,7 +78,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
     val info = RobotData()
 
     @JvmField
-    val bot: component.Robot? = if (isServer) component.Robot(this) else null
+    val bot: RobotComponent? = if (isServer) RobotComponent(this) else null
 
     init {
         if (isServer) {
@@ -233,8 +241,8 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
             if (event.isCanceled) return false
         }
 
-        val blockRobotProxy = api.Items.get(Constants.BlockName.Robot).block() as common.block.RobotProxy
-        val blockRobotAfterImage = api.Items.get(Constants.BlockName.RobotAfterimage).block() as common.block.RobotAfterimage
+        val blockRobotProxy = ApiItems.get(Constants.BlockName.Robot).block() as RobotProxyBlock
+        val blockRobotAfterImage = ApiItems.get(Constants.BlockName.RobotAfterimage).block() as RobotAfterimage
         val wasAir = world.isAirBlock(newPosition)
         val state = world.getBlockState(newPosition)
         val block = state.block
@@ -410,7 +418,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
         if (isServer) {
             // Ensure we have a node address, because the proxy needs this to initialize
             // its own node to the same address ours has.
-            api.Network.joinNewNetwork(node)
+            ApiNetwork.joinNewNetwork(node)
         }
     }
 
@@ -418,7 +426,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
         super.dispose()
         if (isClient) {
             val screen = Minecraft.getMinecraft().currentScreen
-            if (screen is gui.Robot && screen.robot == this) {
+            if (screen is RobotGui && screen.robot == this) {
                 Minecraft.getMinecraft().displayGuiScreen(null)
             }
         } else EventHandler.onRobotStopped(this)
@@ -579,7 +587,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
                 ServerPacketSender.sendRobotInventory(this, slot, stack)
             }
             if (isFloppySlot(slot)) {
-                common.Sound.playDiskInsert(this)
+                Sound.playDiskInsert(this)
             }
             if (isComponentSlot(slot, stack)) {
                 super.onItemAdded(slot, stack)
@@ -602,7 +610,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
                 ServerPacketSender.sendRobotInventory(this, slot, ItemStack.EMPTY)
             }
             if (isFloppySlot(slot)) {
-                common.Sound.playDiskEject(this)
+                Sound.playDiskEject(this)
             }
             if (isInventorySlot(slot)) {
                 machine.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
@@ -623,7 +631,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
             updateInventorySize()
         } else if (isClient) {
             val screen = Minecraft.getMinecraft().currentScreen
-            if (screen is gui.Robot && screen.robot == this) {
+            if (screen is RobotGui && screen.robot == this) {
                 Minecraft.getMinecraft().displayGuiScreen(null)
             }
         }
@@ -635,18 +643,18 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
         if (node != null) {
             val host = node.host()
             when (host) {
-                is api.internal.TextBuffer -> {
+                is InternalTextBuffer -> {
                     for (slot in componentSlots) {
                         when (val component = getComponentInSlot(slot)) {
-                            is api.internal.Keyboard -> host.node().connect(component.node())
-                            is li.cil.oc.server.component.GraphicsCard -> host.node().connect(component.node())
+                            is InternalKeyboard -> host.node().connect(component.node())
+                            is GraphicsCard -> host.node().connect(component.node())
                         }
                     }
                 }
-                is api.internal.Keyboard -> {
+                is InternalKeyboard -> {
                     for (slot in componentSlots) {
                         when (val component = getComponentInSlot(slot)) {
-                            is api.internal.TextBuffer -> host.node().connect(component.node())
+                            is InternalTextBuffer -> host.node().connect(component.node())
                         }
                     }
                 }
@@ -695,7 +703,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
         val stack = getStackInSlot(slot)
         acc + if (!stack.isEmpty) {
             val driver = Driver.driverFor(stack, javaClass)
-            if (driver is item.Inventory) driver.inventoryCapacity(stack) else 0
+            if (driver is DriverInventory) driver.inventoryCapacity(stack) else 0
         } else 0
     })
 

@@ -5,7 +5,8 @@ import java.io.File
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.FileSystem as ApiFileSystem
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import net.minecraft.item.ItemStack
@@ -16,7 +17,7 @@ import net.minecraftforge.common.DimensionManager
 // a factory system that allows third-party mods to register loot disks.
 object DriverLootDisk : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.Floppy)) &&
+    ApiItems.get(Constants.ItemName.Floppy)) &&
     (stack.hasTagCompound && stack.tagCompound.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
@@ -25,17 +26,17 @@ object DriverLootDisk : Item() {
       val savePath = File(DimensionManager.getCurrentSaveRootDirectory(), Settings.savePath + lootPath)
       val fs =
         if (savePath.exists() && savePath.isDirectory) {
-          api.FileSystem.fromSaveDirectory(lootPath, 0, false)
+          ApiFileSystem.fromSaveDirectory(lootPath, 0, false)
         }
         else {
-          api.FileSystem.fromClass(OpenComputers::class.java, Settings.resourceDomain, lootPath)
+          ApiFileSystem.fromClass(OpenComputers::class.java, Settings.resourceDomain, lootPath)
         }
       val label =
         if (dataTag(stack).hasKey(Settings.namespace + "fs.label")) {
           dataTag(stack).getString(Settings.namespace + "fs.label")
         }
         else null
-      api.FileSystem.asManagedEnvironment(fs, label, host, Settings.resourceDomain + ":floppy_access")
+      ApiFileSystem.asManagedEnvironment(fs, label, host, Settings.resourceDomain + ":floppy_access")
     }
     else null
 

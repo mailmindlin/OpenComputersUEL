@@ -1,7 +1,7 @@
 package li.cil.oc.common.nanomachines.provider
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Nanomachines as ApiNanomachines
 import li.cil.oc.api.nanomachines.Behavior
 import li.cil.oc.api.prefab.AbstractBehavior
 import net.minecraft.entity.item.EntityItem
@@ -20,7 +20,7 @@ object MagnetProvider : ScalaProvider("9324d5ec-71f1-41c2-b51c-406e527668fc") {
         override fun update() {
             val world = player.entityWorld
             if (!world.isRemote) {
-                val actualRange = Settings.get.nanomachineMagnetRange * api.Nanomachines.getController(player).getInputCount(this)
+                val actualRange = Settings.get.nanomachineMagnetRange * ApiNanomachines.getController(player).getInputCount(this)
                 val items = world.getEntitiesWithinAABB(EntityItem::class.java, player.entityBoundingBox.grow(actualRange.toDouble(), actualRange.toDouble(), actualRange.toDouble()))
                 for (item in items) {
                     if (!item.cannotPickup() && !item.item.isEmpty) {

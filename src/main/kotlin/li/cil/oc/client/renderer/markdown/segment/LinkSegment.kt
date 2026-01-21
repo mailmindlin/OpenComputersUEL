@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer.markdown.segment
 
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.ApiManual as ApiManual
 import li.cil.oc.client.Manual
 import li.cil.oc.client.renderer.markdown.MarkupFormat
 import net.minecraft.client.Minecraft
@@ -16,7 +16,7 @@ internal class LinkSegment(parent: Segment?, text: String, val url: String) : Te
     private val fadeTime = 500
     private val isLinkValid by lazy {
         (url.startsWith("http://") || url.startsWith("https://")) ||
-            api.Manual.contentFor(Manual.makeRelative(url, Manual.history.top.path)) != null
+            ApiManual.contentFor(Manual.makeRelative(url, Manual.history.top.path)) != null
     }
 
     private var lastHovered = System.currentTimeMillis() - fadeTime

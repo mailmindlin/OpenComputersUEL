@@ -24,7 +24,7 @@ import li.cil.oc.server.machine.luac.NativeLua53Architecture
 import li.cil.oc.server.machine.luac.NativeLua54Architecture
 import li.cil.oc.server.machine.luaj.LuaJLuaArchitecture
 import li.cil.oc.server.nanomachines.Nanomachines
-import li.cil.oc.server.network.Network
+import li.cil.oc.server.network.NetworkObject
 import net.minecraft.block.Block
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
@@ -81,7 +81,7 @@ open class Proxy {
         api.API.items = Items
         api.API.machine = Machine
         api.API.nanomachines = Nanomachines
-        api.API.network = Network
+        api.API.network = NetworkObject
 
         api.API.config = Settings.get.config
 

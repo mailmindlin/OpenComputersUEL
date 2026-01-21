@@ -1,23 +1,23 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.integration.util.BundledRedstone
-import li.cil.oc.server.component
-import li.cil.oc.server.component.RedstoneVanilla
+import li.cil.oc.server.RedstoneComponent as RedstoneComponent
+import li.cil.oc.server.RedstoneComponentVanilla
 import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.nbt.NBTTagCompound
 
 class Redstone : TileEntityBase(), traits.Environment, traits.BundledRedstoneAware, traits.Tickable {
     @JvmField
     val instance: RedstoneVanilla = if (BundledRedstone.isAvailable()) {
-        component.Redstone.Bundled(this)
+        RedstoneComponent.Bundled(this)
     } else {
-        component.Redstone.Vanilla(this)
+        RedstoneComponent.Vanilla(this)
     }
 
     init {
@@ -31,7 +31,7 @@ class Redstone : TileEntityBase(), traits.Environment, traits.BundledRedstoneAwa
     val dummyNode: Node? = if (node != null) {
         node.setVisibility(Visibility.Network)
         _isOutputEnabled = true
-        api.Network.newNode(this, Visibility.None).create()
+        ApiNetwork.newNode(this, Visibility.None).create()
     } else {
         null
     }

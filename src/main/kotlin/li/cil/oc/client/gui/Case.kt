@@ -3,23 +3,23 @@ package li.cil.oc.client.gui
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.container
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.container.Case as ContainerCase
+import li.cil.oc.common.tileentity.Case as TileEntityCase
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.player.InventoryPlayer
 
-class Case(playerInventory: InventoryPlayer, val computer: tileentity.Case) : DynamicGuiContainer(container.Case(playerInventory, computer)) {
+class Case(playerInventory: InventoryPlayer, val computer: TileEntityCase) : DynamicGuiContainer<ContainerCase>(ContainerCase(playerInventory, computer)) {
   protected var powerButton: ImageButton? = null
 
   override fun actionPerformed(button: GuiButton) {
     if (button.id == 0) {
-      ClientPacketSender.sendComputerPower(computer, !computer.isRunning)
+      ClientPacketSender.sendComputerPower(computer, !computer.isRunning())
     }
   }
 
   override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
-    powerButton?.toggled = computer.isRunning
+    powerButton?.toggled = computer.isRunning()
     super.drawScreen(mouseX, mouseY, dt)
   }
 
@@ -36,7 +36,7 @@ class Case(playerInventory: InventoryPlayer, val computer: tileentity.Case) : Dy
       8, 6, 0x404040)
     if (powerButton?.isMouseOver == true) {
       val tooltip = java.util.ArrayList<String>()
-      tooltip.addAll(if (computer.isRunning) Localization.Computer.TurnOff.lines.toList() else Localization.Computer.TurnOn.lines.toList())
+      tooltip.addAll(if (computer.isRunning()) Localization.Computer.TurnOff().lines().toList() else Localization.Computer.TurnOn().lines().toList())
       copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
     }
   }

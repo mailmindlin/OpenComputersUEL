@@ -13,7 +13,7 @@ import li.cil.oc.api.event.RobotUsedToolEvent
 import li.cil.oc.api.internal.Agent
 import li.cil.oc.api.internal.Robot
 import li.cil.oc.api.network.Node
-import li.cil.oc.server.component
+import li.cil.oc.server.UpgradeExperience
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
@@ -84,7 +84,7 @@ object ExperienceUpgradeHandler {
                 var acc = 0
                 for (index in 0 until agent.sizeInventory) {
                     val component = agent.getComponentInSlot(index)
-                    if (component is component.UpgradeExperience) {
+                    if (component is UpgradeExperience) {
                         acc += component.level
                     }
                 }
@@ -119,10 +119,10 @@ object ExperienceUpgradeHandler {
         foreachUpgrade(agent.machine().node()) { upgrade -> upgrade.addExperience(amount) }
     }
 
-    private fun foreachUpgrade(node: Node, f: (component.UpgradeExperience) -> Unit) {
+    private fun foreachUpgrade(node: Node, f: (UpgradeExperience) -> Unit) {
         node.reachableNodes().forEach { n ->
             val host = n.host()
-            if (host is component.UpgradeExperience) {
+            if (host is UpgradeExperience) {
                 f(host)
             }
         }

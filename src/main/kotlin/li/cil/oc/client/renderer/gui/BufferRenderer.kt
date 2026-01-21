@@ -1,6 +1,6 @@
 package li.cil.oc.client.renderer.gui
 
-import li.cil.oc.api
+import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.client.Textures
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GLAllocation
@@ -99,7 +99,7 @@ object BufferRenderer {
         }
     }
 
-    fun drawText(screen: api.internal.TextBuffer): Boolean {
+    fun drawText(screen: TextBuffer): Boolean {
         return if (textureManager != null) {
             RenderState.pushAttrib()
             GlStateManager.depthMask(false)

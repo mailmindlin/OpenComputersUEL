@@ -2,7 +2,7 @@ package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
@@ -15,7 +15,7 @@ import net.minecraftforge.common.util.Constants.NBT
 
 object DriverTablet : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.Tablet))
+    ApiItems.get(Constants.ItemName.Tablet))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world != null && host.world.isRemote) null

@@ -2,7 +2,7 @@ package li.cil.oc.common.item.traits
 
 import ic2.api.item.IElectricItemManager
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.driver.item.Chargeable as ApiChargeable
 import li.cil.oc.common.asm.Injectable
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.ic2.ElectricItemManager
@@ -20,7 +20,7 @@ import net.minecraftforge.energy.IEnergyStorage
 @Injectable.InterfaceList(
     Injectable.Interface(value = "ic2.api.item.ISpecialElectricItem", modid = Mods.IDs.IndustrialCraft2)
 )
-interface Chargeable : api.driver.item.Chargeable {
+interface Chargeable : ApiChargeable {
 
     fun maxCharge(stack: ItemStack): Double
 

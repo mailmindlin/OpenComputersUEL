@@ -1,7 +1,7 @@
 package li.cil.oc.integration.minecraft
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.driver.Converter
 import li.cil.oc.integration.Mods
 import li.cil.oc.util.ExtendedNBT.extendNBTTagCompound
 import li.cil.oc.util.ItemUtils
@@ -14,7 +14,7 @@ import net.minecraft.nbt.NBTTagString
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.oredict.OreDictionary
 
-object ConverterItemStack : api.driver.Converter {
+object ConverterItemStack : Converter {
     fun getTagValue(tag: NBTTagCompound, key: String): Any? = when (tag.getTagId(key)) {
         NBT.TAG_INT -> tag.getInteger(key)
         NBT.TAG_STRING -> tag.getString(key)

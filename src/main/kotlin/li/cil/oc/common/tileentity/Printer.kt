@@ -2,7 +2,7 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -29,7 +29,7 @@ import java.util.EnumSet
 
 class Printer : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rotatable, SidedEnvironment, traits.StateAware, traits.Tickable, ISidedInventory, DeviceInfo {
     @JvmField
-    val node: ComponentConnector = api.Network.newNode(this, Visibility.Network)
+    val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("printer3d")
         .withConnector(Settings.get.bufferConverter)
         .create()
@@ -82,9 +82,9 @@ class Printer : TileEntityBase(), traits.Environment, traits.Inventory, traits.R
 
     override fun getCurrentState(): EnumSet<StateAware.State> {
         return when {
-            isPrinting -> EnumSet.of(api.util.StateAware.State.IsWorking)
-            canPrint -> EnumSet.of(api.util.StateAware.State.CanWork)
-            else -> EnumSet.noneOf(api.util.StateAware.State::class.java)
+            isPrinting -> EnumSet.of(StateAware.State.IsWorking)
+            canPrint -> EnumSet.of(StateAware.State.CanWork)
+            else -> EnumSet.noneOf(StateAware.State::class.java)
         }
     }
 

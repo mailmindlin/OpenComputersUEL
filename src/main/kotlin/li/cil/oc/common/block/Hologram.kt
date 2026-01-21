@@ -1,6 +1,6 @@
 package li.cil.oc.common.block
 
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Hologram as TEHologram
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.Tooltip
 import net.minecraft.block.state.IBlockState
@@ -44,5 +44,5 @@ class Hologram(val tier: Int) : SimpleBlock() {
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Hologram(tier)
+    override fun createNewTileEntity(world: World, metadata: Int) = TEHologram(tier)
 }

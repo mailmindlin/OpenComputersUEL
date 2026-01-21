@@ -1,7 +1,7 @@
 package li.cil.oc.common.item.traits
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.DriverItem
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.util.BlockPosition
@@ -69,7 +69,7 @@ interface Delegate {
     fun rarity(stack: ItemStack): EnumRarity = Rarity.byTier(tierFromDriver(stack))
 
     fun tierFromDriver(stack: ItemStack): Int {
-        val driver = api.Driver.driverFor(stack)
+        val driver = Driver.driverFor(stack)
         return if (driver is DriverItem) driver.tier(stack) else 0
     }
 

@@ -1,7 +1,7 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -17,7 +17,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 
 class Waypoint: TileEntityBase(), traits.Environment(), traits.Rotatable, traits.RedstoneAware, traits.Tickable {
     @JvmField
-    val node: Node = api.Network.newNode(this, Visibility.Network)
+    val node: Node = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("waypoint")
         .create()
 

@@ -2,7 +2,8 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
-import li.cil.oc.common
+import li.cil.oc.CommonSlot as CommonSlot
+import li.cil.oc.Tier
 import li.cil.oc.common.container.ComponentSlot
 import li.cil.oc.common.container.Player
 import li.cil.oc.integration.Mods
@@ -87,7 +88,7 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
     protected open fun drawSlotInventory(slot: Slot) {
         GlStateManager.enableBlend()
         when {
-            slot is ComponentSlot && (slot.slot == common.Slot.None || slot.tier == common.Tier.None) -> {
+            slot is ComponentSlot && (slot.slot == CommonSlot.None || slot.tier == Tier.None) -> {
                 if (!slot.hasStack && slot.xPos >= 0 && slot.yPos >= 0 && slot.tierIcon != null) {
                     drawDisabledSlot(slot)
                 }
@@ -118,7 +119,7 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
     protected open fun drawSlotHighlight(slot: Slot) {
         if (mc.player.inventory.itemStack.isEmpty) {
             when {
-                slot is ComponentSlot && (slot.slot == common.Slot.None || slot.tier == common.Tier.None) -> {
+                slot is ComponentSlot && (slot.slot == CommonSlot.None || slot.tier == Tier.None) -> {
                     // Ignore
                 }
                 else -> {
@@ -150,7 +151,7 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
     }
 
     private fun isSelectiveSlot(slot: Slot): Boolean = when (slot) {
-        is ComponentSlot -> slot.slot != common.Slot.Any && slot.slot != common.Slot.Tool
+        is ComponentSlot -> slot.slot != CommonSlot.Any && slot.slot != CommonSlot.Tool
         else -> false
     }
 

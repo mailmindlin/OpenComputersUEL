@@ -1,7 +1,7 @@
 package li.cil.oc.integration.tis3d
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network
 import li.cil.oc.api.internal.Adapter
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
@@ -55,7 +55,7 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
 
         // -----------------------------------------------------------------------
 
-        val node: Node = api.Network.newNode(this, Visibility.Network).withComponent("serial_port").create()
+        val node: Node = Network.newNode(this, Visibility.Network).withComponent("serial_port").create()
 
         override fun onMessage(message: Message) {}
 

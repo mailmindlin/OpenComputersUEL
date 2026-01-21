@@ -1,6 +1,6 @@
 package li.cil.oc.common.block
 
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Redstone as TERedstone
 import li.cil.oc.integration.Mods
 import li.cil.oc.util.Tooltip
 import net.minecraft.client.util.ITooltipFlag
@@ -21,5 +21,5 @@ class Redstone : RedstoneAware() {
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Redstone()
+    override fun createNewTileEntity(world: World, metadata: Int) = TERedstone()
 }

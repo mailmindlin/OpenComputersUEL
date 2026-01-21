@@ -6,8 +6,10 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -20,7 +22,8 @@ import li.cil.oc.client.renderer.font.TextBufferRenderData
 import li.cil.oc.client.ComponentTracker as ClientComponentTracker
 import li.cil.oc.client.PacketSender as ClientPacketSender
 import li.cil.oc.common.Tier
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Screen as TEScreen
+import li.cil.oc.common.tileentity.Computer as TEComputer
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.common.component.traits.TextBufferProxy
 import li.cil.oc.common.component.traits.VideoRamRasterizer
@@ -31,7 +34,6 @@ import li.cil.oc.common.PacketType
 import li.cil.oc.server.component.Keyboard
 import li.cil.oc.server.ComponentTracker as ServerComponentTracker
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.SideTracker
@@ -48,7 +50,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 
 open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(), TextBufferProxy, VideoRamRasterizer, DeviceInfo {
 
-    override val node: Node = api.Network.newNode(this, Visibility.Network)
+    override val node: Node = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("screen")
         .withConnector()
         .create()
@@ -215,8 +217,8 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     fun getKeyboards(context: Context, args: Arguments): Array<Any?> {
         context.pause(0.25)
         return when (host) {
-            is tileentity.Screen -> {
-                arrayOf((host as tileentity.Screen).screens.mapNotNull { it.node }
+            is TEScreen -> {
+                arrayOf((host as TEScreen).screens.mapNotNull { it.node }
                     .flatMap { it.neighbors().filter { n -> n.host() is Keyboard }.map { n -> n.address() } }
                     .toTypedArray())
             }
@@ -322,13 +324,13 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override fun getViewportHeight(): Int = viewport.second
 
-    override fun setMaximumColorDepth(depth: api.internal.TextBuffer.ColorDepth) {
+    override fun setMaximumColorDepth(depth: InternalTextBuffer.ColorDepth) {
         maxDepth = depth
     }
 
-    override fun getMaximumColorDepth(): api.internal.TextBuffer.ColorDepth = maxDepth
+    override fun getMaximumColorDepth(): InternalTextBuffer.ColorDepth = maxDepth
 
-    override fun setColorDepth(depth: api.internal.TextBuffer.ColorDepth): Boolean {
+    override fun setColorDepth(depth: InternalTextBuffer.ColorDepth): Boolean {
         val colorDepthChanged: Boolean = super.setColorDepth(depth)
         // Always send to clients, their state might be dirty.
         proxy.onBufferDepthChange(depth)
@@ -509,7 +511,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         if (node.network() != null) {
             for (networkNode in node.network().nodes()) {
                 val host = networkNode.host()
-                if (host is tileentity.traits.Computer) {
+                if (host is TEComputer) {
                     if (!host.machine.isPaused) {
                         host.machine.pause(0.1)
                     }
@@ -584,7 +586,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             owner.relativeLitArea = -1.0
         }
 
-        abstract fun onBufferDepthChange(depth: api.internal.TextBuffer.ColorDepth)
+        abstract fun onBufferDepthChange(depth: InternalTextBuffer.ColorDepth)
 
         open fun onBufferFill(col: Int, row: Int, w: Int, h: Int, c: Int) {
             owner.relativeLitArea = -1.0
@@ -674,7 +676,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             markDirty()
         }
 
-        override fun onBufferDepthChange(depth: api.internal.TextBuffer.ColorDepth) {
+        override fun onBufferDepthChange(depth: InternalTextBuffer.ColorDepth) {
             markDirty()
         }
 
@@ -754,11 +756,11 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             ClientPacketSender.sendCopyToAnalyzer(nodeAddress, line)
         }
 
-        private val Debugger by lazy { api.Items.get(Constants.ItemName.Debugger) }
+        private val Debugger by lazy { ApiItems.get(Constants.ItemName.Debugger) }
 
         private fun debug(message: String) {
             val mc = Minecraft.getMinecraft()
-            if (mc != null && mc.player != null && api.Items.get(mc.player.heldItemMainhand) == Debugger) {
+            if (mc != null && mc.player != null && ApiItems.get(mc.player.heldItemMainhand) == Debugger) {
                 OpenComputers.log.info("[NETWORK DEBUGGER] Sending packet to node $nodeAddress: $message")
             }
         }
@@ -780,7 +782,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             }
         }
 
-        override fun onBufferDepthChange(depth: api.internal.TextBuffer.ColorDepth) {
+        override fun onBufferDepthChange(depth: InternalTextBuffer.ColorDepth) {
             owner.host.markChanged()
             synchronized(owner) {
                 ServerPacketSender.appendTextBufferDepthChange(owner.pendingCommands, depth)
@@ -957,7 +959,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
         private fun sendToKeyboards(name: String, vararg values: Any?) {
             when (val host = owner.host) {
-                is tileentity.Screen -> {
+                is TEScreen -> {
                     host.screens.forEach { it.node?.sendToNeighbors(name, *values) }
                 }
                 else -> {

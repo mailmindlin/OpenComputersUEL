@@ -1,12 +1,12 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.api.network.Node
-import li.cil.oc.server.component
+import li.cil.oc.server.component.MotionSensor as MotionSensorComponent
 import net.minecraft.nbt.NBTTagCompound
 
 class MotionSensor : TileEntityBase(), traits.Environment, traits.Tickable {
     @JvmField
-    val motionSensor = component.MotionSensor(this)
+    val motionSensor = MotionSensorComponent(this)
 
     override fun getNode(): Node = motionSensor.node()
 

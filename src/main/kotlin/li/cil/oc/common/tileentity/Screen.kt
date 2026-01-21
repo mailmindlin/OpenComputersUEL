@@ -3,7 +3,7 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Settings
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.*
-import li.cil.oc.client.gui
+import li.cil.oc.client.gui.Screen as ScreenGui
 import li.cil.oc.common.component.TextBuffer
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
@@ -291,7 +291,7 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
         screens.toList().forEach { it.checkMultiBlock() }
         if (isClient) {
             val currentScreen = Minecraft.getMinecraft().currentScreen
-            if (currentScreen is gui.Screen && currentScreen.buffer == buffer) {
+            if (currentScreen is ScreenGui && currentScreen.buffer == buffer) {
                 Minecraft.getMinecraft().displayGuiScreen(null)
             }
         }

@@ -2,17 +2,18 @@ package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
-import li.cil.oc.api.internal
+import li.cil.oc.api.Driver
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.InternalTextBuffer as InternalTextBuffer
 import li.cil.oc.api.network.Node
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
 abstract class TextBuffer : Environment, Tickable {
-    val buffer: internal.TextBuffer by lazy {
-        val screenItem = api.Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)
-        val buf = api.Driver.driverFor(screenItem, javaClass).createEnvironment(screenItem, this) as api.internal.TextBuffer
+    val buffer: InternalTextBuffer by lazy {
+        val screenItem = ApiItems.get(Constants.BlockName.ScreenTier1).createItemStack(1)
+        val buf = Driver.driverFor(screenItem, javaClass).createEnvironment(screenItem, this) as InternalTextBuffer
         val (maxWidth, maxHeight) = Settings.screenResolutionsByTier(tier)
         buf.setMaximumResolution(maxWidth, maxHeight)
         buf.setMaximumColorDepth(Settings.screenDepthsByTier(tier))

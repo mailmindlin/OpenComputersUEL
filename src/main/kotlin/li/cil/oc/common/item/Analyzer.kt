@@ -3,7 +3,6 @@ package li.cil.oc.common.item
 import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Items
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Analyzable
@@ -13,7 +12,7 @@ import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.common.item.traits.Delegate
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.server.PacketSender
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedWorld.getTileEntity
@@ -119,7 +118,7 @@ class Analyzer(override val parent: Delegator) : Delegate {
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
         val tileEntity = world.getTileEntity(position)
-        if (tileEntity is tileentity.Screen && side == tileEntity.facing) {
+        if (tileEntity is TEScreen && side == tileEntity.facing) {
             return if (player.isSneaking) {
                 tileEntity.copyToAnalyzer(hitX, hitY, hitZ)
             } else if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "clipboard")) {

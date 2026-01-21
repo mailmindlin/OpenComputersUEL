@@ -3,7 +3,7 @@ package li.cil.oc.integration.jei
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Manual
 import mezz.jei.api.IGuiHelper
 import mezz.jei.api.IModRegistry
 import mezz.jei.api.gui.IDrawable
@@ -23,7 +23,7 @@ object ManualUsageHandler {
     fun getRecipes(registry: IModRegistry): List<ManualUsageRecipe> {
         return registry.ingredientRegistry.getIngredients(ItemStack::class.java)
             .mapNotNull { stack ->
-                val path = api.Manual.pathFor(stack)
+                val path = Manual.pathFor(stack)
                 if (path is String) {
                     ManualUsageRecipe(stack, path)
                 } else {
@@ -55,8 +55,8 @@ object ManualUsageHandler {
         override fun handleClick(@Nonnull minecraft: Minecraft, mouseX: Int, mouseY: Int, mouseButton: Int): Boolean {
             return if (button.mousePressed(minecraft, mouseX, mouseY)) {
                 minecraft.player.closeScreen()
-                api.Manual.openFor(minecraft.player)
-                api.Manual.navigate(path)
+                Manual.openFor(minecraft.player)
+                Manual.navigate(path)
                 true
             } else {
                 false

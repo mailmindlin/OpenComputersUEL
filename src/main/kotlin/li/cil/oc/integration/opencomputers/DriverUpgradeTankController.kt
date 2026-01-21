@@ -1,7 +1,7 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.internal.Adapter
@@ -10,19 +10,19 @@ import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.entity.Drone
 import li.cil.oc.common.tileentity.Robot
-import li.cil.oc.server.component
+import li.cil.oc.server.component.UpgradeTankController
 import net.minecraft.item.ItemStack
 
 object DriverUpgradeTankController : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.TankControllerUpgrade))
+    ApiItems.get(Constants.ItemName.TankControllerUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world != null && host.world.isRemote) null
     else when (host) {
-      is Adapter -> component.UpgradeTankController.Adapter(host)
-      is Drone -> component.UpgradeTankController.Drone(host)
-      is Robot -> component.UpgradeTankController.Robot(host)
+      is Adapter -> UpgradeTankController.Adapter(host)
+      is Drone -> UpgradeTankController.Drone(host)
+      is Robot -> UpgradeTankController.Robot(host)
       else -> null
     }
 
@@ -33,7 +33,7 @@ object DriverUpgradeTankController : Item(), HostAware {
   object Provider : EnvironmentProvider {
     override fun getEnvironment(stack: ItemStack): Class<*>? =
       if (worksWith(stack))
-        component.UpgradeTankController.Robot::class.java
+        UpgradeTankController.Robot::class.java
       else null
   }
 }

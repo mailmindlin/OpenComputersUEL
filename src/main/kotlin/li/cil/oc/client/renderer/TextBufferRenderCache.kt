@@ -4,7 +4,10 @@ import com.google.common.cache.CacheBuilder
 import com.google.common.cache.RemovalListener
 import com.google.common.cache.RemovalNotification
 import li.cil.oc.Settings
+import li.cil.oc.client.renderer.font.DynamicFontRenderer
+import li.cil.oc.client.renderer.font.StaticFontRenderer
 import li.cil.oc.client.renderer.font.TextBufferRenderData
+import li.cil.oc.client.renderer.font.TextureFontRenderer
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GLAllocation
 import net.minecraft.client.renderer.GlStateManager
@@ -16,10 +19,10 @@ import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 
 object TextBufferRenderCache : Callable<Int>, RemovalListener<TextBufferRenderData, Int> {
-    val renderer = if (Settings.get.fontRenderer == "texture") {
-        font.StaticFontRenderer()
+    val renderer: TextureFontRenderer = if (Settings.get.fontRenderer == "texture") {
+        StaticFontRenderer()
     } else {
-        font.DynamicFontRenderer()
+        DynamicFontRenderer()
     }
 
     private val cache = CacheBuilder.newBuilder()

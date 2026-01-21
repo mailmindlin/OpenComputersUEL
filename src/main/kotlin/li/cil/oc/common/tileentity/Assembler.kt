@@ -2,7 +2,7 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -12,6 +12,7 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.template.AssemblerTemplates
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.util.ExtendedNBT._
@@ -26,7 +27,7 @@ import java.util.EnumSet
 
 class Assembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor, traits.Inventory, SidedEnvironment, traits.StateAware, traits.Tickable, DeviceInfo {
     @JvmField
-    val node: Connector = api.Network.newNode(this, Visibility.Network)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("assembler")
         .withConnector(Settings.get.bufferConverter)
         .create()
@@ -67,11 +68,11 @@ class Assembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor, tr
 
     override fun energyThroughput(): Double = Settings.get.assemblerRate
 
-    override fun getCurrentState(): EnumSet<api.util.StateAware.State> {
+    override fun getCurrentState(): EnumSet<StateAware.State> {
         return when {
-            isAssembling -> EnumSet.of(api.util.StateAware.State.IsWorking)
-            canAssemble -> EnumSet.of(api.util.StateAware.State.CanWork)
-            else -> EnumSet.noneOf(api.util.StateAware.State::class.java)
+            isAssembling -> EnumSet.of(StateAware.State.IsWorking)
+            canAssemble -> EnumSet.of(StateAware.State.CanWork)
+            else -> EnumSet.noneOf(StateAware.State::class.java)
         }
     }
 

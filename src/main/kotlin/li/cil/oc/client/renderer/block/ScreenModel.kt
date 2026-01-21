@@ -1,12 +1,12 @@
 package li.cil.oc.client.renderer.block
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.Items
 import li.cil.oc.client.Textures
 import li.cil.oc.common.Tier
-import li.cil.oc.common.block
+import li.cil.oc.common.PropertyTile
 import li.cil.oc.common.block.Screen
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.TileEntityScreen as TileEntityScreen
 import li.cil.oc.util.Color
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.BakedQuad
@@ -25,8 +25,8 @@ object ScreenModel : SmartBlockModelBase() {
     override fun getQuads(state: IBlockState?, side: EnumFacing?, rand: Long): List<BakedQuad> {
         val safeSide = side ?: EnumFacing.SOUTH
         if (state is IExtendedBlockState) {
-            val tile = state.getValue(block.property.PropertyTile.Tile)
-            if (tile is tileentity.Screen) {
+            val tile = state.getValue(PropertyTile.Tile)
+            if (tile is TileEntityScreen) {
                 val facing = tile.toLocal(safeSide)
 
                 val (x, y) = tile.localPosition
@@ -74,7 +74,7 @@ object ScreenModel : SmartBlockModelBase() {
     private fun xy2part(value: Int, high: Int) = if (value == 0) 2 else if (value == high) 0 else 1
 
     class ItemModel(val stack: ItemStack) : SmartBlockModelBase() {
-        val color = when (val block = api.Items.get(stack)?.block()) {
+        val color = when (val block = Items.get(stack)?.block()) {
             is Screen -> Color.byTier(block.tier)
             else -> Color.byTier(Tier.One)
         }

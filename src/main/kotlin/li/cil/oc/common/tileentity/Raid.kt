@@ -1,8 +1,9 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Driver
+import li.cil.oc.api.FileSystem as ApiFileSystem
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Node
@@ -23,7 +24,7 @@ import java.util.UUID
 
 class Raid : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rotatable, Analyzable {
     @JvmField
-    val node: Node = api.Network.newNode(this, Visibility.None).create()
+    val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
 
     override fun getNode(): Node = node
 
@@ -92,8 +93,8 @@ class Raid : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rota
                 drive.isUnmanaged = false
                 drive.save(fsStack)
             }
-            val fs = api.FileSystem.asManagedEnvironment(
-                api.FileSystem.fromSaveDirectory(id, wipeDisksAndComputeSpace(), Settings.get.bufferChanges),
+            val fs = ApiFileSystem.asManagedEnvironment(
+                ApiFileSystem.fromSaveDirectory(id, wipeDisksAndComputeSpace(), Settings.get.bufferChanges),
                 label, this, Settings.resourceDomain + ":hdd_access", 6
             ) as FileSystem
             val nbtToSetAddress = NBTTagCompound()
@@ -101,7 +102,7 @@ class Raid : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rota
             fs.node().load(nbtToSetAddress)
             fs.node().setVisibility(Visibility.Network)
             // Ensure we're in a network before connecting the raid fs.
-            api.Network.joinNewNetwork(node)
+            ApiNetwork.joinNewNetwork(node)
             node.connect(fs.node())
             filesystem = fs
         }
@@ -109,7 +110,7 @@ class Raid : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rota
 
     private fun wipeDisksAndComputeSpace(): Long = items.fold(0L) { acc, hdd ->
         if (!hdd.isEmpty) {
-            acc + (api.Driver.driverFor(hdd)?.let { driver ->
+            acc + (Driver.driverFor(hdd)?.let { driver ->
                 val env = driver.createEnvironment(hdd, this)
                 if (env is FileSystem) {
                     val nbt = driver.dataTag(hdd)

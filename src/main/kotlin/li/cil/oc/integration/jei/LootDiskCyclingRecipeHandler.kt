@@ -1,7 +1,7 @@
 package li.cil.oc.integration.jei
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Items
 import li.cil.oc.common.Loot
 import li.cil.oc.common.recipe.LootDiskCyclingRecipe
 import mezz.jei.api.ingredients.IIngredients
@@ -20,7 +20,7 @@ object LootDiskCyclingRecipeHandler : IRecipeWrapperFactory<LootDiskCyclingRecip
         fun getInputs(): List<List<ItemStack>> {
             return listOf(
                 Loot.disksForCycling.toList(),
-                listOf(api.Items.get(Constants.ItemName.Wrench).createItemStack(1))
+                listOf(Items.get(Constants.ItemName.Wrench).createItemStack(1))
             )
         }
 

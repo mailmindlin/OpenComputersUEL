@@ -1,11 +1,11 @@
 package li.cil.oc.integration.minecraft
 
 import com.google.common.hash.Hashing
-import li.cil.oc.api
+import li.cil.oc.api.driver.Converter
 import net.minecraft.world.WorldProvider
 import java.util.*
 
-object ConverterWorldProvider : api.driver.Converter {
+object ConverterWorldProvider : Converter {
     override fun convert(value: Any?, output: MutableMap<Any, Any>) {
         when (value) {
             is WorldProvider -> {

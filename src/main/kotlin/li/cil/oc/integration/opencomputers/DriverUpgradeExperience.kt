@@ -1,23 +1,23 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.item.HostAware
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Agent
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.server.component
+import li.cil.oc.server.component.UpgradeExperience
 import net.minecraft.item.ItemStack
 
 object DriverUpgradeExperience : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.ExperienceUpgrade))
+    ApiItems.get(Constants.ItemName.ExperienceUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     when (host) {
-      is internal.Agent -> component.UpgradeExperience(host)
+      is Agent -> UpgradeExperience(host)
       else -> null
     }
 
@@ -28,7 +28,7 @@ object DriverUpgradeExperience : Item(), HostAware {
   object Provider : EnvironmentProvider {
     override fun getEnvironment(stack: ItemStack): Class<*>? =
       if (worksWith(stack))
-        component.UpgradeExperience::class.java
+        UpgradeExperience::class.java
       else null
   }
 }

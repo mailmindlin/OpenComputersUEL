@@ -2,12 +2,12 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
-import li.cil.oc.common.container
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.container.Raid as ContainerRaid
+import li.cil.oc.common.tileentity.Raid as TileEntityRaid
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.player.InventoryPlayer
 
-class Raid(playerInventory: InventoryPlayer, val raid: tileentity.Raid) : DynamicGuiContainer(container.Raid(playerInventory, raid)) {
+class Raid(playerInventory: InventoryPlayer, val raid: TileEntityRaid) : DynamicGuiContainer<ContainerRaid>(ContainerRaid(playerInventory, raid)) {
   override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
     super.drawSecondaryForegroundLayer(mouseX, mouseY)
     fontRenderer.drawString(

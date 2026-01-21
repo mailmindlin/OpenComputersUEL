@@ -3,9 +3,9 @@ package li.cil.oc.client.gui
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.container
+import li.cil.oc.common.container.Server as ContainerServer
 import li.cil.oc.common.inventory.ServerInventory
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Rack as TileEntityRack
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
@@ -14,9 +14,9 @@ import net.minecraft.entity.player.InventoryPlayer
 class Server(
     playerInventory: InventoryPlayer,
     serverInventory: ServerInventory,
-    val rack: tileentity.Rack? = null,
+    val rack: TileEntityRack? = null,
     val slot: Int = 0
-) : DynamicGuiContainer<container.Server>(container.Server(playerInventory, serverInventory)), li.cil.oc.client.gui.traits.LockedHotbar {
+) : DynamicGuiContainer<ContainerServer>(ContainerServer(playerInventory, serverInventory)), li.cil.oc.client.gui.traits.LockedHotbar {
 
     protected var powerButton: ImageButton? = null
 

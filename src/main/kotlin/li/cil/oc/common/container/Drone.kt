@@ -1,8 +1,9 @@
 package li.cil.oc.common.container
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common
-import li.cil.oc.common.entity
+import li.cil.oc.common.Slot as CommonSlot
+import li.cil.oc.common.Tier as CommonTier
+import li.cil.oc.common.EntityDrone as EntityDrone
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
@@ -10,7 +11,7 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Drone(playerInventory: InventoryPlayer, val drone: entity.Drone) : Player(playerInventory, drone.mainInventory) {
+class Drone(playerInventory: InventoryPlayer, val drone: EntityDrone) : Player(playerInventory, drone.mainInventory) {
     val deltaY: Int = 0
 
     init {
@@ -26,7 +27,7 @@ class Drone(playerInventory: InventoryPlayer, val drone: entity.Drone) : Player(
     }
 
     inner class InventorySlot(container: Player, inventory: IInventory, index: Int, x: Int, y: Int)
-        : StaticComponentSlot(container, inventory, index, x, y, common.Slot.Any, common.Tier.Any) {
+        : StaticComponentSlot(container, inventory, index, x, y, CommonSlot.Any, CommonTier.Any) {
 
         val isValid: Boolean
             get() = slotIndex in 0 until drone.mainInventory.sizeInventory
@@ -36,7 +37,7 @@ class Drone(playerInventory: InventoryPlayer, val drone: entity.Drone) : Player(
 
         override fun getBackgroundLocation(): ResourceLocation? =
             if (isValid) super.getBackgroundLocation()
-            else Textures.Icons.get(common.Tier.None)
+            else Textures.Icons.get(CommonTier.None)
 
         override fun getStack(): ItemStack =
             if (isValid) super.getStack()

@@ -1,10 +1,11 @@
 package li.cil.oc.integration.opencomputers
 
-import li.cil.oc
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.FileSystem as ApiFileSystem
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Loot
 import li.cil.oc.common.Slot
@@ -15,6 +16,7 @@ import li.cil.oc.common.item.data.DriveData
 import li.cil.oc.server.component.Drive
 import li.cil.oc.server.fs.FileSystem.ItemLabel
 import li.cil.oc.server.fs.FileSystem.ReadOnlyLabel
+import li.cil.oc.server.network.Node as NetworkNode
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.DimensionManager
@@ -23,10 +25,10 @@ object DriverFileSystem : Item() {
   val UUIDVerifier = """^([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$""".toRegex()
 
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.HDDTier1),
-    api.Items.get(Constants.ItemName.HDDTier2),
-    api.Items.get(Constants.ItemName.HDDTier3),
-    api.Items.get(Constants.ItemName.Floppy)) &&
+    ApiItems.get(Constants.ItemName.HDDTier1),
+    ApiItems.get(Constants.ItemName.HDDTier2),
+    ApiItems.get(Constants.ItemName.HDDTier3),
+    ApiItems.get(Constants.ItemName.Floppy)) &&
     (!stack.hasTagCompound || !stack.tagCompound.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
@@ -58,7 +60,7 @@ object DriverFileSystem : Item() {
           if (dataTag(stack).hasKey(Settings.namespace + "fs.label"))
             dataTag(stack).getString(Settings.namespace + "fs.label")
           else null
-        api.FileSystem.asManagedEnvironment(factory.call(), label, host, Settings.resourceDomain + ":floppy_access")
+        ApiFileSystem.asManagedEnvironment(factory.call(), label, host, Settings.resourceDomain + ":floppy_access")
       }
     }
     else {
@@ -66,23 +68,23 @@ object DriverFileSystem : Item() {
       // node's address as the folder name... so we generate the address here,
       // if necessary. No one will know, right? Right!?
       val address = addressFromTag(dataTag(stack))
-      var label: api.fs.Label = ReadWriteItemLabel(stack)
-      val isFloppy = api.Items.get(stack) == api.Items.get(Constants.ItemName.Floppy)
+      var label: Label = ReadWriteItemLabel(stack)
+      val isFloppy = ApiItems.get(stack) == ApiItems.get(Constants.ItemName.Floppy)
       val sound = Settings.resourceDomain + ":" + (if (isFloppy) "floppy_access" else "hdd_access")
       val drive = DriveData(stack)
       val environment = if (drive.isUnmanaged) {
         Drive(capacity.coerceAtLeast(0), platterCount, label, host, sound, speed, drive.isLocked)
       }
       else {
-        var fs = oc.api.FileSystem.fromSaveDirectory(address, capacity.coerceAtLeast(0), Settings.get.bufferChanges)
+        var fs = ApiFileSystem.fromSaveDirectory(address, capacity.coerceAtLeast(0), Settings.get.bufferChanges)
         if (drive.isLocked) {
-          fs = oc.api.FileSystem.asReadOnly(fs)
+          fs = ApiFileSystem.asReadOnly(fs)
           label = ReadOnlyLabel(label.label)
         }
-        oc.api.FileSystem.asManagedEnvironment(fs, label, host, sound, speed)
+        ApiFileSystem.asManagedEnvironment(fs, label, host, sound, speed)
       }
       if (environment != null && environment.node() != null) {
-        (environment.node() as oc.server.network.Node).address = address
+        (environment.node() as NetworkNode).address = address
       }
       environment
     }

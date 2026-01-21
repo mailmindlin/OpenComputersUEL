@@ -3,7 +3,14 @@ package li.cil.oc.common.template
 import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Driver
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.driver.item.Container
+import li.cil.oc.api.driver.item.Inventory as DriverInventory
+import li.cil.oc.api.driver.item.Memory
+import li.cil.oc.api.driver.item.Processor
+import li.cil.oc.api.machine.Architecture
+import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import net.minecraft.inventory.IInventory
@@ -30,7 +37,7 @@ abstract class Template {
         "OS" to { inv -> hasFileSystem(inv) }
     )
 
-    protected abstract val hostClass: Class<out api.network.EnvironmentHost>
+    protected abstract val hostClass: Class<out EnvironmentHost>
 
     protected fun validateComputer(inventory: IInventory): Array<Any> {
         val hasCase = caseTier(inventory) != Tier.None
@@ -69,35 +76,35 @@ abstract class Template {
     }
 
     protected fun hasCPU(inventory: IInventory): Boolean = exists(inventory) { stack ->
-        api.Driver.driverFor(stack, hostClass) is api.driver.item.Processor
+        Driver.driverFor(stack, hostClass) is Processor
     }
 
     protected fun hasRAM(inventory: IInventory): Boolean = exists(inventory) { stack ->
-        api.Driver.driverFor(stack, hostClass) is api.driver.item.Memory
+        Driver.driverFor(stack, hostClass) is Memory
     }
 
     protected fun requiresRAM(inventory: IInventory): Boolean {
         return !(0 until inventory.sizeInventory).map { inventory.getStackInSlot(it) }.any { stack ->
-            val driver = api.Driver.driverFor(stack, hostClass)
-            if (driver is api.driver.item.Processor) {
+            val driver = Driver.driverFor(stack, hostClass)
+            if (driver is Processor) {
                 val architecture = driver.architecture(stack)
-                architecture != null && architecture.getAnnotation(api.machine.Architecture.NoMemoryRequirements::class.java) != null
+                architecture != null && architecture.getAnnotation(Architecture.NoMemoryRequirements::class.java) != null
             } else false
         }
     }
 
     protected fun hasComponent(name: String): (IInventory) -> Boolean = { inventory ->
         exists(inventory) { stack ->
-            api.Items.get(stack)?.name() == name
+            ApiItems.get(stack)?.name() == name
         }
     }
 
     protected fun hasInventory(inventory: IInventory): Boolean = exists(inventory) { stack ->
-        api.Driver.driverFor(stack, hostClass) is api.driver.item.Inventory
+        Driver.driverFor(stack, hostClass) is DriverInventory
     }
 
     protected fun hasFileSystem(inventory: IInventory): Boolean = exists(inventory) { stack ->
-        val driver = api.Driver.driverFor(stack, hostClass)
+        val driver = Driver.driverFor(stack, hostClass)
         driver != null && (driver.slot(stack) == Slot.Floppy || driver.slot(stack) == Slot.HDD)
     }
 
@@ -105,10 +112,10 @@ abstract class Template {
         var acc = 0
         for (slot in 1 until inventory.sizeInventory) {
             val stack = inventory.getStackInSlot(slot)
-            val driver = api.Driver.driverFor(stack, hostClass)
+            val driver = Driver.driverFor(stack, hostClass)
             acc += when {
-                driver is api.driver.item.Processor -> 0 // CPUs are exempt, since they control the limit.
-                driver is api.driver.item.Container -> (1 + driver.tier(stack)) * 2
+                driver is Processor -> 0 // CPUs are exempt, since they control the limit.
+                driver is Container -> (1 + driver.tier(stack)) * 2
                 driver != null && driver.slot(stack) != Slot.EEPROM -> 1 + driver.tier(stack)
                 else -> 0
             }
@@ -120,8 +127,8 @@ abstract class Template {
         val caseTier = this.caseTier(inventory)
         val cpuTier = (0 until inventory.sizeInventory).fold(0) { acc, slot ->
             val stack = inventory.getStackInSlot(slot)
-            val driver = api.Driver.driverFor(stack, hostClass)
-            acc + if (driver is api.driver.item.Processor) driver.tier(stack) else 0
+            val driver = Driver.driverFor(stack, hostClass)
+            acc + if (driver is Processor) driver.tier(stack) else 0
         }
         return if (caseTier >= Tier.One && cpuTier >= Tier.One) {
             Settings.deviceComplexityByTier(caseTier) - (minOf(2, caseTier) - cpuTier) * 6

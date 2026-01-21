@@ -3,7 +3,7 @@ package li.cil.oc.common.block
 import li.cil.oc.Settings
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Charger as TECharger
 import li.cil.oc.integration.util.Wrench
 import li.cil.oc.server.PacketSender
 import net.minecraft.block.Block
@@ -30,7 +30,7 @@ class Charger : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits
 
     override val guiType = GuiType.Charger
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Charger()
+    override fun createNewTileEntity(world: World, metadata: Int) = TECharger()
 
     // ----------------------------------------------------------------------- //
 
@@ -41,7 +41,7 @@ class Charger : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits
     override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         if (Wrench.holdsApplicableWrench(player, pos)) {
             val tileEntity = world.getTileEntity(pos)
-            if (tileEntity is tileentity.Charger) {
+            if (tileEntity is TECharger) {
                 if (!world.isRemote) {
                     tileEntity.invertSignal = !tileEntity.invertSignal
                     tileEntity.chargeSpeed = 1.0 - tileEntity.chargeSpeed
@@ -57,7 +57,7 @@ class Charger : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Charger) {
+        if (tileEntity is TECharger) {
             tileEntity.onNeighborChanged()
         }
         super.neighborChanged(state, world, pos, block, fromPos)

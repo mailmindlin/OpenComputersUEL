@@ -4,7 +4,8 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.common.block.property.PropertyTile
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Screen as TEScreen
+import li.cil.oc.common.tileentity.Waypoint as TEWaypoint
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -25,7 +26,7 @@ class Waypoint : RedstoneAware() {
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
-        return if (state is IExtendedBlockState && tileEntity is tileentity.Screen) {
+        return if (state is IExtendedBlockState && tileEntity is TEScreen) {
             state
                 .withProperty(property.PropertyTile.Tile, tileEntity)
                 .withProperty(PropertyRotatable.Pitch, tileEntity.pitch)
@@ -35,7 +36,7 @@ class Waypoint : RedstoneAware() {
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Waypoint()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEWaypoint()
 
     // ----------------------------------------------------------------------- //
 
@@ -51,7 +52,7 @@ class Waypoint : RedstoneAware() {
 
     override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing>? {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Waypoint) {
+        return if (tileEntity is TEWaypoint) {
             EnumFacing.values().filter { d -> d != tileEntity.facing && d != tileEntity.facing.opposite }.toTypedArray()
         } else super.getValidRotations(world, pos)
     }

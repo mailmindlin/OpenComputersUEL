@@ -1,10 +1,10 @@
 package li.cil.oc.common.container
 
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Disassembler as TEDisassembler
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
 
-class Disassembler(playerInventory: InventoryPlayer, val disassembler: tileentity.Disassembler) : Player(playerInventory, disassembler) {
+class Disassembler(playerInventory: InventoryPlayer, val disassembler: TEDisassembler) : Player(playerInventory, disassembler) {
     init {
         addSlotToContainer(80, 35, "ocitem")
         addPlayerInventorySlots(8, 84)

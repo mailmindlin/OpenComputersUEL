@@ -1,7 +1,7 @@
 package li.cil.oc.client.renderer.tileentity
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.Items
 import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.client.Textures
 import li.cil.oc.common.tileentity.Screen
@@ -125,7 +125,7 @@ object ScreenRenderer : TileEntitySpecialRenderer<Screen>() {
         GlStateManager.scale(1.0, -1.0, 1.0)
     }
 
-    private fun isScreen(stack: ItemStack): Boolean = when (val item = api.Items.get(stack)) {
+    private fun isScreen(stack: ItemStack): Boolean = when (val item = Items.get(stack)) {
         is ItemInfo -> item.block() is li.cil.oc.common.block.Screen
         else -> false
     }

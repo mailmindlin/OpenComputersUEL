@@ -66,7 +66,7 @@ interface Segment {
     // ----------------------------------------------------------------------- //
 
     // Used during construction, checks a segment for inner segments.
-    fun refine(pattern: Pattern, factory: (Segment, java.util.regex.MatchResult) -> Segment): Iterable<Segment> = listOf(this)
+    fun refine(pattern: Regex, factory: (Segment, MatchResult) -> Segment): Iterable<Segment> = listOf(this)
 
     // Set after construction of document, used for formatting, specifically
     // to compute the height for last segment on a line (to force a new line).

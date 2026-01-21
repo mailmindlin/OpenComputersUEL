@@ -1,25 +1,26 @@
 package li.cil.oc.common.container
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common
 import li.cil.oc.common.InventorySlots.InventorySlot
+import li.cil.oc.common.Slot as CommonSlot
+import li.cil.oc.common.Tier as CommonTier
 import li.cil.oc.common.template.AssemblerTemplates
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Assembler as TEAssembler
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Assembler(playerInventory: InventoryPlayer, val assembler: tileentity.Assembler) : Player(playerInventory, assembler) {
+class Assembler(playerInventory: InventoryPlayer, val assembler: TEAssembler) : Player(playerInventory, assembler) {
     init {
         // Computer case.
         run {
             val index = inventorySlots.size
-            addSlotToContainer(object : StaticComponentSlot(this, otherInventory, index, 12, 12, "template", common.Tier.Any) {
+            addSlotToContainer(object : StaticComponentSlot(this, otherInventory, index, 12, 12, "template", CommonTier.Any) {
                 @SideOnly(Side.CLIENT)
                 override fun isEnabled(): Boolean = !isAssembling && super.isEnabled()
 
-                override fun getBackgroundLocation() = if (isAssembling) Textures.Icons.get(common.Tier.None) else super.getBackgroundLocation()
+                override fun getBackgroundLocation() = if (isAssembling) Textures.Icons.get(CommonTier.None) else super.getBackgroundLocation()
             })
         }
 
@@ -67,7 +68,7 @@ class Assembler(playerInventory: InventoryPlayer, val assembler: tileentity.Asse
             }
             InventorySlot(tplSlot.kind, tplSlot.tier)
         } else {
-            InventorySlot(common.Slot.None, common.Tier.None)
+            InventorySlot(CommonSlot.None, CommonTier.None)
         }
     }
 

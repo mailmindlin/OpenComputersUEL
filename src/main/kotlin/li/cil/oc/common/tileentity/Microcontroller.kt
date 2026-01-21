@@ -2,11 +2,12 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Microcontroller as InternalMicrocontroller
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
@@ -18,6 +19,7 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.data.MicrocontrollerData
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.ExtendedArguments._
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.StackOption
@@ -31,7 +33,7 @@ import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, traits.Computer, ISidedInventory, internal.Microcontroller, DeviceInfo {
+class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, traits.Computer, ISidedInventory, InternalMicrocontroller, DeviceInfoKt {
     @JvmField
     val info = MicrocontrollerData()
 
@@ -41,14 +43,14 @@ class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, trai
     val outputSides: Array<Boolean> = Array(6) { true }
 
     @JvmField
-    val snooperNode: ComponentConnector = api.Network.newNode(this, Visibility.Network)
+    val snooperNode: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("microcontroller")
         .withConnector(Settings.get.bufferMicrocontroller)
         .create()
 
     @JvmField
     val componentNodes: Array<Component> = Array(6) {
-        api.Network.newNode(this, Visibility.Network)
+        ApiNetwork.newNode(this, Visibility.Network)
             .withComponent("microcontroller")
             .create()
     }
@@ -62,19 +64,17 @@ class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, trai
 
     override fun tier(): Int = info.tier
 
-    override val runSound: Option<String>? = null // Microcontrollers are silent.
+    override val runSound: String? = null // Microcontrollers are silent.
 
-    private val deviceInfo: Map<String, String> by lazy {
-        mapOf(
-            DeviceAttribute.Class to DeviceClass.System,
-            DeviceAttribute.Description to "Microcontroller",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "Cubicle",
-            DeviceAttribute.Capacity to sizeInventory.toString()
-        )
-    }
+    override val deviceInfo: Map<String, String> = mapOf(
+        DeviceAttribute.Class to DeviceClass.System,
+        DeviceAttribute.Description to "Microcontroller",
+        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+        DeviceAttribute.Product to "Cubicle",
+        DeviceAttribute.Capacity to sizeInventory.toString()
+    )
 
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
+    private inline val facing: EnumFacing get() = facing()
 
     // ----------------------------------------------------------------------- //
 
@@ -162,21 +162,21 @@ class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, trai
 
     override fun connectItemNode(node: Node) {
         if (machine != null && machine.node() != null && node != null) {
-            api.Network.joinNewNetwork(machine.node())
+            ApiNetwork.joinNewNetwork(machine.node())
             machine.node().connect(node)
         }
     }
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Plug): Node = api.Network.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
         .withConnector()
         .create()
 
     override fun onPlugConnect(plug: Plug, node: Node) {
         super.onPlugConnect(plug, node)
         if (node == plug.node) {
-            api.Network.joinNewNetwork(machine.node())
+            ApiNetwork.joinNewNetwork(machine.node())
             machine.node().connect(snooperNode)
             connectComponents()
         }
@@ -233,7 +233,7 @@ class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, trai
         }
         snooperNode.load(nbt.getCompoundTag(SnooperTag))
         super.readFromNBTForServer(nbt)
-        api.Network.joinNewNetwork(machine.node())
+        ApiNetwork.joinNewNetwork(machine.node())
         machine.node().connect(snooperNode)
     }
 
@@ -290,7 +290,7 @@ class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, trai
 
     // For hotswapping EEPROMs.
     fun changeEEPROM(newEeprom: ItemStack): StackOption {
-        val oldEepromIndex = info.components.indexOfFirst { api.Items.get(it) == api.Items.get(Constants.ItemName.EEPROM) }
+        val oldEepromIndex = info.components.indexOfFirst { ApiItems.get(it) == ApiItems.get(Constants.ItemName.EEPROM) }
         return if (oldEepromIndex >= 0) {
             val oldEeprom = info.components[oldEepromIndex]
             super.setInventorySlotContents(oldEepromIndex, newEeprom)

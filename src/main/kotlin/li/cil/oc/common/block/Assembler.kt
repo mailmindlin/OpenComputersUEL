@@ -2,7 +2,7 @@ package li.cil.oc.common.block
 
 import li.cil.oc.Settings
 import li.cil.oc.common.GuiType
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Assembler as TEAssembler
 import net.minecraft.block.state.IBlockState
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
@@ -26,5 +26,5 @@ class Assembler : SimpleBlock(), traits.PowerAcceptor, traits.StateAware, traits
 
     override val guiType = GuiType.Assembler
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Assembler()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEAssembler()
 }

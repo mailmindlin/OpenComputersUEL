@@ -2,9 +2,10 @@ package li.cil.oc.common.block
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.RobotData
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Robot as TERobot
+import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.util.Rarity
 import net.minecraft.block.state.IBlockState
@@ -85,27 +86,27 @@ class RobotAfterimage : SimpleBlock() {
     override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, player: EntityPlayer, willHarvest: Boolean): Boolean {
         val robot = findMovingRobot(world, pos)
         return if (robot != null && robot.isAnimatingMove && robot.moveFrom?.equals(pos) == true) {
-            robot.proxy.blockType.removedByPlayer(state, world, pos, player, false)
+            robot.proxy!!.blockType.removedByPlayer(state, world, pos, player, false)
         } else super.removedByPlayer(state, world, pos, player, willHarvest) // Probably broken by the robot we represent.
     }
 
     override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val robot = findMovingRobot(world, pos)
         return if (robot != null) {
-            api.Items.get(Constants.BlockName.Robot).block().onBlockActivated(world, robot.pos, world.getBlockState(robot.pos), player, hand, side, hitX, hitY, hitZ)
+            ApiItems.get(Constants.BlockName.Robot).block().onBlockActivated(world, robot.pos, world.getBlockState(robot.pos), player, hand, side, hitX, hitY, hitZ)
         } else {
             world.setBlockToAir(pos)
             false
         }
     }
 
-    fun findMovingRobot(world: IBlockAccess, pos: BlockPos): tileentity.Robot? {
+    fun findMovingRobot(world: IBlockAccess, pos: BlockPos): TERobot? {
         for (side in EnumFacing.values()) {
             val tpos = pos.offset(side)
             val isLoaded = if (world is World) world.isBlockLoaded(tpos) else true
             if (isLoaded) {
                 val tileEntity = world.getTileEntity(tpos)
-                if (tileEntity is tileentity.RobotProxy && tileEntity.robot.moveFrom?.equals(pos) == true) {
+                if (tileEntity is TERobotProxy && tileEntity.robot.moveFrom?.equals(pos) == true) {
                     return tileEntity.robot
                 }
             }

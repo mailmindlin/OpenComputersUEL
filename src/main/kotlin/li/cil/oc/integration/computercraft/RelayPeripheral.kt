@@ -5,7 +5,7 @@ import dan200.computercraft.api.lua.LuaException
 import dan200.computercraft.api.peripheral.IComputerAccess
 import dan200.computercraft.api.peripheral.IPeripheral
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Component
 import li.cil.oc.common.tileentity.Relay
@@ -37,7 +37,7 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
             val sendPort = checkPort(arguments, 0)
             val answerPort = checkPort(arguments, 1)
             val data = arguments.drop(2) + answerPort
-            val packet = api.Network.newPacket(
+            val packet = Network.newPacket(
                 "cc${computer.id}_${computer.attachmentName}",
                 null,
                 sendPort,

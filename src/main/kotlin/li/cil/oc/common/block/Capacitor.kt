@@ -1,20 +1,20 @@
 package li.cil.oc.common.block
 
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Capacitor as TECapacitor
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.Random
 
-class Capacitor : SimpleBlock() {
+open class Capacitor : SimpleBlock() {
     init {
         setTickRandomly(true)
     }
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Capacitor()
+    override fun createNewTileEntity(world: World, metadata: Int) = TECapacitor()
 
     // ----------------------------------------------------------------------- //
 
@@ -22,7 +22,7 @@ class Capacitor : SimpleBlock() {
 
     override fun getComparatorInputOverride(state: IBlockState, world: World, pos: BlockPos): Int {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Capacitor && !world.isRemote) {
+        return if (tileEntity is TECapacitor && !world.isRemote) {
             Math.round(15 * tileEntity.node.localBuffer / tileEntity.node.localBufferSize).toInt()
         } else 0
     }
@@ -35,7 +35,7 @@ class Capacitor : SimpleBlock() {
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Capacitor) {
+        if (tileEntity is TECapacitor) {
             tileEntity.recomputeCapacity()
         }
     }

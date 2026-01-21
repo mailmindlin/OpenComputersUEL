@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.Items
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.RenderState
 import net.minecraft.client.Minecraft
@@ -14,7 +14,7 @@ import org.lwjgl.opengl.GL11
 
 object MFUTargetRenderer {
     private const val color = 0x00FF00
-    private val mfu by lazy { api.Items.get(Constants.ItemName.MFU) }
+    private val mfu by lazy { Items.get(Constants.ItemName.MFU) }
 
     @SubscribeEvent
     fun onRenderWorldLastEvent(e: RenderWorldLastEvent) {
@@ -23,7 +23,7 @@ object MFUTargetRenderer {
         if (player == null) return
 
         val stack = player.heldItemMainhand
-        if (stack is ItemStack && api.Items.get(stack) == mfu && stack.hasTagCompound()) {
+        if (stack is ItemStack && Items.get(stack) == mfu && stack.hasTagCompound()) {
             val data = stack.tagCompound ?: return
             if (data.hasKey(Settings.namespace + "coord", NBT.TAG_INT_ARRAY)) {
                 val coords = data.getIntArray(Settings.namespace + "coord")

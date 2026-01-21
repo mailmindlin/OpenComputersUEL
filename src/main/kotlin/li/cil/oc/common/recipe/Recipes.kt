@@ -12,7 +12,7 @@ import com.typesafe.config.ConfigValueType
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.Loot
 import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.init.Items
@@ -229,20 +229,20 @@ object Recipes {
             }
 
             // Recrafting operations.
-            val cable = api.Items.get(Constants.BlockName.Cable)
-            val chamelium = api.Items.get(Constants.ItemName.Chamelium)
-            val chameliumBlock = api.Items.get(Constants.BlockName.ChameliumBlock)
-            val drone = api.Items.get(Constants.ItemName.Drone)
-            val eeprom = api.Items.get(Constants.ItemName.EEPROM)
-            val floppy = api.Items.get(Constants.ItemName.Floppy)
-            val hoverBoots = api.Items.get(Constants.ItemName.HoverBoots)
-            val mcu = api.Items.get(Constants.BlockName.Microcontroller)
-            val navigationUpgrade = api.Items.get(Constants.ItemName.NavigationUpgrade)
-            val print = api.Items.get(Constants.BlockName.Print)
-            val relay = api.Items.get(Constants.BlockName.Relay)
-            val robot = api.Items.get(Constants.BlockName.Robot)
-            val tablet = api.Items.get(Constants.ItemName.Tablet)
-            val linkedCard = api.Items.get(Constants.ItemName.LinkedCard)
+            val cable = ApiItems.get(Constants.BlockName.Cable)
+            val chamelium = ApiItems.get(Constants.ItemName.Chamelium)
+            val chameliumBlock = ApiItems.get(Constants.BlockName.ChameliumBlock)
+            val drone = ApiItems.get(Constants.ItemName.Drone)
+            val eeprom = ApiItems.get(Constants.ItemName.EEPROM)
+            val floppy = ApiItems.get(Constants.ItemName.Floppy)
+            val hoverBoots = ApiItems.get(Constants.ItemName.HoverBoots)
+            val mcu = ApiItems.get(Constants.BlockName.Microcontroller)
+            val navigationUpgrade = ApiItems.get(Constants.ItemName.NavigationUpgrade)
+            val print = ApiItems.get(Constants.BlockName.Print)
+            val relay = ApiItems.get(Constants.BlockName.Relay)
+            val robot = ApiItems.get(Constants.BlockName.Robot)
+            val tablet = ApiItems.get(Constants.ItemName.Tablet)
+            val linkedCard = ApiItems.get(Constants.ItemName.LinkedCard)
 
             // Navigation upgrade recrafting.
             addRecipe(ExtendedShapelessOreRecipe(
@@ -320,9 +320,9 @@ object Recipes {
 
             // Hard disk formatting.
             val hdds = arrayOf(
-                api.Items.get(Constants.ItemName.HDDTier1),
-                api.Items.get(Constants.ItemName.HDDTier2),
-                api.Items.get(Constants.ItemName.HDDTier3)
+                ApiItems.get(Constants.ItemName.HDDTier1),
+                ApiItems.get(Constants.ItemName.HDDTier2),
+                ApiItems.get(Constants.ItemName.HDDTier3)
             )
             for (hdd in hdds) {
                 addRecipe(ExtendedShapelessOreRecipe(hdd.createItemStack(1), hdd.createItemStack(1)))

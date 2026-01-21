@@ -3,7 +3,7 @@ package li.cil.oc.integration.jei
 import com.google.common.base.Strings
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Driver
 import li.cil.oc.server.machine.Callbacks
 import mezz.jei.api.IGuiHelper
 import mezz.jei.api.IModRegistry
@@ -28,7 +28,7 @@ object CallbackDocHandler {
     fun getRecipes(registry: IModRegistry): List<CallbackDocRecipe> {
         return registry.ingredientRegistry.getIngredients(ItemStack::class.java)
             .mapNotNull { stack ->
-                val callbacks = api.Driver.environmentsFor(stack)
+                val callbacks = Driver.environmentsFor(stack)
                     .flatMap { getCallbacks(it) }
                     .toMutableList()
 

@@ -2,9 +2,11 @@ package li.cil.oc.client.renderer
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.Items
 import li.cil.oc.client.Textures
-import li.cil.oc.common
+import li.cil.oc.Print
+import li.cil.oc.TileEntityCable as TileEntityCable
+import li.cil.oc.BlockCable as BlockCable
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedAABB.extendedAABB
 import li.cil.oc.util.ExtendedWorld.extendedWorld
@@ -27,7 +29,7 @@ import kotlin.random.Random
 object HighlightRenderer {
     private val random = Random.Default
 
-    val tablet by lazy { api.Items.get(Constants.ItemName.Tablet) }
+    val tablet by lazy { Items.get(Constants.ItemName.Tablet) }
 
     @SubscribeEvent
     fun onDrawBlockHighlight(e: DrawBlockHighlightEvent) {
@@ -37,7 +39,7 @@ object HighlightRenderer {
         val world = e.player.entityWorld
         val blockPos = BlockPosition(hitInfo.blockPos, world)
 
-        if (hitInfo.typeOfHit == RayTraceResult.Type.BLOCK && api.Items.get(e.player.heldItemMainhand) == tablet) {
+        if (hitInfo.typeOfHit == RayTraceResult.Type.BLOCK && Items.get(e.player.heldItemMainhand) == tablet) {
             val isAir = world.isAirBlock(blockPos)
             if (!isAir) {
                 val block = world.getBlock(blockPos)
@@ -121,7 +123,7 @@ object HighlightRenderer {
 
         if (hitInfo.typeOfHit == RayTraceResult.Type.BLOCK) {
             when (val te = e.player.entityWorld.getTileEntity(hitInfo.blockPos)) {
-                is common.tileentity.Print -> {
+                is Print -> {
                     if (te.shapes.isNotEmpty()) {
                         val pos = Vec3d(
                             e.player.prevPosX + (e.player.posX - e.player.prevPosX) * e.partialTicks,
@@ -155,7 +157,7 @@ object HighlightRenderer {
                         e.isCanceled = true
                     }
                 }
-                is common.tileentity.Cable -> {
+                is TileEntityCable -> {
                     // See RenderGlobal.drawSelectionBox.
                     GlStateManager.enableBlend()
                     OpenGlHelper.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 1)
@@ -172,7 +174,7 @@ object HighlightRenderer {
                         blockPos.z - (player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * e.partialTicks)
                     )
 
-                    val mask = common.block.Cable.neighbors(world, hitInfo.blockPos)
+                    val mask = BlockCable.neighbors(world, hitInfo.blockPos)
                     val tesselator = Tessellator.getInstance()
                     val buffer = tesselator.buffer
 
@@ -193,8 +195,8 @@ object HighlightRenderer {
 
     private object Cable {
         private const val EXPAND = 0.002f
-        private val MIN = common.block.Cable.MIN - EXPAND
-        private val MAX = common.block.Cable.MAX + EXPAND
+        private val MIN = BlockCable.MIN - EXPAND
+        private val MAX = BlockCable.MAX + EXPAND
 
         fun drawOverlay(buffer: BufferBuilder, mask: Int) {
             // Draw the cable arms

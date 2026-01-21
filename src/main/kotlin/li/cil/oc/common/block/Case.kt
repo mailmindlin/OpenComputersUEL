@@ -3,7 +3,7 @@ package li.cil.oc.common.block
 import li.cil.oc.Settings
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Case as TECase
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.Tooltip
 import net.minecraft.block.state.BlockStateContainer
@@ -45,7 +45,7 @@ class Case(val tier: Int) : RedstoneAware(), traits.PowerAcceptor, traits.StateA
 
     override val guiType = GuiType.Case
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Case(tier)
+    override fun createNewTileEntity(world: World, metadata: Int) = TECase(tier)
 
     // ----------------------------------------------------------------------- //
 
@@ -53,7 +53,7 @@ class Case(val tier: Int) : RedstoneAware(), traits.PowerAcceptor, traits.StateA
         if (player.isSneaking) {
             if (!world.isRemote) {
                 val tileEntity = world.getTileEntity(pos)
-                if (tileEntity is tileentity.Case && !tileEntity.machine.isRunning && tileEntity.isUsableByPlayer(player)) {
+                if (tileEntity is TECase && !tileEntity.machine.isRunning && tileEntity.isUsableByPlayer(player)) {
                     tileEntity.machine.start()
                 }
             }
@@ -65,7 +65,7 @@ class Case(val tier: Int) : RedstoneAware(), traits.PowerAcceptor, traits.StateA
     override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, player: EntityPlayer, willHarvest: Boolean): Boolean {
         val tileEntity = world.getTileEntity(pos)
         return when {
-            tileEntity is tileentity.Case -> {
+            tileEntity is TECase -> {
                 if (tileEntity.isCreative && (!player.capabilities.isCreativeMode || !tileEntity.canInteract(player.name))) false
                 else tileEntity.canInteract(player.name) && super.removedByPlayer(state, world, pos, player, willHarvest)
             }

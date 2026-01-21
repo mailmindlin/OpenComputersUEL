@@ -1,10 +1,18 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.api.driver.DriverItem
 import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Adapter
+import li.cil.oc.api.internal.Case
+import li.cil.oc.api.internal.Drone as ApiDrone
+import li.cil.oc.api.internal.Microcontroller
+import li.cil.oc.api.internal.Robot
+import li.cil.oc.api.internal.Rotatable
+import li.cil.oc.api.internal.Server
+import li.cil.oc.api.internal.Tablet
 import li.cil.oc.common.Tier
 import li.cil.oc.server.driver.Registry
 import net.minecraft.item.ItemStack
@@ -21,24 +29,24 @@ abstract class Item : DriverItem {
 
   override fun dataTag(stack: ItemStack): NBTTagCompound = Item.dataTag(stack)
 
-  protected fun isOneOf(stack: ItemStack, vararg items: api.detail.ItemInfo): Boolean =
-    items.filterNotNull().contains(api.Items.get(stack))
+  protected fun isOneOf(stack: ItemStack, vararg items: ItemInfo): Boolean =
+    items.filterNotNull().contains(ApiItems.get(stack))
 
-  protected fun isAdapter(host: Class<out EnvironmentHost>): Boolean = internal.Adapter::class.java.isAssignableFrom(host)
+  protected fun isAdapter(host: Class<out EnvironmentHost>): Boolean = Adapter::class.java.isAssignableFrom(host)
 
-  protected fun isComputer(host: Class<out EnvironmentHost>): Boolean = internal.Case::class.java.isAssignableFrom(host)
+  protected fun isComputer(host: Class<out EnvironmentHost>): Boolean = Case::class.java.isAssignableFrom(host)
 
-  protected fun isRobot(host: Class<out EnvironmentHost>): Boolean = internal.Robot::class.java.isAssignableFrom(host)
+  protected fun isRobot(host: Class<out EnvironmentHost>): Boolean = Robot::class.java.isAssignableFrom(host)
 
-  protected fun isRotatable(host: Class<out EnvironmentHost>): Boolean = internal.Rotatable::class.java.isAssignableFrom(host)
+  protected fun isRotatable(host: Class<out EnvironmentHost>): Boolean = Rotatable::class.java.isAssignableFrom(host)
 
-  protected fun isServer(host: Class<out EnvironmentHost>): Boolean = internal.Server::class.java.isAssignableFrom(host)
+  protected fun isServer(host: Class<out EnvironmentHost>): Boolean = Server::class.java.isAssignableFrom(host)
 
-  protected fun isTablet(host: Class<out EnvironmentHost>): Boolean = internal.Tablet::class.java.isAssignableFrom(host)
+  protected fun isTablet(host: Class<out EnvironmentHost>): Boolean = Tablet::class.java.isAssignableFrom(host)
 
-  protected fun isMicrocontroller(host: Class<out EnvironmentHost>): Boolean = internal.Microcontroller::class.java.isAssignableFrom(host)
+  protected fun isMicrocontroller(host: Class<out EnvironmentHost>): Boolean = Microcontroller::class.java.isAssignableFrom(host)
 
-  protected fun isDrone(host: Class<out EnvironmentHost>): Boolean = internal.Drone::class.java.isAssignableFrom(host)
+  protected fun isDrone(host: Class<out EnvironmentHost>): Boolean = ApiDrone::class.java.isAssignableFrom(host)
 
   companion object {
     @JvmStatic

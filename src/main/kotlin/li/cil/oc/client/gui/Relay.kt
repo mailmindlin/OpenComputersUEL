@@ -3,8 +3,8 @@ package li.cil.oc.client.gui
 import java.text.DecimalFormat
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
-import li.cil.oc.common.container
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.container.Relay as ContainerRelay
+import li.cil.oc.common.tileentity.Relay as TileEntityRelay
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -15,8 +15,8 @@ import org.lwjgl.util.Rectangle
 
 class Relay(
     playerInventory: InventoryPlayer,
-    val relay: tileentity.Relay
-) : DynamicGuiContainer<container.Relay>(container.Relay(playerInventory, relay)) {
+    val relay: TileEntityRelay
+) : DynamicGuiContainer<ContainerRelay>(ContainerRelay(playerInventory, relay)) {
 
     private val format = DecimalFormat("#.##hz")
 

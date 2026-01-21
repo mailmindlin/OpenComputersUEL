@@ -2,7 +2,7 @@ package li.cil.oc.common.template
 
 import com.google.common.base.Strings
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.api.Driver
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.IMC
 import li.cil.oc.common.Slot
@@ -115,7 +115,7 @@ object AssemblerTemplates {
             return if (validator != null) {
                 IMC.tryInvokeStatic(validator, inventory, slot, tier, stack, false) as Boolean
             } else {
-                val driver = if (hostClass != null) api.Driver.driverFor(stack, hostClass) else api.Driver.driverFor(stack)
+                val driver = if (hostClass != null) Driver.driverFor(stack, hostClass) else Driver.driverFor(stack)
                 if (driver != null) {
                     try {
                         driver.slot(stack) == kind && driver.tier(stack) <= tier

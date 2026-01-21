@@ -2,7 +2,7 @@ package li.cil.oc.common.container
 
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.common.Slot
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Rack as TERack
 import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
@@ -11,7 +11,7 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.util.Constants.NBT
 
-class Rack(playerInventory: InventoryPlayer, val rack: tileentity.Rack) : Player(playerInventory, rack) {
+class Rack(playerInventory: InventoryPlayer, val rack: TERack) : Player(playerInventory, rack) {
     companion object {
         const val MaxConnections = 4
     }

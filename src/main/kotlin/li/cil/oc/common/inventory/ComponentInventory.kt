@@ -1,10 +1,10 @@
 package li.cil.oc.common.inventory
 
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.DriverItem
-import li.cil.oc.api.network
+import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Node
@@ -13,7 +13,7 @@ import li.cil.oc.integration.opencomputers.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
-abstract class ComponentInventory : Inventory, network.Environment {
+abstract class ComponentInventory : Inventory, Environment {
     private var _components: Array<ManagedEnvironment?>? = null
     protected var isSizeInventoryReady: Boolean = true
 
@@ -76,7 +76,7 @@ abstract class ComponentInventory : Inventory, network.Environment {
             }
         }
         // Make sure our node is connected.
-        api.Network.joinNewNetwork(node())
+        ApiNetwork.joinNewNetwork(node())
         for (component in components) {
             if (component != null) {
                 applyLifecycleState(component, Lifecycle.LifecycleState.Initializing)

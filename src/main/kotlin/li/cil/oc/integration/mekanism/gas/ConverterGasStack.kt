@@ -1,10 +1,10 @@
 package li.cil.oc.integration.mekanism.gas
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.driver.Converter
 import mekanism.api.gas.GasStack
 
-object ConverterGasStack : api.driver.Converter {
+object ConverterGasStack : Converter {
     override fun convert(value: Any?, output: MutableMap<Any?, Any?>) {
         when (value) {
             is GasStack -> {

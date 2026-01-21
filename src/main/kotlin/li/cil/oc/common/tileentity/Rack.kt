@@ -1,10 +1,10 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Driver
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.component.RackMountable
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Rack as InternalRack
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.EnvironmentHost
@@ -31,7 +31,7 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
 
-class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerBalancer, ComponentInventory, traits.Rotatable, traits.BundledRedstoneAware, Analyzable, internal.Rack, traits.StateAware {
+class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerBalancer, ComponentInventory, traits.Rotatable, traits.BundledRedstoneAware, Analyzable, InternalRack, traits.StateAware {
     @JvmField
     var isRelayEnabled = false
 
@@ -53,7 +53,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
 
     @JvmField
     val snifferNodes: Array<Array<Node>> = Array(sizeInventory) {
-        Array(3) { api.Network.newNode(this, Visibility.Neighbors).create() }
+        Array(3) { ApiNetwork.newNode(this, Visibility.Neighbors).create() }
     }
 
     fun connect(slot: Int, connectableIndex: Int, side: EnumFacing?) {
@@ -93,7 +93,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
                 val connectable = mountable.getConnectableAt(connectableIndex)
                 if (connectable != null && connectable.node() != null) {
                     if (connectable.node().network() == null) {
-                        api.Network.joinNewNetwork(connectable.node())
+                        ApiNetwork.joinNewNetwork(connectable.node())
                     }
                     connectable.node().connect(snifferNodes[slot][connectableIndex])
                 }
@@ -109,7 +109,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
                     val mountable = getMountable(slot)
                     val busNode = sidedNode(plugSide)
                     if (busNode != null && mountable != null && mountable.node() != null && busNode != mountable.node()) {
-                        api.Network.joinNewNetwork(mountable.node())
+                        ApiNetwork.joinNewNetwork(mountable.node())
                         busNode.connect(mountable.node())
                     }
                 }
@@ -122,7 +122,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
                             val connectable = mountable.getConnectableAt(connectableIndex)
                             if (connectable != null && connectable.node() != null) {
                                 if (connectable.node().network() == null) {
-                                    api.Network.joinNewNetwork(connectable.node())
+                                    ApiNetwork.joinNewNetwork(connectable.node())
                                 }
                                 connectable.node().connect(snifferNodes[slot][connectableIndex])
                             }
@@ -171,7 +171,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
         reconnect(plug.side)
     }
 
-    override fun createNode(plug: Plug): Node = api.Network.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
         .withConnector(Settings.get.bufferDistributor)
         .create()
 
@@ -280,7 +280,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
     // StateAware
 
     override fun getCurrentState(): EnumSet<StateAware.State> {
-        val result = EnumSet.noneOf(api.util.StateAware.State::class.java)
+        val result = EnumSet.noneOf(StateAware.State::class.java)
         components.filterNotNull().forEach { component ->
             if (component is RackMountable) {
                 result.addAll(component.currentState)
@@ -359,7 +359,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
     override fun connectItemNode(node: Node) {
         // By default create a new network for mountables. They have to
         // be wired up manually (mapping is reset in onItemAdded).
-        api.Network.joinNewNetwork(node)
+        ApiNetwork.joinNewNetwork(node)
     }
 
     // ----------------------------------------------------------------------- //
@@ -467,7 +467,7 @@ class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerB
         } else null
     }
 
-    fun isWorking(mountable: RackMountable): Boolean = mountable.currentState.contains(api.util.StateAware.State.IsWorking)
+    fun isWorking(mountable: RackMountable): Boolean = mountable.currentState.contains(StateAware.State.IsWorking)
 
     val hasRedstoneCard: Boolean get() = components.any { component ->
         if (component is EnvironmentHost && component is RackMountable && component is IInventory && isWorking(component)) {

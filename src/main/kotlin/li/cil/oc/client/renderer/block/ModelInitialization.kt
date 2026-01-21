@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer.block
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.Items
 import li.cil.oc.common.item.CustomModel
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.traits.Delegate
@@ -81,7 +81,7 @@ object ModelInitialization {
     // -----------------------------------------------------------------------
 
     private fun registerModel(blockName: String, blockLocation: ModelResourceLocation, itemLocation: ModelResourceLocation) {
-        val descriptor = api.Items.get(blockName)
+        val descriptor = Items.get(blockName)
         val block = descriptor.block()
         val stack = descriptor.createItemStack(1)
 
@@ -93,7 +93,7 @@ object ModelInitialization {
 
     private fun registerItems() {
         val meshDefinition = ItemMeshDefinition { stack ->
-            val descriptor = api.Items.get(stack)
+            val descriptor = Items.get(stack)
             if (descriptor != null) {
                 val location = "${Settings.resourceDomain}:${descriptor.name()}"
                 ModelResourceLocation(location, "inventory")

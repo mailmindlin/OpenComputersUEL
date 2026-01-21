@@ -2,7 +2,8 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -28,7 +29,7 @@ import java.util.EnumSet
 
 class Disassembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor, traits.Inventory, traits.StateAware, traits.PlayerInputAware, traits.Tickable, DeviceInfo {
     @JvmField
-    val node: Connector = api.Network.newNode(this, Visibility.None)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
         .create()
 
@@ -84,9 +85,9 @@ class Disassembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor,
 
     override fun getCurrentState(): EnumSet<StateAware.State> {
         return when {
-            isActive -> EnumSet.of(api.util.StateAware.State.IsWorking)
-            queue.isNotEmpty() -> EnumSet.of(api.util.StateAware.State.CanWork)
-            else -> EnumSet.noneOf(api.util.StateAware.State::class.java)
+            isActive -> EnumSet.of(StateAware.State.IsWorking)
+            queue.isNotEmpty() -> EnumSet.of(StateAware.State.CanWork)
+            else -> EnumSet.noneOf(StateAware.State::class.java)
         }
     }
 
@@ -208,7 +209,7 @@ class Disassembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor,
 
     override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean =
         allowDisassembling(stack) &&
-            (((Settings.get.disassembleAllTheThings || api.Items.get(stack) != null) && ItemUtils.getIngredients(stack).isNotEmpty()) ||
+            (((Settings.get.disassembleAllTheThings || ApiItems.get(stack) != null) && ItemUtils.getIngredients(stack).isNotEmpty()) ||
                 DisassemblerTemplates.select(stack) != null)
 
     private fun allowDisassembling(stack: ItemStack): Boolean =

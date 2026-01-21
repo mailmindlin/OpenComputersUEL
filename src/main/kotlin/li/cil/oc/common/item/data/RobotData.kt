@@ -5,7 +5,7 @@ import com.google.common.base.Strings
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Driver
 import li.cil.oc.integration.opencomputers.DriverScreen
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.ItemUtils
@@ -84,7 +84,7 @@ class RobotData : ItemData {
         // robot in creative mode.
         val newInfo = RobotData(stack)
         newInfo.components.forEach { cs ->
-            val driver = api.Driver.driverFor(cs)
+            val driver = Driver.driverFor(cs)
             if (driver != null && driver == DriverScreen) {
                 val nbt = driver.dataTag(cs)
                 for (tagName in nbt.keySet.toTypedArray()) {

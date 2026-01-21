@@ -3,7 +3,7 @@ package li.cil.oc.common.tileentity
 import com.google.common.base.Strings
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.util.ExtendedAABB
@@ -140,7 +140,7 @@ class Print @JvmOverloads constructor(
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
             updateRedstone()
             if (state && data.isButtonMode) {
-                val block = api.Items.get(Constants.BlockName.Print).block()
+                val block = ApiItems.get(Constants.BlockName.Print).block()
                 val delay = block.tickRate(world)
                 if (scheduleUpdate != null) {
                     scheduleUpdate.invoke(delay)

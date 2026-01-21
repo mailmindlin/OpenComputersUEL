@@ -1,7 +1,7 @@
 package li.cil.oc.common.event
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.event.RackMountableRenderEvent
 import li.cil.oc.client.Textures
 import li.cil.oc.client.renderer.tileentity.RenderUtil
@@ -18,23 +18,23 @@ import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 object RackMountableRenderHandler {
-    val DiskDriveMountable by lazy { api.Items.get(Constants.ItemName.DiskDriveMountable) }
+    val DiskDriveMountable by lazy { ApiItems.get(Constants.ItemName.DiskDriveMountable) }
 
     val Servers by lazy {
         arrayOf(
-            api.Items.get(Constants.ItemName.ServerTier1),
-            api.Items.get(Constants.ItemName.ServerTier2),
-            api.Items.get(Constants.ItemName.ServerTier3),
-            api.Items.get(Constants.ItemName.ServerCreative)
+            ApiItems.get(Constants.ItemName.ServerTier1),
+            ApiItems.get(Constants.ItemName.ServerTier2),
+            ApiItems.get(Constants.ItemName.ServerTier3),
+            ApiItems.get(Constants.ItemName.ServerCreative)
         )
     }
 
-    val TerminalServer by lazy { api.Items.get(Constants.ItemName.TerminalServer) }
+    val TerminalServer by lazy { ApiItems.get(Constants.ItemName.TerminalServer) }
 
     @JvmStatic
     @SubscribeEvent
     fun onRackMountableRendering(e: RackMountableRenderEvent.TileEntity) {
-        if (e.data != null && DiskDriveMountable == api.Items.get(e.rack.getStackInSlot(e.mountable))) {
+        if (e.data != null && DiskDriveMountable == ApiItems.get(e.rack.getStackInSlot(e.mountable))) {
             // Disk drive.
 
             if (e.data.hasKey("disk")) {
@@ -66,7 +66,7 @@ object RackMountableRenderHandler {
                 RenderState.disableBlend()
                 RenderState.enableEntityLighting()
             }
-        } else if (e.data != null && Servers.contains(api.Items.get(e.rack.getStackInSlot(e.mountable)))) {
+        } else if (e.data != null && Servers.contains(ApiItems.get(e.rack.getStackInSlot(e.mountable)))) {
             // Server.
             RenderState.disableEntityLighting()
             RenderState.makeItBlend()
@@ -86,7 +86,7 @@ object RackMountableRenderHandler {
 
             RenderState.disableBlend()
             RenderState.enableEntityLighting()
-        } else if (e.data != null && TerminalServer == api.Items.get(e.rack.getStackInSlot(e.mountable))) {
+        } else if (e.data != null && TerminalServer == ApiItems.get(e.rack.getStackInSlot(e.mountable))) {
             // Terminal server.
             RenderState.disableEntityLighting()
             RenderState.makeItBlend()
@@ -109,15 +109,15 @@ object RackMountableRenderHandler {
     @SubscribeEvent
     fun onRackMountableRendering(e: RackMountableRenderEvent.Block) {
         when {
-            DiskDriveMountable == api.Items.get(e.rack.getStackInSlot(e.mountable)) -> {
+            DiskDriveMountable == ApiItems.get(e.rack.getStackInSlot(e.mountable)) -> {
                 // Disk drive.
                 e.setFrontTextureOverride(Textures.getSprite(Textures.Block.RackDiskDrive))
             }
-            Servers.contains(api.Items.get(e.rack.getStackInSlot(e.mountable))) -> {
+            Servers.contains(ApiItems.get(e.rack.getStackInSlot(e.mountable))) -> {
                 // Server.
                 e.setFrontTextureOverride(Textures.getSprite(Textures.Block.RackServer))
             }
-            TerminalServer == api.Items.get(e.rack.getStackInSlot(e.mountable)) -> {
+            TerminalServer == ApiItems.get(e.rack.getStackInSlot(e.mountable)) -> {
                 // Terminal server.
                 e.setFrontTextureOverride(Textures.getSprite(Textures.Block.RackTerminalServer))
             }

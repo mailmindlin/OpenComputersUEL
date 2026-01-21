@@ -1,7 +1,7 @@
 package li.cil.oc.common.container
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common
+import li.cil.oc.common.Slot as CommonSlot
 import net.minecraft.inventory.IInventory
 import net.minecraft.util.ResourceLocation
 
@@ -24,8 +24,8 @@ open class StaticComponentSlot(
     override val tierIcon: ResourceLocation? = Textures.Icons.get(tier)
 
     override fun getSlotStackLimit(): Int = when (slot) {
-        common.Slot.Tool, common.Slot.Any, common.Slot.Filtered -> super.getSlotStackLimit()
-        common.Slot.None -> 0
+        CommonSlot.Tool, CommonSlot.Any, CommonSlot.Filtered -> super.getSlotStackLimit()
+        CommonSlot.None -> 0
         else -> 1
     }
 }

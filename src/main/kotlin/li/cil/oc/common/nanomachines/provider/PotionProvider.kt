@@ -1,7 +1,7 @@
 package li.cil.oc.common.nanomachines.provider
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Nanomachines as ApiNanomachines
 import li.cil.oc.api.nanomachines.Behavior
 import li.cil.oc.api.nanomachines.DisableReason
 import li.cil.oc.api.prefab.AbstractBehavior
@@ -46,7 +46,7 @@ object PotionProvider : ScalaProvider("c29e4eec-5a46-479a-9b3d-ad0f06da784a") {
             const val Duration = 600
         }
 
-        fun amplifier(player: EntityPlayer): Int = api.Nanomachines.getController(player).getInputCount(this) - 1
+        fun amplifier(player: EntityPlayer): Int = ApiNanomachines.getController(player).getInputCount(this) - 1
 
         override fun getNameHint(): String = potion.name.removePrefix("potion.")
 

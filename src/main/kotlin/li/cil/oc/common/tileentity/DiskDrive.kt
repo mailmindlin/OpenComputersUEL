@@ -2,8 +2,8 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Driver
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -50,7 +50,7 @@ class DiskDrive : TileEntityBase(), traits.Environment, ComponentInventory, trai
     // Environment
 
     @JvmField
-    val node: Component = api.Network.newNode(this, Visibility.Network)
+    val node: Component = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("disk_drive")
         .create()
 

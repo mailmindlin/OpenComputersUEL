@@ -1,6 +1,6 @@
 package li.cil.oc.common.block.traits
 
-import li.cil.oc.api
+import li.cil.oc.api.util.StateAware as ApiStateAware
 import net.minecraft.block.state.IBlockState
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
@@ -13,8 +13,8 @@ interface StateAware {
         return when (tileEntity) {
             is StateAware -> {
                 when {
-                    tileEntity.currentState.contains(api.util.StateAware.State.IsWorking) -> 15
-                    tileEntity.currentState.contains(api.util.StateAware.State.CanWork) -> 10
+                    tileEntity.currentState.contains(ApiStateAware.State.IsWorking) -> 15
+                    tileEntity.currentState.contains(ApiStateAware.State.CanWork) -> 10
                     else -> 0
                 }
             }

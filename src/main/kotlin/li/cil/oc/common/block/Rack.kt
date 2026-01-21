@@ -4,7 +4,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Rack as TERack
+import li.cil.oc.common.tileentity.TileEntity as TETileEntity
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -29,7 +30,7 @@ class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GU
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
-        val extendedState = if (state is IExtendedBlockState && tileEntity is tileentity.traits.TileEntity) {
+        val extendedState = if (state is IExtendedBlockState && tileEntity is TETileEntity) {
             state.withProperty(property.PropertyTile.Tile, tileEntity)
         } else state
         return extendedState.withProperty(PropertyRotatable.Facing, getFacing(world, pos))
@@ -49,7 +50,7 @@ class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GU
 
     override val guiType = GuiType.Rack
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Rack()
+    override fun createNewTileEntity(world: World, metadata: Int) = TERack()
 
     // ----------------------------------------------------------------------- //
 
@@ -65,7 +66,7 @@ class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GU
 
     override fun collisionRayTrace(state: IBlockState, world: World, pos: BlockPos, start: Vec3d, end: Vec3d): RayTraceResult? {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Rack) {
+        if (tileEntity is TERack) {
             var closestDistance = Double.POSITIVE_INFINITY
             var closest: RayTraceResult? = null
 
@@ -94,7 +95,7 @@ class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GU
 
     override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Rack) {
+        if (tileEntity is TERack) {
             val slot = tileEntity.slotAt(side, hitX, hitY, hitZ)
             if (slot != null) {
                 // Snap to grid to get same behavior on client and server...

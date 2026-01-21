@@ -6,10 +6,11 @@ import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal
+import li.cil.oc.api.internal.Case as InternalCase
 import li.cil.oc.api.network.Connector
-import li.cil.oc.common
 import li.cil.oc.common.InventorySlots
+import li.cil.oc.Sound
+import li.cil.oc.BlockCase as BlockCase
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.property.PropertyRunning
@@ -23,7 +24,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 
 class Case @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-) : TileEntityBase(), traits.PowerAcceptor(), traits.Computer, traits.Colored, internal.Case, DeviceInfo {
+) : TileEntityBase(), traits.PowerAcceptor(), traits.Computer, traits.Colored, InternalCase, DeviceInfo {
 
     init {
         // If no tier was defined when constructing this case, then we don't yet know the inventory size
@@ -86,7 +87,7 @@ class Case @JvmOverloads constructor(
     override fun onRunningChanged() {
         super.onRunningChanged()
         val block = blockType
-        if (block is common.block.Case) {
+        if (block is BlockCase) {
             val state = world.getBlockState(pos)
             // race condition that the world no longer has this block at the position (e.g. it was broken)
             if (block == state.block) {
@@ -119,7 +120,7 @@ class Case @JvmOverloads constructor(
         super.onItemAdded(slot, stack)
         if (isServer) {
             if (InventorySlots.computer(tier)[slot].slot == Slot.Floppy) {
-                common.Sound.playDiskInsert(this)
+                Sound.playDiskInsert(this)
             }
         }
     }
@@ -129,7 +130,7 @@ class Case @JvmOverloads constructor(
         if (isServer) {
             val slotType = InventorySlots.computer(tier)[slot].slot
             if (slotType == Slot.Floppy) {
-                common.Sound.playDiskEject(this)
+                Sound.playDiskEject(this)
             }
             if (slotType == Slot.CPU) {
                 machine.stop()

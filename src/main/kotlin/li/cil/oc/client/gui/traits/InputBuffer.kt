@@ -1,10 +1,10 @@
 package li.cil.oc.client.gui.traits
 
-import li.cil.oc.api
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.client.Textures
 import li.cil.oc.integration.util.ItemSearch
 import li.cil.oc.util.RenderState
+import li.cil.oc.api.internal.TextBuffer
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.gui.inventory.GuiContainer
 import net.minecraft.client.renderer.GlStateManager
@@ -14,7 +14,7 @@ import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
 
 interface InputBuffer : DisplayBuffer {
-    val buffer: api.internal.TextBuffer?
+    val buffer: TextBuffer?
 
     override val bufferColumns: Int
         get() = if (buffer == null) 0 else buffer!!.viewportWidth

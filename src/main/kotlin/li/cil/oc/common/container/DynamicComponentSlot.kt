@@ -1,8 +1,8 @@
 package li.cil.oc.common.container
 
 import li.cil.oc.client.Textures
-import li.cil.oc.common
 import li.cil.oc.common.InventorySlots.InventorySlot
+import li.cil.oc.common.Slot as CommonSlot
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.SideTracker
 import net.minecraft.entity.player.EntityPlayer
@@ -34,7 +34,7 @@ class DynamicComponentSlot(
         get() {
             val mainTier = containerTierGetter()
             return if (mainTier >= 0) info(this).slot
-            else common.Slot.None
+            else CommonSlot.None
         }
 
     override fun hasBackground(): Boolean = Textures.Icons.get(slot) != null
@@ -42,8 +42,8 @@ class DynamicComponentSlot(
     override fun getBackgroundLocation(): ResourceLocation? = Textures.Icons.get(slot) ?: super.getBackgroundLocation()
 
     override fun getSlotStackLimit(): Int = when (slot) {
-        common.Slot.Tool, common.Slot.Any, common.Slot.Filtered -> super.getSlotStackLimit()
-        common.Slot.None -> 0
+        CommonSlot.Tool, CommonSlot.Any, CommonSlot.Filtered -> super.getSlotStackLimit()
+        CommonSlot.None -> 0
         else -> 1
     }
 

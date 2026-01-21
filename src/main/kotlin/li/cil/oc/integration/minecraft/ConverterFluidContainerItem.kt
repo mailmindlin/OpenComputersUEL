@@ -1,11 +1,11 @@
 package li.cil.oc.integration.vanilla
 
-import li.cil.oc.api
+import li.cil.oc.api.driver.Converter
 import net.minecraft.item.ItemStack
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandlerItem
 
-object ConverterFluidContainerItem : api.driver.Converter {
+object ConverterFluidContainerItem : Converter {
     override fun convert(value: Any?, output: MutableMap<Any, Any>) {
         when (value) {
             is ItemStack -> if (value.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {

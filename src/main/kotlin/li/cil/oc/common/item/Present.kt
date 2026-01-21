@@ -2,7 +2,7 @@ package li.cil.oc.common.item
 
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.ItemUtils
@@ -38,7 +38,7 @@ object PresentObject {
         val result = mutableListOf<ItemStack>()
 
         fun add(name: String, weight: Int) {
-            val item = api.Items.get(name)
+            val item = ApiItems.get(name)
             if (item != null) {
                 val stack = item.createItemStack(1)
                 // Only if it can be crafted (wasn't disabled in the config).

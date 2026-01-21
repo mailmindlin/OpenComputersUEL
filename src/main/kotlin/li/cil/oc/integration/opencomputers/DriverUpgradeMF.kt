@@ -6,11 +6,11 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.server.component
+import li.cil.oc.server.component.UpgradeMF
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.DimensionManager
@@ -20,7 +20,7 @@ import net.minecraftforge.common.DimensionManager
  */
 object DriverUpgradeMF : Item(), HostAware {
   override fun worksWith(stack: ItemStack): Boolean = isOneOf(stack,
-    api.Items.get(Constants.ItemName.MFU))
+    ApiItems.get(Constants.ItemName.MFU))
 
   override fun worksWith(stack: ItemStack, host: Class<out EnvironmentHost>): Boolean =
     worksWith(stack) && isAdapter(host)
@@ -37,7 +37,7 @@ object DriverUpgradeMF : Item(), HostAware {
           val (x, y, z, dim, side) = coord
           val world = DimensionManager.getWorld(dim)
           if (world != null) {
-            return component.UpgradeMF(host, BlockPosition(x, y, z, world), EnumFacing.byIndex(side))
+            return UpgradeMF(host, BlockPosition(x, y, z, world), EnumFacing.byIndex(side))
           }
         }
       }
@@ -48,7 +48,7 @@ object DriverUpgradeMF : Item(), HostAware {
   object Provider : EnvironmentProvider {
     override fun getEnvironment(stack: ItemStack): Class<*>? =
       if (worksWith(stack))
-        component.UpgradeMF::class.java
+        UpgradeMF::class.java
       else null
   }
 }

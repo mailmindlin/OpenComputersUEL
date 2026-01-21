@@ -1,7 +1,7 @@
 package li.cil.oc.common.nanomachines.provider
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Nanomachines as ApiNanomachines
 import li.cil.oc.api.nanomachines.Behavior
 import li.cil.oc.api.nanomachines.DisableReason
 import li.cil.oc.api.prefab.AbstractBehavior
@@ -49,7 +49,7 @@ object DisintegrationProvider : ScalaProvider("c4e7e3c2-8069-4fbb-b08e-74b1bddcd
 
                         // Check blocks in range.
                         val blockPos = BlockPosition(player)
-                        val actualRange = Settings.get.nanomachineDisintegrationRange * api.Nanomachines.getController(player).getInputCount(this)
+                        val actualRange = Settings.get.nanomachineDisintegrationRange * ApiNanomachines.getController(player).getInputCount(this)
                         for (x in -actualRange..actualRange) {
                             for (y in 0..(actualRange * 2)) {
                                 for (z in -actualRange..actualRange) {

@@ -4,10 +4,10 @@ import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.container
+import li.cil.oc.common.container.Assembler as ContainerAssembler
 import li.cil.oc.common.container.ComponentSlot
 import li.cil.oc.common.template.AssemblerTemplates
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Assembler as TileEntityAssembler
 import li.cil.oc.util.RenderState
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
@@ -17,8 +17,8 @@ import net.minecraft.util.text.ITextComponent
 
 class Assembler(
     playerInventory: InventoryPlayer,
-    val assembler: tileentity.Assembler
-) : DynamicGuiContainer<container.Assembler>(container.Assembler(playerInventory, assembler)) {
+    val assembler: TileEntityAssembler
+) : DynamicGuiContainer<ContainerAssembler>(ContainerAssembler(playerInventory, assembler)) {
 
     init {
         xSize = 176

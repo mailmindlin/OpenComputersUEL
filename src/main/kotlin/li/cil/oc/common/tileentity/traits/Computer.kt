@@ -1,8 +1,9 @@
 package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Machine as ApiMachine
 import li.cil.oc.api.machine.Machine
+import li.cil.oc.api.util.StateAware
 import li.cil.oc.api.network.Node
 import li.cil.oc.client.Sound
 import li.cil.oc.common.tileentity.RobotProxy
@@ -22,7 +23,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
 
 abstract class Computer : TileEntityBase(), Environment, Rotatable, BundledRedstoneAware, api.network.Analyzable, api.machine.MachineHost, StateAware, Tickable {
-    private val _machine: Machine? by lazy { if (isServer) api.Machine.create(this) else null }
+    private val _machine: Machine? by lazy { if (isServer) ApiMachine.create(this) else null }
 
     open val machine: Machine? get() = _machine
 
@@ -70,9 +71,9 @@ abstract class Computer : TileEntityBase(), Environment, Rotatable, BundledRedst
         _users.addAll(list)
     }
 
-    override fun getCurrentState(): EnumSet<api.util.StateAware.State> {
-        return if (isRunning) EnumSet.of(api.util.StateAware.State.IsWorking)
-        else EnumSet.noneOf(api.util.StateAware.State::class.java)
+    override fun getCurrentState(): EnumSet<StateAware.State> {
+        return if (isRunning) EnumSet.of(StateAware.State.IsWorking)
+        else EnumSet.noneOf(StateAware.State::class.java)
     }
 
     // ----------------------------------------------------------------------- //

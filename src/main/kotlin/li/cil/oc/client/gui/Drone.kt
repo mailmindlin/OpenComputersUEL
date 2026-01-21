@@ -6,8 +6,8 @@ import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.font.TextBufferRenderData
 import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.container
-import li.cil.oc.common.entity
+import li.cil.oc.common.container.Drone as ContainerDrone
+import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.TextBuffer
@@ -20,8 +20,8 @@ import org.lwjgl.opengl.GL11
 
 class Drone(
     playerInventory: InventoryPlayer,
-    val drone: entity.Drone
-) : DynamicGuiContainer<container.Drone>(container.Drone(playerInventory, drone)), li.cil.oc.client.gui.traits.DisplayBuffer {
+    val drone: EntityDrone
+) : DynamicGuiContainer<ContainerDrone>(ContainerDrone(playerInventory, drone)), li.cil.oc.client.gui.traits.DisplayBuffer {
 
     init {
         xSize = 176

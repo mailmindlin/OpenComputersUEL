@@ -1,7 +1,7 @@
 package li.cil.oc.common.block
 
 import li.cil.oc.Settings
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.PowerConverter as TEPowerConverter
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.util.Tooltip
@@ -50,5 +50,5 @@ class PowerConverter : SimpleBlock(), traits.PowerAcceptor {
 
     override val energyThroughput: Double get() = Settings.get.powerConverterRate
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.PowerConverter()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEPowerConverter()
 }

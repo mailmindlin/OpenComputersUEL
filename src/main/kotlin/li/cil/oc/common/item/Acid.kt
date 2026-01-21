@@ -1,6 +1,6 @@
 package li.cil.oc.common.item
 
-import li.cil.oc.api
+import li.cil.oc.api.Nanomachines as ApiNanomachines
 import li.cil.oc.common.item.traits.Delegate
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
@@ -33,7 +33,7 @@ class Acid(override val parent: Delegator) : Delegate {
                 entity.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("saturation"), 2000))
 
                 // Remove nanomachines if installed.
-                api.Nanomachines.uninstallController(entity)
+                ApiNanomachines.uninstallController(entity)
             }
             stack.shrink(1)
             return if (stack.count > 0) stack else ItemStack.EMPTY

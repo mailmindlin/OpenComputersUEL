@@ -3,17 +3,17 @@ package li.cil.oc.client.gui
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.gui.widget.ProgressBar
-import li.cil.oc.common.container
+import li.cil.oc.common.container.Printer as ContainerPrinter
 import li.cil.oc.common.container.ComponentSlot
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Printer as TileEntityPrinter
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.player.InventoryPlayer
 
 class Printer(
     playerInventory: InventoryPlayer,
-    val printer: tileentity.Printer
-) : DynamicGuiContainer<container.Printer>(container.Printer(playerInventory, printer)) {
+    val printer: TileEntityPrinter
+) : DynamicGuiContainer<ContainerPrinter>(ContainerPrinter(playerInventory, printer)) {
 
     init {
         xSize = 176

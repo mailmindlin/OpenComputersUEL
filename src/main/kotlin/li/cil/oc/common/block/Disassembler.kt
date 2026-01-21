@@ -2,7 +2,7 @@ package li.cil.oc.common.block
 
 import li.cil.oc.Settings
 import li.cil.oc.common.GuiType
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Disassembler as TEDisassembler
 import li.cil.oc.util.Tooltip
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.item.ItemStack
@@ -19,5 +19,5 @@ class Disassembler : SimpleBlock(), traits.PowerAcceptor, traits.StateAware, tra
 
     override val guiType = GuiType.Disassembler
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Disassembler()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEDisassembler()
 }

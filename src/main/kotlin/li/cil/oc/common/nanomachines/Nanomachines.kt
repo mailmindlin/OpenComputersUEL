@@ -1,7 +1,7 @@
 package li.cil.oc.common.nanomachines
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.detail.NanomachinesAPI
 import li.cil.oc.api.nanomachines.BehaviorProvider
 import li.cil.oc.api.nanomachines.Controller
 import li.cil.oc.server.PacketSender
@@ -9,7 +9,7 @@ import li.cil.oc.util.PlayerUtils
 import net.minecraft.entity.player.EntityPlayer
 import java.util.WeakHashMap
 
-object Nanomachines : api.detail.NanomachinesAPI {
+object Nanomachines : NanomachinesAPI {
     @JvmField
     val providers: MutableSet<BehaviorProvider> = mutableSetOf()
 

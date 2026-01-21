@@ -1,7 +1,7 @@
 package li.cil.oc.common.nanomachines.provider
 
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Nanomachines as ApiNanomachines
 import li.cil.oc.api.nanomachines.Behavior
 import li.cil.oc.api.nanomachines.DisableReason
 import li.cil.oc.api.prefab.AbstractBehavior
@@ -26,7 +26,7 @@ object HungryProvider : ScalaProvider("d697c24a-014c-4773-a288-23084a59e9e8") {
         override fun onDisable(reason: DisableReason) {
             if (reason == DisableReason.OutOfEnergy) {
                 player.attackEntityFrom(HungryDamage, Settings.get.nanomachinesHungryDamage)
-                api.Nanomachines.getController(player).changeBuffer(Settings.get.nanomachinesHungryEnergyRestored)
+                ApiNanomachines.getController(player).changeBuffer(Settings.get.nanomachinesHungryEnergyRestored)
             }
         }
     }

@@ -1,7 +1,7 @@
 package li.cil.oc.client
 
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
+import li.cil.oc.api.API
 import li.cil.oc.client.renderer.HighlightRenderer
 import li.cil.oc.client.renderer.MFUTargetRenderer
 import li.cil.oc.client.renderer.PetRenderer
@@ -16,7 +16,24 @@ import li.cil.oc.common.entity.Drone
 import li.cil.oc.common.event.NanomachinesHandler
 import li.cil.oc.common.event.RackMountableRenderHandler
 import li.cil.oc.common.item.traits.Delegate
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Adapter as TileEntityAdapter
+import li.cil.oc.common.tileentity.Assembler as TileEntityAssembler
+import li.cil.oc.common.tileentity.Case as TileEntityCase
+import li.cil.oc.common.tileentity.Charger as TileEntityCharger
+import li.cil.oc.common.tileentity.Disassembler as TileEntityDisassembler
+import li.cil.oc.common.tileentity.DiskDrive as TileEntityDiskDrive
+import li.cil.oc.common.tileentity.Geolyzer as TileEntityGeolyzer
+import li.cil.oc.common.tileentity.Hologram as TileEntityHologram
+import li.cil.oc.common.tileentity.Microcontroller as TileEntityMicrocontroller
+import li.cil.oc.common.tileentity.NetSplitter as TileEntityNetSplitter
+import li.cil.oc.common.tileentity.PowerDistributor as TileEntityPowerDistributor
+import li.cil.oc.common.tileentity.Printer as TileEntityPrinter
+import li.cil.oc.common.tileentity.Raid as TileEntityRaid
+import li.cil.oc.common.tileentity.Rack as TileEntityRack
+import li.cil.oc.common.tileentity.Relay as TileEntityRelay
+import li.cil.oc.common.tileentity.RobotProxy as TileEntityRobotProxy
+import li.cil.oc.common.tileentity.Screen as TileEntityScreen
+import li.cil.oc.common.tileentity.Transposer as TileEntityTransposer
 import li.cil.oc.common.Proxy as CommonProxy
 import li.cil.oc.util.Audio
 import net.minecraft.block.Block
@@ -36,7 +53,7 @@ internal class Proxy : CommonProxy() {
   override fun preInit(e: FMLPreInitializationEvent) {
     super.preInit(e)
 
-    api.API.manual = Manual
+    API.manual = Manual
 
     CommandHandler.register()
 
@@ -57,27 +74,27 @@ internal class Proxy : CommonProxy() {
 
     ColorHandler.init()
 
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Adapter::class.java, AdapterRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Assembler::class.java, AssemblerRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Case::class.java, CaseRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Charger::class.java, ChargerRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Disassembler::class.java, DisassemblerRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.DiskDrive::class.java, DiskDriveRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Geolyzer::class.java, GeolyzerRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityAdapter::class.java, AdapterRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityAssembler::class.java, AssemblerRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCase::class.java, CaseRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCharger::class.java, ChargerRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDisassembler::class.java, DisassemblerRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityDiskDrive::class.java, DiskDriveRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityGeolyzer::class.java, GeolyzerRenderer)
     if (GLContext.getCapabilities().OpenGL15)
-      ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Hologram::class.java, HologramRenderer)
+      ClientRegistry.bindTileEntitySpecialRenderer(TileEntityHologram::class.java, HologramRenderer)
     else
-      ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Hologram::class.java, HologramRendererFallback)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Microcontroller::class.java, MicrocontrollerRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.NetSplitter::class.java, NetSplitterRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.PowerDistributor::class.java, PowerDistributorRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Printer::class.java, PrinterRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Raid::class.java, RaidRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Rack::class.java, RackRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Relay::class.java, RelayRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.RobotProxy::class.java, RobotRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Screen::class.java, ScreenRenderer)
-    ClientRegistry.bindTileEntitySpecialRenderer(tileentity.Transposer::class.java, TransposerRenderer)
+      ClientRegistry.bindTileEntitySpecialRenderer(TileEntityHologram::class.java, HologramRendererFallback)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityMicrocontroller::class.java, MicrocontrollerRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityNetSplitter::class.java, NetSplitterRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityPowerDistributor::class.java, PowerDistributorRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityPrinter::class.java, PrinterRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRaid::class.java, RaidRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRack::class.java, RackRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRelay::class.java, RelayRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityRobotProxy::class.java, RobotRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityScreen::class.java, ScreenRenderer)
+    ClientRegistry.bindTileEntitySpecialRenderer(TileEntityTransposer::class.java, TransposerRenderer)
 
     ClientRegistry.registerKeyBinding(KeyBindings.clipboardPaste)
 

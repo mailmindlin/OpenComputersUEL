@@ -1,26 +1,28 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.driver.EnvironmentProvider
+import li.cil.oc.api.driver.item.HostAware
+import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.inventory.DatabaseInventory
-import li.cil.oc.common.item
+import li.cil.oc.common.item.UpgradeDatabase as ItemUpgradeDatabase
 import li.cil.oc.common.item.Delegator
-import li.cil.oc.server.component
+import li.cil.oc.server.component.UpgradeDatabase as ComponentUpgradeDatabase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 
-object DriverUpgradeDatabase : Item(), api.driver.item.HostAware {
+object DriverUpgradeDatabase : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.DatabaseUpgradeTier1),
-    api.Items.get(Constants.ItemName.DatabaseUpgradeTier2),
-    api.Items.get(Constants.ItemName.DatabaseUpgradeTier3))
+    ApiItems.get(Constants.ItemName.DatabaseUpgradeTier1),
+    ApiItems.get(Constants.ItemName.DatabaseUpgradeTier2),
+    ApiItems.get(Constants.ItemName.DatabaseUpgradeTier3))
 
-  override fun createEnvironment(stack: ItemStack, host: api.network.EnvironmentHost) =
+  override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world != null && host.world.isRemote) null
-    else component.UpgradeDatabase(object : DatabaseInventory {
+    else ComponentUpgradeDatabase(object : DatabaseInventory {
       override fun container() = stack
 
       override fun isUsableByPlayer(player: EntityPlayer) = false
@@ -30,14 +32,14 @@ object DriverUpgradeDatabase : Item(), api.driver.item.HostAware {
 
   override fun tier(stack: ItemStack): Int =
     when (val item = Delegator.subItem(stack)) {
-      is item.UpgradeDatabase -> item.tier
+      is ItemUpgradeDatabase -> item.tier
       else -> Tier.One
     }
 
   object Provider : EnvironmentProvider {
     override fun getEnvironment(stack: ItemStack): Class<*>? =
       if (worksWith(stack))
-        component.UpgradeDatabase::class.java
+        ComponentUpgradeDatabase::class.java
       else null
   }
 }

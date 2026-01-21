@@ -1,25 +1,25 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.common.item
+import li.cil.oc.common.item.RedstoneCard as ItemRedstoneCard
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.integration.util.BundledRedstone
 import li.cil.oc.integration.util.WirelessRedstone
-import li.cil.oc.server.component
+import li.cil.oc.server.component.Redstone as ComponentRedstone
 import net.minecraft.item.ItemStack
 
 object DriverRedstoneCard : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    api.Items.get(Constants.ItemName.RedstoneCardTier1),
-    api.Items.get(Constants.ItemName.RedstoneCardTier2))
+    ApiItems.get(Constants.ItemName.RedstoneCardTier1),
+    ApiItems.get(Constants.ItemName.RedstoneCardTier2))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world != null && host.world.isRemote) null
@@ -29,15 +29,15 @@ object DriverRedstoneCard : Item(), HostAware {
       val hasWireless = WirelessRedstone.isAvailable && isAdvanced
       when (host) {
         is BundledRedstoneAware -> if (hasBundled) {
-          if (hasWireless) component.Redstone.BundledWireless(host)
-          else component.Redstone.Bundled(host)
+          if (hasWireless) ComponentRedstone.BundledWireless(host)
+          else ComponentRedstone.Bundled(host)
         } else null
         is RedstoneAware -> {
-          if (hasWireless) component.Redstone.VanillaWireless(host)
-          else component.Redstone.Vanilla(host)
+          if (hasWireless) ComponentRedstone.VanillaWireless(host)
+          else ComponentRedstone.Vanilla(host)
         }
         else -> {
-          if (hasWireless) component.Redstone.Wireless(host)
+          if (hasWireless) ComponentRedstone.Wireless(host)
           else null
         }
       }
@@ -47,7 +47,7 @@ object DriverRedstoneCard : Item(), HostAware {
 
   override fun tier(stack: ItemStack): Int =
     when (val item = Delegator.subItem(stack)) {
-      is item.RedstoneCard -> item.tier
+      is ItemRedstoneCard -> item.tier
       else -> Tier.One
     }
 
@@ -58,11 +58,11 @@ object DriverRedstoneCard : Item(), HostAware {
         val hasBundled = BundledRedstone.isAvailable && isAdvanced
         val hasWireless = WirelessRedstone.isAvailable && isAdvanced
         if (hasBundled) {
-          if (hasWireless) component.Redstone.BundledWireless::class.java
-          else component.Redstone.Bundled::class.java
+          if (hasWireless) ComponentRedstone.BundledWireless::class.java
+          else ComponentRedstone.Bundled::class.java
         }
         else {
-          component.Redstone.Vanilla::class.java
+          ComponentRedstone.Vanilla::class.java
         }
       }
       else null

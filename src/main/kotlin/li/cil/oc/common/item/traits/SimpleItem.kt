@@ -2,7 +2,7 @@ package li.cil.oc.common.item.traits
 
 import li.cil.oc.CreativeTab
 import li.cil.oc.Settings
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.DiskDrive as TEDiskDrive
 import li.cil.oc.util.Tooltip
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
@@ -25,7 +25,7 @@ abstract class SimpleItem : Item() {
 
     override fun doesSneakBypassUse(stack: ItemStack, world: IBlockAccess, pos: BlockPos, player: EntityPlayer): Boolean {
         val te = world.getTileEntity(pos)
-        return if (te is tileentity.DiskDrive) {
+        return if (te is TEDiskDrive) {
             true
         } else {
             super.doesSneakBypassUse(stack, world, pos, player)

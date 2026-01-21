@@ -1,7 +1,7 @@
 package li.cil.oc.common.inventory
 
 import li.cil.oc.api.Driver
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.DiskDrive as TEDiskDrive
 import li.cil.oc.common.Slot
 import net.minecraft.item.ItemStack
 
@@ -18,7 +18,7 @@ abstract class DiskDriveMountableInventory : ItemStackInventory() {
 
     override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean {
         if (slot != 0) return false
-        val driver = Driver.driverFor(stack, tileentity.DiskDrive::class.java)
+        val driver = Driver.driverFor(stack, TEDiskDrive::class.java)
         return driver != null && driver.slot(stack) == Slot.Floppy
     }
 }

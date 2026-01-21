@@ -1,9 +1,10 @@
 package li.cil.oc.common.container
 
-import li.cil.oc.api
+import li.cil.oc.TextBuffer
 import li.cil.oc.client.Textures
-import li.cil.oc.common
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.Slot as CommonSlot
+import li.cil.oc.common.Tier as CommonTier
+import li.cil.oc.common.tileentity.Robot as TERobot
 import li.cil.oc.util.SideTracker
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.inventory.IInventory
@@ -12,8 +13,8 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Robot(playerInventory: InventoryPlayer, val robot: tileentity.Robot) : Player(playerInventory, robot) {
-    val hasScreen: Boolean = robot.components.any { it is api.internal.TextBuffer }
+class Robot(playerInventory: InventoryPlayer, val robot: TERobot) : Player(playerInventory, robot) {
+    val hasScreen: Boolean = robot.components.any { it is TextBuffer }
     private val withScreenHeight = 256
     private val noScreenHeight = 108
     val deltaY: Int = if (hasScreen) 0 else withScreenHeight - noScreenHeight
@@ -27,7 +28,7 @@ class Robot(playerInventory: InventoryPlayer, val robot: tileentity.Robot) : Pla
     private var lastSentBufferSize = -1
 
     init {
-        addSlotToContainer(170 + 0 * slotSize, 232 - deltaY, common.Slot.Tool)
+        addSlotToContainer(170 + 0 * slotSize, 232 - deltaY, CommonSlot.Tool)
         addSlotToContainer(170 + 1 * slotSize, 232 - deltaY, robot.containerSlotType(1), robot.containerSlotTier(1))
         addSlotToContainer(170 + 2 * slotSize, 232 - deltaY, robot.containerSlotType(2), robot.containerSlotTier(2))
         addSlotToContainer(170 + 3 * slotSize, 232 - deltaY, robot.containerSlotType(3), robot.containerSlotTier(3))
@@ -76,7 +77,7 @@ class Robot(playerInventory: InventoryPlayer, val robot: tileentity.Robot) : Pla
     }
 
     inner class InventorySlot(container: Player, inventory: IInventory, index: Int, x: Int, y: Int)
-        : StaticComponentSlot(container, inventory, index, x, y, common.Slot.Any, common.Tier.Any) {
+        : StaticComponentSlot(container, inventory, index, x, y, CommonSlot.Any, CommonTier.Any) {
 
         val isValid: Boolean
             get() = robot.isInventorySlot(slotIndex)
@@ -86,7 +87,7 @@ class Robot(playerInventory: InventoryPlayer, val robot: tileentity.Robot) : Pla
 
         override fun getBackgroundLocation(): ResourceLocation? =
             if (isValid) super.getBackgroundLocation()
-            else Textures.Icons.get(common.Tier.None)
+            else Textures.Icons.get(CommonTier.None)
 
         override fun getStack(): ItemStack =
             if (isValid) super.getStack()

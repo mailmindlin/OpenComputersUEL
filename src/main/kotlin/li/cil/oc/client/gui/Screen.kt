@@ -1,6 +1,7 @@
 package li.cil.oc.client.gui
 
-import li.cil.oc.api
+import li.cil.oc.api.internal.TextBuffer
+import li.cil.oc.client.gui.traits.InputBuffer
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.gui.BufferRenderer
 import li.cil.oc.util.RenderState
@@ -8,13 +9,13 @@ import net.minecraft.client.renderer.GlStateManager
 import org.lwjgl.input.Mouse
 
 class Screen(
-    private val buffer: api.internal.TextBuffer,
+    private val buffer: TextBuffer,
     val hasMouse: Boolean,
     val hasKeyboardCallback: () -> Boolean,
     val hasPower: () -> Boolean
-) : traits.InputBuffer {
+) : InputBuffer {
 
-    override fun buffer(): api.internal.TextBuffer = buffer
+    override fun buffer(): TextBuffer = buffer
 
     override fun hasKeyboard() = hasKeyboardCallback()
 

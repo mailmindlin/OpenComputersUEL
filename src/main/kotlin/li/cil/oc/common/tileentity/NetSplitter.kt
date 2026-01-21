@@ -2,7 +2,7 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -10,6 +10,7 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Node
+import li.cil.oc.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
@@ -21,7 +22,7 @@ import net.minecraft.util.SoundCategory
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, traits.RedstoneAware, api.network.SidedEnvironment, DeviceInfo {
+class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, traits.RedstoneAware, SidedEnvironment, DeviceInfo {
     private val deviceInfo: java.util.Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
@@ -40,7 +41,7 @@ class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, tr
     }
 
     @JvmField
-    val node: Node = api.Network.newNode(this, Visibility.Network)
+    val node: Node = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("net_splitter", Visibility.Network)
         .create()
 
@@ -57,7 +58,7 @@ class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, tr
         if (previous != isSideOpen(side)) {
             if (isServer) {
                 node.remove()
-                api.Network.joinOrCreateNetwork(this)
+                ApiNetwork.joinOrCreateNetwork(this)
                 ServerPacketSender.sendNetSplitterState(this)
                 world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
                 world.notifyNeighborsOfStateChange(pos, blockType, false)
@@ -90,7 +91,7 @@ class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, tr
         if (isInverted != oldIsInverted) {
             if (isServer) {
                 node.remove()
-                api.Network.joinOrCreateNetwork(this)
+                ApiNetwork.joinOrCreateNetwork(this)
                 ServerPacketSender.sendNetSplitterState(this)
                 world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
             } else {

@@ -3,12 +3,12 @@ package li.cil.oc.client.gui
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.gui.widget.ProgressBar
-import li.cil.oc.common.container
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.container.Disassembler as ContainerDisassembler
+import li.cil.oc.common.tileentity.Disassembler as TileEntityDisassembler
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.player.InventoryPlayer
 
-class Disassembler(playerInventory: InventoryPlayer, val disassembler: tileentity.Disassembler) : DynamicGuiContainer(container.Disassembler(playerInventory, disassembler)) {
+class Disassembler(playerInventory: InventoryPlayer, val disassembler: TileEntityDisassembler) : DynamicGuiContainer<ContainerDisassembler>(ContainerDisassembler(playerInventory, disassembler)) {
   val progress = addWidget(ProgressBar(18, 65))
 
   override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
@@ -21,7 +21,7 @@ class Disassembler(playerInventory: InventoryPlayer, val disassembler: tileentit
     GlStateManager.color(1f, 1f, 1f)
     Textures.bind(Textures.GUI.Disassembler)
     drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
-    progress.level = inventoryContainer.disassemblyProgress / 100.0
+    progress.level = inventoryContainer.disassemblyProgress() / 100.0
     drawWidgets()
   }
 }

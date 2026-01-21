@@ -2,7 +2,7 @@ package li.cil.oc.common.container
 
 import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.inventory.ServerInventory
-import li.cil.oc.server.component
+import li.cil.oc.server.component.Server as ServerComponent
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
@@ -10,7 +10,7 @@ import net.minecraft.nbt.NBTTagCompound
 class Server @JvmOverloads constructor(
     playerInventory: InventoryPlayer,
     serverInventory: ServerInventory,
-    val server: component.Server? = null
+    val server: ServerComponent? = null
 ) : Player(playerInventory, serverInventory) {
 
     var isRunning: Boolean = false

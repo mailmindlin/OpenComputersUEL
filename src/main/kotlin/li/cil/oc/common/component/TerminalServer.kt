@@ -7,11 +7,15 @@ import li.cil.oc.Constants
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Driver
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.component.RackBusConnectable
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.api.driver.DeviceInfo
-import li.cil.oc.api.internal.Keyboard.UsabilityChecker
+import li.cil.oc.api.internal.Keyboard as InternalKeyboard
+import li.cil.oc.api.internal.Rack as InternalRack
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.EnvironmentHost
@@ -22,8 +26,8 @@ import li.cil.oc.api.util.Lifecycle
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.api.util.StateAware.State
 import li.cil.oc.common.Tier
-import li.cil.oc.common.item
 import li.cil.oc.common.item.Delegator
+import li.cil.oc.common.item.Terminal
 import li.cil.oc.util.ExtendedNBT.extendedNBT
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -33,27 +37,27 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraftforge.common.util.Constants.NBT
 
-class TerminalServer(val rack: api.internal.Rack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfo {
+class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfo {
 
-    override val node: Node = api.Network.newNode(this, Visibility.None).create()
+    override val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
 
-    val buffer: api.internal.TextBuffer by lazy {
-        val screenItem = api.Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)
-        val buf = api.Driver.driverFor(screenItem, javaClass).createEnvironment(screenItem, this) as api.internal.TextBuffer
+    val buffer: InternalTextBuffer by lazy {
+        val screenItem = ApiItems.get(Constants.BlockName.ScreenTier1).createItemStack(1)
+        val buf = Driver.driverFor(screenItem, javaClass).createEnvironment(screenItem, this) as InternalTextBuffer
         val (maxWidth, maxHeight) = Settings.screenResolutionsByTier(Tier.Three)
         buf.setMaximumResolution(maxWidth, maxHeight)
         buf.setMaximumColorDepth(Settings.screenDepthsByTier(Tier.Three))
         buf
     }
 
-    val keyboard: api.internal.Keyboard by lazy {
-        val keyboardItem = api.Items.get(Constants.BlockName.Keyboard).createItemStack(1)
-        val kbd = api.Driver.driverFor(keyboardItem, javaClass).createEnvironment(keyboardItem, this) as api.internal.Keyboard
-        kbd.setUsableOverride(object : UsabilityChecker {
-            override fun isUsableByPlayer(keyboard: api.internal.Keyboard, player: EntityPlayer): Boolean {
+    val keyboard: InternalKeyboard by lazy {
+        val keyboardItem = ApiItems.get(Constants.BlockName.Keyboard).createItemStack(1)
+        val kbd = Driver.driverFor(keyboardItem, javaClass).createEnvironment(keyboardItem, this) as InternalKeyboard
+        kbd.setUsableOverride(object : InternalKeyboard.UsabilityChecker {
+            override fun isUsableByPlayer(keyboard: InternalKeyboard, player: EntityPlayer): Boolean {
                 val stack = player.heldItemMainhand
                 val subItem = Delegator.subItem(stack)
-                return if (subItem is item.Terminal && stack.hasTagCompound()) {
+                return if (subItem is Terminal && stack.hasTagCompound()) {
                     sidedKeys.contains(stack.tagCompound!!.getString(Settings.namespace + "key"))
                 } else {
                     false
@@ -139,7 +143,7 @@ class TerminalServer(val rack: api.internal.Rack, val slot: Int) : Environment, 
     // RackMountable
 
     override fun getData(): NBTTagCompound {
-        if (node.address() == null) api.Network.joinNewNetwork(node)
+        if (node.address() == null) ApiNetwork.joinNewNetwork(node)
 
         val nbt = NBTTagCompound()
         nbt.extendedNBT().setNewTagList("keys", keys)
@@ -152,7 +156,7 @@ class TerminalServer(val rack: api.internal.Rack, val slot: Int) : Environment, 
     override fun getConnectableAt(index: Int): RackBusConnectable? = null
 
     override fun onActivate(player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, hitX: Float, hitY: Float): Boolean {
-        if (api.Items.get(heldItem) == api.Items.get(Constants.ItemName.Terminal)) {
+        if (ApiItems.get(heldItem) == ApiItems.get(Constants.ItemName.Terminal)) {
             if (!world().isRemote) {
                 val key = UUID.randomUUID().toString()
                 if (!heldItem.hasTagCompound()) {

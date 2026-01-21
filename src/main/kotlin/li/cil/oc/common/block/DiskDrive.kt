@@ -2,7 +2,7 @@ package li.cil.oc.common.block
 
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.DiskDrive as TEDiskDrive
 import li.cil.oc.integration.Mods
 import li.cil.oc.util.Tooltip
 import net.minecraft.block.state.BlockStateContainer
@@ -35,7 +35,7 @@ class DiskDrive : SimpleBlock(), traits.GUI {
 
     override val guiType = GuiType.DiskDrive
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.DiskDrive()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEDiskDrive()
 
     // ----------------------------------------------------------------------- //
 
@@ -43,7 +43,7 @@ class DiskDrive : SimpleBlock(), traits.GUI {
 
     override fun getComparatorInputOverride(state: IBlockState, world: World, pos: BlockPos): Int {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.DiskDrive && !tileEntity.getStackInSlot(0).isEmpty) 15 else 0
+        return if (tileEntity is TEDiskDrive && !tileEntity.getStackInSlot(0).isEmpty) 15 else 0
     }
 
     // ----------------------------------------------------------------------- //
@@ -52,7 +52,7 @@ class DiskDrive : SimpleBlock(), traits.GUI {
         // Behavior: sneaking -> Insert[+Eject], not sneaking -> GUI.
         if (player.isSneaking) {
             val tileEntity = world.getTileEntity(pos)
-            if (tileEntity is tileentity.DiskDrive) {
+            if (tileEntity is TEDiskDrive) {
                 val isDiskInDrive = tileEntity.getStackInSlot(0) != null
                 val isHoldingDisk = tileEntity.isItemValidForSlot(0, heldItem)
                 if (isDiskInDrive) {

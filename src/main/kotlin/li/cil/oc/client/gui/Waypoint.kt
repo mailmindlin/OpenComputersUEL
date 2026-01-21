@@ -2,7 +2,7 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.client.PacketSender
 import li.cil.oc.client.Textures
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Waypoint as TileEntityWaypoint
 import li.cil.oc.util.OldScaledResolution
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.gui.GuiTextField
@@ -10,7 +10,7 @@ import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.client.renderer.GlStateManager
 import org.lwjgl.input.Keyboard
 
-class Waypoint(val waypoint: tileentity.Waypoint) : GuiScreen() {
+class Waypoint(val waypoint: TileEntityWaypoint) : GuiScreen() {
   var guiLeft = 0
   var guiTop = 0
   var xSize = 0

@@ -1,6 +1,8 @@
 package li.cil.oc.common.container
 
-import li.cil.oc.common
+import li.cil.oc.common.Slot as CommonSlot
+import li.cil.oc.common.Tier as CommonTier
+import li.cil.oc.PlayerInputAware
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.inventory.Slot
@@ -25,7 +27,7 @@ abstract class ComponentSlot(inventory: IInventory, index: Int, x: Int, y: Int) 
     open fun hasBackground(): Boolean = backgroundLocation != null
 
     @SideOnly(Side.CLIENT)
-    override fun isEnabled(): Boolean = slot != common.Slot.None && tier != common.Tier.None && super.isEnabled()
+    override fun isEnabled(): Boolean = slot != CommonSlot.None && tier != CommonTier.None && super.isEnabled()
 
     override fun isItemValid(stack: ItemStack): Boolean = inventory.isItemValidForSlot(slotIndex, stack)
 
@@ -41,7 +43,7 @@ abstract class ComponentSlot(inventory: IInventory, index: Int, x: Int, y: Int) 
     override fun putStack(stack: ItemStack) {
         super.putStack(stack)
         val inv = inventory
-        if (inv is common.tileentity.traits.PlayerInputAware) {
+        if (inv is PlayerInputAware) {
             inv.onSetInventorySlotContents(container.playerInventory.player, slotIndex, stack)
         }
     }

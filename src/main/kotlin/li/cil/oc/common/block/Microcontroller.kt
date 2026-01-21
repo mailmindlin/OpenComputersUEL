@@ -2,12 +2,12 @@ package li.cil.oc.common.block
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.ApiItems as ApiItems
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.common.item.data.MicrocontrollerData
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Microcontroller as TEMicrocontroller
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.integration.util.Wrench
 import li.cil.oc.util.InventoryUtils
@@ -28,7 +28,7 @@ import net.minecraft.util.math.RayTraceResult
 import net.minecraft.world.World
 import kotlin.reflect.KClass
 
-class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> = tileentity.Microcontroller::class) : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.CustomDrops<tileentity.Microcontroller> {
+class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicrocontroller::class) : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.CustomDrops<TEMicrocontroller> {
     init {
         setCreativeTab(null)
         ItemBlacklist.hide(this)
@@ -44,7 +44,7 @@ class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> 
 
     override fun getPickBlock(state: IBlockState, target: RayTraceResult, world: World, pos: BlockPos, player: EntityPlayer): ItemStack {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Microcontroller) tileEntity.info.copyItemStack() else ItemStack.EMPTY
+        return if (tileEntity is TEMicrocontroller) tileEntity.info.copyItemStack() else ItemStack.EMPTY
     }
 
     // ----------------------------------------------------------------------- //
@@ -70,7 +70,7 @@ class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> 
 
     override val energyThroughput: Double get() = Settings.get.caseRate(Tier.One)
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Microcontroller()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEMicrocontroller()
 
     // ----------------------------------------------------------------------- //
 
@@ -79,16 +79,16 @@ class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> 
             if (!player.isSneaking) {
                 if (!world.isRemote) {
                     val tileEntity = world.getTileEntity(pos)
-                    if (tileEntity is tileentity.Microcontroller) {
+                    if (tileEntity is TEMicrocontroller) {
                         if (tileEntity.machine.isRunning) tileEntity.machine.stop()
                         else tileEntity.machine.start()
                     }
                 }
                 return true
-            } else if (api.Items.get(heldItem) == api.Items.get(Constants.ItemName.EEPROM)) {
+            } else if (ApiItems.get(heldItem) == ApiItems.get(Constants.ItemName.EEPROM)) {
                 if (!world.isRemote) {
                     val tileEntity = world.getTileEntity(pos)
-                    if (tileEntity is tileentity.Microcontroller) {
+                    if (tileEntity is TEMicrocontroller) {
                         val newEeprom = player.inventory.decrStackSize(player.inventory.currentItem, 1)
                         val result = tileEntity.changeEEPROM(newEeprom)
                         if (result is StackOption.SomeStack) {
@@ -102,7 +102,7 @@ class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> 
         return false
     }
 
-    override fun doCustomInit(tileEntity: tileentity.Microcontroller, player: EntityLivingBase, stack: ItemStack) {
+    override fun doCustomInit(tileEntity: TEMicrocontroller, player: EntityLivingBase, stack: ItemStack) {
         super.doCustomInit(tileEntity, player, stack)
         if (!tileEntity.world.isRemote) {
             tileEntity.info.load(stack)
@@ -110,12 +110,12 @@ class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> 
         }
     }
 
-    override fun doCustomDrops(tileEntity: tileentity.Microcontroller, player: EntityPlayer, willHarvest: Boolean) {
+    override fun doCustomDrops(tileEntity: TEMicrocontroller, player: EntityPlayer, willHarvest: Boolean) {
         super.doCustomDrops(tileEntity, player, willHarvest)
         tileEntity.saveComponents()
         tileEntity.info.storedEnergy = tileEntity.snooperNode.localBuffer.toInt()
         Block.spawnAsEntity(tileEntity.world, tileEntity.pos, tileEntity.info.createItemStack())
     }
 
-    override val tileEntityClass: Class<tileentity.Microcontroller> get() = tileentity.Microcontroller::class.java
+    override val tileEntityClass: Class<TEMicrocontroller> get() = TEMicrocontroller::class.java
 }
