@@ -15,7 +15,7 @@ import net.minecraft.util.EnumParticleTypes
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Waypoint: TileEntityBase(), traits.Environment(), traits.Rotatable, traits.RedstoneAware, traits.Tickable {
+class Waypoint: TileEntityBase(), traits.Environment, traits.Rotatable, traits.RedstoneAware, traits.Tickable {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("waypoint")

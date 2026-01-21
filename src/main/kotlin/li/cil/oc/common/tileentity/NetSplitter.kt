@@ -22,7 +22,7 @@ import net.minecraft.util.SoundCategory
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, traits.RedstoneAware, SidedEnvironment, DeviceInfo {
+class NetSplitter : TileEntityBase(), traits.Environment, traits.OpenSides, traits.RedstoneAware, SidedEnvironment, DeviceInfo {
     private val deviceInfo: java.util.Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
@@ -49,6 +49,8 @@ class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, tr
 
     @JvmField
     var isInverted = false
+
+    override var openSides: Array<Boolean> = Array(EnumFacing.VALUES.size) { false }
 
     override fun isSideOpen(side: EnumFacing): Boolean = if (isInverted) !super.isSideOpen(side) else super.isSideOpen(side)
 

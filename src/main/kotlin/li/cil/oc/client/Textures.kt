@@ -100,7 +100,7 @@ object Textures {
 
     override val basePath = "items/%s"
 
-    override fun loader(map: TextureMap, loc: ResourceLocation) = map.registerSprite(loc)
+    override fun loader(map: TextureMap, loc: ResourceLocation) { map.registerSprite(loc) }
   }
 
   // These are kept in the block texture atlas to support animations.

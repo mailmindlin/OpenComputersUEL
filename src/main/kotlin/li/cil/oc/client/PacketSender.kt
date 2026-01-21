@@ -55,7 +55,7 @@ object PacketSender {
     val pb = SimplePacketBuilder(PacketType.KeyDown)
 
     pb.writeUTF(address)
-    pb.writeChar(char)
+    pb.writeChar(char.code)
     pb.writeInt(code)
 
     pb.sendToServer()
@@ -65,7 +65,7 @@ object PacketSender {
     val pb = SimplePacketBuilder(PacketType.KeyUp)
 
     pb.writeUTF(address)
-    pb.writeChar(char)
+    pb.writeChar(char.code)
     pb.writeInt(code)
 
     pb.sendToServer()
@@ -106,7 +106,7 @@ object PacketSender {
     pb.writeFloat(x.toFloat())
     pb.writeFloat(y.toFloat())
     pb.writeBoolean(drag)
-    pb.writeByte(button.toByte())
+    pb.writeByte(button)
 
     pb.sendToServer()
   }
@@ -117,7 +117,7 @@ object PacketSender {
     pb.writeUTF(address)
     pb.writeFloat(x.toFloat())
     pb.writeFloat(y.toFloat())
-    pb.writeByte(scroll.toByte())
+    pb.writeByte(scroll)
 
     pb.sendToServer()
   }
@@ -128,7 +128,7 @@ object PacketSender {
     pb.writeUTF(address)
     pb.writeFloat(x.toFloat())
     pb.writeFloat(y.toFloat())
-    pb.writeByte(button.toByte())
+    pb.writeByte(button)
 
     pb.sendToServer()
   }

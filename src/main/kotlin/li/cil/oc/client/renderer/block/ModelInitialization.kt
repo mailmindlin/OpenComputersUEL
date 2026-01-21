@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer.block
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.Items
+import li.cil.oc.common.init.Items
 import li.cil.oc.common.item.CustomModel
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.traits.Delegate

@@ -2,13 +2,13 @@ package li.cil.oc.client.renderer
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.Items
+import li.cil.oc.common.init.Items
 import li.cil.oc.client.Textures
-import li.cil.oc.Print
-import li.cil.oc.TileEntityCable as TileEntityCable
-import li.cil.oc.BlockCable as BlockCable
+import li.cil.oc.common.tileentity.Print
+import li.cil.oc.common.tileentity.Cable as TileEntityCable
+import li.cil.oc.common.block.Cable as BlockCable
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedAABB.extendedAABB
+import li.cil.oc.util.rotateTowards
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.RenderState
 import net.minecraft.client.renderer.BufferBuilder

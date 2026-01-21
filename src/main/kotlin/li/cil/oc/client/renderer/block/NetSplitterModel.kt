@@ -36,7 +36,7 @@ object NetSplitterModel : SmartBlockModelBase() {
         return super.getQuads(state, side, rand)
     }
 
-    protected val splitterTexture: Array<out Any>
+    private val splitterTexture: Array<out Any>
         get() = arrayOf(
             Textures.getSprite(Textures.Block.NetSplitterTop),
             Textures.getSprite(Textures.Block.NetSplitterTop),
@@ -46,7 +46,7 @@ object NetSplitterModel : SmartBlockModelBase() {
             Textures.getSprite(Textures.Block.NetSplitterSide)
         )
 
-    protected fun generateBaseModel(): Array<BakedQuad> {
+    private fun generateBaseModel(): Array<BakedQuad> {
         val faces = mutableListOf<BakedQuad>()
 
         // Bottom.
@@ -68,14 +68,14 @@ object NetSplitterModel : SmartBlockModelBase() {
         return faces.toTypedArray()
     }
 
-    protected var BaseModel = emptyArray<BakedQuad>()
+    private var BaseModel = emptyArray<BakedQuad>()
 
     @SubscribeEvent
     fun onTextureStitch(e: TextureStitchEvent.Post) {
         BaseModel = generateBaseModel()
     }
 
-    protected fun addSideQuads(faces: MutableList<BakedQuad>, openSides: BooleanArray) {
+    private fun addSideQuads(faces: MutableList<BakedQuad>, openSides: BooleanArray) {
         val down = openSides[EnumFacing.DOWN.ordinal]
         faces.addAll(bakeQuads(makeBox(Vec3d(5 / 16.0, if (down) 0 / 16.0 else 2 / 16.0, 5 / 16.0), Vec3d(11 / 16.0, 5 / 16.0, 11 / 16.0)), splitterTexture, null))
 

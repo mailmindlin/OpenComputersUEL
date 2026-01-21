@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.Items
+import li.cil.oc.common.init.Items
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.RenderState
 import net.minecraft.client.Minecraft

@@ -2,8 +2,8 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
-import li.cil.oc.CommonSlot as CommonSlot
-import li.cil.oc.Tier
+import li.cil.oc.common.Tier
+import li.cil.oc.common.Slot as CommonSlot
 import li.cil.oc.common.container.ComponentSlot
 import li.cil.oc.common.container.Player
 import li.cil.oc.integration.Mods
@@ -11,6 +11,7 @@ import li.cil.oc.integration.jei.ModJEI
 import li.cil.oc.integration.util.ItemSearch
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.SomeStack
 import net.minecraft.client.gui.Gui
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
@@ -23,7 +24,7 @@ import org.lwjgl.opengl.GL11
 abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiContainer<C>(container) {
     protected var hoveredSlot: Slot? = null
 
-    protected var hoveredStackNEI: StackOption = StackOption.EmptyStack
+    protected var hoveredStackNEI: StackOption = StackOption.empty()
 
     protected open fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
         fontRenderer.drawString(
@@ -101,10 +102,10 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
                 if (!slot.hasStack) {
                     if (slot is ComponentSlot) {
                         if (slot.tierIcon != null) {
-                            Textures.bind(slot.tierIcon)
+                            Textures.bind(slot.tierIcon!!)
                             Gui.drawModalRectWithCustomSizedTexture(slot.xPos, slot.yPos, 0f, 0f, 16, 16, 16f, 16f)
                         }
-                        if (slot.hasBackground) {
+                        if (slot.hasBackground()) {
                             Textures.bind(slot.backgroundLocation)
                             Gui.drawModalRectWithCustomSizedTexture(slot.xPos, slot.yPos, 0f, 0f, 16, 16, 16f, 16f)
                         }
@@ -126,7 +127,7 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
                     val currentIsInPlayerInventory = isInPlayerInventory(slot)
                     val drawHighlight = when (val hovered = hoveredSlot) {
                         null -> when (val stack = hoveredStackNEI) {
-                            is StackOption.SomeStack -> !currentIsInPlayerInventory && isSelectiveSlot(slot) && slot.isItemValid(stack.stack)
+                            is SomeStack -> !currentIsInPlayerInventory && isSelectiveSlot(slot) && slot.isItemValid(stack.stack)
                             else -> false
                         }
                         else -> {

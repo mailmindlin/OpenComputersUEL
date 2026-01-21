@@ -1,7 +1,7 @@
 package li.cil.oc.client.renderer.tileentity
 
 import li.cil.oc.Settings
-import li.cil.oc.Items
+import li.cil.oc.common.init.Items
 import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.client.Textures
 import li.cil.oc.common.tileentity.Screen

@@ -1,12 +1,12 @@
 package li.cil.oc.client.renderer.block
 
 import li.cil.oc.Constants
-import li.cil.oc.Items
+import li.cil.oc.common.init.Items
 import li.cil.oc.client.Textures
 import li.cil.oc.common.Tier
 import li.cil.oc.common.PropertyTile
 import li.cil.oc.common.block.Screen
-import li.cil.oc.common.TileEntityScreen as TileEntityScreen
+import li.cil.oc.common.tileentity.Screen as TileEntityScreen
 import li.cil.oc.util.Color
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.BakedQuad

@@ -25,10 +25,10 @@ object DroneModel : SmartBlockModelBase() {
         return faces
     }
 
-    protected val droneTexture: Any
+    private val droneTexture: Any
         get() = Textures.getSprite(Textures.Item.DroneItem)
 
-    protected val Boxes = arrayOf(
+    private val Boxes = arrayOf(
         makeBox(Vec3d(1.0 / 16, 7.0 / 16, 1.0 / 16), Vec3d(7.0 / 16, 8.0 / 16, 7.0 / 16)),
         makeBox(Vec3d(1.0 / 16, 7.0 / 16, 9.0 / 16), Vec3d(7.0 / 16, 8.0 / 16, 15.0 / 16)),
         makeBox(Vec3d(9.0 / 16, 7.0 / 16, 1.0 / 16), Vec3d(15.0 / 16, 8.0 / 16, 7.0 / 16)),
