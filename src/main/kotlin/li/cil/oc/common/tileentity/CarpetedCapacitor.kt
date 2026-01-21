@@ -1,0 +1,25 @@
+package li.cil.oc.common.tileentity
+
+import li.cil.oc.Settings
+
+class CarpetedCapacitor : Capacitor(), traits.Tickable {
+    private val carpetBonus: Double
+        get() = Settings.get.bufferCapacitor * 0.5
+
+    override val maxCapacity: Double
+        get() = super.maxCapacity + carpetBonus
+
+    override fun updateEntity() {
+        super.updateEntity()
+        if (isServer && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+            val entity = world.findNearestEntityWithinAABB(
+                net.minecraft.entity.passive.EntityOcelot::class.java,
+                net.minecraft.util.math.AxisAlignedBB(pos).grow(3.0),
+                null
+            )
+            if (entity != null) {
+                node.changeBuffer(Settings.get.ocelotPower)
+            }
+        }
+    }
+}

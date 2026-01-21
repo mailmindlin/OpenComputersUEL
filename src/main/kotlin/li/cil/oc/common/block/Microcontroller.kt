@@ -1,0 +1,121 @@
+package li.cil.oc.common.block
+
+import li.cil.oc.Constants
+import li.cil.oc.Settings
+import li.cil.oc.api
+import li.cil.oc.client.KeyBindings
+import li.cil.oc.common.Tier
+import li.cil.oc.common.block.property.PropertyRotatable
+import li.cil.oc.common.item.data.MicrocontrollerData
+import li.cil.oc.common.tileentity
+import li.cil.oc.integration.util.ItemBlacklist
+import li.cil.oc.integration.util.Wrench
+import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Rarity
+import li.cil.oc.util.StackOption
+import net.minecraft.block.Block
+import net.minecraft.block.state.BlockStateContainer
+import net.minecraft.block.state.IBlockState
+import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.EntityLivingBase
+import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.item.EnumRarity
+import net.minecraft.item.ItemStack
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.EnumHand
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.RayTraceResult
+import net.minecraft.world.World
+import kotlin.reflect.KClass
+
+class Microcontroller(protected val tileTag: KClass<tileentity.Microcontroller> = tileentity.Microcontroller::class) : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.CustomDrops<tileentity.Microcontroller> {
+    init {
+        setCreativeTab(null)
+        ItemBlacklist.hide(this)
+    }
+
+    override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing)
+
+    override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta))
+
+    override fun getMetaFromState(state: IBlockState): Int = state.getValue(PropertyRotatable.Facing).horizontalIndex
+
+    // ----------------------------------------------------------------------- //
+
+    override fun getPickBlock(state: IBlockState, target: RayTraceResult, world: World, pos: BlockPos, player: EntityPlayer): ItemStack {
+        val tileEntity = world.getTileEntity(pos)
+        return if (tileEntity is tileentity.Microcontroller) tileEntity.info.copyItemStack() else ItemStack.EMPTY
+    }
+
+    // ----------------------------------------------------------------------- //
+
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+        super.tooltipTail(metadata, stack, world, tooltip, advanced)
+        if (KeyBindings.showExtendedTooltips) {
+            val info = MicrocontrollerData(stack)
+            for (component in info.components) {
+                if (!component.isEmpty) {
+                    tooltip.add("- " + component.displayName)
+                }
+            }
+        }
+    }
+
+    override fun rarity(stack: ItemStack): EnumRarity {
+        val data = MicrocontrollerData(stack)
+        return Rarity.byTier(data.tier)
+    }
+
+    // ----------------------------------------------------------------------- //
+
+    override val energyThroughput: Double get() = Settings.get.caseRate(Tier.One)
+
+    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Microcontroller()
+
+    // ----------------------------------------------------------------------- //
+
+    override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
+        if (!Wrench.holdsApplicableWrench(player, pos)) {
+            if (!player.isSneaking) {
+                if (!world.isRemote) {
+                    val tileEntity = world.getTileEntity(pos)
+                    if (tileEntity is tileentity.Microcontroller) {
+                        if (tileEntity.machine.isRunning) tileEntity.machine.stop()
+                        else tileEntity.machine.start()
+                    }
+                }
+                return true
+            } else if (api.Items.get(heldItem) == api.Items.get(Constants.ItemName.EEPROM)) {
+                if (!world.isRemote) {
+                    val tileEntity = world.getTileEntity(pos)
+                    if (tileEntity is tileentity.Microcontroller) {
+                        val newEeprom = player.inventory.decrStackSize(player.inventory.currentItem, 1)
+                        val result = tileEntity.changeEEPROM(newEeprom)
+                        if (result is StackOption.SomeStack) {
+                            InventoryUtils.addToPlayerInventory(result.stack, player)
+                        }
+                    }
+                }
+                return true
+            }
+        }
+        return false
+    }
+
+    override fun doCustomInit(tileEntity: tileentity.Microcontroller, player: EntityLivingBase, stack: ItemStack) {
+        super.doCustomInit(tileEntity, player, stack)
+        if (!tileEntity.world.isRemote) {
+            tileEntity.info.load(stack)
+            tileEntity.snooperNode.changeBuffer(tileEntity.info.storedEnergy - tileEntity.snooperNode.localBuffer)
+        }
+    }
+
+    override fun doCustomDrops(tileEntity: tileentity.Microcontroller, player: EntityPlayer, willHarvest: Boolean) {
+        super.doCustomDrops(tileEntity, player, willHarvest)
+        tileEntity.saveComponents()
+        tileEntity.info.storedEnergy = tileEntity.snooperNode.localBuffer.toInt()
+        Block.spawnAsEntity(tileEntity.world, tileEntity.pos, tileEntity.info.createItemStack())
+    }
+
+    override val tileEntityClass: Class<tileentity.Microcontroller> get() = tileentity.Microcontroller::class.java
+}

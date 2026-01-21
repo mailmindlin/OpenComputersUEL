@@ -55,24 +55,26 @@ dependencies {
 	compileOnly("curse.maven:forestry-59751:7398359") {// 1.12.2-5.8.2.427
 		exclude module: "jei_1.12"
 	}
-    // compileOnly("net.sengir.forestry:forestry_1.12.2:5.8.2.422") {
-    //     exclude module: "jei_1.12"
-    // }
-    // compileOnly("net.industrial-craft:industrialcraft-2:2.8.221-ex112")
+    compileOnly("net.sengir.forestry:forestry_1.12.2:5.8.2.422") {
+        exclude module: "jei_1.12"
+    }
+    compileOnly("net.industrial-craft:industrialcraft-2:2.8.221-ex112")
     compileOnly("mcp.mobius.waila:Hwyla:1.8.26-B41_1.12.2:api")
-    /* compileOnly fg.deobf("dan200.computercraft:ComputerCraft:${config.cc.version}") */
-    /*compileOnly fg.deobf("org.squiddev:cc-tweaked-1.12.2:1.89.2")*/
+    compileOnly("dan200.computercraft:ComputerCraft:1.80pr1-build0")
+    compileOnly("org.squiddev:cc-tweaked-1.12.2:1.89.2")
     compileOnly("curse.maven:charset-lib-284523:3656492")
-    /*compileOnly fg.deobf("curse.maven:cofh-core-69162:2920433") // CoFHCore
-    compileOnly fg.deobf("curse.maven:ender-io-64578:3328811") // Ender IO
-    compileOnly fg.deobf("curse.maven:railcraft-51195:2687757") // Railcraft
+    compileOnly("curse.maven:cofh-core-69162:2920433") // CoFHCore
+    compileOnly("curse.maven:ender-io-64578:3328811") // Ender IO
+    compileOnly("curse.maven:railcraft-51195:2687757") // Railcraft
 
-    provided fg.deobf("appeng:appliedenergistics2:${config.ae2.version}") {
+    compileOnly("appeng:appliedenergistics2:rv6-stable-7") {
         transitive = false
     }
-    provided fg.deobf("extracells:ExtraCells:${config.extracells.version}:api")
+    compileOnly("extracells:ExtraCells:1.12.2-2.6.5:api")
+
+    def projRed = "1.12.2-4.9.4.120"
     
-    provided fg.deobf("mekanism:Mekanism:${config.mekanism.version}:api") {
+    /*provided fg.deobf("mekanism:Mekanism:${config.mekanism.version}:api") {
         transitive = false
     }
 
@@ -81,10 +83,10 @@ dependencies {
         exclude module: "CodeChickenLib"
     }
 
-    provided fg.deobf("codechicken:ChickenASM:${config.casm.version}")
+    provided fg.deobf("codechicken:ChickenASM:${config.casm.version}")*/
 
-    provided fg.deobf("mezz.jei:jei_${config.minecraft.version}:${config.jei.version}")
-    provided fg.deobf("codechicken:CodeChickenLib:${config.minecraft.version}-${config.ccl.version}:universal")
+    compileOnly("mezz.jei:jei_1.12.2:4.16.1.302")
+    /*provided fg.deobf("codechicken:CodeChickenLib:${config.minecraft.version}-${config.ccl.version}:universal")
     provided fg.deobf("codechicken:WR-CBE:${config.minecraft.version}-${config.wrcbe.version}:universal")
 
     provided fg.deobf("mrtjp:ProjectRed:${config.projred.version}:Base") {
@@ -106,12 +108,13 @@ dependencies {
         exclude module: "CodeChickenLib"
         exclude module: "jei_1.12"
         exclude module: "ForgeMultipart"
-    }
+    }*/
 
-    embedded name: 'OC-LuaJ', version: '20220907.1', ext: 'jar'
-    embedded name: 'OC-JNLua', version: '20230530.0', ext: 'jar'
-    embedded name: 'OC-JNLua-Natives', version: '20220928.1', ext: 'jar'
+    implementation(':OC-LuaJ:20220907.1')
+    implementation(':OC-JNLua:20230530.0')
+    implementation(':OC-JNLua-Natives:20220928.1')
 
+    /*
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-all:1.10.19")
     testImplementation("org.scalactic:scalactic_2.11:2.2.6")

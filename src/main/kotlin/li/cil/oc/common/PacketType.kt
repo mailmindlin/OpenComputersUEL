@@ -1,0 +1,109 @@
+package li.cil.oc.common
+
+enum class PacketType {
+    // Server -> Client
+    AdapterState,
+    Analyze,
+    ChargerState,
+    ClientLog,
+    ColorChange,
+    ComputerState,
+    ComputerUserList,
+    ContainerUpdate,
+    DisassemblerActiveChange,
+    FileSystemActivity,
+    FloppyChange,
+    HologramArea,
+    HologramClear,
+    HologramColor,
+    HologramPowerChange,
+    HologramRotation,
+    HologramRotationSpeed,
+    HologramScale,
+    HologramTranslation,
+    HologramValues,
+    LootDisk,
+    CyclingDisk,
+    NanomachinesConfiguration,
+    NanomachinesInputs,
+    NanomachinesPower,
+    NetSplitterState,
+    NetworkActivity,
+    ParticleEffect,
+    PetVisibility, // Goes both ways.
+    PowerState,
+    PrinterState,
+    RackInventory,
+    RackMountableData,
+    RaidStateChange,
+    RedstoneState,
+    RobotAnimateSwing,
+    RobotAnimateTurn,
+    RobotAssemblingState,
+    RobotInventoryChange,
+    RobotLightChange,
+    RobotMove,
+    RobotNameChange,
+    RobotSelectedSlotChange,
+    RotatableState,
+    SwitchActivity,
+    TextBufferInit, // Goes both ways.
+    TextBufferMulti,
+    TextBufferRamInit,
+    TextBufferBitBlt,
+    TextBufferRamDestroy,
+    TextBufferMultiColorChange,
+    TextBufferMultiCopy,
+    TextBufferMultiDepthChange,
+    TextBufferMultiFill,
+    TextBufferMultiPaletteChange,
+    TextBufferMultiResolutionChange,
+    TextBufferMultiViewportResolutionChange,
+    TextBufferMultiMaxResolutionChange,
+    TextBufferMultiSet,
+    TextBufferMultiRawSetText,
+    TextBufferMultiRawSetBackground,
+    TextBufferMultiRawSetForeground,
+    TextBufferPowerChange,
+    ScreenTouchMode,
+    SoundEffect,
+    Sound,
+    SoundPattern,
+    TransposerActivity,
+    WaypointLabel, // Goes both ways.
+
+    // Client -> Server
+    ComputerPower,
+    CopyToAnalyzer,
+    DriveLock,
+    DriveMode,
+    DronePower,
+    KeyDown,
+    KeyUp,
+    Clipboard,
+    MachineItemStateRequest,
+    MachineItemStateResponse,
+    MouseClickOrDrag,
+    MouseScroll,
+    MouseUp,
+    MultiPartPlace,
+    RackMountableMapping,
+    RackRelayState,
+    RobotAssemblerStart,
+    RobotStateRequest,
+    ServerPower,
+
+    EndOfList;
+
+    val id: Int get() = ordinal
+
+    companion object {
+        private val values = values()
+
+        @JvmStatic
+        operator fun invoke(id: Int): PacketType = values[id]
+
+        @JvmStatic
+        operator fun invoke(id: Byte): PacketType = values[id.toInt()]
+    }
+}
