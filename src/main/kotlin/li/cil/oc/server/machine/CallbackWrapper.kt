@@ -16,33 +16,33 @@ interface CallbackCall {
 }
 
 internal object CallbackWrapper {
-  private final val ObjectNameASM = Any.javaClass.getName.replace('.', '/')
-  private final val CallbackCallDesc = Type.getMethodDescriptor(classOf[CallbackCall].getMethod("call", classOf[AnyRef], classOf[Context], classOf[Arguments]))
-  private final val CallbackCallInterface = Array(CallbackCall.javaClass.getName.replace('.', '/'))
+  private final val ObjectNameASM = Any::class.java.name.replace('.', '/')
+  private final val CallbackCallDesc = Type.getMethodDescriptor(CallbackCall::class.java.getMethod("call", Any::class.java, Context::class.java, Arguments::class.java))
+  private final val CallbackCallInterface = arrayOf(CallbackCall::class.java.name.replace('.', '/'))
   private final val MethodIdCache = mutableMapOf<Method, String>()
   private final val CallbackWrapperCache = mutableMapOf<Method, CallbackCall>()
 
   fun createCallbackWrapper(method: Method): CallbackCall {
     synchronized(this) {
-      CallbackWrapperCache.getOrElseUpdate(method, createWrapper(method, CallbackCallInterface, emitCallbackCall).asInstanceOf[CallbackCall])
+      CallbackWrapperCache.getOrPut(method) { createWrapper(method, CallbackCallInterface, this::emitCallbackCall) as CallbackCall }
     }
   }
 
-  private fun createWrapper(m: Method, interfaces: Array[String], emitCode: (Method, ClassWriter) => Unit): AnyRef = {
+  private fun createWrapper(m: Method, interfaces: Array<String>, emitCode: (Method, ClassWriter) -> Unit): Any {
     val className = "generated.li.cil.oc.CallWrapper_" + generateId(m)
     if (!GeneratedClassLoader.containsClass(className)) {
-      val cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS)
-      cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC | Opcodes.ACC_SUPER, className.replace('.', '/'), null, ObjectNameASM, interfaces)
+      val cw = ClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)
+      cw.visit(Opcodes.V1_6, Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, className.replace('.', '/'), null, ObjectNameASM, interfaces)
       emitConstructor(cw)
       emitCode(m, cw)
       cw.visitEnd()
       GeneratedClassLoader.addClass(className, cw.toByteArray)
     }
 
-    GeneratedClassLoader.findClass(className).newInstance().asInstanceOf[AnyRef]
+    GeneratedClassLoader.findClass(className).newInstance() as Any
   }
 
-  private fun emitConstructor(cw: ClassWriter): Unit = {
+  private fun emitConstructor(cw: ClassWriter) {
     val mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "<init>", "()V", null, null)
     mv.visitCode()
     mv.visitVarInsn(Opcodes.ALOAD, 0)
@@ -52,37 +52,36 @@ internal object CallbackWrapper {
     mv.visitEnd()
   }
 
-  private fun emitCallbackCall(m: Method, cw: ClassWriter): Unit = {
-    val className = m.getDeclaringClass.getName.replace('.', '/')
+  private fun emitCallbackCall(m: Method, cw: ClassWriter) {
+    val className = m.declaringClass.name.replace('.', '/')
     val mv = cw.visitMethod(Opcodes.ACC_PUBLIC, "call", CallbackCallDesc, null, null)
     mv.visitCode()
     mv.visitVarInsn(Opcodes.ALOAD, 1)
     mv.visitTypeInsn(Opcodes.CHECKCAST, className)
     mv.visitVarInsn(Opcodes.ALOAD, 2)
     mv.visitVarInsn(Opcodes.ALOAD, 3)
-    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, className, m.getName, Type.getMethodDescriptor(m), false)
+    mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, className, m.name, Type.getMethodDescriptor(m), false)
     mv.visitInsn(Opcodes.ARETURN)
     mv.visitMaxs(3, 3)
     mv.visitEnd()
   }
 
-  private def generateId(m: Method): String = MethodIdCache.getOrElseUpdate(m, m.getDeclaringClass.getName.replace('.', '_') + "_" + m.getName)
+  private fun generateId(m: Method): String = MethodIdCache.getOrPut(m) {m.declaringClass.name.replace('.', '_') + "_" + m.name }
 
   private object GeneratedClassLoader: ClassLoader(OpenComputers.javaClass.classLoader) {
-    private val GeneratedClasses = mutable.Map.empty[String, Class[_]]
+    private val GeneratedClasses = mutableMapOf<String, Class<*>>()
 
-    def containsClass(name: String) = GeneratedClasses.contains(name)
+    fun containsClass(name: String) = GeneratedClasses.contains(name)
 
-    def addClass(name: String, bytes: Array[Byte]): Unit = {
-      GeneratedClasses += name -> defineClass(name, bytes, 0, bytes.length)
+    fun addClass(name: String, bytes: ByteArray): Unit {
+      GeneratedClasses[name] = defineClass(name, bytes, 0, bytes.size)
     }
 
-    override def findClass(name: String): Class[_] = {
+    override fun findClass(name: String): Class<*> {
       GeneratedClasses.get(name) match {
         case Some(clazz) => clazz
         case _ => super.findClass(name)
       }
     }
   }
-
 }

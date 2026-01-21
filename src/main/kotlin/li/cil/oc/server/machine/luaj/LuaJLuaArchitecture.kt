@@ -12,7 +12,6 @@ import li.cil.oc.api.machine.ExecutionResult
 import li.cil.oc.api.machine.LimitReachedException
 import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.LuaClosure
-import li.cil.oc.util.LuaClosure._
 import li.cil.repack.org.luaj.vm2.*
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
 import net.minecraft.item.ItemStack
@@ -113,7 +112,7 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
     synchronizedCall = null
   }
 
-  override def runThreaded(isSynchronizedReturn: Boolean) = {
+  override fun runThreaded(isSynchronizedReturn: Boolean): ExecutionResult {
     try {
       // Resume the Lua state and remember the number of results we get.
       val results = if (isSynchronizedReturn) {
@@ -210,12 +209,13 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
     }
   }
 
-  override def onSignal(): Unit = {}
+  override fun onSignal(): Unit {}
 
   // ----------------------------------------------------------------------- //
 
-  override fun initialize() {
-    lua = JsePlatform.debugGlobals()
+  override fun initialize(): Boolean {
+    val lua = JsePlatform.debugGlobals()
+    this.lua = lua
     lua.set("package", LuaValue.NIL)
     lua.set("require", LuaValue.NIL)
     lua.set("io", LuaValue.NIL)
@@ -226,9 +226,9 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
     lua.set("dofile", LuaValue.NIL)
     lua.set("loadfile", LuaValue.NIL)
 
-    apis.foreach(_.initialize())
+    apis.forEach(LuaJAPI::initialize)
 
-    recomputeMemory(machine.host.internalComponents)
+    recomputeMemory(machine.host().internalComponents())
 
     val kernel = lua.load(classOf[Machine].getResourceAsStream(Settings.scriptPath + "machine.lua"), "=machine", "t", lua)
     thread = new LuaThread(lua, kernel) // Left as the first value on the stack.

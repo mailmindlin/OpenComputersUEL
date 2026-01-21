@@ -39,18 +39,20 @@ internal sealed class UserdataAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
 
     userdata.setClosure("dispose") { args ->
       val value = args.checkValue(1)
-      try value.dispose(machine) catch {
-        case t: Throwable => OpenComputers.log.warn("Error in dispose method of userdata of type " + value.getClass.getName, t)
+      try {
+        value.dispose(machine)
+      } catch (e: Exception) {
+        OpenComputers.log.warn("Error in dispose method of userdata of type " + value.javaClass.name, e)
       }
       LuaValue.NIL
     }
 
     userdata.setClosure("methods") { args ->
       val value = args.checkValue(1)
-      LuaValue.tableOf(machine.methods(value).map(entry => {
-        val (name, annotation) = entry
-        Seq(LuaValue.valueOf(name), LuaValue.valueOf(annotation.direct))
-      }).flatten.toArray)
+      LuaValue.tableOf(machine.methods(value)
+        .flatMap { (name, annotation) -> listOf(LuaValue.valueOf(name), LuaValue.valueOf(annotation.direct)) }
+        .toTypedArray()
+      )
     }
 
     userdata.setClosure("invoke") { args ->

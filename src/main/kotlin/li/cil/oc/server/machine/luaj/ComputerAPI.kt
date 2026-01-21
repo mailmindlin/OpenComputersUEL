@@ -1,15 +1,20 @@
 package li.cil.oc.server.machine.luaj
 
-import li.cil.oc.Settings
 //import li.cil.oc.api
+import li.cil.oc.Settings
+import li.cil.oc.api.Driver
+import li.cil.oc.api.Machine
 import li.cil.oc.api.driver.item.MutableProcessor
 import li.cil.oc.api.driver.item.Processor
 import li.cil.oc.api.network.Connector
-import li.cil.oc.util.LuaClosure
+import li.cil.oc.server.machine.ComputerApi.energy
+import li.cil.oc.server.machine.ComputerApi.maxEnergy
+import li.cil.oc.server.machine.ComputerApi.getArchitecture
+import li.cil.oc.server.machine.ComputerApi.getArchitectures
+import li.cil.oc.server.machine.ComputerApi.setArchitecture
+import li.cil.oc.server.machine.UnknownArchitectureException
+import li.cil.oc.util.LuaClosure.Companion.toSimpleJavaObjects
 import li.cil.repack.org.luaj.vm2.LuaValue
-import li.cil.repack.org.luaj.vm2.Varargs
-
-import scala.collection.convert.WrapAsScala._
 
 internal class ComputerAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
   override fun initialize() {
@@ -29,67 +34,54 @@ internal class ComputerAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
 
     computer.setClosure("totalMemory") { LuaValue.valueOf(owner.memory) }
 
-    computer.set("pushSignal", (args: Varargs) => LuaValue.valueOf(machine.signal(args.checkjstring(1), toSimpleJavaObjects(args, 2): _*)))
+    computer.setClosure("pushSignal") { args -> LuaValue.valueOf(machine.signal(args.checkjstring(1), *toSimpleJavaObjects(args, 2).toTypedArray())) }
 
     // And it's /tmp address...
-    computer.set("tmpAddress", (_: Varargs) => {
-      val address = machine.tmpAddress
+    computer.setClosure("tmpAddress") {
+      val address = machine.tmpAddress()
       if (address == null) LuaValue.NIL
       else LuaValue.valueOf(address)
-    })
-
-    // User management.
-    computer.set("users", (_: Varargs) => LuaValue.varargsOf(machine.users.map(LuaValue.valueOf)))
-
-    computer.set("addUser", (args: Varargs) => {
-      machine.addUser(args.checkjstring(1))
-      LuaValue.TRUE
-    })
-
-    computer.set("removeUser", (args: Varargs) => LuaValue.valueOf(machine.removeUser(args.checkjstring(1))))
-
-    computer.setClosure("energy") {
-      if (Settings.get.ignorePower)
-        LuaValue.valueOf(Double.POSITIVE_INFINITY)
-      else
-        LuaValue.valueOf((node as Connector).globalBuffer())
     }
 
-    computer.setClosure("maxEnergy") { LuaValue.valueOf((node as Connector).globalBufferSize()) }
+    // User management.
+    computer.setClosure("users") { LuaValue.varargsOf(machine.users().map(LuaValue::valueOf).toTypedArray()) }
+
+    computer.setClosure("addUser") { args ->
+      machine.addUser(args.checkjstring(1))
+      LuaValue.TRUE
+    }
+
+    computer.setClosure("removeUser") { args -> LuaValue.valueOf(machine.removeUser(args.checkjstring(1))) }
+
+    computer.setClosure("energy") { LuaValue.valueOf(energy()) }
+
+    computer.setClosure("maxEnergy") { LuaValue.valueOf(maxEnergy()) }
 
     computer.setClosure("getArchitectures") { args ->
-      machine.host.internalComponents.map(stack => (stack, api.Driver.driverFor(stack))).collectFirst {
-        case (stack, processor: MutableProcessor) => processor.allArchitectures.toSeq
-        case (stack, processor: Processor) => Seq(processor.architecture(stack))
-      } match {
-        case Some(architectures) => LuaValue.listOf(architectures.map(api.Machine.getArchitectureName).map(LuaValue.valueOf).toArray)
-        case _ => LuaValue.tableOf()
-      }
+      LuaValue.listOf(
+        getArchitectures()
+        .map(LuaValue::valueOf)
+        .toList()
+        .toTypedArray()
+      )
     }
 
     computer.setClosure("getArchitecture") { args ->
-      machine.host.internalComponents.map(stack => (stack, api.Driver.driverFor(stack))).collectFirst {
-        case (stack, processor: Processor) => LuaValue.valueOf(api.Machine.getArchitectureName(processor.architecture(stack)))
-      }.getOrElse(LuaValue.NONE)
+        getArchitecture()
+          ?.let(LuaValue::valueOf)
+          ?: LuaValue.NONE
     }
 
     computer.setClosure("setArchitecture") { args ->
       val archName = args.checkjstring(1)
-      machine.host.internalComponents.map(stack => (stack, api.Driver.driverFor(stack))).collectFirst {
-        case (stack, processor: MutableProcessor) => processor.allArchitectures.find(arch => api.Machine.getArchitectureName(arch) == archName) match {
-          case Some(archClass) =>
-            if (archClass != processor.architecture(stack)) {
-              processor.setArchitecture(stack, archClass)
-              LuaValue.TRUE
-            }
-            else {
-              LuaValue.FALSE
-            }
-          case _ =>
-            LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf("unknown architecture"))
-        }
-      }.getOrElse(LuaValue.NONE)
-    })
+      try {
+        setArchitecture(archName)
+          ?.let(LuaValue::valueOf)
+          ?: LuaValue.NONE
+      } catch (e: UnknownArchitectureException) {
+        luaError("unknown architecture")
+      }
+    }
 
     // Set the computer table.
     lua.set("computer", computer)
