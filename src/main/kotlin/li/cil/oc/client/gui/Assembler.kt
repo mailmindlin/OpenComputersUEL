@@ -3,6 +3,7 @@ package li.cil.oc.client.gui
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
 import li.cil.oc.client.gui.widget.ProgressBar
+import li.cil.oc.client.gui.widget.Widget
 import li.cil.oc.client.PacketSender as ClientPacketSender
 import li.cil.oc.common.container.Assembler as ContainerAssembler
 import li.cil.oc.common.container.ComponentSlot

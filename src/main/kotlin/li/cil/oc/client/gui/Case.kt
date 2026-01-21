@@ -14,12 +14,12 @@ class Case(playerInventory: InventoryPlayer, val computer: TileEntityCase) : Dyn
 
   override fun actionPerformed(button: GuiButton) {
     if (button.id == 0) {
-      ClientPacketSender.sendComputerPower(computer, !computer.isRunning())
+      ClientPacketSender.sendComputerPower(computer, !computer.isRunning)
     }
   }
 
   override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
-    powerButton?.toggled = computer.isRunning()
+    powerButton?.toggled = computer.isRunning
     super.drawScreen(mouseX, mouseY, dt)
   }
 
@@ -32,11 +32,11 @@ class Case(playerInventory: InventoryPlayer, val computer: TileEntityCase) : Dyn
   override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
     super.drawSecondaryForegroundLayer(mouseX, mouseY)
     fontRenderer.drawString(
-      Localization.localizeImmediately(computer.name),
+      Localization.localizeImmediately(computer.getName()),
       8, 6, 0x404040)
     if (powerButton?.isMouseOver == true) {
       val tooltip = java.util.ArrayList<String>()
-      tooltip.addAll(if (computer.isRunning()) Localization.Computer.TurnOff().lines().toList() else Localization.Computer.TurnOn().lines().toList())
+      tooltip.addAll(if (computer.isRunning) Localization.Computer.TurnOff().lines().toList() else Localization.Computer.TurnOn().lines().toList())
       copiedDrawHoveringText(tooltip, mouseX - guiLeft, mouseY - guiTop, fontRenderer)
     }
   }

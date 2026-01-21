@@ -44,14 +44,14 @@ class ImageButton(
             val y0 = y
             val y1 = y + height
 
-            val isHovered = hoverOverride || getHoverState(if (isMouseOver) 2 else 0) == 2
+            val isHovered = hoverOverride || getHoverState(if (isMouseOver) 2 else 0).toInt() == 2
 
             val t = Tessellator.getInstance()
             val r = t.buffer
             if (image != null) {
                 val u0 = if (toggled) 0.5 else 0.0
                 val u1 = u0 + if (canToggle) 0.5 else 1.0
-                val v0 = if (hoverOverride || getHoverState(if (hovered) 2 else 0) == 2) 0.5 else 0.0
+                val v0 = if (hoverOverride || getHoverState(if (hovered) 2 else 0).toInt() == 2) 0.5 else 0.0
                 val v1 = v0 + 0.5
 
                 r.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_TEX)

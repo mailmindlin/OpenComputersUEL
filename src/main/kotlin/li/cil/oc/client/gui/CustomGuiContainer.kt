@@ -1,5 +1,6 @@
 package li.cil.oc.client.gui
 
+import li.cil.oc.client.gui.widget.Widget
 import li.cil.oc.client.gui.widget.WidgetContainer
 import li.cil.oc.util.RenderState
 import net.minecraft.client.gui.FontRenderer
@@ -13,6 +14,8 @@ import net.minecraft.inventory.Container
 // is a common issue, have a look at EnderIO and Enchanting Plus. They have
 // to work around this, too.
 abstract class CustomGuiContainer<C : Container>(val inventoryContainer: C) : GuiContainer(inventoryContainer), WidgetContainer {
+    override val widgets: MutableList<Widget> = mutableListOf()
+
     override val windowX: Int
         get() = guiLeft
 

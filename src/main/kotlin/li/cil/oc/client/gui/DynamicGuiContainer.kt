@@ -158,7 +158,7 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
 
     protected open fun drawDisabledSlot(slot: ComponentSlot) {
         GlStateManager.color(1f, 1f, 1f, 1f)
-        Textures.bind(slot.tierIcon)
+        slot.tierIcon?.let { Textures.bind(it) }
         Gui.drawModalRectWithCustomSizedTexture(slot.xPos, slot.yPos, 0f, 0f, 16, 16, 16f, 16f)
     }
 
