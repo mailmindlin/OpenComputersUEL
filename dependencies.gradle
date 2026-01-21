@@ -67,7 +67,7 @@ dependencies {
     compileOnly("curse.maven:ender-io-64578:3328811") // Ender IO
     compileOnly("curse.maven:railcraft-51195:2687757") // Railcraft
 
-    compileOnly("appeng:appliedenergistics2:rv6-stable-7") {
+    compileOnly("curse.maven:ae2-extended-life-570458:6302098") { // v0.56.7
         transitive = false
     }
     compileOnly("extracells:ExtraCells:1.12.2-2.6.5:api")
