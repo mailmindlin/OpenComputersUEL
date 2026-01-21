@@ -15,7 +15,7 @@ data class RedstoneChangedEventArgs(val side: EnumFacing, val oldValue: Int, val
  * Abstract base class for tile entities that interact with redstone.
  * Extends Environment to participate in the OC network.
  */
-abstract class RedstoneAware : Environment(), RotationAware {
+abstract class RedstoneAware : Environment, RotationAware {
     protected val _input: IntArray = IntArray(6) { -1 }
 
     protected val _output: IntArray = IntArray(6) { 0 }
@@ -85,7 +85,7 @@ abstract class RedstoneAware : Environment(), RotationAware {
 
     fun setOutput(side: EnumFacing, value: Int): Boolean {
         if (value == getOutput(side)) return false
-        _output[toLocal(side).ordinal] = value
+        _output[toLocal(side)!!.ordinal] = value
         onRedstoneOutputChanged(side)
         return true
     }

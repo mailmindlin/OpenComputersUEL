@@ -15,7 +15,7 @@ import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.PowerBalancer as TraitPowerBalancer
 import li.cil.oc.common.tileentity.traits.NotAnalyzable as TraitNotAnalyzable
 
-class PowerDistributor: TraitEnvironment, TraitPowerBalancer, TraitNotAnalyzable {
+class PowerDistributor: TileEntityBase(), TraitEnvironment, TraitPowerBalancer, TraitNotAnalyzable {
     override fun getNode(): Node? = null
 
     private val nodes: Array<Connector> = Array(6) {

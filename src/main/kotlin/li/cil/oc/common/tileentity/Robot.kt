@@ -17,6 +17,7 @@ import li.cil.oc.common.inventory.InventoryProxy
 import li.cil.oc.common.inventory.InventorySelection
 import li.cil.oc.common.inventory.TankSelection
 import li.cil.oc.common.item.data.RobotData
+import li.cil.oc.common.tileentity.traits.Computer
 import li.cil.oc.integration.opencomputers.DriverKeyboard
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.integration.opencomputers.DriverScreen
@@ -61,7 +62,7 @@ import java.util.UUID
 // robot moves we only create a new proxy tile entity, hook the instance of this
 // class that was held by the old proxy to it and can then safely forget the
 // old proxy, which will be cleaned up by Minecraft like any other tile entity.
-class Robot : traits.Computer(), traits.PowerInformation, traits.RotatableTile, IFluidHandler, internal.Robot, InventorySelection, TankSelection {
+class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidHandler, internal.Robot, InventorySelection, TankSelection {
     @JvmField
     var proxy: RobotProxy? = null
 

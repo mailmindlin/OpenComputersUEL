@@ -4,7 +4,7 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.server.component
 import net.minecraft.nbt.NBTTagCompound
 
-class MotionSensor : traits.Environment(), traits.Tickable {
+class MotionSensor : TileEntityBase(), traits.Environment, traits.Tickable {
     @JvmField
     val motionSensor = component.MotionSensor(this)
 

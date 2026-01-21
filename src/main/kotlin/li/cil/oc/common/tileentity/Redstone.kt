@@ -12,7 +12,7 @@ import li.cil.oc.server.component.RedstoneVanilla
 import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.nbt.NBTTagCompound
 
-class Redstone : traits.Environment(), traits.BundledRedstoneAware, traits.Tickable {
+class Redstone : TileEntityBase(), traits.Environment, traits.BundledRedstoneAware, traits.Tickable {
     @JvmField
     val instance: RedstoneVanilla = if (BundledRedstone.isAvailable()) {
         component.Redstone.Bundled(this)

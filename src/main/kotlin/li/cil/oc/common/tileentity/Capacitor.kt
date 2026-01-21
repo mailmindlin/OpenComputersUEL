@@ -2,35 +2,33 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.common.tileentity.traits.Environment
+import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.util.EnumFacing
 
-open class Capacitor : traits.Environment(), DeviceInfo {
+open class Capacitor : TileEntityBase(), Environment, DeviceInfoKt {
     // Start with maximum theoretical capacity, gets reduced after validation.
     // This is done so that we don't lose energy while loading.
     @JvmField
-    val node: Node = api.Network.newNode(this, Visibility.Network)
+    val node: Node = Network.newNode(this, Visibility.Network)
         .withConnector(maxCapacity)
         .create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
 
-    private val deviceInfo: Map<String, String> by lazy {
-        mapOf(
-            DeviceAttribute.Class to DeviceClass.Power,
-            DeviceAttribute.Description to "Battery",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "CapBank3x",
-            DeviceAttribute.Capacity to maxCapacity.toString()
-        )
-    }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
+    override val deviceInfo = mapOf(
+        DeviceAttribute.Class to DeviceClass.Power,
+        DeviceAttribute.Description to "Battery",
+        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+        DeviceAttribute.Product to "CapBank3x",
+        DeviceAttribute.Capacity to maxCapacity.toString()
+    )
 
     // ----------------------------------------------------------------------- //
 

@@ -13,7 +13,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Keyboard : traits.Environment(), traits.Rotatable, traits.ImmibisMicroblock, SidedEnvironment, Analyzable {
+class Keyboard : TileEntityBase(), traits.Environment, traits.Rotatable, traits.ImmibisMicroblock, SidedEnvironment, Analyzable {
     override val validFacings: Array<EnumFacing> = EnumFacing.values()
 
     @JvmField

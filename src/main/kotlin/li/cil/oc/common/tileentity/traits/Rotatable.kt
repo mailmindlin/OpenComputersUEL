@@ -10,19 +10,21 @@ import net.minecraft.util.EnumFacing
  * Implementations must provide a RotatableDelegate instance.
  */
 interface Rotatable : TileEntityTrait, RotationAware, InternalRotatable {
-    val rotatableDelegate: RotatableDelegate
+    var rotatableDelegate: RotatableDelegate
 
-    val pitch: EnumFacing? get() = rotatableDelegate.pitch
-    val yaw: EnumFacing? get() = rotatableDelegate.yaw
+    var pitch: EnumFacing?
+        get() = rotatableDelegate.pitch
+        set(value) { rotatableDelegate.pitch = value }
+    var yaw: EnumFacing?
+        get() = rotatableDelegate.yaw
+        set(value) { rotatableDelegate.yaw = value }
+
     val validFacings: Array<EnumFacing> get() = rotatableDelegate.validFacings
 
     override fun facing(): EnumFacing? = rotatableDelegate.facing
 
     override fun toLocal(value: EnumFacing): EnumFacing? = rotatableDelegate.toLocal(value)
     override fun toGlobal(value: EnumFacing): EnumFacing? = rotatableDelegate.toGlobal(value)
-
-    fun setPitch(value: EnumFacing) = rotatableDelegate.setPitch(value)
-    fun setYaw(value: EnumFacing) = rotatableDelegate.setYaw(value)
 
     fun setFromEntityPitchAndYaw(entity: Entity): Boolean = rotatableDelegate.setFromEntityPitchAndYaw(entity)
     fun setFromFacing(value: EnumFacing): Boolean = rotatableDelegate.setFromFacing(value)

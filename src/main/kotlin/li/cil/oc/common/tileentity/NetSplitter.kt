@@ -21,7 +21,7 @@ import net.minecraft.util.SoundCategory
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class NetSplitter : traits.Environment(), traits.OpenSides, traits.RedstoneAware, api.network.SidedEnvironment, DeviceInfo {
+class NetSplitter : TileEntityBase(), traits.Environment(), traits.OpenSides, traits.RedstoneAware, api.network.SidedEnvironment, DeviceInfo {
     private val deviceInfo: java.util.Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,

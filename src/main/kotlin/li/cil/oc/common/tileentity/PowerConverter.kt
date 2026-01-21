@@ -13,7 +13,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class PowerConverter : traits.PowerAcceptor(), traits.Environment, traits.NotAnalyzable, DeviceInfo {
+class PowerConverter : TileEntityBase(), traits.PowerAcceptor(), traits.Environment, traits.NotAnalyzable, DeviceInfo {
     @JvmField
     val node: Connector = api.Network.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)

@@ -7,6 +7,7 @@ import li.cil.oc.client.gui
 import li.cil.oc.common.component.TextBuffer
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
+import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.util.Color
 import li.cil.oc.common.tileentity.traits.TextBuffer as TraitTextBuffer
 import li.cil.oc.util.ExtendedWorld.blockExists
@@ -24,7 +25,7 @@ import kotlin.collections.LinkedHashSet
 import kotlin.math.max
 import kotlin.math.min
 
-class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnvironment, traits.Rotatable, traits.RedstoneAware, traits.Colored, Analyzable, Comparable<Screen> {
+class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnvironment, Rotatable, traits.RedstoneAware, traits.Colored, Analyzable, Comparable<Screen> {
 
     init {
         // Enable redstone functionality.

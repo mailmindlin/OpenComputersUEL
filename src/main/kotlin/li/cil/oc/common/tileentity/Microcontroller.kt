@@ -31,7 +31,7 @@ import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Microcontroller : traits.PowerAcceptor(), traits.Hub, traits.Computer, ISidedInventory, internal.Microcontroller, DeviceInfo {
+class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, traits.Computer, ISidedInventory, internal.Microcontroller, DeviceInfo {
     @JvmField
     val info = MicrocontrollerData()
 

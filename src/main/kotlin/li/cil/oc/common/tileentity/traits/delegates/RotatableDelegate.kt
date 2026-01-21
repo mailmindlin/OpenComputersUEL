@@ -23,7 +23,7 @@ class RotatableDelegate(
         private val yaw2Direction = arrayOf(EnumFacing.SOUTH, EnumFacing.WEST, EnumFacing.NORTH, EnumFacing.EAST)
     }
 
-    val pitch: EnumFacing?
+    var pitch: EnumFacing?
         get() {
             val world = tileEntity.world ?: return null
             val pos = tileEntity.pos
@@ -35,8 +35,13 @@ class RotatableDelegate(
                 EnumFacing.NORTH
             }
         }
-
-    val yaw: EnumFacing?
+        set(value: EnumFacing?) {
+            trySetPitchYaw(when (value) {
+                EnumFacing.DOWN, EnumFacing.UP -> value
+                else -> EnumFacing.NORTH
+            }, yaw)
+        }
+    var yaw: EnumFacing?
         get() {
             val world = tileEntity.world ?: return null
             val pos = tileEntity.pos
@@ -48,7 +53,16 @@ class RotatableDelegate(
                 else -> EnumFacing.SOUTH
             }
         }
-
+        set(value: EnumFacing?) {
+            trySetPitchYaw(
+                pitch,
+                when (value) {
+                    EnumFacing.DOWN, EnumFacing.UP -> yaw
+                    else -> value
+                }
+            )
+        }
+    
     val facing: EnumFacing?
         get() = when (pitch) {
             EnumFacing.DOWN, EnumFacing.UP -> pitch
@@ -76,26 +90,6 @@ class RotatableDelegate(
     fun setFromFacing(value: EnumFacing): Boolean = when (value) {
         EnumFacing.DOWN, EnumFacing.UP -> trySetPitchYaw(value, yaw)
         else -> trySetPitchYaw(EnumFacing.NORTH, value)
-    }
-
-    fun setPitch(value: EnumFacing) {
-        trySetPitchYaw(
-            when (value) {
-                EnumFacing.DOWN, EnumFacing.UP -> value
-                else -> EnumFacing.NORTH
-            },
-            yaw
-        )
-    }
-
-    fun setYaw(value: EnumFacing) {
-        trySetPitchYaw(
-            pitch,
-            when (value) {
-                EnumFacing.DOWN, EnumFacing.UP -> yaw
-                else -> value
-            }
-        )
     }
 
     fun invertRotation(): Boolean =
