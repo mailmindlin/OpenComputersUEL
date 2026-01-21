@@ -1,7 +1,5 @@
 package li.cil.oc.common.item
 
-import java.util
-
 import li.cil.oc.CreativeTab
 import li.cil.oc.OpenComputers
 import li.cil.oc.api.driver.item.Chargeable
@@ -31,7 +29,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Delegator : Item(), UpgradeRenderer, Chargeable {
+open class Delegator : Item(), UpgradeRenderer, Chargeable {
     init {
         setHasSubtypes(true)
         creativeTab = CreativeTab

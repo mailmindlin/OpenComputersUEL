@@ -10,7 +10,7 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
-class DiskDriveMountable(override val parent: Delegator) : Delegate {
+class DiskDriveMountable(parent: Delegator) : AbstractDelegate(parent) {
     override val maxStackSize: Int = 1
 
     override fun onItemRightClick(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {

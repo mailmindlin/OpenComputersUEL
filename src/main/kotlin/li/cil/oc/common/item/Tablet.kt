@@ -8,16 +8,13 @@ import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Machine
 import li.cil.oc.api.driver.item.Container
-import li.cil.oc.api.internal
 import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
-import li.cil.oc.client
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.Slot
@@ -27,12 +24,9 @@ import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.item.traits.Chargeable
 import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.integration.opencomputers.DriverScreen
-import li.cil.oc.server
 import li.cil.oc.server.PacketSender
-import li.cil.oc.server.component
 import li.cil.oc.util.Audio
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedNBT.setNewCompoundTag
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.RotationHelper
 import li.cil.oc.util.Tooltip
@@ -66,14 +60,9 @@ import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
 
 class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable {
-    companion object {
-        const val TimeToAnalyze = 10
-    }
-
     // Must be assembled to be usable so we hide it in the item list.
-    init {
-        showInItemList = false
-    }
+    override var showInItemList: Boolean = false
+    override val itemId: Int = 0
 
     override val maxStackSize: Int = 1
 
@@ -104,7 +93,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
 
     override fun durability(stack: ItemStack): Double {
         return if (stack.hasTagCompound()) {
-            val data = TabletObject.Client.getWeak(stack)?.data ?: TabletData(stack)
+            val data = Client.getWeak(stack)?.data ?: TabletData(stack)
             1 - data.energy / data.maxEnergy
         } else 1.0
     }
@@ -123,7 +112,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
 
     @SideOnly(Side.CLIENT)
     override fun getModelLocation(stack: ItemStack): ModelResourceLocation {
-        val wrapper = TabletObject.Client.getWeak(stack)
+        val wrapper = Tablet.Companion.Client.getWeak(stack)
         val running = wrapper?.data?.isRunning
         return modelLocationFromState(running)
     }
@@ -234,6 +223,192 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
         val data = TabletData(stack)
         data.energy = (0.0.coerceAtLeast(amount)).coerceAtMost(maxCharge(stack))
         data.save(stack)
+    }
+
+    companion object {
+        const val TimeToAnalyze = 10
+        // This is super-hacky, but since it's only used on the client we get away
+        // with storing context information for analyzing a block in the singleton.
+        @JvmField
+        var currentlyAnalyzing: Triple<BlockPosition, EnumFacing, Triple<Float, Float, Float>>? = null
+
+        @JvmStatic
+        fun getId(stack: ItemStack): String? {
+            if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "tablet", NBTConstants.NBT.TAG_STRING)) {
+                return stack.tagCompound!!.getString(Settings.namespace + "tablet")
+            }
+            return null
+        }
+
+        @JvmStatic
+        fun getOrCreateId(stack: ItemStack): String {
+            if (!stack.hasTagCompound()) {
+                stack.tagCompound = NBTTagCompound()
+            }
+            if (!stack.tagCompound!!.hasKey(Settings.namespace + "tablet")) {
+                stack.tagCompound!!.setString(Settings.namespace + "tablet", UUID.randomUUID().toString())
+            }
+            return stack.tagCompound!!.getString(Settings.namespace + "tablet")
+        }
+
+        @JvmStatic
+        fun get(stack: ItemStack, holder: EntityPlayer): TabletWrapper {
+            return if (holder.world.isRemote) Client.get(stack, holder)
+            else Server.get(stack, holder)
+        }
+
+        @JvmStatic
+        @SubscribeEvent
+        fun onWorldSave(e: WorldEvent.Save) {
+            Server.saveAll(e.world)
+        }
+
+        @JvmStatic
+        @SubscribeEvent
+        fun onWorldUnload(e: WorldEvent.Unload) {
+            Client.clear(e.world)
+            Server.clear(e.world)
+        }
+
+        @JvmStatic
+        @SubscribeEvent
+        fun onClientTick(e: ClientTickEvent) {
+            Client.cleanUp()
+            val server = FMLCommonHandler.instance().minecraftServerInstance
+            if (server is IntegratedServer && Minecraft.getMinecraft().isGamePaused) {
+                // While the game is paused, manually keep all tablets alive, to avoid
+                // them being cleared from the cache, causing them to stop.
+                Client.keepAlive()
+                Server.keepAlive()
+            }
+        }
+
+        @JvmStatic
+        @SubscribeEvent
+        fun onServerTick(e: ServerTickEvent) {
+            Server.cleanUp()
+        }
+
+        abstract class Cache : Callable<TabletWrapper>, RemovalListener<String, TabletWrapper> {
+            val cache: com.google.common.cache.Cache<String, TabletWrapper> = CacheBuilder.newBuilder()
+                .expireAfterAccess(timeout.toLong(), TimeUnit.SECONDS)
+                .removalListener(this)
+                .build()
+
+            protected open val timeout: Int = 10
+
+            // To allow access in cache entry init.
+            private var currentStack: ItemStack? = null
+            private var currentHolder: EntityPlayer? = null
+
+            fun get(stack: ItemStack, holder: EntityPlayer): TabletWrapper {
+                val id = getOrCreateId(stack)
+                return cache.synchronized {
+                    currentStack = stack
+                    currentHolder = holder
+
+                    // if the item is still cached, we can detect if it is dirty (client side only)
+                    if (holder.world.isRemote) {
+                        val weak = Client.getWeak(stack)
+                        if (weak != null) {
+                            val timesChanged = holder.inventory.timesChanged
+                            if (timesChanged != weak.timesChanged) {
+                                if (!weak.isDirty) {
+                                    weak.isDirty = true
+                                    client.PacketSender.sendMachineItemStateRequest(stack)
+                                }
+                                weak.timesChanged = timesChanged
+                            }
+                        }
+                    }
+
+                    var wrapper = cache.get(id, this)
+
+                    // Force re-load on world change, in case some components store a
+                    // reference to the world object.
+                    if (holder.world != wrapper.world) {
+                        wrapper.writeToNBT(clearState = false)
+                        wrapper.autoSave = false
+                        cache.invalidate(id)
+                        cache.cleanUp()
+                        wrapper = cache.get(id, this)
+                    }
+
+                    currentStack = null
+                    currentHolder = null
+
+                    wrapper.stack = stack
+                    wrapper.player = holder
+                    wrapper
+                }
+            }
+
+            override fun call(): TabletWrapper {
+                return TabletWrapper(currentStack!!, currentHolder!!)
+            }
+
+            override fun onRemoval(e: RemovalNotification<String, TabletWrapper>) {
+                val tablet = e.value ?: return
+                if (tablet.node() != null) {
+                    // Server.
+                    if (tablet.autoSave) tablet.writeToNBT()
+                    tablet.machine.stop()
+                    for (node in tablet.machine.node().network().nodes()) {
+                        node.remove()
+                    }
+                    if (tablet.autoSave) tablet.writeToNBT()
+                    tablet.markDirty()
+                }
+            }
+
+            fun clear(world: World) {
+                cache.synchronized {
+                    val tabletsInWorld = cache.asMap().filter { it.value.world == world }
+                    cache.invalidateAll(tabletsInWorld.keys)
+                    cache.cleanUp()
+                }
+            }
+
+            fun cleanUp() {
+                cache.synchronized { cache.cleanUp() }
+            }
+
+            fun keepAlive(): ImmutableMap<String, TabletWrapper> {
+                // Just touching to update last access time.
+                return cache.getAllPresent(cache.asMap().keys)
+            }
+
+            private inline fun <T> com.google.common.cache.Cache<*, *>.synchronized(block: () -> T): T {
+                return synchronized(this) { block() }
+            }
+        }
+
+    }
+    object Client : Cache() {
+        override val timeout: Int = 5
+
+        fun getWeak(stack: ItemStack): TabletWrapper? {
+            val key = getId(stack) ?: return null
+            val map = cache.asMap()
+            return map[key]
+        }
+
+        fun get(stack: ItemStack): TabletWrapper? {
+            val id = getId(stack) ?: return null
+            return synchronized(cache) { cache.getIfPresent(id) }
+        }
+    }
+
+    object Server : Cache() {
+        fun saveAll(world: World) {
+            synchronized(cache) {
+                for (tablet in cache.asMap().values) {
+                    if (tablet.world == world) {
+                        tablet.writeToNBT()
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -485,190 +660,5 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
     override fun save(nbt: NBTTagCompound) {
         saveComponents()
         data.save(nbt)
-    }
-}
-
-object TabletObject {
-    // This is super-hacky, but since it's only used on the client we get away
-    // with storing context information for analyzing a block in the singleton.
-    @JvmField
-    var currentlyAnalyzing: Triple<BlockPosition, EnumFacing, Triple<Float, Float, Float>>? = null
-
-    @JvmStatic
-    fun getId(stack: ItemStack): String? {
-        if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "tablet", NBTConstants.NBT.TAG_STRING)) {
-            return stack.tagCompound!!.getString(Settings.namespace + "tablet")
-        }
-        return null
-    }
-
-    @JvmStatic
-    fun getOrCreateId(stack: ItemStack): String {
-        if (!stack.hasTagCompound()) {
-            stack.tagCompound = NBTTagCompound()
-        }
-        if (!stack.tagCompound!!.hasKey(Settings.namespace + "tablet")) {
-            stack.tagCompound!!.setString(Settings.namespace + "tablet", UUID.randomUUID().toString())
-        }
-        return stack.tagCompound!!.getString(Settings.namespace + "tablet")
-    }
-
-    @JvmStatic
-    fun get(stack: ItemStack, holder: EntityPlayer): TabletWrapper {
-        return if (holder.world.isRemote) Client.get(stack, holder)
-        else Server.get(stack, holder)
-    }
-
-    @JvmStatic
-    @SubscribeEvent
-    fun onWorldSave(e: WorldEvent.Save) {
-        Server.saveAll(e.world)
-    }
-
-    @JvmStatic
-    @SubscribeEvent
-    fun onWorldUnload(e: WorldEvent.Unload) {
-        Client.clear(e.world)
-        Server.clear(e.world)
-    }
-
-    @JvmStatic
-    @SubscribeEvent
-    fun onClientTick(e: ClientTickEvent) {
-        Client.cleanUp()
-        val server = FMLCommonHandler.instance().minecraftServerInstance
-        if (server is IntegratedServer && Minecraft.getMinecraft().isGamePaused) {
-            // While the game is paused, manually keep all tablets alive, to avoid
-            // them being cleared from the cache, causing them to stop.
-            Client.keepAlive()
-            Server.keepAlive()
-        }
-    }
-
-    @JvmStatic
-    @SubscribeEvent
-    fun onServerTick(e: ServerTickEvent) {
-        Server.cleanUp()
-    }
-
-    abstract class Cache : Callable<TabletWrapper>, RemovalListener<String, TabletWrapper> {
-        val cache: com.google.common.cache.Cache<String, TabletWrapper> = CacheBuilder.newBuilder()
-            .expireAfterAccess(timeout.toLong(), TimeUnit.SECONDS)
-            .removalListener(this)
-            .build()
-
-        protected open val timeout: Int = 10
-
-        // To allow access in cache entry init.
-        private var currentStack: ItemStack? = null
-        private var currentHolder: EntityPlayer? = null
-
-        fun get(stack: ItemStack, holder: EntityPlayer): TabletWrapper {
-            val id = getOrCreateId(stack)
-            return cache.synchronized {
-                currentStack = stack
-                currentHolder = holder
-
-                // if the item is still cached, we can detect if it is dirty (client side only)
-                if (holder.world.isRemote) {
-                    val weak = Client.getWeak(stack)
-                    if (weak != null) {
-                        val timesChanged = holder.inventory.timesChanged
-                        if (timesChanged != weak.timesChanged) {
-                            if (!weak.isDirty) {
-                                weak.isDirty = true
-                                client.PacketSender.sendMachineItemStateRequest(stack)
-                            }
-                            weak.timesChanged = timesChanged
-                        }
-                    }
-                }
-
-                var wrapper = cache.get(id, this)
-
-                // Force re-load on world change, in case some components store a
-                // reference to the world object.
-                if (holder.world != wrapper.world) {
-                    wrapper.writeToNBT(clearState = false)
-                    wrapper.autoSave = false
-                    cache.invalidate(id)
-                    cache.cleanUp()
-                    wrapper = cache.get(id, this)
-                }
-
-                currentStack = null
-                currentHolder = null
-
-                wrapper.stack = stack
-                wrapper.player = holder
-                wrapper
-            }
-        }
-
-        override fun call(): TabletWrapper {
-            return TabletWrapper(currentStack!!, currentHolder!!)
-        }
-
-        override fun onRemoval(e: RemovalNotification<String, TabletWrapper>) {
-            val tablet = e.value ?: return
-            if (tablet.node() != null) {
-                // Server.
-                if (tablet.autoSave) tablet.writeToNBT()
-                tablet.machine.stop()
-                for (node in tablet.machine.node().network().nodes()) {
-                    node.remove()
-                }
-                if (tablet.autoSave) tablet.writeToNBT()
-                tablet.markDirty()
-            }
-        }
-
-        fun clear(world: World) {
-            cache.synchronized {
-                val tabletsInWorld = cache.asMap().filter { it.value.world == world }
-                cache.invalidateAll(tabletsInWorld.keys)
-                cache.cleanUp()
-            }
-        }
-
-        fun cleanUp() {
-            cache.synchronized { cache.cleanUp() }
-        }
-
-        fun keepAlive(): ImmutableMap<String, TabletWrapper> {
-            // Just touching to update last access time.
-            return cache.getAllPresent(cache.asMap().keys)
-        }
-
-        private inline fun <T> com.google.common.cache.Cache<*, *>.synchronized(block: () -> T): T {
-            return synchronized(this) { block() }
-        }
-    }
-
-    object Client : Cache() {
-        override val timeout: Int = 5
-
-        fun getWeak(stack: ItemStack): TabletWrapper? {
-            val key = getId(stack) ?: return null
-            val map = cache.asMap()
-            return map[key]
-        }
-
-        fun get(stack: ItemStack): TabletWrapper? {
-            val id = getId(stack) ?: return null
-            return synchronized(cache) { cache.getIfPresent(id) }
-        }
-    }
-
-    object Server : Cache() {
-        fun saveAll(world: World) {
-            synchronized(cache) {
-                for (tablet in cache.asMap().values) {
-                    if (tablet.world == world) {
-                        tablet.writeToNBT()
-                    }
-                }
-            }
-        }
     }
 }

@@ -4,7 +4,6 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.inventory.ServerInventory
-import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.Tooltip
 import net.minecraft.entity.player.EntityPlayer
@@ -15,11 +14,7 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
-class Server(override val parent: Delegator, val tier: Int) : Delegate {
-    override val unlocalizedName: String = super.unlocalizedName + tier
-
-    override val tooltipName: String? get() = super.unlocalizedName
-
+class Server(parent: Delegator, tier: Int) : AbstractTieredDelegate(parent, tier) {
     override fun rarity(stack: ItemStack): EnumRarity = Rarity.byTier(tier)
 
     override val maxStackSize: Int = 1

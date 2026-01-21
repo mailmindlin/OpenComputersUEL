@@ -1,16 +1,15 @@
 package li.cil.oc.common.item
 
 import li.cil.oc.Localization
-import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedWorld.getBlock
+import li.cil.oc.util.getBlock
 import net.minecraft.block.Block
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 
-class TexturePicker(override val parent: Delegator) : Delegate {
+class TexturePicker(parent: Delegator) : AbstractDelegate(parent) {
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
         val block = world.getBlock(position)

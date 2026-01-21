@@ -1,8 +1,7 @@
 package li.cil.oc.common.item
 
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
-import li.cil.oc.common.item.traits.Delegate
+import li.cil.oc.api.Manual as ApiManual
 import li.cil.oc.util.BlockPosition
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.player.EntityPlayer
@@ -15,7 +14,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Manual(override val parent: Delegator) : Delegate {
+class Manual(parent: Delegator) : AbstractDelegate(parent) {
     @SideOnly(Side.CLIENT)
     override fun tooltipLines(stack: ItemStack, world: World?, tooltip: MutableList<String>, flag: ITooltipFlag) {
         tooltip.add(TextFormatting.DARK_GRAY.toString() + "v" + OpenComputers.Version)
@@ -25,21 +24,21 @@ class Manual(override val parent: Delegator) : Delegate {
     override fun onItemRightClick(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         if (world.isRemote) {
             if (player.isSneaking) {
-                api.Manual.reset()
+                ApiManual.reset()
             }
-            api.Manual.openFor(player)
+            ApiManual.openFor(player)
         }
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
     }
 
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
-        val path = api.Manual.pathFor(world, position.toBlockPos())
+        val path = ApiManual.pathFor(world, position.toBlockPos())
         return if (path is String) {
             if (world.isRemote) {
-                api.Manual.openFor(player)
-                api.Manual.reset()
-                api.Manual.navigate(path)
+                ApiManual.openFor(player)
+                ApiManual.reset()
+                ApiManual.navigate(path)
             }
             true
         } else {

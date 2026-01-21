@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
 import li.cil.oc.api
+import li.cil.oc.api.Items
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Component
@@ -27,14 +28,14 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
 object Analyzer {
-    private val analyzer by lazy { api.Items.get(Constants.ItemName.Analyzer) }
+    private val analyzer by lazy { Items.get(Constants.ItemName.Analyzer) }
 
     @JvmStatic
     @SubscribeEvent
     fun onInteract(e: PlayerInteractEvent.EntityInteract) {
         val player = e.entityPlayer
         val held = player.getHeldItem(e.hand)
-        if (api.Items.get(held) == analyzer) {
+        if (Items.get(held) == analyzer) {
             if (analyze(e.target, player, EnumFacing.DOWN, 0f, 0f, 0f)) {
                 player.swingArm(e.hand)
                 e.isCanceled = true

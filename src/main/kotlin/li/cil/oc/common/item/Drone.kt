@@ -4,11 +4,9 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.client.renderer.block.DroneModel
-import li.cil.oc.common.entity
+import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.common.item.data.DroneData
-import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.integration.util.ItemBlacklist
-import li.cil.oc.server.agent
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.Rarity
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
@@ -19,7 +17,7 @@ import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Drone(override val parent: Delegator) : Delegate, CustomModel {
+class Drone(parent: Delegator) : AbstractDelegate(parent), CustomModel {
     init {
         ItemBlacklist.hide(this)
         showInItemList = false
@@ -50,7 +48,7 @@ class Drone(override val parent: Delegator) : Delegate, CustomModel {
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = position.world ?: return false
         if (!world.isRemote) {
-            val drone = entity.Drone(world)
+            val drone = EntityDrone(world)
             when (player) {
                 is agent.Player -> {
                     drone.ownerName = player.agent.ownerName()

@@ -11,7 +11,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumFacing
 
-class UpgradeMF(override val parent: Delegator) : Delegate, ItemTier {
+class UpgradeMF(parent: Delegator) : AbstractDelegate(parent), ItemTier {
     override fun onItemUseFirst(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
         if (!player.world.isRemote && player.isSneaking) {
             if (!stack.hasTagCompound()) {
@@ -21,7 +21,7 @@ class UpgradeMF(override val parent: Delegator) : Delegate, ItemTier {
             data.setIntArray(Settings.namespace + "coord", intArrayOf(position.x, position.y, position.z, player.world.provider.dimension, side.ordinal))
             return EnumActionResult.SUCCESS
         }
-        return super.onItemUseFirst(stack, player, position, side, hitX, hitY, hitZ)
+        return super<ItemTier>.onItemUseFirst(stack, player, position, side, hitX, hitY, hitZ)
     }
 
     override fun tooltipExtended(stack: ItemStack, tooltip: MutableList<String>) {

@@ -17,7 +17,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import kotlin.math.max
 import kotlin.math.min
 
-open class FloppyDisk(override val parent: Delegator) : Delegate, CustomModel, FileSystemLike {
+open class FloppyDisk(parent: Delegator) : AbstractDelegate(parent), CustomModel, FileSystemLike {
     // Necessary for anonymous subclasses used for loot disks.
     override val unlocalizedName: String = "floppydisk"
 

@@ -13,7 +13,7 @@ import net.minecraft.util.EnumHand
 import net.minecraft.util.text.TextComponentString
 import net.minecraft.world.World
 
-class DebugCard(override val parent: Delegator) : Delegate {
+class DebugCard(parent: Delegator) : AbstractDelegate(parent) {
     override fun tooltipExtended(stack: ItemStack, tooltip: MutableList<String>) {
         super.tooltipExtended(stack, tooltip)
         val data = DebugCardData(stack)

@@ -13,12 +13,8 @@ import net.minecraft.util.EnumActionResult
 import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
-class UpgradeDatabase(override val parent: Delegator, val tier: Int) : Delegate, ItemTier {
-    override val unlocalizedName: String = super.unlocalizedName + tier
-
-    override val tooltipName: String? get() = super.unlocalizedName
-
-    override val tooltipData: List<Any> get() = listOf(Settings.get.databaseEntriesPerTier(tier))
+class UpgradeDatabase(parent: Delegator, tier: Int) : AbstractTieredDelegate(parent, tier), ItemTier {
+    override val tooltipData: Array<Any> get() = arrayOf(Settings.get.databaseEntriesPerTier[tier])
 
     override fun rarity(stack: ItemStack) = Rarity.byTier(tier)
 

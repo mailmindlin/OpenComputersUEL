@@ -7,18 +7,14 @@ import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.common.item.traits.ItemTier
 import net.minecraft.item.ItemStack
 
-class UpgradeBattery(override val parent: Delegator, val tier: Int) : Delegate, ItemTier, Chargeable {
-    override val unlocalizedName: String = super.unlocalizedName + tier
-
-    override val tooltipName: String? get() = super.unlocalizedName
-
-    override val tooltipData: List<Any> get() = listOf(Settings.get.bufferCapacitorUpgrades(tier).toInt())
+class UpgradeBattery(parent: Delegator, tier: Int) : AbstractTieredDelegate(parent, tier), ItemTier, Chargeable {
+    override val tooltipData: Array<Any> get() = arrayOf(Settings.get.bufferCapacitorUpgrades[tier].toInt())
 
     override fun showDurabilityBar(stack: ItemStack): Boolean = true
 
     override fun durability(stack: ItemStack): Double {
         val data = NodeData(stack)
-        return 1 - (data.buffer ?: 0.0) / Settings.get.bufferCapacitorUpgrades(tier)
+        return 1 - (data.buffer ?: 0.0) / Settings.get.bufferCapacitorUpgrades[tier]
     }
 
     // ----------------------------------------------------------------------- //
@@ -28,7 +24,7 @@ class UpgradeBattery(override val parent: Delegator, val tier: Int) : Delegate, 
     override fun charge(stack: ItemStack, amount: Double, simulate: Boolean): Double {
         val data = NodeData(stack)
         val buffer = data.buffer ?: 0.0
-        return Chargeable.applyCharge(amount, buffer, Settings.get.bufferCapacitorUpgrades(tier)) { used ->
+        return Chargeable.applyCharge(amount, buffer, Settings.get.bufferCapacitorUpgrades[tier]) { used ->
             if (!simulate) {
                 data.buffer = buffer + used
                 data.save(stack)
@@ -36,7 +32,7 @@ class UpgradeBattery(override val parent: Delegator, val tier: Int) : Delegate, 
         }
     }
 
-    override fun maxCharge(stack: ItemStack): Double = Settings.get.bufferCapacitorUpgrades(tier)
+    override fun maxCharge(stack: ItemStack): Double = Settings.get.bufferCapacitorUpgrades[tier]
 
     override fun getCharge(stack: ItemStack): Double = NodeData(stack).buffer ?: 0.0
 

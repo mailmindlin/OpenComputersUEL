@@ -4,7 +4,6 @@ import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.common.GuiType
-import li.cil.oc.common.item.traits.Delegate
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.util.ITooltipFlag
@@ -17,7 +16,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Terminal(override val parent: Delegator) : Delegate, CustomModel {
+class Terminal(parent: Delegator) : AbstractDelegate(parent), CustomModel {
     override val maxStackSize: Int = 1
 
     fun hasServer(stack: ItemStack): Boolean = stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "server")

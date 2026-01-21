@@ -1,9 +1,7 @@
 package li.cil.oc.common.item
 
 import com.google.common.base.Strings
-import li.cil.oc.api
 import li.cil.oc.common.item.data.NanomachineData
-import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.common.nanomachines.ControllerImpl
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.EntityLivingBase
@@ -17,8 +15,9 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.api.Nanomachines as ApiNanomachines
 
-class Nanomachines(override val parent: Delegator) : Delegate {
+class Nanomachines(parent: Delegator) : AbstractDelegate(parent) {
     override fun rarity(stack: ItemStack): EnumRarity = EnumRarity.UNCOMMON
 
     @SideOnly(Side.CLIENT)
@@ -27,7 +26,7 @@ class Nanomachines(override val parent: Delegator) : Delegate {
         if (stack.hasTagCompound()) {
             val data = NanomachineData(stack)
             if (!Strings.isNullOrEmpty(data.uuid)) {
-                tooltip.add("\u00a78${data.uuid!!.substring(0, 13)}...\u00a77")
+                tooltip.add("\u00a78${data.uuid.substring(0, 13)}...\u00a77")
             }
         }
     }
@@ -47,13 +46,13 @@ class Nanomachines(override val parent: Delegator) : Delegate {
                 val data = NanomachineData(stack)
 
                 // Re-install to get new address, make sure we're configured.
-                api.Nanomachines.uninstallController(entity)
-                val controller = api.Nanomachines.installController(entity)
+                ApiNanomachines.uninstallController(entity)
+                val controller = ApiNanomachines.installController(entity)
                 if (controller is ControllerImpl) {
                     val configuration = data.configuration
                     if (configuration != null) {
                         if (!Strings.isNullOrEmpty(data.uuid)) {
-                            controller.uuid = data.uuid!!
+                            controller.uuid = data.uuid
                         }
                         controller.configuration.load(configuration)
                     } else {

@@ -1,6 +1,6 @@
 package li.cil.oc.common.item
 
-import li.cil.oc.api
+import li.cil.oc.api.internal.Wrench as ApiWrench
 import li.cil.oc.common.asm.Injectable
 import li.cil.oc.common.item.traits.SimpleItem
 import li.cil.oc.integration.Mods
@@ -18,7 +18,7 @@ import net.minecraft.world.World
 @Injectable.InterfaceList(
     Injectable.Interface(value = "ic2.api.item.IBoxable", modid = Mods.IDs.IndustrialCraft2)
 )
-class Wrench : SimpleItem, api.internal.Wrench {
+class Wrench : SimpleItem(), ApiWrench {
     init {
         setHarvestLevel("wrench", 1)
         maxStackSize = 1

@@ -10,7 +10,7 @@ import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class UpgradeTank(override val parent: Delegator) : Delegate, ItemTier {
+class UpgradeTank(parent: Delegator) : AbstractDelegate(parent), ItemTier {
     @SideOnly(Side.CLIENT)
     override fun tooltipLines(stack: ItemStack, world: World?, tooltip: MutableList<String>, flag: ITooltipFlag) {
         if (stack.hasTagCompound()) {
@@ -19,6 +19,6 @@ class UpgradeTank(override val parent: Delegator) : Delegate, ItemTier {
                 tooltip.add("${fluidStack.fluid.getLocalizedName(fluidStack)}: ${fluidStack.amount}/16000")
             }
         }
-        super.tooltipLines(stack, world, tooltip, flag)
+        super<ItemTier>.tooltipLines(stack, world, tooltip, flag)
     }
 }

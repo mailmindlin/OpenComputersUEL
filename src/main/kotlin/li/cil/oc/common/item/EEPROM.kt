@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.IBlockAccess
 
-class EEPROM(override val parent: Delegator) : Delegate {
+class EEPROM(parent: Delegator) : AbstractDelegate(parent) {
     override fun displayName(stack: ItemStack): String? {
         if (stack.hasTagCompound()) {
             val tag = stack.tagCompound!!

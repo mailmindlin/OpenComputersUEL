@@ -15,29 +15,6 @@ import net.minecraftforge.common.util.Constants.NBT
 import java.io.BufferedReader
 import java.io.InputStreamReader
 
-object RobotData {
-    @JvmField
-    val names: Array<String> = try {
-        val inputStream = RobotData::class.java.getResourceAsStream(
-            "/assets/${Settings.resourceDomain}/robot.names"
-        )
-        BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).useLines { lines ->
-            lines
-                .map { it.takeWhile { c -> c != '#' }.trim() }
-                .filter { it.isNotEmpty() }
-                .toList()
-                .toTypedArray()
-        }
-    } catch (t: Throwable) {
-        OpenComputers.log.warn("Failed loading robot name list.", t)
-        emptyArray()
-    }
-
-    @JvmStatic
-    val randomName: String
-        get() = if (names.isNotEmpty()) names[(Math.random() * names.size).toInt()] else "Robot"
-}
-
 class RobotData : ItemData {
     constructor() : super(Constants.BlockName.Robot)
 
@@ -121,5 +98,28 @@ class RobotData : ItemData {
         newInfo.robotEnergy = 50000
         newInfo.save(stack)
         return stack
+    }
+
+    companion object {
+        @JvmField
+        val names: Array<String> = try {
+            val inputStream = RobotData::class.java.getResourceAsStream(
+                "/assets/${Settings.resourceDomain}/robot.names"
+            )
+            BufferedReader(InputStreamReader(inputStream, Charsets.UTF_8)).useLines { lines ->
+                lines
+                    .map { it.takeWhile { c -> c != '#' }.trim() }
+                    .filter { it.isNotEmpty() }
+                    .toList()
+                    .toTypedArray()
+            }
+        } catch (t: Throwable) {
+            OpenComputers.log.warn("Failed loading robot name list.", t)
+            emptyArray()
+        }
+
+        @JvmStatic
+        val randomName: String
+            get() = if (names.isNotEmpty()) names[(Math.random() * names.size).toInt()] else "Robot"
     }
 }
