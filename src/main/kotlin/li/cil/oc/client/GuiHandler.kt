@@ -35,7 +35,7 @@ object GuiHandler : CommonGuiHandler() {
             GuiType.ServerInRack.id -> {
               val slot = GuiType.extractSlot(y)
               li.cil.oc.client.gui.Server(player.inventory, object : ServerInventory() {
-                override val container get() = t.getStackInSlot(slot)
+                override val container: ItemStack get() = t.getStackInSlot(slot)
                 override fun isUsableByPlayer(player: EntityPlayer) = t.isUsableByPlayer(player)
               }, t, slot)
             }
@@ -101,8 +101,8 @@ object GuiHandler : CommonGuiHandler() {
             else -> null
           }
           is li.cil.oc.common.item.DiskDriveMountable -> if (id == GuiType.DiskDriveMountable.id) {
-            li.cil.oc.client.gui.DiskDrive(player.inventory, object : DiskDriveMountableInventory {
-              override fun container() = itemStackInUse
+            li.cil.oc.client.gui.DiskDrive(player.inventory, object : DiskDriveMountableInventory() {
+              override val container get() = itemStackInUse
               override fun isUsableByPlayer(activePlayer: EntityPlayer): Boolean = activePlayer == player
             })
           } else null

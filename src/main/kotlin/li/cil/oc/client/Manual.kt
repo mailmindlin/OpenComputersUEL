@@ -79,7 +79,7 @@ object Manual: ManualAPI {
     return null
   }
 
-  override fun contentFor(path: String): Iterable<String> {
+  override fun contentFor(path: String): Iterable<String>? {
     val cleanPath = com.google.common.io.Files.simplifyPath(path)
     val language = try {
       FMLCommonHandler.instance().currentLanguage
@@ -87,16 +87,15 @@ object Manual: ManualAPI {
       OpenComputers.log.warn("The game threw an error when querying current language.", t)
       FallbackLanguage
     }
-    return contentForWithRedirects(cleanPath.replaceAll(LanguageKey, language)).
-      orElse(contentForWithRedirects(cleanPath.replaceAll(LanguageKey, FallbackLanguage))).
-      orNull
+    return contentForWithRedirects(cleanPath.replace(LanguageKey, language))
+      ?: contentForWithRedirects(cleanPath.replace(LanguageKey, FallbackLanguage))
   }
 
   override fun imageFor(href: String): ImageRenderer? {
     for ((prefix, provider) in Manual.imageProviders.asReversed()) {
       if (href.startsWith(prefix)) {
         try {
-          return provider.getImage(href.stripPrefix(prefix)) ?: continue
+          return provider.getImage(href.removePrefix(prefix)) ?: continue
         } catch (e: Exception) {
           OpenComputers.log.warn("An image provider threw an error when queried.", e)
         }
@@ -113,13 +112,13 @@ object Manual: ManualAPI {
 
   override fun reset() {
     history.clear()
-    history.push(History("$LanguageKey/index.md"))
+    history.add(History("$LanguageKey/index.md"))
   }
 
   override fun navigate(path: String) {
-    when (Minecraft.getMinecraft().currentScreen) {
+    when (val manual = Minecraft.getMinecraft().currentScreen) {
       is GuiManual -> manual.pushPage(path)
-      else -> history.push(new History(path))
+      else -> history.add(History(path))
     }
   }
 
@@ -127,7 +126,7 @@ object Manual: ManualAPI {
     if (path.startsWith("/")) path
     else {
       val splitAt = base.lastIndexOf('/')
-      if (splitAt >= 0) base.splitAt(splitAt)._1 + "/" + path
+      if (splitAt >= 0) base.slice(0 until splitAt) + "/" + path
       else path
     }
 

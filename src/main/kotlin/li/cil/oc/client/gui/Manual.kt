@@ -1,8 +1,8 @@
 package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
-import li.cil.oc.api
 import li.cil.oc.client.Textures
+import li.cil.oc.client.gui.traits.Window
 import li.cil.oc.client.renderer.markdown.Document
 import li.cil.oc.client.renderer.markdown.segment.InteractiveSegment
 import li.cil.oc.client.renderer.markdown.segment.Segment
@@ -11,9 +11,10 @@ import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.renderer.GlStateManager
+import net.minecraft.util.ResourceLocation
 import org.lwjgl.input.Mouse
 
-class Manual : GuiScreen(), traits.Window {
+class Manual : GuiScreen(), Window {
     companion object {
         const val documentMaxWidth = 230
         const val documentMaxHeight = 176
@@ -28,30 +29,19 @@ class Manual : GuiScreen(), traits.Window {
         const val maxTabsPerSide = 7
     }
 
-    override fun windowWidth() = 256
-    override fun windowHeight() = 192
+    override val windowWidth: Int
+        get() = 256
+    override val windowHeight: Int
+        get() = 192
 
-    override fun backgroundImage() = Textures.GUI.Manual
+    override val backgroundImage: ResourceLocation
+        get() = Textures.GUI.Manual
 
     // Implement variables from Window trait
-    private var myGuiLeft = 0
-    private var myGuiTop = 0
-    private var myXSize = 0
-    private var myYSize = 0
-
-    override fun guiLeft(): Int = myGuiLeft
-    override fun guiLeft_$eq(value: Int) { myGuiLeft = value }
-    override fun guiTop(): Int = myGuiTop
-    override fun guiTop_$eq(value: Int) { myGuiTop = value }
-    override fun xSize(): Int = myXSize
-    override fun xSize_$eq(value: Int) { myXSize = value }
-    override fun ySize(): Int = myYSize
-    override fun ySize_$eq(value: Int) { myYSize = value }
-
-    private val guiLeft: Int get() = myGuiLeft
-    private val guiTop: Int get() = myGuiTop
-    private val xSize: Int get() = myXSize
-    private val ySize: Int get() = myYSize
+    override var guiLeft: Int = 0
+    override var guiTop: Int = 0
+    override var xSize: Int = 0
+    override var ySize: Int = 0
 
     var isDragging = false
     var document: Segment? = null
@@ -77,7 +67,7 @@ class Manual : GuiScreen(), traits.Window {
         }
 
     fun refreshPage() {
-        val content = api.Manual.contentFor(ManualAPI.history.top.path)
+        val content = ManualAPI.contentFor(ManualAPI.history.top.path)
             ?: listOf("Document not found: ${ManualAPI.history.top.path}")
         document = Document.parse(content)
         documentHeight = Document.height(document, documentMaxWidth, fontRenderer)
@@ -102,7 +92,7 @@ class Manual : GuiScreen(), traits.Window {
 
     override fun actionPerformed(button: GuiButton) {
         if (button.id >= 0 && button.id < ManualAPI.tabs.size) {
-            api.Manual.navigate(ManualAPI.tabs[button.id].path)
+            ManualAPI.navigate(ManualAPI.tabs[button.id].path)
         }
     }
 
