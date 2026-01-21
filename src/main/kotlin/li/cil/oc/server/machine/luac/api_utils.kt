@@ -1,4 +1,4 @@
-package li.cil.oc.util
+package li.cil.oc.server.machine.luac
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
@@ -8,8 +8,14 @@ import li.cil.repack.com.naef.jnlua.LuaState
 import li.cil.repack.com.naef.jnlua.LuaType
 import java.util.IdentityHashMap
 
-fun LuaState.pushScalaFunction(f: (LuaState) -> Int) {
+internal fun LuaState.pushClosure(f: (LuaState) -> Int) {
     pushJavaFunction(JavaFunction { state -> f(state) })
+}
+
+internal fun LuaState.luaError(message: String): Int {
+    this.pushNil()
+    this.pushString(message)
+    return 2
 }
 
 fun LuaState.pushValue(value: Any?, memo: IdentityHashMap<Any, Int> = IdentityHashMap()) {
@@ -20,7 +26,7 @@ fun LuaState.pushValue(value: Any?, memo: IdentityHashMap<Any, Int> = IdentityHa
     } else {
         val normalizedValue: Any? = when (value) {
             is Number -> value
-            is AnyRef -> value
+            is Any -> value
             null -> null
             else -> value
         }

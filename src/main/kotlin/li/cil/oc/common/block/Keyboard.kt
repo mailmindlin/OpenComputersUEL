@@ -1,11 +1,9 @@
 package li.cil.oc.common.block
 
 import li.cil.oc.Constants
-import li.cil.oc.api
+import li.cil.oc.api.Network
 import li.cil.oc.common.block.property.PropertyRotatable
-import li.cil.oc.common.tileentity
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedEnumFacing
 import li.cil.oc.util.InventoryUtils
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
@@ -21,6 +19,8 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import java.util.Random
+import li.cil.oc.common.tileentity.Keyboard as TEKeyboard
+import li.cil.oc.common.tileentity.Screen as TEScreen
 
 class Keyboard : SimpleBlock(Material.ROCK) {
     init {
@@ -47,7 +47,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
 
     override fun getBoundingBox(state: IBlockState, world: IBlockAccess, pos: BlockPos): AxisAlignedBB {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Keyboard) {
+        return if (tileEntity is TEKeyboard) {
             val pitch = tileEntity.pitch
             val yaw = tileEntity.yaw
             val (forward, up) = when (pitch) {
@@ -77,26 +77,26 @@ class Keyboard : SimpleBlock(Material.ROCK) {
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Keyboard()
+    override fun createNewTileEntity(world: World, metadata: Int) = TEKeyboard()
 
     // ----------------------------------------------------------------------- //
 
     override fun updateTick(world: World, pos: BlockPos, state: IBlockState, rand: Random) {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Keyboard) {
-            api.Network.joinOrCreateNetwork(tileEntity)
+        if (tileEntity is TEKeyboard) {
+            Network.joinOrCreateNetwork(tileEntity)
         }
     }
 
     override fun canPlaceBlockOnSide(world: World, pos: BlockPos, side: EnumFacing): Boolean {
         if (!world.isSideSolid(pos.offset(side.opposite), side)) return false
         val tileEntity = world.getTileEntity(pos.offset(side.opposite))
-        return if (tileEntity is tileentity.Screen) tileEntity.facing != side else true
+        return if (tileEntity is TEScreen) tileEntity.facing != side else true
     }
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Keyboard) {
+        if (tileEntity is TEKeyboard) {
             if (!canPlaceBlockOnSide(world, pos, tileEntity.facing)) {
                 world.setBlockToAir(pos)
                 InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), api.Items.get(Constants.BlockName.Keyboard).createItemStack(1))
@@ -113,7 +113,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
 
     fun adjacencyInfo(world: World, pos: BlockPos): AdjacentScreenInfo? {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Keyboard) {
+        if (tileEntity is TEKeyboard) {
             val blockPos = pos.offset(tileEntity.facing.opposite)
             val block = world.getBlockState(blockPos).block
             if (block is Screen) {
@@ -143,5 +143,5 @@ class Keyboard : SimpleBlock(Material.ROCK) {
 
     override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing>? = null
 
-    data class AdjacentScreenInfo(val first: tileentity.Keyboard, val second: Screen, val third: BlockPos, val fourth: EnumFacing)
+    data class AdjacentScreenInfo(val first: TEKeyboard, val second: Screen, val third: BlockPos, val fourth: EnumFacing)
 }

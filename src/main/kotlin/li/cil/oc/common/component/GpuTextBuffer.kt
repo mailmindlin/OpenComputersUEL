@@ -6,6 +6,7 @@ import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
+import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.api.internal.TextBuffer.ColorDepth
 import li.cil.oc.common.component.traits.TextBufferProxy
 import li.cil.oc.common.component.traits.VideoRamRasterizer
@@ -75,7 +76,7 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
         fun wrap(owner: String, id: Int, data: UtilTextBuffer): GpuTextBuffer = GpuTextBuffer(owner, id, data)
 
         @JvmStatic
-        fun bitblt(dst: api.internal.TextBuffer, col: Int, row: Int, w: Int, h: Int, src: api.internal.TextBuffer, fromCol: Int, fromRow: Int) {
+        fun bitblt(dst: TextBuffer, col: Int, row: Int, w: Int, h: Int, src: TextBuffer, fromCol: Int, fromRow: Int) {
             val x = col - 1
             val y = row - 1
             val fx = fromCol - 1
@@ -159,7 +160,7 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
 
 object ClientGpuTextBufferHandler {
     @JvmStatic
-    fun bitblt(dst: api.internal.TextBuffer, col: Int, row: Int, w: Int, h: Int, owner: String, srcId: Int, fromCol: Int, fromRow: Int) {
+    fun bitblt(dst: TextBuffer, col: Int, row: Int, w: Int, h: Int, owner: String, srcId: Int, fromCol: Int, fromRow: Int) {
         if (dst is VideoRamRasterizer) {
             val buffer = dst.getBuffer(owner, srcId)
             if (buffer != null) {
@@ -171,7 +172,7 @@ object ClientGpuTextBufferHandler {
     }
 
     @JvmStatic
-    fun removeBuffer(buffer: api.internal.TextBuffer, owner: String, id: Int): Boolean {
+    fun removeBuffer(buffer: TextBuffer, owner: String, id: Int): Boolean {
         return if (buffer is VideoRamRasterizer) {
             buffer.removeBuffer(owner, id)
         } else {
@@ -180,7 +181,7 @@ object ClientGpuTextBufferHandler {
     }
 
     @JvmStatic
-    fun loadBuffer(buffer: api.internal.TextBuffer, owner: String, id: Int, nbt: NBTTagCompound): Boolean {
+    fun loadBuffer(buffer: TextBuffer, owner: String, id: Int, nbt: NBTTagCompound): Boolean {
         return if (buffer is VideoRamRasterizer) {
             buffer.loadBuffer(owner, id, nbt)
         } else {

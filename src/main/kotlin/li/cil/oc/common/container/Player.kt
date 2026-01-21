@@ -1,6 +1,5 @@
 package li.cil.oc.common.container
 
-import li.cil.oc.common
 import li.cil.oc.common.InventorySlots.InventorySlot
 import li.cil.oc.common.Tier
 import li.cil.oc.server.PacketSender as ServerPacketSender
@@ -33,7 +32,7 @@ abstract class Player(val playerInventory: InventoryPlayer, val otherInventory: 
 
     override fun slotClick(slot: Int, dragType: Int, clickType: ClickType, player: EntityPlayer): ItemStack {
         val result = super.slotClick(slot, dragType, clickType, player)
-        if (SideTracker.isServer) {
+        if (SideTracker.isServer()) {
             detectAndSendChanges() // We have to enforce this more than MC does itself
             // because stacks can change their... "character" just by being inserted in
             // certain containers - by being assigned an address.
@@ -45,7 +44,7 @@ abstract class Player(val playerInventory: InventoryPlayer, val otherInventory: 
         val slot = inventorySlots.getOrNull(index)
         if (slot != null && slot.hasStack) {
             tryTransferStackInSlot(slot, slot.inventory == otherInventory)
-            if (SideTracker.isServer) {
+            if (SideTracker.isServer()) {
                 detectAndSendChanges()
             }
         }
@@ -165,7 +164,7 @@ abstract class Player(val playerInventory: InventoryPlayer, val otherInventory: 
 
     override fun detectAndSendChanges() {
         super.detectAndSendChanges()
-        if (SideTracker.isServer) {
+        if (SideTracker.isServer()) {
             val nbt = NBTTagCompound()
             detectCustomDataChanges(nbt)
             for (entry in listeners) {

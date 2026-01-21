@@ -74,7 +74,7 @@ object ChunkloaderUpgradeHandler : LoadingCallback {
 
     @JvmStatic
     fun updateLoadedChunk(loader: UpgradeChunkloader) {
-        val blockPos = BlockPosition(loader.host())
+        val blockPos = BlockPosition(loader.host)
         val centerChunk = ChunkPos(blockPos.x shr 4, blockPos.z shr 4)
         val robotChunks = (-1..1).flatMap { x ->
             (-1..1).map { z ->

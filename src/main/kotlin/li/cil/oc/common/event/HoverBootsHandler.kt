@@ -22,7 +22,7 @@ object HoverBootsHandler {
                 val item = stack.item
                 if (item is HoverBoots) {
                     Settings.get.ignorePower || run {
-                        if (player.onGround && !player.capabilities.isCreativeMode && player.world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+                        if (player.onGround && !player.capabilities.isCreativeMode && player.world.totalWorldTime % Settings.get.tickFrequency.toLong() == 0L) {
                             val velocity = player.motionX * player.motionX + player.motionY * player.motionY + player.motionZ * player.motionZ
                             if (velocity > 0.015f) {
                                 item.charge(stack, -Settings.get.hoverBootMove, false)

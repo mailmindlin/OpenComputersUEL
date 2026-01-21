@@ -3,11 +3,11 @@ package li.cil.oc.common.block
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.common.block.property.PropertyTile
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.integration.util.Wrench
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.Rarity
@@ -32,7 +32,7 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
 class Screen(val tier: Int) : RedstoneAware() {
-    override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Pitch, PropertyRotatable.Yaw), arrayOf(PropertyTile.Tile))
+    override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Pitch, PropertyRotatable.Yaw), arrayOf(PropertyTile))
 
     override fun getMetaFromState(state: IBlockState): Int = (state.getValue(PropertyRotatable.Pitch).ordinal shl 2) or state.getValue(PropertyRotatable.Yaw).horizontalIndex
 
@@ -40,11 +40,11 @@ class Screen(val tier: Int) : RedstoneAware() {
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
-        return if (state is IExtendedBlockState && tileEntity is tileentity.Screen) {
+        return if (state is IExtendedBlockState && tileEntity is TEScreen) {
             state
-                .withProperty(property.PropertyTile.Tile, tileEntity)
-                .withProperty(PropertyRotatable.Pitch, tileEntity.pitch)
-                .withProperty(PropertyRotatable.Yaw, tileEntity.yaw)
+                .withProperty(PropertyTile, tileEntity)
+                .withProperty(PropertyRotatable.Pitch, tileEntity.pitch!!)
+                .withProperty(PropertyRotatable.Yaw, tileEntity.yaw!!)
         } else state
     }
 
@@ -54,22 +54,22 @@ class Screen(val tier: Int) : RedstoneAware() {
 
     override fun rarity(stack: ItemStack) = Rarity.byTier(tier)
 
-    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
-        val (w, h) = Settings.screenResolutionsByTier(tier)
-        val depth = PackedColor.Depth.bits(Settings.screenDepthsByTier(tier))
+    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
+        val (w, h) = Settings.screenResolutionsByTier[tier]
+        val depth = PackedColor.Depth.bits(Settings.screenDepthsByTier[tier])
         tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase(), w, h, depth))
     }
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Screen(tier)
+    override fun createNewTileEntity(world: World, metadata: Int) = TEScreen(tier)
 
     // ----------------------------------------------------------------------- //
 
     override fun onBlockPlacedBy(world: World, pos: BlockPos, state: IBlockState, placer: EntityLivingBase, stack: ItemStack) {
         super.onBlockPlacedBy(world, pos, state, placer, stack)
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.Screen) {
+        if (tileEntity is TEScreen) {
             tileEntity.delayUntilCheckForMultiBlock = 0
         }
     }
@@ -80,11 +80,11 @@ class Screen(val tier: Int) : RedstoneAware() {
     fun rightClick(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack,
                    side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, force: Boolean): Boolean {
         if (Wrench.holdsApplicableWrench(player, pos) && getValidRotations(world, pos).contains(side) && !force) return false
-        if (api.Items.get(heldItem) == api.Items.get(Constants.ItemName.Analyzer)) return false
+        if (ApiItems.get(heldItem) == ApiItems.get(Constants.ItemName.Analyzer)) return false
 
         val tileEntity = world.getTileEntity(pos)
         return when {
-            tileEntity is tileentity.Screen && tileEntity.hasKeyboard && (force || player.isSneaking == tileEntity.origin.invertTouchMode) -> {
+            tileEntity is TEScreen && tileEntity.hasKeyboard() && (force || player.isSneaking == tileEntity.origin.invertTouchMode) -> {
                 // Yep, this GUI is actually purely client side. We could skip this
                 // if, but it is clearer this way (to trigger it from the server we
                 // would have to give screens a "container", which we do not want).
@@ -93,9 +93,9 @@ class Screen(val tier: Int) : RedstoneAware() {
                 }
                 true
             }
-            tileEntity is tileentity.Screen && tileEntity.tier > 0 && side == tileEntity.facing -> {
+            tileEntity is TEScreen && tileEntity.tier > 0 && side == tileEntity.facing() -> {
                 if (world.isRemote && player == Minecraft.getMinecraft().player) {
-                    tileEntity.click(hitX, hitY, hitZ)
+                    tileEntity.click(hitX.toDouble(), hitY.toDouble(), hitZ.toDouble())
                 }
                 true
             }
@@ -106,7 +106,7 @@ class Screen(val tier: Int) : RedstoneAware() {
     override fun onEntityWalk(world: World, pos: BlockPos, entity: Entity) {
         if (!world.isRemote) {
             val tileEntity = world.getTileEntity(pos)
-            if (tileEntity is tileentity.Screen && tileEntity.tier > 0 && tileEntity.facing == EnumFacing.UP) {
+            if (tileEntity is TEScreen && tileEntity.tier > 0 && tileEntity.facing() == EnumFacing.UP) {
                 tileEntity.walk(entity)
             } else {
                 super.onEntityWalk(world, pos, entity)
@@ -117,7 +117,7 @@ class Screen(val tier: Int) : RedstoneAware() {
     override fun onEntityCollision(world: World, pos: BlockPos, state: IBlockState, entity: Entity) {
         if (world.isRemote) {
             val tileEntity = world.getTileEntity(pos)
-            if (entity is EntityArrow && tileEntity is tileentity.Screen && tileEntity.tier > 0) {
+            if (entity is EntityArrow && tileEntity is TEScreen && tileEntity.tier > 0) {
                 val hitX = maxOf(0.0, minOf(1.0, entity.posX - pos.x))
                 val hitY = maxOf(0.0, minOf(1.0, entity.posY - pos.y))
                 val hitZ = maxOf(0.0, minOf(1.0, entity.posZ - pos.z))
@@ -129,7 +129,7 @@ class Screen(val tier: Int) : RedstoneAware() {
                     absY > absZ -> if (hitY < 0.5) EnumFacing.DOWN else EnumFacing.UP
                     else -> if (hitZ < 0.5) EnumFacing.NORTH else EnumFacing.SOUTH
                 }
-                if (side == tileEntity.facing) {
+                if (side == tileEntity.facing()) {
                     tileEntity.shot(entity)
                 }
             }
@@ -139,14 +139,12 @@ class Screen(val tier: Int) : RedstoneAware() {
     // ----------------------------------------------------------------------- //
 
     override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing> {
-        val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Screen) {
-            if (tileEntity.facing == EnumFacing.UP || tileEntity.facing == EnumFacing.DOWN) {
-                EnumFacing.values()
-            } else {
-                EnumFacing.values().filter { d -> d != tileEntity.facing && d != tileEntity.facing.opposite }.toTypedArray()
-            }
-        } else super.getValidRotations(world, pos)
+        val tileEntity = world.getTileEntity(pos) as? TEScreen ?: return super.getValidRotations(world, pos)
+        return if (tileEntity.facing() == EnumFacing.UP || tileEntity.facing() == EnumFacing.DOWN) {
+            EnumFacing.values()
+        } else {
+            EnumFacing.values().filter { d -> d != tileEntity.facing() && d != tileEntity.facing()?.opposite }.toTypedArray()
+        }
     }
 
     val emptyBB = AxisAlignedBB(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)

@@ -69,21 +69,19 @@ abstract class SimpleBlock(material: Material = Material.IRON) : BlockContainer(
     open fun rarity(stack: ItemStack): EnumRarity = EnumRarity.COMMON
 
     @SideOnly(Side.CLIENT)
-    open fun addInformation(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, flag: ITooltipFlag) {
+    open fun addInformation(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, flag: ITooltipFlag) {
         tooltipHead(metadata, stack, world, tooltip, flag)
         tooltipBody(metadata, stack, world, tooltip, flag)
         tooltipTail(metadata, stack, world, tooltip, flag)
     }
 
-    protected open fun tooltipHead(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, flag: ITooltipFlag) {
-    }
+    protected open fun tooltipHead(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, flag: ITooltipFlag) {}
 
-    protected open fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, flag: ITooltipFlag) {
+    protected open fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, flag: ITooltipFlag) {
         tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase()))
     }
 
-    protected open fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, flag: ITooltipFlag) {
-    }
+    protected open fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, flag: ITooltipFlag) {}
 
     // ----------------------------------------------------------------------- //
     // Rotation

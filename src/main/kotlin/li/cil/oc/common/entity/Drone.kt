@@ -23,8 +23,6 @@ import li.cil.oc.common.inventory.ComponentInventory
 import li.cil.oc.common.inventory.Inventory
 import li.cil.oc.common.item.data.DroneData
 import li.cil.oc.integration.util.Wrench
-import li.cil.oc.server.agent
-import li.cil.oc.server.component
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedNBT.extendedNBT
 import li.cil.oc.util.ExtendedWorld.extendedWorld

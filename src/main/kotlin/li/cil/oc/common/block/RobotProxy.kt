@@ -3,14 +3,15 @@ package li.cil.oc.common.block
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Items
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.GuiType
+import li.cil.oc.common.block.traits.StateAware
 import li.cil.oc.common.item.data.RobotData
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Robot as TERobot
+import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.server.PacketSender
-import li.cil.oc.server.agent
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.Rarity
@@ -20,6 +21,7 @@ import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
+import net.minecraft.init.Blocks
 import net.minecraft.item.EnumRarity
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
@@ -30,8 +32,9 @@ import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
+import java.util.ArrayList
 
-class RobotProxy : RedstoneAware(), traits.StateAware {
+class RobotProxy : RedstoneAware(), StateAware {
     init {
         setLightOpacity(0)
         setCreativeTab(null)
@@ -40,8 +43,8 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
 
     override val translationKey = "robot"
 
-    var moving: ThreadLocal<tileentity.Robot?> = object : ThreadLocal<tileentity.Robot?>() {
-        override fun initialValue(): tileentity.Robot? = null
+    var moving: ThreadLocal<TERobot?> = object : ThreadLocal<TERobot?>() {
+        override fun initialValue(): TERobot? = null
     }
 
     // ----------------------------------------------------------------------- //
@@ -58,12 +61,12 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
 
     override fun getPickBlock(state: IBlockState, target: RayTraceResult, world: World, pos: BlockPos, player: EntityPlayer): ItemStack {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.RobotProxy) tileEntity.robot.info.copyItemStack() else ItemStack.EMPTY
+        return if (tileEntity is TERobotProxy) tileEntity.robot.info.copyItemStack() else ItemStack.EMPTY
     }
 
     override fun getBoundingBox(state: IBlockState, world: IBlockAccess, pos: BlockPos): AxisAlignedBB {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.RobotProxy) {
+        return if (tileEntity is TERobotProxy) {
             val robot = tileEntity.robot
             val bounds = AxisAlignedBB(0.1, 0.1, 0.1, 0.9, 0.9, 0.9)
             if (robot.isAnimatingMove) {
@@ -83,16 +86,16 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
         return Rarity.byTier(data.tier)
     }
 
-    override fun tooltipHead(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipHead(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipHead(metadata, stack, world, tooltip, advanced)
         addLines(stack, tooltip)
     }
 
-    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         tooltip.addAll(Tooltip.get("robot"))
     }
 
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, flag: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, flag: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, flag)
         if (KeyBindings.showExtendedTooltips) {
             val info = RobotData(stack)
@@ -108,7 +111,7 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
         }
     }
 
-    private fun addLines(stack: ItemStack, tooltip: java.util.List<String>) {
+    private fun addLines(stack: ItemStack, tooltip: MutableList<String>) {
         if (stack.hasTagCompound()) {
             if (stack.tagCompound!!.hasKey(Settings.namespace + "xp")) {
                 val xp = stack.tagCompound!!.getDouble(Settings.namespace + "xp")
@@ -137,8 +140,8 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
 
     override fun getExplosionResistance(entity: Entity): Float = 10f
 
-    override fun getDrops(world: IBlockAccess, pos: BlockPos, state: IBlockState, fortune: Int): java.util.ArrayList<ItemStack> {
-        val list = java.util.ArrayList<ItemStack>()
+    override fun getDrops(world: IBlockAccess, pos: BlockPos, state: IBlockState, fortune: Int): ArrayList<ItemStack> {
+        val list = ArrayList<ItemStack>()
 
         // Superspecial hack... usually this will not work, because Minecraft calls
         // this method *after* the block has already been destroyed. Meaning we
@@ -152,15 +155,16 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
         // this will lead to dupes, but in some initial testing this wasn't the
         // case anywhere (TE autonomous activator, CC turtles).
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.RobotProxy) {
+        if (tileEntity is TERobotProxy) {
             val robot = tileEntity.robot
-            if (robot.node != null) {
+            val node = robot.node()
+            if (node != null) {
                 // Update: even more special hack! As discussed here http://git.io/IcNAyg
                 // some mods call this even when they're not about to actually break the
                 // block... soooo we need a whitelist to know when to generate a *proper*
                 // drop (i.e. with file systems closed / open handles not saved, e.g.).
                 if (gettingDropsForActualDrop) {
-                    robot.node.remove()
+                    node.remove()
                     robot.saveComponents()
                 }
                 list.add(robot.info.createItemStack())
@@ -180,7 +184,7 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
     override fun collisionRayTrace(state: IBlockState, world: World, pos: BlockPos, start: Vec3d, end: Vec3d): RayTraceResult? {
         val bounds = getCollisionBoundingBox(state, world, pos)
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.RobotProxy && tileEntity.robot.animationTicksLeft <= 0 && bounds != null && bounds.contains(start)) {
+        return if (tileEntity is TERobotProxy && tileEntity.robot.animationTicksLeft <= 0 && bounds != null && bounds.contains(start)) {
             null
         } else super.collisionRayTrace(state, world, pos, start, end)
     }
@@ -194,7 +198,7 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
                 // change since this player got into range he might have the wrong one,
                 // so we send him the current one just in case.
                 val tileEntity = world.getTileEntity(pos)
-                if (tileEntity is tileentity.RobotProxy && tileEntity.robot.node.network != null) {
+                if (tileEntity is TERobotProxy && tileEntity.robot.node()!!.network() != null) {
                     PacketSender.sendRobotSelectedSlotChange(tileEntity.robot)
                     player.openGui(OpenComputers, GuiType.Robot.id, world, pos.x, pos.y, pos.z)
                 }
@@ -203,8 +207,8 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
         } else if (heldItem.isEmpty) {
             if (!world.isRemote) {
                 val tileEntity = world.getTileEntity(pos)
-                if (tileEntity is tileentity.RobotProxy && !tileEntity.machine.isRunning && tileEntity.isUsableByPlayer(player)) {
-                    tileEntity.machine.start()
+                if (tileEntity is TERobotProxy && !tileEntity.machine().isRunning && tileEntity.isUsableByPlayer(player)) {
+                    tileEntity.machine().start()
                 }
             }
             return true
@@ -217,8 +221,8 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
         if (!world.isRemote) {
             val tileEntity = world.getTileEntity(pos)
             val info = when {
-                entity is agent.Player && tileEntity is tileentity.RobotProxy -> Triple(tileEntity.robot, entity.agent.ownerName, entity.agent.ownerUUID)
-                entity is EntityPlayer && tileEntity is tileentity.RobotProxy -> Triple(tileEntity.robot, entity.name, entity.gameProfile.id)
+                entity is agent.Player && tileEntity is TERobotProxy -> Triple(tileEntity.robot, entity.agent.ownerName, entity.agent.ownerUUID)
+                entity is EntityPlayer && tileEntity is TERobotProxy -> Triple(tileEntity.robot, entity.name, entity.gameProfile.id)
                 else -> null
             }
             info?.let { (robot, owner, uuid) ->
@@ -233,7 +237,7 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
 
     override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, player: EntityPlayer, willHarvest: Boolean): Boolean {
         val tileEntity = world.getTileEntity(pos)
-        if (tileEntity is tileentity.RobotProxy) {
+        if (tileEntity is TERobotProxy) {
             val robot = tileEntity.robot
             // Only allow breaking creative tier robots by allowed users.
             // Unlike normal robots, griefing isn't really a valid concern
@@ -247,8 +251,8 @@ class RobotProxy : RedstoneAware(), traits.StateAware {
                 InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), robot.info.createItemStack())
             }
             robot.moveFrom?.let { fromPos ->
-                if (world.getBlockState(fromPos).block == api.Items.get(Constants.BlockName.RobotAfterimage).block()) {
-                    world.setBlockState(fromPos, net.minecraft.init.Blocks.AIR.defaultState, 1)
+                if (world.getBlockState(fromPos).block == Items.get(Constants.BlockName.RobotAfterimage).block()) {
+                    world.setBlockState(fromPos, Blocks.AIR.defaultState, 1)
                 }
             }
         }

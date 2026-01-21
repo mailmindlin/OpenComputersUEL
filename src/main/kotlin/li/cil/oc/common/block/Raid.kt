@@ -3,8 +3,10 @@ package li.cil.oc.common.block
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
+import li.cil.oc.common.block.traits.CustomDrops
+import li.cil.oc.common.block.traits.GUI
 import li.cil.oc.common.item.data.RaidData
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.Raid as TERaid
 import net.minecraft.block.Block
 import net.minecraft.block.state.BlockStateContainer
 import net.minecraft.block.state.IBlockState
@@ -17,7 +19,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import kotlin.reflect.KClass
 
-class Raid(protected val tileTag: KClass<tileentity.Raid> = tileentity.Raid::class) : SimpleBlock(), traits.GUI, traits.CustomDrops<tileentity.Raid> {
+class Raid(protected val tileTag: KClass<TERaid> = TERaid::class) : SimpleBlock(), GUI, CustomDrops<TERaid> {
     override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing)
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta))
@@ -40,7 +42,8 @@ class Raid(protected val tileTag: KClass<tileentity.Raid> = tileentity.Raid::cla
 
     override val guiType = GuiType.Raid
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Raid()
+    override val tileClass: Class<TERaid> get() = TERaid::class.java
+    override fun createNewTileEntity(world: World, metadata: Int) = TERaid()
 
     // ----------------------------------------------------------------------- //
 
@@ -48,14 +51,14 @@ class Raid(protected val tileTag: KClass<tileentity.Raid> = tileentity.Raid::cla
 
     override fun getComparatorInputOverride(state: IBlockState, world: World, pos: BlockPos): Int {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Raid && tileEntity.presence.all { it }) 15 else 0
+        return if (tileEntity is TERaid && tileEntity.presence.all { it }) 15 else 0
     }
 
-    override fun doCustomInit(tileEntity: tileentity.Raid, player: EntityLivingBase, stack: ItemStack) {
+    override fun doCustomInit(tileEntity: TERaid, player: EntityLivingBase, stack: ItemStack) {
         super.doCustomInit(tileEntity, player, stack)
         if (!tileEntity.world.isRemote) {
             val data = RaidData(stack)
-            for (i in 0 until minOf(data.disks.size, tileEntity.sizeInventory)) {
+            for (i in 0 until minOf(data.disks.size, tileEntity.getSizeInventory())) {
                 tileEntity.setInventorySlotContents(i, data.disks[i])
             }
             data.label?.let { tileEntity.label.setLabel(it) }
@@ -66,7 +69,7 @@ class Raid(protected val tileTag: KClass<tileentity.Raid> = tileentity.Raid::cla
         }
     }
 
-    override fun doCustomDrops(tileEntity: tileentity.Raid, player: EntityPlayer, willHarvest: Boolean) {
+    override fun doCustomDrops(tileEntity: TERaid, player: EntityPlayer, willHarvest: Boolean) {
         super.doCustomDrops(tileEntity, player, willHarvest)
         val stack = createItemStack()
         if (tileEntity.items.any { !it.isEmpty }) {
@@ -78,6 +81,4 @@ class Raid(protected val tileTag: KClass<tileentity.Raid> = tileentity.Raid::cla
         }
         Block.spawnAsEntity(tileEntity.world, tileEntity.pos, stack)
     }
-
-    override val tileEntityClass: Class<tileentity.Raid> get() = tileentity.Raid::class.java
 }

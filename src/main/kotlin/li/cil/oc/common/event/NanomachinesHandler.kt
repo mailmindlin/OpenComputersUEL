@@ -5,7 +5,7 @@ import java.io.FileOutputStream
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.Nanomachines
 import li.cil.oc.api.nanomachines.Controller
 import li.cil.oc.client.Textures
 import li.cil.oc.common.EventHandler
@@ -33,7 +33,7 @@ object NanomachinesHandler {
         fun onRenderGameOverlay(e: RenderGameOverlayEvent.Post) {
             if (e.type == RenderGameOverlayEvent.ElementType.TEXT) {
                 val mc = Minecraft.getMinecraft()
-                val controller = api.Nanomachines.getController(mc.player)
+                val controller = Nanomachines.getController(mc.player)
                 if (controller is Controller) {
                     val res = ScaledResolution(mc)
                     val sizeX = 8
@@ -84,7 +84,7 @@ object NanomachinesHandler {
         @JvmStatic
         @SubscribeEvent
         fun onPlayerRespawn(e: PlayerRespawnEvent) {
-            val controller = api.Nanomachines.getController(e.player)
+            val controller = Nanomachines.getController(e.player)
             if (controller is Controller) {
                 controller.changeBuffer(-controller.localBuffer)
             }
@@ -95,7 +95,7 @@ object NanomachinesHandler {
         fun onLivingUpdate(e: LivingEvent.LivingUpdateEvent) {
             val entity = e.entity
             if (entity is EntityPlayer) {
-                val controller = api.Nanomachines.getController(entity)
+                val controller = Nanomachines.getController(entity)
                 if (controller is ControllerImpl) {
                     if (controller.player === entity) {
                         controller.update()
@@ -103,8 +103,8 @@ object NanomachinesHandler {
                         // Player entity instance changed (e.g. respawn), recreate the controller.
                         val nbt = NBTTagCompound()
                         controller.save(nbt)
-                        api.Nanomachines.uninstallController(controller.player)
-                        val newController = api.Nanomachines.installController(entity)
+                        Nanomachines.uninstallController(controller.player)
+                        val newController = Nanomachines.installController(entity)
                         if (newController is ControllerImpl) {
                             newController.load(nbt)
                             newController.reset()
@@ -118,7 +118,7 @@ object NanomachinesHandler {
         @SubscribeEvent
         fun onPlayerSave(e: PlayerEvent.SaveToFile) {
             val file = e.getPlayerFile("ocnm")
-            val controller = api.Nanomachines.getController(e.entityPlayer)
+            val controller = Nanomachines.getController(e.entityPlayer)
             if (controller is ControllerImpl) {
                 try {
                     val nbt = NBTTagCompound()
@@ -141,7 +141,7 @@ object NanomachinesHandler {
         fun onPlayerLoad(e: PlayerEvent.LoadFromFile) {
             val file = e.getPlayerFile("ocnm")
             if (file.exists()) {
-                val controller = api.Nanomachines.getController(e.entityPlayer)
+                val controller = Nanomachines.getController(e.entityPlayer)
                 if (controller is ControllerImpl) {
                     try {
                         val fis = FileInputStream(file)
@@ -161,10 +161,10 @@ object NanomachinesHandler {
         @JvmStatic
         @SubscribeEvent
         fun onPlayerDisconnect(e: PlayerLoggedOutEvent) {
-            val controller = api.Nanomachines.getController(e.player)
+            val controller = Nanomachines.getController(e.player)
             if (controller is ControllerImpl) {
                 // Wait a tick because saving is done after this event.
-                EventHandler.scheduleServer { api.Nanomachines.uninstallController(e.player) }
+                EventHandler.scheduleServer { Nanomachines.uninstallController(e.player) }
             }
         }
     }
