@@ -26,16 +26,16 @@ repositories {
 		allowInsecureProtocol = true
 	}
 	maven {
-		name "tterrag"
-		url "https://maven.tterrag.com/"
+		name = "tterrag"
+		url = "https://maven.tterrag.com/"
 	}
 	maven {
-		name "buildcraft"
-		url "https://mod-buildcraft.com/maven/"
+		name = "buildcraft"
+		url = "https://mod-buildcraft.com/maven/"
 	}
 	maven {
 		name = "Cleanroom"
-		url 'https://maven.cleanroommc.com'
+		url = 'https://maven.cleanroommc.com'
 	}
     maven {
         name = "CurseForge"
