@@ -1,6 +1,7 @@
 package li.cil.oc.server.driver
 
 import li.cil.oc.OpenComputers
+import li.cil.oc.api.API.driver
 import li.cil.oc.api.detail.DriverAPI
 import li.cil.oc.api.driver.Converter
 import li.cil.oc.api.driver.DriverBlock
@@ -19,6 +20,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.items.CapabilityItemHandler
 import net.minecraftforge.items.IItemHandler
+import java.util.*
 
 /**
  * This class keeps track of registered drivers and provides installation logic
@@ -35,57 +37,61 @@ import net.minecraftforge.items.IItemHandler
  * the computer, but may also provide context-free functions.
  */
 internal object Registry: DriverAPI {
-  val sidedBlocks: ArrayBuffer[DriverBlock] = mutable.ArrayBuffer.empty[DriverBlock]
+  val sidedBlocks = mutableListOf<DriverBlock>()
 
   private val items = mutableListOf<DriverItem>()
 
-  val converters: ArrayBuffer[Converter] = mutable.ArrayBuffer.empty[api.driver.Converter]
+  val converters = mutableListOf<Converter>()
 
-  val environmentProviders: ArrayBuffer[EnvironmentProvider] = mutable.ArrayBuffer.empty[api.driver.EnvironmentProvider]
+  val environmentProviders = mutableListOf<EnvironmentProvider>()
 
-  val inventoryProviders: ArrayBuffer[InventoryProvider] = mutable.ArrayBuffer.empty[api.driver.InventoryProvider]
+  val inventoryProviders = mutableListOf<InventoryProvider>()
 
-  val blacklist: ArrayBuffer[(ItemStack, mutable.Set[Class[_]])] = mutable.ArrayBuffer.empty[(ItemStack, mutable.Set[Class[_]])]
+  val blacklist = mutableListOf<Pair<ItemStack, Set<Class<*>>>>()
 
   /** Used to keep track of whether we're past the init phase. */
   var locked = false
 
+  private fun checkLocked(thing: String) {
+    if (locked) throw IllegalStateException("Please register all $thing in the init phase.")
+  }
+
   override fun add(driver: DriverBlock) {
-    if (locked) throw IllegalStateException("Please register all drivers in the init phase.")
+    checkLocked("drivers")
     if (!sidedBlocks.contains(driver)) {
-      OpenComputers.log.debug(s"Registering block driver ${driver.getClass.getName}.")
+      OpenComputers.log.debug("Registering block driver ${driver.javaClass.name}.")
       sidedBlocks += driver
     }
   }
 
   override fun add(driver: DriverItem) {
-    if (locked) throw IllegalStateException("Please register all drivers in the init phase.")
+    checkLocked("drivers")
     if (!items.contains(driver)) {
-      OpenComputers.log.debug(s"Registering item driver ${driver.getClass.getName}.")
+      OpenComputers.log.debug("Registering item driver ${driver.javaClass.name}.")
       items += driver
     }
   }
 
   override fun add(converter: Converter) {
-    if (locked) throw IllegalStateException("Please register all converters in the init phase.")
+    checkLocked("converters")
     if (!converters.contains(converter)) {
-      OpenComputers.log.debug(s"Registering converter ${converter.getClass.getName}.")
+      OpenComputers.log.debug("Registering converter ${converter.javaClass.name}.")
       converters += converter
     }
   }
 
   override fun add(provider: EnvironmentProvider) {
-    if (locked) throw IllegalStateException("Please register all environment providers in the init phase.")
+    checkLocked("environment providers")
     if (!environmentProviders.contains(provider)) {
-      OpenComputers.log.debug(s"Registering environment provider ${provider.getClass.getName}.")
+      OpenComputers.log.debug("Registering environment provider ${provider.javaClass.name}.")
       environmentProviders += provider
     }
   }
 
   override fun add(provider: InventoryProvider) {
-    if (locked) throw IllegalStateException("Please register all inventory providers in the init phase.")
+    checkLocked("inventory providers")
     if (!inventoryProviders.contains(provider)) {
-      OpenComputers.log.debug(s"Registering inventory provider ${provider.getClass.getName}.")
+      OpenComputers.log.debug("Registering inventory provider ${provider.javaClass.name}.")
       inventoryProviders += provider
     }
   }
@@ -96,30 +102,31 @@ internal object Registry: DriverAPI {
       case _ => null
     }
 
-  override fun driverFor(stack: ItemStack, host: Class[_ <: EnvironmentHost]): DriverItem =
-    if (!stack.isEmpty) {
-      val hostAware = items.collect {
-        case driver: HostAware if driver.worksWith(stack) => driver
-      }
-      if (hostAware.nonEmpty) {
-        hostAware.find(_.worksWith(stack, host)).orNull
-      }
-      else driverFor(stack)
+  override fun driverFor(stack: ItemStack, host: Class<out EnvironmentHost>): DriverItem? {
+    if (stack.isEmpty())
+      return null
+
+    val hostAware = items.collect {
+      case driver : HostAware if driver.worksWith(stack) => driver
     }
-    else null
+    if (hostAware.nonEmpty) {
+      hostAware.find(_.worksWith(stack, host)).orNull
+    } else driverFor(stack)
+  }
 
   override fun driverFor(stack: ItemStack): DriverItem? =
     if (!stack.isEmpty) items.find{ it.worksWith(stack) }.orNull
     else null
 
   @Deprecated
-  override fun environmentFor(stack: ItemStack): Class[_] = {
+  override fun environmentFor(stack: ItemStack): Class<*> {
     environmentProviders.map(provider => provider.getEnvironment(stack)).collectFirst {
       case clazz: Class[_] => clazz
     }.orNull
   }
 
-  override fun environmentsFor(stack: ItemStack): util.Set[Class[_]] = environmentProviders.map(_.getEnvironment(stack)).filter(_ != null).toSet[Class[_]]
+  override fun environmentsFor(stack: ItemStack): Set<Class<*>>
+    = environmentProviders.mapNotNullTo(mutableSetOf()) { it.getEnvironment(stack) }
 
   override fun itemHandlerFor(stack: ItemStack, player: EntityPlayer): IItemHandler = {
     inventoryProviders.find(provider => provider.worksWith(stack, player)).
@@ -131,115 +138,100 @@ internal object Registry: DriverAPI {
       }
   }
 
-  override fun itemDrivers: util.List[DriverItem] = items.toSeq
+  override fun itemDrivers(): List<DriverItem> = items.toList()
 
-  fun blacklistHost(stack: ItemStack, host: Class[_]) {
+  fun blacklistHost(stack: ItemStack, host: Class<*>) {
     blacklist.find(_._1.isItemEqual(stack)) match {
       case Some((_, hosts)) => hosts += host
       case _ => blacklist.append((stack, mutable.Set(host)))
     }
   }
 
-  fun convert(value: Array<*>?): Array<Any> = if (value != null) value.map(arg => convertRecursively(arg, new util.IdentityHashMap())) else null
+  fun convert(value: Array<*>?): Array<Any?>?
+    = value
+      ?.map { convertRecursively(it, IdentityHashMap()) }
+      ?.toTypedArray()
 
-  fun convertRecursively(value: Any, memo: util.IdentityHashMap[AnyRef, AnyRef], force: Boolean = false): AnyRef = {
-    val valueRef = value match {
-      case number: ScalaNumber => number.underlying
-      case reference: AnyRef => reference
-      case null => null
-      case primitive => primitive.asInstanceOf[AnyRef]
+  fun convertRecursively(value: Any?, memo: IdentityHashMap<Any, Any>, force: Boolean = false): Any? {
+    val valueRef = when (value) {
+      is Number -> value
+      is Any -> value
+      null -> null
+      //TODO: does this match primitives?
+      else -> value as Any
     }
-    if (!force && memo.containsKey(valueRef)) {
-      memo.get(valueRef)
-    }
-    else valueRef match {
-      case null | Unit | None => null
 
-      case arg: java.lang.Boolean => arg
-      case arg: java.lang.Byte => arg
-      case arg: java.lang.Character => arg
-      case arg: java.lang.Short => arg
-      case arg: java.lang.Integer => arg
-      case arg: java.lang.Long => arg
-      case arg: java.lang.Float => arg
-      case arg: java.lang.Double => arg
-      case arg: java.lang.Number => Double.box(arg.doubleValue)
-      case arg: java.lang.String => arg
+    return if (!force && memo.containsKey(valueRef)) {
+      memo[valueRef]
+    } else when (valueRef) {
+      null, Unit -> null
+      is Boolean -> valueRef
+      is Char, is String -> valueRef
+      is Byte, is Short, is Int, is Long -> valueRef
+      is Float, is Double -> valueRef
+      is Number -> valueRef.toDouble()
 
-      case arg: Array[Boolean] => arg
-      case arg: Array[Byte] => arg
-      case arg: Array[Character] => arg
-      case arg: Array[Short] => arg
-      case arg: Array[Integer] => arg
-      case arg: Array[Long] => arg
-      case arg: Array[Float] => arg
-      case arg: Array[Double] => arg
-      case arg: Array[String] => arg
+      is BooleanArray, is ByteArray, is CharArray, is ShortArray, is IntArray, is LongArray, is FloatArray, is DoubleArray -> valueRef
+//      is Array<String> -> arg
+      is Value -> valueRef
 
-      case arg: Value => arg
+      is Array<*> -> convertList(valueRef, valueRef.withIndex().iterator(), memo)
+//      case arg: Product => convertList(arg, arg.productIterator.zipWithIndex, memo)
+//      case arg: Seq[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
 
-      case arg: Array[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
-      case arg: Product => convertList(arg, arg.productIterator.zipWithIndex, memo)
-      case arg: Seq[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
-
-      case arg: Map[_, _] => convertMap(arg, arg, memo)
-      case arg: mutable.Map[_, _] => convertMap(arg, arg.toMap, memo)
-      case arg: java.util.Map[_, _] => convertMap(arg, arg.toMap, memo)
-
-      case arg: Iterable[_] => convertList(arg, arg.zipWithIndex.toIterator, memo)
-      case arg: java.lang.Iterable[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
-
-      case arg =>
-        val converted = new util.HashMap[AnyRef, AnyRef]()
-        memo += arg -> converted
-        converters.foreach(converter => try converter.convert(arg, converted) catch {
-          case t: Throwable => OpenComputers.log.warn("Type converter threw an exception.", t)
-        })
-        if (converted.isEmpty) {
-          memo += arg -> arg.toString
-          arg.toString
-        }
-        else {
-          // This is a little nasty but necessary because we need to keep the
-          // 'converted' value up-to-date for any reference created to it in
-          // the following convertRecursively call. For example:
-          // - Converter C is called for A with map M.
-          // - C puts A into M again.
-          // - convertRecursively(M) encounters A in the memoization map, uses M.
-          //   That M is then 'wrong', as in not fully converted. Hence the clear
-          //   plus copy action afterwards.
-          memo += converted -> converted // Makes convertMap re-use the map.
-          convertRecursively(converted, memo, force = true)
-          memo -= converted
-          if (converted.size == 1 && converted.containsKey("oc:flatten")) {
-            val value = converted.get("oc:flatten")
-            memo += arg -> value // Update memoization map.
-            value
-          }
-          else {
-            converted
+      is Map<*, *> -> convertMap(valueRef, valueRef, memo)
+      is Iterable<*> -> convertList(valueRef, valueRef.withIndex().iterator(), memo)
+      else -> {
+        val converted = hashMapOf<Any, Any>()
+        memo[valueRef] = converted
+        for (converter in converters) {
+          try {
+            converter.convert(valueRef, converted)
+          } catch (e: Exception) {
+            OpenComputers.log.warn ("Type converter threw an exception.", e)
           }
         }
+        if (converted.isEmpty()) {
+          val s = valueRef.toString()
+          memo[valueRef] = s
+          return s
+        }
+        // This is a little nasty but necessary because we need to keep the
+        // 'converted' value up-to-date for any reference created to it in
+        // the following convertRecursively call. For example:
+        // - Converter C is called for A with map M.
+        // - C puts A into M again.
+        // - convertRecursively(M) encounters A in the memoization map, uses M.
+        //   That M is then 'wrong', as in not fully converted. Hence the clear
+        //   plus copy action afterwards.
+        memo[converted] = converted // Makes convertMap re-use the map.
+        convertRecursively(converted, memo, force = true)
+        memo.remove(converted)
+        if (converted.size == 1 && converted.containsKey("oc:flatten")) {
+          val value = converted.get("oc:flatten")
+          memo[valueRef] = value // Update memoization map.
+          value
+        } else {
+          converted
+        }
+      }
     }
   }
 
-  fun convertList(obj: AnyRef, list: Iterator[(Any, Int)], memo: util.IdentityHashMap[AnyRef, AnyRef]): Array[AnyRef] = {
-    val converted = mutable.ArrayBuffer.empty[AnyRef]
-    memo += obj -> converted
-    for ((value, index) <- list) {
+  private fun convertList(obj: Any, list: Iterator<IndexedValue<Any?>>, memo: IdentityHashMap<Any, Any>): Array<Any?> {
+    val converted = mutableListOf<Any?>()
+    memo[obj] = converted
+    for ((value, index) in list) {
       converted += convertRecursively(value, memo)
     }
-    converted.toArray
+    return converted.toTypedArray()
   }
 
-  fun convertMap(obj: AnyRef, map: Map[_, _], memo: util.IdentityHashMap[AnyRef, AnyRef]): AnyRef = {
-    val converted = memo.getOrElseUpdate(obj, mutable.Map.empty[AnyRef, AnyRef]) match {
-      case map: mutable.Map[AnyRef, AnyRef]@unchecked => map
-      case map: java.util.Map[AnyRef, AnyRef]@unchecked => mapAsScalaMap(map)
+  private fun convertMap(obj: Any, map: Map<*, *>, memo: IdentityHashMap<Any, Any>): Any {
+    val converted = memo.getOrPut(obj) { mutableMapOf<Any?, Any?>() } as MutableMap<Any?, Any?>
+    for ((key, value) in map) {
+      converted[convertRecursively(key, memo)] = convertRecursively(value, memo)
     }
-    map.collect {
-      case (key: AnyRef, value: AnyRef) => converted += convertRecursively(key, memo) -> convertRecursively(value, memo)
-    }
-    memo.get(obj)
+    return converted
   }
 }
