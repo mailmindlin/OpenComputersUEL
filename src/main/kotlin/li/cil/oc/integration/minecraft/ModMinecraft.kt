@@ -1,5 +1,7 @@
 package li.cil.oc.integration.minecraft
 
+import li.cil.oc.integration.Mod
+
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.integration.ModProxy
@@ -15,8 +17,8 @@ import net.minecraft.init.Blocks
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.MinecraftForge
 
-object ModMinecraft : ModProxy(), RedstoneProvider {
-    override fun getMod(): Mods = Mods.Minecraft
+internal object ModMinecraft : ModProxy, RedstoneProvider {
+    override val mod: Mod = Mods.Minecraft
 
     override fun initialize() {
         Driver.add(DriverBeacon)

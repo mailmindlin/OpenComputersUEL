@@ -1,5 +1,6 @@
 package li.cil.oc.integration.charset
 
+import li.cil.oc.integration.Mod
 import li.cil.oc.integration.ModProxy
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.util.BundledRedstone
@@ -11,7 +12,7 @@ import pl.asie.charset.api.wires.IBundledEmitter
 import pl.asie.charset.api.wires.IBundledReceiver
 import pl.asie.charset.api.wires.IRedstoneEmitter
 
-object ModCharset : ModProxy(), RedstoneProvider {
+internal object ModCharset : ModProxy, RedstoneProvider {
     class BundledRedstoneView(
         val data: Array<Int>,
         val onChange: () -> Unit
@@ -23,7 +24,7 @@ object ModCharset : ModProxy(), RedstoneProvider {
         }
     }
 
-    override fun getMod() = Mods.Charset
+    override val mod: Mod = Mods.Charset
 
     override fun initialize() {
         BundledRedstone.addProvider(this)
@@ -43,7 +44,7 @@ object ModCharset : ModProxy(), RedstoneProvider {
         return 0
     }
 
-    fun computeBundledInput(pos: BlockPosition, side: EnumFacing): Array<Int>? {
+    override fun computeBundledInput(pos: BlockPosition, side: EnumFacing): IntArray? {
         val world = pos.world.get() ?: return null
         val npos = pos.toBlockPos().offset(side)
         val tile = world.getTileEntity(npos) as? TileEntity ?: return null
@@ -51,7 +52,7 @@ object ModCharset : ModProxy(), RedstoneProvider {
         if (tile.hasCapability(CapabilitiesCharset.BUNDLED_EMITTER, side.opposite)) {
             val emitter = tile.getCapability(CapabilitiesCharset.BUNDLED_EMITTER, side.opposite)
             if (emitter is IBundledEmitter) {
-                return emitter.bundledSignal.map { it.toInt() and 0xFF }.toTypedArray()
+                return emitter.bundledSignal?.map { it.toInt() and 0xFF }?.toIntArray()
             }
         }
         return null
