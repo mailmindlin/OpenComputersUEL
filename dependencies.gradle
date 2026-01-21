@@ -71,44 +71,43 @@ dependencies {
         transitive = false
     }
     compileOnly("extracells:ExtraCells:1.12.2-2.6.5:api")
-
-    def projRed = "1.12.2-4.9.4.120"
     
-    /*provided fg.deobf("mekanism:Mekanism:${config.mekanism.version}:api") {
+    compileOnly("mekanism:Mekanism:1.12.2-9.8.3.390:api") {
         transitive = false
     }
 
-    provided fg.deobf("codechicken:ForgeMultipart:${config.minecraft.version}-${config.forgemultipart.version}:universal") {
+    compileOnly("codechicken:ForgeMultipart:1.12.2-2.6.2.83:universal") {
         exclude module: "jei_1.12"
         exclude module: "CodeChickenLib"
     }
 
-    provided fg.deobf("codechicken:ChickenASM:${config.casm.version}")*/
+    compileOnly("codechicken:ChickenASM:1.12-1.0.2.7")
 
     compileOnly("mezz.jei:jei_1.12.2:4.16.1.302")
-    /*provided fg.deobf("codechicken:CodeChickenLib:${config.minecraft.version}-${config.ccl.version}:universal")
-    provided fg.deobf("codechicken:WR-CBE:${config.minecraft.version}-${config.wrcbe.version}:universal")
+    compileOnly("codechicken:CodeChickenLib:1.12.2-3.2.3.358:universal")
+    compileOnly("codechicken:WR-CBE:1.12.2-2.3.2.33:universal")
 
-    provided fg.deobf("mrtjp:ProjectRed:${config.projred.version}:Base") {
+    def projRedVersion = "1.12.2-4.9.3.118"
+    compileOnly("mrtjp:ProjectRed:${projRedVersion}:Base") {
         exclude module: "NotEnoughItems"
         exclude module: "CodeChickenLib"
         exclude module: "jei_1.12"
         exclude module: "ForgeMultipart"
     }
 
-    provided fg.deobf("mrtjp:ProjectRed:${config.projred.version}:integration") {
+    compileOnly("mrtjp:ProjectRed:${projRedVersion}:integration") {
         exclude module: "NotEnoughItems"
         exclude module: "CodeChickenLib"
         exclude module: "jei_1.12"
         exclude module: "ForgeMultipart"
     }
 
-    provided fg.deobf("mrtjp:MrTJPCore:${config.mrtjpcore.version}:universal") {
+    compileOnly("mrtjp:MrTJPCore:1.12.2-2.1.4.43:universal") {
         exclude module: "NotEnoughItems"
         exclude module: "CodeChickenLib"
         exclude module: "jei_1.12"
         exclude module: "ForgeMultipart"
-    }*/
+    }
 
     implementation(':OC-LuaJ:20220907.1')
     implementation(':OC-JNLua:20230530.0')
