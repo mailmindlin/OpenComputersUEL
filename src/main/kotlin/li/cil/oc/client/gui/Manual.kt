@@ -97,15 +97,17 @@ class Manual : GuiScreen(), Window {
     override fun initGui() {
         super.initGui()
 
+        val state = this.windowState
+
         for ((i, tab) in ManualAPI.tabs.withIndex()) {
             if (i < maxTabsPerSide) {
-                val x = guiLeft + tabPosX
-                val y = guiTop + tabPosY + i * (tabHeight - 1)
+                val x = state.guiLeft + tabPosX
+                val y = state.guiTop + tabPosY + i * (tabHeight - 1)
                 add(buttonList, ImageButton(i, x, y, tabWidth, tabHeight, Textures.GUI.ManualTab))
             }
         }
 
-        scrollButton = ImageButton(-1, guiLeft + scrollPosX, guiTop + scrollPosY, 6, 13, Textures.GUI.ButtonScroll)
+        scrollButton = ImageButton(-1, state.guiLeft + scrollPosX, state.guiTop + scrollPosY, 6, 13, Textures.GUI.ButtonScroll)
         add(buttonList, scrollButton!!)
 
         refreshPage()
@@ -127,7 +129,9 @@ class Manual : GuiScreen(), Window {
             }
         }
 
-        currentSegment = Document.render(document!!, guiLeft + 8, guiTop + 8, documentMaxWidth, documentMaxHeight, offset, fontRenderer, mouseX, mouseY)
+        val state = this.windowState
+
+        currentSegment = Document.render(document!!, state.guiLeft + 8, state.guiTop + 8, documentMaxWidth, documentMaxHeight, offset, fontRenderer, mouseX, mouseY)
 
         if (!isDragging) {
             currentSegment?.tooltip?.let { text ->
@@ -150,8 +154,8 @@ class Manual : GuiScreen(), Window {
             }
         }
 
-        if (canScroll && (isCoordinateOverScrollBar(mouseX - guiLeft, mouseY - guiTop) || isDragging)) {
-            drawHoveringText(listOf("${100 * offset / maxOffset}%"), guiLeft + scrollPosX + scrollWidth, scrollButton!!.y + scrollButton!!.height + 1, fontRenderer)
+        if (canScroll && (isCoordinateOverScrollBar(mouseX - state.guiLeft, mouseY - state.guiTop) || isDragging)) {
+            drawHoveringText(listOf("${100 * offset / maxOffset}%"), state.guiLeft + scrollPosX + scrollWidth, scrollButton!!.y + scrollButton!!.height + 1, fontRenderer)
         }
     }
 
@@ -174,8 +178,9 @@ class Manual : GuiScreen(), Window {
     override fun mouseClicked(mouseX: Int, mouseY: Int, button: Int) {
         super.mouseClicked(mouseX, mouseY, button)
 
+        val state = this.windowState
         when {
-            canScroll && button == 0 && isCoordinateOverScrollBar(mouseX - guiLeft, mouseY - guiTop) -> {
+            canScroll && button == 0 && isCoordinateOverScrollBar(mouseX - state.guiLeft, mouseY - state.guiTop) -> {
                 isDragging = true
                 scrollMouse(mouseY)
             }
@@ -199,7 +204,7 @@ class Manual : GuiScreen(), Window {
     }
 
     private fun scrollMouse(mouseY: Int) {
-        scrollTo(((mouseY - guiTop - scrollPosY - 6.5) * maxOffset / (scrollHeight - 13.0)).toInt())
+        scrollTo(((mouseY - this.windowState.guiTop - scrollPosY - 6.5) * maxOffset / (scrollHeight - 13.0)).toInt())
     }
 
     private fun scrollUp() = scrollTo(offset - Document.lineHeight(fontRenderer) * 3)
@@ -208,7 +213,7 @@ class Manual : GuiScreen(), Window {
 
     private fun scrollTo(row: Int) {
         ManualAPI.history.top.offset = row.coerceIn(0, maxOffset)
-        val yMin = guiTop + scrollPosY
+        val yMin = this.windowState.guiTop + scrollPosY
         scrollButton!!.y = if (maxOffset > 0) {
             yMin + (scrollHeight - 13) * offset / maxOffset
         } else {

@@ -51,6 +51,10 @@ class Drive(
 
     override fun initGui() {
         super.initGui()
+        val state = this.windowState
+        val guiLeft = state.guiLeft
+        val guiTop = state.guiTop
+
         managedButton = ImageButton(
             0, guiLeft + 11, guiTop + 11, 74, 18,
             Textures.GUI.ButtonDriveMode,
@@ -80,6 +84,12 @@ class Drive(
 
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         super.drawScreen(mouseX, mouseY, dt)
+
+        val state = this.windowState
+        val guiLeft = state.guiLeft
+        val guiTop = state.guiTop
+        val xSize = state.xSize
+
         fontRenderer.drawSplitString(
             Localization.Drive.Warning(),
             guiLeft + 11, guiTop + 37,

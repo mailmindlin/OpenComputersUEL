@@ -1,6 +1,7 @@
 package li.cil.oc.client.gui
 
 import li.cil.oc.api.internal.TextBuffer
+import li.cil.oc.client.gui.traits.DisplayBuffer
 import li.cil.oc.client.gui.traits.InputBuffer
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.gui.BufferRenderer
@@ -8,6 +9,7 @@ import li.cil.oc.util.RenderState
 import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.renderer.GlStateManager
 import org.lwjgl.input.Mouse
+import kotlin.math.min
 import kotlin.math.sign
 
 class Screen(
@@ -31,17 +33,11 @@ class Screen(
 
     override var showKeyboardMissing: Long = 0L
 
-    override var guiSizeChanged: Boolean = false
-
-    override var currentWidth: Int = 0
-
-    override var currentHeight: Int = 0
-
-    override var scale: Double = 1.0
-
     private val bufferMargin = BufferRenderer.margin + BufferRenderer.innerMargin
 
     private var didClick = false
+
+    override var displayBufferState: DisplayBuffer.State = DisplayBuffer.State()
 
     private var x = 0
     private var y = 0
@@ -122,6 +118,7 @@ class Screen(
     }
 
     private fun toBufferCoordinates(mouseX: Int, mouseY: Int): Pair<Double, Double>? {
+        val scale = displayBufferState.scale
         val bx = (mouseX - x - bufferMargin) / scale / TextBufferRenderCache.renderer.charRenderWidth
         val by = (mouseY - y - bufferMargin) / scale / TextBufferRenderCache.renderer.charRenderHeight
         val bw = _buffer.viewportWidth
@@ -141,7 +138,8 @@ class Screen(
         BufferRenderer.drawBackground()
         if (hasPower()) {
             GlStateManager.translate(bufferMargin.toFloat(), bufferMargin.toFloat(), 0f)
-            GlStateManager.scale(scale.toFloat(), scale.toFloat(), 1f)
+            val scale = displayBufferState.scale.toFloat()
+            GlStateManager.scale(scale, scale, 1f)
             RenderState.makeItBlend()
             BufferRenderer.drawText(_buffer)
         }
@@ -150,9 +148,9 @@ class Screen(
     override fun changeSize(w: Double, h: Double, recompile: Boolean): Double {
         val bw = _buffer.renderWidth()
         val bh = _buffer.renderHeight()
-        val scaleX = Math.min(width / (bw + bufferMargin * 2.0), 1.0)
-        val scaleY = Math.min(height / (bh + bufferMargin * 2.0), 1.0)
-        val newScale = Math.min(scaleX, scaleY)
+        val scaleX = min(width / (bw + bufferMargin * 2.0), 1.0)
+        val scaleY = min(height / (bh + bufferMargin * 2.0), 1.0)
+        val newScale = min(scaleX, scaleY)
         val innerWidth = (bw * newScale).toInt()
         val innerHeight = (bh * newScale).toInt()
         x = (width - (innerWidth + bufferMargin * 2)) / 2
