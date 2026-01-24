@@ -3,7 +3,6 @@ package li.cil.oc.client.gui.traits
 import li.cil.oc.client.renderer.gui.BufferRenderer
 import li.cil.oc.util.RenderState
 import net.minecraft.client.Minecraft
-import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.renderer.GlStateManager
 
 interface DisplayBuffer {
@@ -22,12 +21,12 @@ interface DisplayBuffer {
 
     var scale: Double
 
-    fun initGui(screen: GuiScreen) {
+    fun initGui() {
         BufferRenderer.init(Minecraft.getMinecraft().renderEngine)
         guiSizeChanged = true
     }
 
-    fun drawBufferLayer(screen: GuiScreen) {
+    fun drawBufferLayer() {
         val oldWidth = currentWidth
         val oldHeight = currentHeight
         currentWidth = bufferColumns
@@ -35,14 +34,14 @@ interface DisplayBuffer {
         scale = changeSize(currentWidth.toDouble(), currentHeight.toDouble(),
             guiSizeChanged || oldWidth != currentWidth || oldHeight != currentHeight)
 
-        RenderState.checkError(screen.javaClass.name + ".drawBufferLayer: entering (aka: wasntme)")
+        RenderState.checkError(this.javaClass.name + ".drawBufferLayer: entering (aka: wasntme)")
 
         GlStateManager.pushMatrix()
         RenderState.disableEntityLighting()
         drawBuffer()
         GlStateManager.popMatrix()
 
-        RenderState.checkError(screen.javaClass.name + ".drawBufferLayer: buffer layer")
+        RenderState.checkError(this.javaClass.name + ".drawBufferLayer: buffer layer")
     }
 
     fun drawBuffer()
