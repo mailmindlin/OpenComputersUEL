@@ -1,38 +1,36 @@
 package li.cil.oc.server.machine.luac
 
-import java.io.FileNotFoundException
-import java.io.IOException
-
-import com.google.common.base.Strings
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.api.machine.ExecutionResult
-import li.cil.oc.api.machine.LimitReachedException
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.common.SaveHandler
+import li.cil.oc.server.machine.*
+import li.cil.oc.server.machine.Machine.State as MachineState
 import li.cil.repack.com.naef.jnlua.*
 import net.minecraft.item.ItemStack
+import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.realms.RealmsMth.ceil
 
 @Architecture.Name("Lua 5.2")
 class NativeLua52Architecture(machine: Machine): NativeLuaArchitecture(machine) {
-  override fun factory = LuaStateFactory.Lua52
+  override val factory get() = LuaStateFactory.Lua52
 }
 
 @Architecture.Name("Lua 5.3")
 class NativeLua53Architecture(machine: Machine): NativeLuaArchitecture(machine) {
-  override fun factory = LuaStateFactory.Lua53
+  override val factory get() = LuaStateFactory.Lua53
 }
 
 @Architecture.Name("Lua 5.4")
 class NativeLua54Architecture(machine: Machine): NativeLuaArchitecture(machine) {
-  override fun factory = LuaStateFactory.Lua54
+  override val factory get() = LuaStateFactory.Lua54
 }
 
-abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
-  protected val factory: LuaStateFactory
-
-  internal var lua: LuaState
+sealed class NativeLuaArchitecture(machine: Machine): GenericLuaArchitecture(machine) {
+  protected abstract val factory: LuaStateFactory
+  internal var lua: LuaState? = null
   internal var kernelMemory = 0
   internal var ramScale: Double = 1.0
   private val persistence = PersistenceAPI(this)
@@ -47,121 +45,84 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
     // Persistence has to go last to ensure all other APIs can go into the permanent value table.
     persistence)
 
-  internal fun invoke(f: () -> Array<Any>?): Int = try {
-    f() match {
-      case results: Array[_] =>
-        lua.pushBoolean(true)
-        results.foreach(result => lua.pushValue(result))
-        1 + results.length
-      case _ =>
+  private fun InvokeResult.pushLua(): Int {
+    val lua = lua!!
+    return when (this) {
+      // Success
+      InvokeResult.Void -> {
         lua.pushBoolean(true)
         1
+      }
+      is InvokeResult.Success -> {
+        lua.pushBoolean(true)
+        this.results.forEach(lua::pushValue)
+        1 + this.results.size
+      }
+      // Errors
+      InvokeResult.LimitReached -> 0
+      is InvokeResult.ErrorMessage -> {
+        if (!this.args3) {
+          lua.pushBoolean(false)
+          lua.pushString(this.message)
+          return 2
+        }
+        lua.pushBoolean(true)
+        lua.pushNil()
+        lua.pushString(this.message)
+        if (this.stackTrace == null)
+          return 3
+        lua.pushString(this.stackTrace)
+        return 4
+      }
     }
-  }
-  catch {
-    case e: Throwable =>
-      if (Settings.get.logLuaCallbackErrors && !e.isInstanceOf[LimitReachedException]) {
-        OpenComputers.log.warn("Exception in Lua callback.", e)
-      }
-      e match {
-        case _: LimitReachedException =>
-          0
-        case e: IllegalArgumentException if e.getMessage != null =>
-          lua.pushBoolean(false)
-          lua.pushString(e.getMessage)
-          2
-        case e: Throwable if e.getMessage != null =>
-          lua.pushBoolean(true)
-          lua.pushNil()
-          lua.pushString(e.getMessage)
-          if (Settings.get.logLuaCallbackErrors) {
-            lua.pushString(e.getStackTrace.mkString("", "\n", "\n"))
-            4
-          }
-          else 3
-        case _: IndexOutOfBoundsException =>
-          lua.pushBoolean(false)
-          lua.pushString("index out of bounds")
-          2
-        case _: IllegalArgumentException =>
-          lua.pushBoolean(false)
-          lua.pushString("bad argument")
-          2
-        case _: NoSuchMethodException =>
-          lua.pushBoolean(false)
-          lua.pushString("no such method")
-          2
-        case _: FileNotFoundException =>
-          lua.pushBoolean(true)
-          lua.pushNil()
-          lua.pushString("file not found")
-          3
-        case _: SecurityException =>
-          lua.pushBoolean(true)
-          lua.pushNil()
-          lua.pushString("access denied")
-          3
-        case _: IOException =>
-          lua.pushBoolean(true)
-          lua.pushNil()
-          lua.pushString("i/o error")
-          3
-        case _: UnsupportedOperationException =>
-          lua.pushBoolean(false)
-          lua.pushString("unsupported operation")
-          2
-        case e: Throwable =>
-          OpenComputers.log.warn("Unexpected error in Lua callback.", e)
-          lua.pushBoolean(true)
-          lua.pushNil()
-          lua.pushString("unknown error")
-          3
-      }
   }
 
-  internal fun documentation(f: () -> String): Int {
-    try {
-      val doc = f()
-      if (Strings.isNullOrEmpty(doc)) lua.pushNil()
-      else lua.pushString(doc)
-      return 1
-    } catch (e: NoSuchMethodException) {
-      lua.pushNil()
-      lua.pushString("no such method")
-      return 2
-    } catch (e: Exception) {
-      lua.pushNil()
-      lua.pushString(e.message ?: e.toString())
-      return 2
+  private fun DocumentationResult.pushLua(): Int {
+    val lua = lua!!
+    return when (this) {
+      is DocumentationResult.Documentation -> {
+        lua.pushString(this.text)
+        return 1
+      }
+      DocumentationResult.Empty -> {
+        lua.pushNil()
+        return 1
+      }
+      is DocumentationResult.Error -> {
+        lua.pushNil()
+        lua.pushString(this.message)
+        return 2
+      }
     }
   }
+
+  internal fun invoke(f: () -> Array<out Any?>?): Int
+    = invokeGeneric(f).pushLua()
+
+  internal fun documentation(f: () -> String?): Int
+    = documentationGeneric(f).pushLua()
 
   // ----------------------------------------------------------------------- //
 
-  override val isInitialized: Boolean get() = kernelMemory > 0
+  override fun isInitialized(): Boolean = kernelMemory > 0
 
-  override fun recomputeMemory(components: Iterable<ItemStack>) = {
+  override fun recomputeMemory(components: Iterable<ItemStack>): Boolean {
+    val lua = lua
     val memoryBytes = memoryInBytes(components)
-    Option(lua) match {
-      case Some(l) if Settings.get.limitMemory =>
-        l.setTotalMemory(Int.MaxValue)
-        if (kernelMemory > 0) {
-          l.setTotalMemory(kernelMemory + math.ceil(memoryBytes * ramScale).toInt)
-        }
-      case _ =>
+    if (lua != null && Settings.get.limitMemory) {
+      lua.totalMemory = Int.MAX_VALUE
+      if (kernelMemory > 0) {
+        lua.totalMemory = kernelMemory + ceil(memoryBytes * ramScale).toInt()
+      }
     }
-    memoryBytes > 0
+    return memoryBytes > 0
   }
-
-  private fun memoryInBytes(components: Iterable<ItemStack>) = components.foldLeft(0.0)((acc, stack) => acc + (Option(api.Driver.driverFor(stack)) match {
-    case Some(driver: Memory) => driver.amount(stack) * 1024
-    case _ => 0
-  })).toInt max 0 min Settings.get.maxTotalRam
 
   // ----------------------------------------------------------------------- //
 
   override fun runSynchronized() {
     // These three asserts are all guaranteed by run().
+    val lua = lua!!
     assert(lua.top == 2)
     assert(lua.isThread(1))
     assert(lua.isFunction(2))
@@ -181,7 +142,8 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
   }
 
   override fun runThreaded(isSynchronizedReturn: Boolean): ExecutionResult {
-    try {
+    val lua = lua!!
+    return try {
       // The kernel thread will always be at stack index one.
       assert(lua.isThread(1))
 
@@ -191,15 +153,13 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
         assert(lua.top == 2)
         assert(lua.isTable(2))
         lua.resume(1, 1)
-      }
-      else {
+      } else {
         if (kernelMemory == 0) {
           // We're doing the initialization run.
           if (lua.resume(1, 0) > 0) {
             // We expect to get nothing here, if we do we had an error.
             0
-          }
-          else {
+          } else {
             // Run the garbage collector to get rid of stuff left behind after
             // the initialization phase to get a good estimate of the base
             // memory usage the kernel has (including libraries). We remember
@@ -214,14 +174,15 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
             lua.pushInteger(0)
             1
           }
-        }
-        else machine.popSignal() match {
-          case signal if signal != null =>
-            lua.pushString(signal.name)
-            signal.args.foreach(arg => lua.pushValue(arg))
-            lua.resume(1, 1 + signal.args.length)
-          case _ =>
-            lua.resume(1, 0)
+        } else {
+          when (val signal = machine.popSignal()) {
+            null -> lua.resume(1, 0)
+            else -> {
+              lua.pushString(signal.name())
+              signal.args().forEach(lua::pushValue)
+              lua.resume(1, 1 + signal.args().size)
+            }
+          }
         }
       }
 
@@ -232,63 +193,59 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
         // from the main server thread, and returns a table, which is in turn
         // passed to the originating coroutine.yield().
         if (results == 1 && lua.isFunction(2)) {
-          new ExecutionResult.SynchronizedCall()
-        }
-        // Check if we are shutting down, and if so if we're rebooting. This
-        // is signalled by boolean values, where `false` means shut down,
-        // `true` means reboot (i.e shutdown then start again).
-        else if (results == 1 && lua.isBoolean(2)) {
-          new ExecutionResult.Shutdown(lua.toBoolean(2))
-        }
-        else {
+          ExecutionResult.SynchronizedCall()
+          // Check if we are shutting down, and if so if we're rebooting. This
+          // is signalled by boolean values, where `false` means shut down,
+          // `true` means reboot (i.e shutdown then start again).
+        } else if (results == 1 && lua.isBoolean(2)) {
+          ExecutionResult.Shutdown(lua.toBoolean(2))
+        } else {
           // If we have a single number, that's how long we may wait before
           // resuming the state again. Note that the sleep may be interrupted
           // early if a signal arrives in the meantime. If we have something
           // else we just process the next signal or wait for one.
-          val ticks = if (results == 1 && lua.isNumber(2)) (lua.toNumber(2) * 20).toInt else Int.MaxValue
+          val ticks =
+            if (results == 1 && lua.isNumber(2))
+              (lua.toNumber(2) * 20).toInt()
+            else
+              Int.MAX_VALUE
           lua.pop(results)
           ExecutionResult.Sleep(ticks)
         }
-      }
       // The kernel thread returned. If it threw we'd be in the catch below.
-      else {
+      } else {
         assert(lua.isThread(1))
         // We're expecting the result of a pcall, if anything, so boolean + (result | string).
-        if (!lua.isBoolean(2) || !(lua.isString(3) || lua.isNoneOrNil(3))) {
+        if (!lua.isBoolean(2) || !(lua.isString(3) || lua.isNoneOrNil(3)))
           OpenComputers.log.warn("Kernel returned unexpected results.")
-        }
+
         // The pcall *should* never return normally... but check for it nonetheless.
         if (lua.toBoolean(2)) {
           OpenComputers.log.warn("Kernel stopped unexpectedly.")
           ExecutionResult.Shutdown(false)
-        }
-        else {
-          if (Settings.get.limitMemory) {
-            lua.setTotalMemory(Int.MAX_VALUE)
-          }
+        } else {
+          if (Settings.get.limitMemory)
+            lua.totalMemory = Int.MAX_VALUE
           val error =
-            if (lua.isJavaObjectRaw(3)) lua.toJavaObjectRaw(3).toString
+            if (lua.isJavaObjectRaw(3)) lua.toJavaObjectRaw(3).toString()
             else lua.toString(3)
-          if (error != null) new ExecutionResult.Error(error)
-          else new ExecutionResult.Error("unknown error")
+          ExecutionResult.Error(error ?: "unknown error")
         }
       }
-    }
-    catch {
-      case e: LuaRuntimeException =>
-        OpenComputers.log.warn("Kernel crashed. This is a bug!\n" + e.toString + "\tat " + e.getLuaStackTrace.mkString("\n\tat "))
-        new ExecutionResult.Error("kernel panic: this is a bug, check your log file and report it")
-      case e: LuaGcMetamethodException =>
-        if (e.getMessage != null) new ExecutionResult.Error("kernel panic:\n" + e.getMessage)
-        else new ExecutionResult.Error("kernel panic:\nerror in garbage collection metamethod")
-      case e: LuaMemoryAllocationException =>
-        new ExecutionResult.Error("not enough memory")
-      case e: java.lang.Error if e.getMessage == "not enough memory" =>
-        new ExecutionResult.Error("not enough memory")
+    } catch (e: LuaRuntimeException) {
+      OpenComputers.log.warn("Kernel crashed. This is a bug!\n" + e.toString() + "\tat " + e.luaStackTrace.joinToString("\n\tat "))
+      ExecutionResult.Error("kernel panic: this is a bug, check your log file and report it")
+    } catch (e: LuaGcMetamethodException) {
+      ExecutionResult.Error("kernel panic:\n${e.message ?: "error in garbage collection metamethod"}")
+    } catch (e: LuaMemoryAllocationException) {
+      ExecutionResult.Error("not enough memory")
+    //TODO: just OutOfMemoryError?
+    } catch (e: Error) {
+      if (e.message != "not enough memory")
+        throw e
+      ExecutionResult.Error("not enough memory")
     }
   }
-
-  override fun onSignal() {}
 
   // ----------------------------------------------------------------------- //
 
@@ -296,34 +253,32 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
     // Creates a new state with all base libraries and the persistence library
     // loaded into it. This means the state has much more power than it
     // rightfully should have, so we sandbox it a bit in the following.
-    factory.createState() match {
-      case None =>
-        lua = null
-        machine.crash("native libraries not available")
-        return false
-      case Some(value) => lua = value
+    val lua = factory.createState() ?: run {
+      lua = null
+      machine.crash("native libraries not available")
+      return@initialize false
     }
-    ramScale = if (lua.getPointerWidth >= 8) Settings.get.ramScaleFor64Bit else 1.0
+    this.lua = lua
 
-    apis.foreach(_.initialize())
+    ramScale = if (lua.pointerWidth >= 8) Settings.get.ramScaleFor64Bit else 1.0
 
-    lua.load(classOf[Machine].getResourceAsStream(Settings.scriptPath + "machine.lua"), "=machine", "t")
+    apis.forEach(NativeLuaAPI::initialize)
+
+    lua.load(this.machineScript(), "=machine", "t")
     lua.newThread() // Left as the first value on the stack.
 
-    true
-  }
-
-  override fun onConnect() {
+    return true
   }
 
   override fun close() {
+    val lua = lua
     if (lua != null) {
       if (Settings.get.limitMemory) {
-        lua.setTotalMemory(Integer.MAX_VALUE)
+        lua.totalMemory = Integer.MAX_VALUE
       }
       lua.close()
     }
-    lua = null
+    this.lua = null
     kernelMemory = 0
   }
 
@@ -332,11 +287,13 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
   // Transition to storing the 'are we in or returning from a sync call' in here
   // so we don't need to check the state. Will need a period where saves are
   // loaded using the old *and* new method and saved using the new.
-  @Deprecated
-  private fun state = machine.asInstanceOf[Machine].state
+  @Deprecated("transition (see docs)")
+  private fun state() = (machine as li.cil.oc.server.machine.Machine).state
 
   override fun load(nbt: NBTTagCompound) {
     if (!machine.isRunning) return
+
+    val lua = lua!!
 
     // Unlimit memory use while unpersisting.
     if (Settings.get.limitMemory) {
@@ -346,44 +303,44 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
     try {
       // Try unpersisting Lua, because that's what all of the rest depends
       // on. First, clear the stack, meaning the current kernel.
-      lua.setTop(0)
+      lua.top = 0
 
-      persistence.unpersist(SaveHandler.load(nbt, machine.node.address + "_kernel"))
+      persistence.unpersist(SaveHandler.load(nbt, machine.node().address() + "_kernel"))
       if (!lua.isThread(1)) {
         // This shouldn't really happen, but there's a chance it does if
         // the save was corrupt (maybe someone modified the Lua files).
-        throw new LuaRuntimeException("Invalid kernel.")
+        throw LuaRuntimeException("Invalid kernel.")
       }
-      if (state.contains(Machine.State.SynchronizedCall) || state.contains(Machine.State.SynchronizedReturn)) {
-        persistence.unpersist(SaveHandler.load(nbt, machine.node.address + "_stack"))
-        if (!(if (state.contains(Machine.State.SynchronizedCall)) lua.isFunction(2) else lua.isTable(2))) {
+      if (state().contains(MachineState.SynchronizedCall) || state().contains(MachineState.SynchronizedReturn)) {
+        persistence.unpersist(SaveHandler.load(nbt, machine.node().address() + "_stack"))
+        if (!(if (state().contains(MachineState.SynchronizedCall)) lua.isFunction(2) else lua.isTable(2))) {
           // Same as with the above, should not really happen normally, but
           // could for the same reasons.
-          throw new LuaRuntimeException("Invalid stack.")
+          throw LuaRuntimeException("Invalid stack.")
         }
       }
 
-      kernelMemory = (nbt.getInteger("kernelMemory") * ramScale).toInt
+      kernelMemory = (nbt.getInteger("kernelMemory") * ramScale).toInt()
 
-      for (api <- apis) {
-        api.load(nbt)
-      }
+      apis.forEach { api -> api.load(nbt) }
 
-      try lua.gc(LuaState.GcAction.COLLECT, 0) catch {
-        case t: Throwable =>
-          OpenComputers.log.warn(s"Error cleaning up loaded computer @ ${machine.host().machinePosition()}. This either means the server is badly overloaded or a user created an evil __gc method, accidentally or not.")
-          machine.crash("error in garbage collector, most likely __gc method timed out")
+      try {
+        lua.gc(LuaState.GcAction.COLLECT, 0)
+      } catch (e: Exception) {
+        OpenComputers.log.warn("Error cleaning up loaded computer @ ${machine.host().machinePosition()}. This either means the server is badly overloaded or a user created an evil __gc method, accidentally or not.")
+        machine.crash("error in garbage collector, most likely __gc method timed out")
       }
-    } catch {
-      case e: LuaRuntimeException => throw new Exception(e.toString + (if (e.getLuaStackTrace.isEmpty) "" else "\tat " + e.getLuaStackTrace.mkString("\n\tat ")), e)
+    } catch (e: LuaRuntimeException) {
+      throw Exception(e.toString() + (if (e.luaStackTrace.isEmpty()) "" else "\tat " + e.luaStackTrace.joinToString("\n\tat ")), e)
     }
 
     // Limit memory again.
-    recomputeMemory(machine.host.internalComponents)
+    recomputeMemory(machine.host().internalComponents())
   }
 
   override fun save(nbt: NBTTagCompound) {
     // Unlimit memory while persisting.
+    val lua = lua!!
     if (Settings.get.limitMemory) {
       lua.setTotalMemory(Integer.MAX_VALUE)
     }
@@ -393,35 +350,33 @@ abstract class NativeLuaArchitecture(val machine: Machine): Architecture {
       // Save the kernel state (which is always at stack index one).
       assert(lua.isThread(1))
 
-      SaveHandler.scheduleSave(machine.host, nbt, machine.node.address + "_kernel", persistence.persist(1))
+      SaveHandler.scheduleSave(machine.host(), nbt, machine.node().address() + "_kernel", persistence.persist(1))
       // While in a driver call we have one object on the global stack: either
       // the function to call the driver with, or the result of the call.
-      if (state.contains(Machine.State.SynchronizedCall) || state.contains(Machine.State.SynchronizedReturn)) {
-        assert(if (state.contains(Machine.State.SynchronizedCall)) lua.isFunction(2) else lua.isTable(2))
-        SaveHandler.scheduleSave(machine.host, nbt, machine.node.address + "_stack", persistence.persist(2))
+      if (state().contains(MachineState.SynchronizedCall) || state().contains(MachineState.SynchronizedReturn)) {
+        assert(if (state().contains(MachineState.SynchronizedCall)) lua.isFunction(2) else lua.isTable(2))
+        SaveHandler.scheduleSave(machine.host(), nbt, machine.node().address() + "_stack", persistence.persist(2))
       }
 
-      nbt.setInteger("kernelMemory", math.ceil(kernelMemory / ramScale).toInt)
+      nbt.setInteger("kernelMemory", ceil(kernelMemory / ramScale).toInt())
 
-      for (api <- apis) {
-        api.save(nbt)
-      }
+      apis.forEach { api -> api.save(nbt) }
 
-      try lua.gc(LuaState.GcAction.COLLECT, 0) catch {
-        case t: Throwable =>
-          OpenComputers.log.warn(s"Error cleaning up loaded computer @ ${machine.host().machinePosition()}. This either means the server is badly overloaded or a user created an evil __gc method, accidentally or not.")
-          machine.crash("error in garbage collector, most likely __gc method timed out")
+      try {
+        lua.gc(LuaState.GcAction.COLLECT, 0)
+      } catch (e: Exception) {
+        OpenComputers.log.warn("Error cleaning up loaded computer @ ${machine.host().machinePosition()}. This either means the server is badly overloaded or a user created an evil __gc method, accidentally or not.")
+        machine.crash("error in garbage collector, most likely __gc method timed out")
       }
-    } catch {
-      case e: LuaRuntimeException =>
-        OpenComputers.log.warn(s"Could not persist computer @ ${machine.host().machinePosition()}.\n${e.toString}" + (if (e.getLuaStackTrace.isEmpty) "" else "\tat " + e.getLuaStackTrace.mkString("\n\tat ")))
+    } catch (e: LuaRuntimeException) {
+        OpenComputers.log.warn("Could not persist computer @ ${machine.host().machinePosition()}.\n${e}" + (if (e.stackTrace.isEmpty()) "" else "\tat " + e.stackTrace.joinToString("\n\tat ")))
         nbt.removeTag("state")
-      case e: LuaGcMetamethodException =>
-        OpenComputers.log.warn(s"Could not persist computer @ ${machine.host().machinePosition()}.\n${e.toString}")
+    } catch (e: LuaGcMetamethodException) {
+        OpenComputers.log.warn("Could not persist computer @ ${machine.host().machinePosition()}.\n${e}")
         nbt.removeTag("state")
     }
 
     // Limit memory again.
-    recomputeMemory(machine.host.internalComponents)
+    recomputeMemory(machine.host().internalComponents())
   }
 }

@@ -1,12 +1,6 @@
 package li.cil.oc.server.machine.luaj
 
-import java.io.FileNotFoundException
-import java.io.IOException
-
-import com.google.common.base.Strings
 import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
-import li.cil.oc.api.machine.Machine as ApiMachine
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.api.machine.ExecutionResult
 import li.cil.oc.server.machine.*
@@ -16,11 +10,10 @@ import li.cil.repack.org.luaj.vm2.*
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-
-import scala.collection.convert.WrapAsScala._
+import li.cil.oc.api.machine.Machine as ApiMachine
 
 @Architecture.Name("LuaJ")
-class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
+class LuaJLuaArchitecture(machine: ApiMachine): GenericLuaArchitecture(machine) {
   internal var lua: Globals? = null
   private var thread: LuaThread? = null
   private var synchronizedCall: LuaFunction? = null
@@ -28,6 +21,33 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
   private var doneWithInitRun = false
 
   internal var memory: Int = 0
+
+  companion object {
+    @JvmStatic
+    private fun InvokeResult.toVarargs(): Varargs {
+      return when (this) {
+        // Success types
+        InvokeResult.Void -> LuaValue.TRUE
+        is InvokeResult.Success -> LuaValue.varargsOf(arrayOf(LuaValue.TRUE, *results.mapArray { it.toLuaValue() }))
+        // Error types
+        InvokeResult.LimitReached -> LuaValue.NONE
+        is InvokeResult.ErrorMessage ->
+          if (!this.args3)
+            LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf(message))
+          else
+            //TODO: stack trace?
+            LuaValue.varargsOf(LuaValue.TRUE, LuaValue.NIL, LuaValue.valueOf(message))
+      }
+    }
+    @JvmStatic
+    private fun DocumentationResult.toVarargs(): Varargs {
+      return when (this) {
+        DocumentationResult.Empty -> LuaValue.NIL
+        is DocumentationResult.Documentation -> LuaValue.valueOf(this.text)
+        is DocumentationResult.Error -> LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf(this.message))
+      }
+    }
+  }
 
   private val apis = arrayOf(
     ComponentAPI(this),
@@ -38,58 +58,11 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
     UserdataAPI(this),
   )
 
-  internal fun invoke(f: () -> Array<Any>?): Varargs {
-    try {
-      return when (val results = f()) {
-        is Array -> LuaValue.varargsOf(LuaValue.TRUE, results.map { it.toLuaValue })
-        _ -> LuaValue.TRUE
-      }
-    } catch (e: Exception) {
-      if (Settings.get.logLuaCallbackErrors && e !is LimitReachedException) {
-        OpenComputers.log.warn("Exception in Lua callback.", e)
-      }
-      when (e) {
-        is LimitReachedException -> LuaValue.NONE
-        is IllegalArgumentException if e.message != null -> LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf(e.getMessage))
-        else -> TODO()
-      }
-      /*e match {
-        case _: LimitReachedException =>
-        LuaValue.NONE
-        case e: IllegalArgumentException if e.getMessage != null =>
-        LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf(e.getMessage))
-        case e: Throwable if e.getMessage != null =>
-        LuaValue.varargsOf(LuaValue.TRUE, LuaValue.NIL, LuaValue.valueOf(e.getMessage))
-        case _: IndexOutOfBoundsException =>
-        LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf("index out of bounds"))
-        case _: IllegalArgumentException =>
-        LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf("bad argument"))
-        case _: NoSuchMethodException =>
-        LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf("no such method"))
-        case _: FileNotFoundException =>
-        LuaValue.varargsOf(LuaValue.TRUE, LuaValue.NIL, LuaValue.valueOf("file not found"))
-        case _: SecurityException =>
-        LuaValue.varargsOf(LuaValue.TRUE, LuaValue.NIL, LuaValue.valueOf("access denied"))
-        case _: IOException =>
-        LuaValue.varargsOf(LuaValue.TRUE, LuaValue.NIL, LuaValue.valueOf("i/o error"))
-        case e: Throwable =>
-        OpenComputers.log.warn("Unexpected error in Lua callback.", e)
-        LuaValue.varargsOf(LuaValue.TRUE, LuaValue.NIL, LuaValue.valueOf("unknown error"))
-      }*/
-    }
-  }
+  internal inline fun invoke(f: () -> Array<Any?>?): Varargs
+    = invokeGeneric(f).toVarargs()
 
-  internal fun documentation(f: () -> String?): Varargs = try {
-    val doc = f()
-    if (Strings.isNullOrEmpty(doc)) LuaValue.NIL
-    else LuaValue.valueOf(doc)
-  }
-  catch {
-    case e: NoSuchMethodException =>
-      LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf("no such method"))
-    case t: Throwable =>
-      LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf(if (t.getMessage != null) t.getMessage else t.toString))
-  }
+  internal inline fun documentation(f: () -> String?): Varargs
+    = documentationGeneric(f).toVarargs()
 
   // ----------------------------------------------------------------------- //
 
@@ -100,28 +73,23 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
     return memory > 0
   }
 
-  private fun memoryInBytes(components: Iterable<ItemStack>) = components.foldLeft(0.0)((acc, stack) => acc + (Option(api.Driver.driverFor(stack)) match {
-    case Some(driver: Memory) => driver.amount(stack) * 1024
-    case _ => 0
-  })).toInt max 0 min Settings.get.maxTotalRam
-
   // ----------------------------------------------------------------------- //
 
   override fun runSynchronized() {
-    synchronizedResult = synchronizedCall.call()
+    synchronizedResult = synchronizedCall?.call()
     synchronizedCall = null
   }
 
   override fun runThreaded(isSynchronizedReturn: Boolean): ExecutionResult {
-    try {
+    val thread = thread!!
+    return try {
       // Resume the Lua state and remember the number of results we get.
       val results = if (isSynchronizedReturn) {
         // If we were doing a synchronized call, continue where we left off.
         val result = thread.resume(synchronizedResult)
         synchronizedResult = null
         result
-      }
-      else {
+      } else {
         if (!doneWithInitRun) {
           // We're doing the initialization run.
           val result = thread.resume(LuaValue.NONE)
@@ -129,17 +97,15 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
           // calls when we actually need direct ones in the init phase.
           doneWithInitRun = true
           // We expect to get nothing here, if we do we had an error.
-          if (result.narg != 1) {
+          if (result.narg() != 1) {
             result
-          }
-          else {
+          } else {
             // Fake zero sleep to avoid stopping if there are no signals.
             LuaValue.varargsOf(LuaValue.TRUE, LuaValue.valueOf(0))
           }
-        }
-        else when (val signal = machine.popSignal()) {
+        } else when (val signal = machine.popSignal()) {
           null -> thread.resume(LuaValue.NONE)
-          else -> thread.resume(LuaValue.varargsOf(arrayOf(LuaValue.valueOf(signal.name())) ++ signal.args.map(LuaClosure::toLuaValue)))
+          else -> thread.resume(LuaValue.varargsOf(arrayOf<LuaValue>(LuaValue.valueOf(signal.name())) + signal.args().mapArray { it.toLuaValue() }))
         }
       }
 
@@ -151,21 +117,21 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
         // passed to the originating coroutine.yield().
         if (results.narg() == 2 && results.isfunction(2)) {
           synchronizedCall = results.checkfunction(2)
-          new ExecutionResult.SynchronizedCall()
+          ExecutionResult.SynchronizedCall()
         }
         // Check if we are shutting down, and if so if we're rebooting. This
         // is signalled by boolean values, where `false` means shut down,
         // `true` means reboot (i.e shutdown then start again).
         else if (results.narg() == 2 && results.type(2) == LuaValue.TBOOLEAN) {
-          new ExecutionResult.Shutdown(results.toboolean(2))
+          ExecutionResult.Shutdown(results.toboolean(2))
         }
         else {
           // If we have a single number, that's how long we may wait before
           // resuming the state again. Note that the sleep may be interrupted
           // early if a signal arrives in the meantime. If we have something
           // else we just process the next signal or wait for one.
-          val ticks = if (results.narg() == 2 && results.isnumber(2)) (results.todouble(2) * 20).toInt else Int.MaxValue
-          new ExecutionResult.Sleep(ticks)
+          val ticks = if (results.narg() == 2 && results.isnumber(2)) (results.todouble(2) * 20).toInt() else Int.MAX_VALUE
+          ExecutionResult.Sleep(ticks)
         }
       }
       // The kernel thread returned. If it threw we'd be in the catch below.
@@ -175,39 +141,34 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
         // we can either have (boolean, string | error) if the main kernel
         // fails, or (boolean, boolean, string | error) if something inside
         // that pcall goes bad.
-        def isInnerError = results.`type`(2) == LuaValue.TBOOLEAN && (results.isstring(3) || results.isnoneornil(3))
-        def isOuterError = results.isstring(2) || results.isnoneornil(2)
-        if (results.`type`(1) != LuaValue.TBOOLEAN || !isInnerError || !isOuterError) {
+        val isInnerError = results.type(2) == LuaValue.TBOOLEAN && (results.isstring(3) || results.isnoneornil(3))
+        val isOuterError = results.isstring(2) || results.isnoneornil(2)
+        if (results.type(1) != LuaValue.TBOOLEAN || !isInnerError || !isOuterError) {
           OpenComputers.log.warn("Kernel returned unexpected results.")
         }
         // The pcall *should* never return normally... but check for it nonetheless.
         if ((isOuterError && results.toboolean(1)) || (isInnerError && results.toboolean(2))) {
           OpenComputers.log.warn("Kernel stopped unexpectedly.")
-          new ExecutionResult.Shutdown(false)
+          ExecutionResult.Shutdown(false)
         }
         else {
           val error =
             if (isInnerError)
-              if (results.isuserdata(3)) results.touserdata(3).toString
+              if (results.isuserdata(3)) results.touserdata(3).toString()
               else results.tojstring(3)
-            else if (results.isuserdata(2)) results.touserdata(2).toString
+            else if (results.isuserdata(2)) results.touserdata(2).toString()
             else results.tojstring(2)
-          if (error != null) new ExecutionResult.Error(error)
-          else new ExecutionResult.Error("unknown error")
+          ExecutionResult.Error(error ?: "unknown error")
         }
       }
-    }
-    catch {
-      case e: LuaError =>
-        OpenComputers.log.warn("Kernel crashed. This is a bug!", e)
-        new ExecutionResult.Error("kernel panic: this is a bug, check your log file and report it")
-      case e: Throwable =>
-        OpenComputers.log.warn("Unexpected error in kernel. This is a bug!", e)
-        new ExecutionResult.Error("kernel panic: this is a bug, check your log file and report it")
+    } catch (e: LuaError) {
+      OpenComputers.log.warn("Kernel crashed. This is a bug!", e)
+      ExecutionResult.Error("kernel panic: this is a bug, check your log file and report it")
+    } catch (e: Exception) {
+      OpenComputers.log.warn("Unexpected error in kernel. This is a bug!", e)
+      ExecutionResult.Error("kernel panic: this is a bug, check your log file and report it")
     }
   }
-
-  override fun onSignal(): Unit {}
 
   // ----------------------------------------------------------------------- //
 
@@ -228,13 +189,10 @@ class LuaJLuaArchitecture(val machine: ApiMachine): Architecture {
 
     recomputeMemory(machine.host().internalComponents())
 
-    val kernel = lua.load(classOf[Machine].getResourceAsStream(Settings.scriptPath + "machine.lua"), "=machine", "t", lua)
-    thread = new LuaThread(lua, kernel) // Left as the first value on the stack.
+    val kernel = lua.load(this.machineScript(), "=machine", "t", lua)
+    thread = LuaThread(lua, kernel) // Left as the first value on the stack.
 
     return true
-  }
-
-  override fun onConnect() {
   }
 
   override fun close() {
