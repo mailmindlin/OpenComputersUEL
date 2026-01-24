@@ -7,10 +7,6 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.prefab.ItemStackArrayValue
 import li.cil.oc.server.component.result
 import li.cil.oc.util.*
-import li.cil.oc.util.ExtendedArguments.checkSlot
-import li.cil.oc.util.ExtendedArguments.optSlot
-import li.cil.oc.util.ExtendedWorld.blockExists
-import li.cil.oc.util.ExtendedWorld.getBlock
 import net.minecraft.block.Block
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
@@ -32,7 +28,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val slot = args.checkSlot(inventory, 1)
-            val count = StackOption(inventory.getStackInSlot(slot)).fold(0) { it.count }
+            val count = inventory.getStackInSlot(slot).notEmpty()?.count ?: 0
             result(count)
         }
     }
@@ -42,7 +38,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val slot = args.checkSlot(inventory, 1)
-            val maxSize = StackOption(inventory.getStackInSlot(slot)).fold(0) { it.maxStackSize }
+            val maxSize = inventory.getStackInSlot(slot).notEmpty()?.maxStackSize ?: 0
             result(maxSize)
         }
     }
@@ -122,7 +118,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
             val facing = checkSideForAction(args, 0)
 
             fun blockAt(position: BlockPosition): Block? {
-                return position.world.orElse(null)?.let { world ->
+                return position.world?.let { world ->
                     if (world.blockExists(position)) {
                         world.getBlock(position) as? Block
                     } else null

@@ -118,12 +118,8 @@ interface WorldAware {
                 MinecraftForge.EVENT_BUS.post(event)
                 Pair(event.isCanceled, "replaceable")
             }
-            block.getCollisionBoundingBoxFromPool(blockPos) == null -> {
-                Pair(true, "passable")
-            }
-            else -> {
-                Pair(true, "solid")
-            }
+            block.getCollisionBoundingBoxFromPool(blockPos) == null -> Pair(true, "passable")
+            else -> Pair(true, "solid")
         }
     }
 }

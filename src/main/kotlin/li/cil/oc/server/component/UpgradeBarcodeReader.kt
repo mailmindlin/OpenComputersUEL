@@ -29,42 +29,24 @@ sealed class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmen
 
     override fun onMessage(message: Message) {
         super.onMessage(message)
-        if (message.name() == "tablet.use") {
-            val sourceHost = message.source().host()
-            if (sourceHost is Machine) {
-                val machineHost = sourceHost.host()
-                val data = message.data()
-                if (machineHost is Tablet && data.size >= 8 &&
-                    data[0] is NBTTagCompound && data[1] is ItemStack && data[2] is EntityPlayer &&
-                    data[3] is BlockPosition && data[4] is EnumFacing &&
-                    data[5] is Float && data[6] is Float && data[7] is Float
-                ) {
-                    val nbt = data[0] as NBTTagCompound
-                    val blockPos = data[3] as BlockPosition
-                    val side = data[4] as EnumFacing
-                    val hitX = (data[5] as Float).toFloat()
-                    val hitY = (data[6] as Float).toFloat()
-                    val hitZ = (data[7] as Float).toFloat()
-                    val player = data[2] as EntityPlayer
+        val message = TabletUseMessage.tryParse(message) ?: return
+        val (nbt, _, player, blockPos, side, hitX, hitY, hitZ) = message
 
-                    when (val te = host.world.getTileEntity(blockPos)) {
-                        is Analyzable -> {
-                            val nodes = te.onAnalyze(player, side, hitX, hitY, hitZ)
-                            processNodes(nodes, nbt)
-                        }
-                        is SidedEnvironment -> {
-                            processNodes(arrayOf(te.sidedNode(side)), nbt)
-                        }
-                        is Environment -> {
-                            processNodes(arrayOf(te.node()), nbt)
-                        }
-                    }
-                }
+        when (val te = host.world.getTileEntity(blockPos)) {
+            is Analyzable -> {
+                val nodes = te.onAnalyze(player, side, hitX, hitY, hitZ)
+                processNodes(nodes, nbt)
+            }
+            is SidedEnvironment -> {
+                processNodes(arrayOf(te.sidedNode(side)), nbt)
+            }
+            is Environment -> {
+                processNodes(arrayOf(te.node()), nbt)
             }
         }
     }
 
-    private fun processNodes(nodes: Array<Node>?, nbt: NBTTagCompound) {
+    private fun processNodes(nodes: Array<Node?>?, nbt: NBTTagCompound) {
         if (nodes != null) {
             val readerNBT = NBTTagList()
 

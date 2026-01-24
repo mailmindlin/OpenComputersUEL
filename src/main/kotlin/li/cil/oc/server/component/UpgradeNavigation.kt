@@ -68,9 +68,10 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     @Callback(doc = "function(range:number):table -- Find waypoints in the specified range.")
     fun findWaypoints(context: Context, args: Arguments): Array<Any?> {
-        val range = args.checkDouble(0).coerceIn(0.0, Settings.get.maxWirelessRange(Tier.Two))
-        if (range <= 0) return result(emptyArray<Any>())
-        if (!node.tryChangeBuffer(-range * Settings.get.wirelessCostPerRange(Tier.Two) * 0.25)) {
+        val range = args.checkDouble(0).coerceIn(0.0, Settings.get.maxWirelessRange[Tier.Two])
+        if (range <= 0)
+            return result(emptyArray<Any>())
+        if (!node.tryChangeBuffer(-range * Settings.get.wirelessCostPerRange[Tier.Two] * 0.25))
             return result(Unit, "not enough energy")
         }
         context.pause(0.5)
@@ -92,25 +93,15 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     override fun onMessage(message: Message) {
         super.onMessage(message)
-        if (message.name == "tablet.use") {
-            val sourceHost = message.source.host()
-            if (sourceHost is Machine) {
-                val machineHost = sourceHost.host()
-                val data = message.data
-                if (machineHost is Tablet && data.size >= 8 &&
-                    data[0] is NBTTagCompound && data[1] is ItemStack && data[2] is EntityPlayer &&
-                    data[3] is BlockPosition && data[4] is EnumFacing &&
-                    data[5] is Float && data[6] is Float && data[7] is Float
-                ) {
-                    val nbt = data[0] as NBTTagCompound
-                    val blockPos = data[3] as BlockPosition
-                    val info = this.data.mapData(host.world)
-                    nbt.setInteger("posX", blockPos.x - info.xCenter)
-                    nbt.setInteger("posY", blockPos.y)
-                    nbt.setInteger("posZ", blockPos.z - info.zCenter)
-                }
-            }
-        }
+        val message = TabletUseMessage.tryParse(message) ?: return
+
+        val nbt = message.nbt
+        val blockPos = message.blockPos
+        val info = this.data.mapData(host.world)!!
+
+        nbt.setInteger("posX", blockPos.x - info.xCenter)
+        nbt.setInteger("posY", blockPos.y)
+        nbt.setInteger("posZ", blockPos.z - info.zCenter)
     }
 
     // ----------------------------------------------------------------------- //

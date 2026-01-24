@@ -5,9 +5,8 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
-import li.cil.oc.util.ExtendedArguments.optItemCount
 import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.StackOption
+import li.cil.oc.util.optItemCount
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.item.ItemBlock
 import net.minecraft.item.ItemStack
@@ -21,25 +20,16 @@ interface InventoryWorldControl : InventoryAware, WorldAware, SideRestricted {
     fun compare(context: Context, args: Arguments): Array<Any?> {
         val side = checkSideForAction(args, 0)
 
-        when (val stackOption = stackInSlot(selectedSlot)) {
-            is StackOption.SomeStack -> {
-                val stack = stackOption.stack
-                val item = stack.item
+        val stack = stackInSlot(selectedSlot) ?: return result(false)
+        val item = stack.item as? ItemBlock ?: return result(false)
 
-                if (item is ItemBlock) {
-                    val blockPos = position.offset(side).toBlockPos()
-                    val state = world.getBlockState(blockPos)
-                    val idMatches = item.block == state.block
-                    val fuzzy = args.optBoolean(1, false)
-                    val subTypeMatches = fuzzy || !item.hasSubtypes ||
-                                        item.getMetadata(stack.itemDamage) == state.block.getMetaFromState(state)
-                    return result(idMatches && subTypeMatches)
-                }
-            }
-            else -> {}
-        }
-
-        return result(false)
+        val blockPos = position.offset(side).toBlockPos()
+        val state = world.getBlockState(blockPos)
+        val idMatches = item.block == state.block
+        val fuzzy = args.optBoolean(1, false)
+        val subTypeMatches = fuzzy || !item.hasSubtypes ||
+                            item.getMetadata(stack.itemDamage) == state.block.getMetaFromState(state)
+        return result(idMatches && subTypeMatches)
     }
 
     @Callback(doc = "function(side:number[, count:number=64]):boolean -- Drops items from the selected slot towards the specified side.")
@@ -143,9 +133,7 @@ interface InventoryWorldControl : InventoryAware, WorldAware, SideRestricted {
         }
     }
 
-    fun suckableItems(side: EnumFacing): List<EntityItem> {
-        return entitiesOnSide(EntityItem::class.java, side)
-    }
+    fun suckableItems(side: EnumFacing): List<EntityItem> = entitiesOnSide(EntityItem::class.java, side)
 
     fun onSuckCollect(entity: EntityItem) {
         entity.onCollideWithPlayer(fakePlayer)

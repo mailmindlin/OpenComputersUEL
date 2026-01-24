@@ -287,7 +287,7 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
         checkAccess()
         val destination = args.checkString(0)
         DebugNetwork.getEndpoint(destination)
-            ?.takeIf { it != this }
+            ?.takeIf { it != this@DebugCard }
             ?.let { endpoint ->
                 val packet = Network.newPacket(node.address(), destination, 0, args.drop(1).toTypedArray())
                 endpoint.receivePacket(packet)

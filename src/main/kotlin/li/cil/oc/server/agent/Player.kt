@@ -29,6 +29,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.network.NetHandlerPlayServer
 import net.minecraft.potion.PotionEffect
 import net.minecraft.server.management.UserListOpsEntry
+import net.minecraft.tileentity.CommandBlockBaseLogic
 import net.minecraft.tileentity.TileEntityCommandBlock
 import net.minecraft.tileentity.TileEntitySign
 import net.minecraft.util.DamageSource
@@ -57,90 +58,7 @@ import net.minecraftforge.items.wrapper.PlayerMainInvWrapper
 import net.minecraftforge.items.wrapper.PlayerOffhandInvWrapper
 import java.util.UUID
 
-object PlayerCompanion {
-    fun profileFor(agent: Agent): GameProfile {
-        val uuid = agent.ownerUUID()
-        val randomId = (agent.world().rand.nextInt(0xFFFFFF) + 1).toString()
-        val name = Settings.get.nameFormat
-            .replace("\$player\$", agent.ownerName())
-            .replace("\$random\$", randomId)
-        return GameProfile(uuid, name)
-    }
-
-    fun determineUUID(playerUUID: UUID? = null): UUID {
-        val format = Settings.get.uuidFormat
-        val randomUUID = UUID.randomUUID()
-        return try {
-            UUID.fromString(
-                format
-                    .replace("\$random\$", randomUUID.toString())
-                    .replace("\$player\$", (playerUUID ?: randomUUID).toString())
-            )
-        } catch (t: Throwable) {
-            OpenComputers.log.warn("Failed determining robot UUID, check your config's `uuidFormat` entry!", t)
-            randomUUID
-        }
-    }
-
-    fun updatePositionAndRotation(player: Player, facing: EnumFacing, side: EnumFacing) {
-        player.facing = facing
-        player.side = side
-        val direction = Vec3d(
-            (facing.xOffset + side.xOffset).toDouble(),
-            (facing.yOffset + side.yOffset).toDouble(),
-            (facing.zOffset + side.zOffset).toDouble()
-        ).normalize()
-        val yaw = Math.toDegrees(-Math.atan2(direction.x, direction.z)).toFloat()
-        val pitch = (Math.toDegrees(-Math.atan2(direction.y, Math.sqrt((direction.x * direction.x) + (direction.z * direction.z)))).toFloat() * 0.99f)
-        player.setLocationAndAngles(player.agent.xPosition(), player.agent.yPosition(), player.agent.zPosition(), yaw, pitch)
-        player.prevRotationPitch = player.rotationPitch
-        player.prevRotationYaw = player.rotationYaw
-    }
-
-    fun setInventoryPlayerItems(player: Player) {
-        // the offhand is simply the agent's tool item
-        val agent = player.agent
-        fun setCopyOrNull(inv: net.minecraft.util.NonNullList<ItemStack>, agentInv: IInventory, slot: Int) {
-            val item = agentInv.getStackInSlot(slot)
-            inv[slot] = item?.copy() ?: ItemStack.EMPTY
-        }
-
-        for (i in 0 until 4) {
-            setCopyOrNull(player.inventory.armorInventory, agent.equipmentInventory(), i)
-        }
-
-        // mainInventory is 36 items
-        // the agent inventory is 100 items with some space for components
-        // leaving us 88..we'll copy what we can
-        val size = minOf(player.inventory.mainInventory.size, agent.mainInventory().sizeInventory)
-        for (i in 0 until size) {
-            setCopyOrNull(player.inventory.mainInventory, agent.mainInventory(), i)
-        }
-        player.inventoryContainer.detectAndSendChanges()
-    }
-
-    fun detectInventoryPlayerChanges(player: Player) {
-        val agent = player.agent
-        player.inventoryContainer.detectAndSendChanges()
-        // The follow code will set agent.inventories = FakePlayer's inv.stack
-        fun setCopy(inv: IInventory, index: Int, item: ItemStack?) {
-            val result = item?.copy() ?: ItemStack.EMPTY
-            val current = inv.getStackInSlot(index)
-            if (!ItemStack.areItemStacksEqual(result, current)) {
-                inv.setInventorySlotContents(index, result)
-            }
-        }
-        for (i in 0 until 4) {
-            setCopy(agent.equipmentInventory(), i, player.inventory.armorInventory[i])
-        }
-        val size = minOf(player.inventory.mainInventory.size, agent.mainInventory().sizeInventory)
-        for (i in 0 until size) {
-            setCopy(agent.mainInventory(), i, player.inventory.mainInventory[i])
-        }
-    }
-}
-
-class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, PlayerCompanion.profileFor(agent)) {
+class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player.profileFor(agent)) {
     init {
         connection = NetHandlerPlayServer(server, FakeNetworkManager, this)
 
@@ -164,10 +82,10 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
         } catch (_: Exception) {
         }
 
-        interactionManager.setBlockReachDistance(1)
+        interactionManager.blockReachDistance = 1.0
     }
 
-    override fun getYOffset(): Float = 0.5f
+    override fun getYOffset(): Double = 0.5
 
     override fun getEyeHeight(): Float = 0f
 
@@ -182,9 +100,9 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
 
     // ----------------------------------------------------------------------- //
 
-    fun <Type : Entity> closestEntity(clazz: Class<Type>, side: EnumFacing = facing): Entity? {
+    fun <Type : Entity> closestEntity(clazz: Class<Type>, side: EnumFacing = facing): Type? {
         val bounds = BlockPosition(agent).offset(side).bounds
-        return world.findNearestEntityWithinAABB(clazz, bounds, this)
+        return world.findNearestEntityWithinAABB(clazz, bounds, this) as Type?
     }
 
     fun <Type : Entity> entitiesOnSide(clazz: Class<Type>, side: EnumFacing): MutableList<Type> =
@@ -519,9 +437,9 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
             else {
                 val fakeEyeHeight = if (rotationPitch < 0 && isSomeKindOfPiston(stack)) 1.82 else 0.0
                 setPosition(posX, posY - fakeEyeHeight, posZ)
-                PlayerCompanion.setInventoryPlayerItems(this)
+                Player.setInventoryPlayerItems(this)
                 val didPlace = stack.onItemUse(this, world, pos, EnumHand.OFF_HAND, side, hitX, hitY, hitZ)
-                PlayerCompanion.detectInventoryPlayerChanges(this)
+                Player.detectInventoryPlayerChanges(this)
                 setPosition(posX, posY + fakeEyeHeight, posZ)
                 if (didPlace == EnumActionResult.SUCCESS) {
                     MinecraftForge.EVENT_BUS.post(RobotPlaceBlockEvent.Post(agent, stack, world, pos))
@@ -548,7 +466,7 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
                 node.changeBuffer(-Settings.get.robotExhaustionCost * amount)
             }
         }
-        MinecraftForge.EVENT_BUS.post(RobotExhaustionEvent(agent, amount))
+        MinecraftForge.EVENT_BUS.post(RobotExhaustionEvent(agent, amount.toDouble()))
     }
 
     override fun closeScreen() {}
@@ -611,7 +529,7 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
 
     override fun displayGui(guiOwner: IInteractionObject) {}
 
-    override fun displayGuiEditCommandCart(thing: net.minecraft.command.CommandBlockBaseLogic) {}
+    override fun displayGuiEditCommandCart(thing: CommandBlockBaseLogic) {}
 
     override fun openEditSign(signTile: TileEntitySign) {}
 
@@ -646,17 +564,92 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
                     this@Player.posX += side.xOffset / 2.0
                     this@Player.posZ += side.zOffset / 2.0
                     if (expGained >= 0) {
-                        MinecraftForge.EVENT_BUS.post(RobotBreakBlockEvent.Post(agent, expGained))
+                        MinecraftForge.EVENT_BUS.post(RobotBreakBlockEvent.Post(agent, expGained.toDouble()))
                     }
                 }
             }
         }
     }
-}
+    companion object {
+        fun profileFor(agent: Agent): GameProfile {
+            val uuid = agent.ownerUUID()
+            val randomId = (agent.world().rand.nextInt(0xFFFFFF) + 1).toString()
+            val name = Settings.get.nameFormat
+                .replace("\$player\$", agent.ownerName())
+                .replace("\$random\$", randomId)
+            return GameProfile(uuid, name)
+        }
 
-enum class ActivationType {
-    None,
-    BlockActivated,
-    ItemPlaced,
-    ItemUsed
+        fun determineUUID(playerUUID: UUID? = null): UUID {
+            val format = Settings.get.uuidFormat
+            val randomUUID = UUID.randomUUID()
+            return try {
+                UUID.fromString(
+                    format
+                        .replace("\$random\$", randomUUID.toString())
+                        .replace("\$player\$", (playerUUID ?: randomUUID).toString())
+                )
+            } catch (t: Throwable) {
+                OpenComputers.log.warn("Failed determining robot UUID, check your config's `uuidFormat` entry!", t)
+                randomUUID
+            }
+        }
+
+        fun updatePositionAndRotation(player: Player, facing: EnumFacing, side: EnumFacing) {
+            player.facing = facing
+            player.side = side
+            val direction = Vec3d(
+                (facing.xOffset + side.xOffset).toDouble(),
+                (facing.yOffset + side.yOffset).toDouble(),
+                (facing.zOffset + side.zOffset).toDouble()
+            ).normalize()
+            val yaw = Math.toDegrees(-Math.atan2(direction.x, direction.z)).toFloat()
+            val pitch = (Math.toDegrees(-Math.atan2(direction.y, Math.sqrt((direction.x * direction.x) + (direction.z * direction.z)))).toFloat() * 0.99f)
+            player.setLocationAndAngles(player.agent.xPosition(), player.agent.yPosition(), player.agent.zPosition(), yaw, pitch)
+            player.prevRotationPitch = player.rotationPitch
+            player.prevRotationYaw = player.rotationYaw
+        }
+
+        fun setInventoryPlayerItems(player: Player) {
+            // the offhand is simply the agent's tool item
+            val agent = player.agent
+            fun setCopyOrNull(inv: net.minecraft.util.NonNullList<ItemStack>, agentInv: IInventory, slot: Int) {
+                val item = agentInv.getStackInSlot(slot)
+                inv[slot] = item?.copy() ?: ItemStack.EMPTY
+            }
+
+            for (i in 0 until 4) {
+                setCopyOrNull(player.inventory.armorInventory, agent.equipmentInventory(), i)
+            }
+
+            // mainInventory is 36 items
+            // the agent inventory is 100 items with some space for components
+            // leaving us 88..we'll copy what we can
+            val size = minOf(player.inventory.mainInventory.size, agent.mainInventory().sizeInventory)
+            for (i in 0 until size) {
+                setCopyOrNull(player.inventory.mainInventory, agent.mainInventory(), i)
+            }
+            player.inventoryContainer.detectAndSendChanges()
+        }
+
+        fun detectInventoryPlayerChanges(player: Player) {
+            val agent = player.agent
+            player.inventoryContainer.detectAndSendChanges()
+            // The follow code will set agent.inventories = FakePlayer's inv.stack
+            fun setCopy(inv: IInventory, index: Int, item: ItemStack?) {
+                val result = item?.copy() ?: ItemStack.EMPTY
+                val current = inv.getStackInSlot(index)
+                if (!ItemStack.areItemStacksEqual(result, current)) {
+                    inv.setInventorySlotContents(index, result)
+                }
+            }
+            for (i in 0 until 4) {
+                setCopy(agent.equipmentInventory(), i, player.inventory.armorInventory[i])
+            }
+            val size = minOf(player.inventory.mainInventory.size, agent.mainInventory().sizeInventory)
+            for (i in 0 until size) {
+                setCopy(agent.mainInventory(), i, player.inventory.mainInventory[i])
+            }
+        }
+    }
 }

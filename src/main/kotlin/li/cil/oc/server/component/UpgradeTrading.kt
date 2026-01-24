@@ -50,10 +50,16 @@ class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldA
             nextId += 1
         }
         // sorting the result is not necessary, but will help the merchant trades line up nicely by merchant
-        return result(merchants.sortedBy { it.persistentID }.flatMap { merchant ->
-            merchant.getRecipes(null)?.indices?.map { index ->
-                Trade(this, merchant, index, idMap[merchant.persistentID]!!)
-            } ?: emptyList()
-        })
+        return result(
+            merchants
+                .sortedBy { it.persistentID }
+                .flatMap { merchant ->
+                    merchant.getRecipes(null)?.indices?.map { index ->
+                        Trade(this, merchant, index, idMap[merchant.persistentID]!!)
+                    } ?: emptyList()
+                }
+        )
     }
 }
+private val IMerchant.persistentID: UUID
+    get() = (this as Entity).persistentID

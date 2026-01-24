@@ -124,20 +124,7 @@ abstract class UpgradeStickyPiston(host: EnvironmentHost) : UpgradePiston(host) 
         val side = pushDirection(args, index = 0)
         return doPistonAction(context, side, false)
     }
-}
-
-object UpgradePiston {
-    class Drone(drone: InternalDrone) : UpgradePiston(drone), PistonTraits.DroneLike
-
-    open class Rotatable(override val rotatable: InternalRotatable) : UpgradePiston(rotatable), PistonTraits.RotatableLike
-
-    class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
-}
-
-object UpgradeStickyPiston {
     class Drone(drone: InternalDrone) : UpgradeStickyPiston(drone), PistonTraits.DroneLike
-
     open class Rotatable(override val rotatable: InternalRotatable) : UpgradeStickyPiston(rotatable), PistonTraits.RotatableLike
-
     class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
 }
