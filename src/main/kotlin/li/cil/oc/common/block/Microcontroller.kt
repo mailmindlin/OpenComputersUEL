@@ -71,7 +71,7 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
 
     // ----------------------------------------------------------------------- //
 
-    override val energyThroughput: Double get() = Settings.get.caseRate(Tier.One)
+    override val energyThroughput: Double get() = Settings.get.caseRate[Tier.One]
 
     override fun createNewTileEntity(world: World, metadata: Int) = TEMicrocontroller()
 

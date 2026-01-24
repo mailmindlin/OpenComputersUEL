@@ -91,7 +91,7 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
 
     override fun connector(side: EnumFacing): Connector? = if (side != facing) snooperNode else null
 
-    override fun energyThroughput(): Double = Settings.get.caseRate(Tier.One)
+    override fun energyThroughput(): Double = Settings.get.caseRate[Tier.One]
 
     // ----------------------------------------------------------------------- //
 

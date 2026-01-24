@@ -43,9 +43,9 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     val buffer: InternalTextBuffer by lazy {
         val screenItem = ApiItems.get(Constants.BlockName.ScreenTier1).createItemStack(1)
         val buf = Driver.driverFor(screenItem, javaClass).createEnvironment(screenItem, this) as InternalTextBuffer
-        val (maxWidth, maxHeight) = Settings.screenResolutionsByTier(Tier.Three)
+        val (maxWidth, maxHeight) = Settings.screenResolutionsByTier[Tier.Three]
         buf.setMaximumResolution(maxWidth, maxHeight)
-        buf.setMaximumColorDepth(Settings.screenDepthsByTier(Tier.Three))
+        buf.setMaximumColorDepth(Settings.screenDepthsByTier[Tier.Three])
         buf
     }
 
@@ -66,7 +66,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
         kbd
     }
 
-    var range: Double = Settings.get.maxWirelessRange(Tier.Two)
+    var range: Double = Settings.get.maxWirelessRange[Tier.Two]
     val keys: MutableList<String> = mutableListOf()
 
     fun hasAddress(): Boolean {

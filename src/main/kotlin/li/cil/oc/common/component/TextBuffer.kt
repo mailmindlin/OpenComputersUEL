@@ -58,7 +58,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     private var maxResolution: Pair<Int, Int> = Settings.screenResolutionsByTier(Tier.One)
 
-    private var maxDepth = Settings.screenDepthsByTier(Tier.One)
+    private var maxDepth = Settings.screenDepthsByTier[Tier.One]
 
     private var aspectRatio = Pair(1.0, 1.0)
 
@@ -99,7 +99,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     // their maximum resolution (pixel density) increases. For a basic screen
     // this is simply the configured cost.
     fun computeFullyLitCost(): Double {
-        val (w, h) = Settings.screenResolutionsByTier(0)
+        val (w, h) = Settings.screenResolutionsByTier[0]
         val mw = maximumWidth
         val mh = maximumHeight
         return powerConsumptionPerTick * (mw * mh) / (w * h)
@@ -175,7 +175,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         }
 
         synchronized(this) {
-            _pendingCommands?.sendToPlayersNearHost(host, Settings.get.maxWirelessRange(Tier.Two) * Settings.get.maxWirelessRange(Tier.Two))
+            _pendingCommands?.sendToPlayersNearHost(host, Settings.get.maxWirelessRange[Tier.Two] * Settings.get.maxWirelessRange[Tier.Two])
             _pendingCommands = null
         }
 
@@ -234,7 +234,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     fun setPrecise(computer: Context, args: Arguments): Array<Any?> {
         // Available for T3 screens only... easiest way to check for us is to
         // base it off of the maximum color depth.
-        return if (maxDepth == Settings.screenDepthsByTier(Tier.Three)) {
+        return if (maxDepth == Settings.screenDepthsByTier[Tier.Three]) {
             val oldValue = precisionMode
             precisionMode = args.checkBoolean(0)
             result(oldValue)

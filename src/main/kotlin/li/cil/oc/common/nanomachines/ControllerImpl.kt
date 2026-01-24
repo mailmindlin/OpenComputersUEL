@@ -166,7 +166,7 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
     fun respond(endpoint: WirelessEndpoint, vararg data: Any) {
         queuedCommand = {
             if (responsePort > 0) {
-                val cost = Settings.get.wirelessCostPerRange(Tier.Two) * CommandRange
+                val cost = Settings.get.wirelessCostPerRange[Tier.Two] * CommandRange
                 val epsilon = 0.1
                 if (changeBuffer(-cost) > -epsilon) {
                     val packetData = (listOf("nanomachines") + data.toList()).toTypedArray()
