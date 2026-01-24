@@ -2,6 +2,7 @@ package li.cil.oc.api.machine;
 
 import li.cil.oc.api.network.ManagedEnvironment;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -206,7 +207,7 @@ public interface Machine extends ManagedEnvironment, Context {
      *
      * @return a signal or <tt>null</tt> if the queue was empty.
      */
-    Signal popSignal();
+    @Nullable  Signal popSignal();
 
     /**
      * Get a list of all methods and their annotations of the specified object.
