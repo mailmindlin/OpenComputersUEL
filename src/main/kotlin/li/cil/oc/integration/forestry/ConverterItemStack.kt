@@ -8,16 +8,15 @@ import net.minecraft.item.ItemStack
 
 object ConverterItemStack : Converter {
     override fun convert(value: Any?, output: MutableMap<Any?, Any?>) {
-        when {
-            value is ItemStack && AlleleManager.alleleRegistry.isIndividual(value) -> {
-                output["individual"] = AlleleManager.alleleRegistry.getIndividual(value)
-            }
-            value is ItemStack && ChipsetManager.circuitRegistry.getCircuitBoard(value) != null -> {
-                val cc = ChipsetManager.circuitRegistry.getCircuitBoard(value).circuits
-                val names = cc.filterIsInstance<ICircuit>().map { it.uid }.toTypedArray()
-                if (names.isNotEmpty()) {
-                    output["circuits"] = names
-                }
+        if (value !is ItemStack) return
+        if (AlleleManager.alleleRegistry.isIndividual(value)) {
+            output["individual"] = AlleleManager.alleleRegistry.getIndividual(value)
+        }
+        ChipsetManager.circuitRegistry.getCircuitBoard(value)?.let { board ->
+            val cc = board.circuits
+            val names = cc.filterIsInstance<ICircuit>().map { it.uid }.toTypedArray()
+            if (names.isNotEmpty()) {
+                output["circuits"] = names
             }
         }
     }
