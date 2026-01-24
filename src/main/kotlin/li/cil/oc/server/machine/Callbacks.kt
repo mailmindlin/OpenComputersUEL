@@ -85,7 +85,7 @@ object Callbacks {
     return callbacks.toMap()
   }
 
-  private fun staticAnalyze(seed: Class<*>, shouldAdd: ((String) -> Boolean)? = null, optCallbacks: MutableMap<String, Callback>? = null) {
+  private fun staticAnalyze(seed: Class<*>, shouldAdd: ((String) -> Boolean)? = null, optCallbacks: MutableMap<String, Callback>? = null): Map<String, Callback> {
     val callbacks = optCallbacks ?: mutableMapOf()
     var c: Class<*>? = seed
     while (c != null && c != Any::class.java) {
@@ -116,7 +116,7 @@ object Callbacks {
       }
       c = c.superclass
     }
-    callbacks
+    return callbacks
   }
 
   // ----------------------------------------------------------------------- //
