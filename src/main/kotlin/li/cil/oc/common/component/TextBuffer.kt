@@ -56,7 +56,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override val internalRasterizerBuffers: MutableMap<String, VideoRamRasterizer.VirtualRamDevice> = mutableMapOf()
 
-    private var maxResolution: Pair<Int, Int> = Settings.screenResolutionsByTier(Tier.One)
+    private var maxResolution: ScreenResolution = Settings.screenResolutionsByTier[Tier.One]
 
     private var maxDepth = Settings.screenDepthsByTier[Tier.One]
 
@@ -111,25 +111,23 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override val data: UtilTextBuffer = UtilTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
 
-    var viewport: Pair<Int, Int> = data.size
+    var viewport: ScreenResolution = data.size
 
     fun markInitialized() {
         syncCooldown = -1 // Stop polling for init state.
         relativeLitArea = -1.0 // Recompute lit area, avoid screens blanking out until something changes.
     }
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
-            DeviceAttribute.Class.toString() to DeviceClass.Display.toString(),
+            DeviceAttribute.Class.toString() to DeviceClass.Display,
             DeviceAttribute.Description.toString() to "Text buffer",
             DeviceAttribute.Vendor.toString() to Constants.DeviceInfo.DefaultVendor,
             DeviceAttribute.Product.toString() to "Text Screen V0",
-            DeviceAttribute.Capacity.toString() to (maxResolution.first * maxResolution.second).toString(),
+            DeviceAttribute.Capacity.toString() to maxResolution.pixels.toString(),
             DeviceAttribute.Width.toString() to arrayOf("1", "4", "8")[maxDepth.ordinal]
         )
     }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
 
     // ----------------------------------------------------------------------- //
 
@@ -268,14 +266,13 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     override fun setMaximumResolution(width: Int, height: Int) {
         if (width < 1) throw IllegalArgumentException("width must be larger or equal to one")
         if (height < 1) throw IllegalArgumentException("height must be larger or equal to one")
-        maxResolution = Pair(width, height)
+        maxResolution = width by height
         fullyLitCost = computeFullyLitCost()
         proxy.onBufferMaxResolutionChange(width, width)
     }
 
-    override fun getMaximumWidth(): Int = maxResolution.first
-
-    override fun getMaximumHeight(): Int = maxResolution.second
+    override fun getMaximumWidth(): Int = maxResolution.width
+    override fun getMaximumHeight(): Int = maxResolution.height
 
     override fun setAspectRatio(width: Double, height: Double) = synchronized(this) {
         aspectRatio = Pair(width, height)
@@ -291,7 +288,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         proxy.onBufferResolutionChange(w, h)
         // Force set viewport to new resolution. This is partially for
         // backwards compatibility, and partially to enforce a valid one.
-        val sizeChanged = data.setSize(w, h)
+        val sizeChanged = data.setSize(w by h)
         val viewportChanged = setViewport(w, h)
         if (sizeChanged || viewportChanged) {
             if (!viewportChanged && node != null) {
@@ -310,7 +307,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         proxy.onBufferViewportResolutionChange(w, h)
         val (cw, ch) = viewport
         if (w != cw || h != ch) {
-            viewport = Pair(w, h)
+            viewport = ScreenResolution(w, h)
             if (node != null) {
                 node.sendToReachable("computer.signal", "screen_resized", Integer.valueOf(w), Integer.valueOf(h))
             }
@@ -319,9 +316,8 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         return false
     }
 
-    override fun getViewportWidth(): Int = viewport.first
-
-    override fun getViewportHeight(): Int = viewport.second
+    override fun getViewportWidth(): Int = viewport.width
+    override fun getViewportHeight(): Int = viewport.height
 
     override fun setMaximumColorDepth(depth: InternalTextBuffer.ColorDepth) {
         maxDepth = depth
@@ -481,14 +477,14 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         if (nbt.hasKey(MaxWidthTag) && nbt.hasKey(MaxHeightTag)) {
             val maxWidth = nbt.getInteger(MaxWidthTag)
             val maxHeight = nbt.getInteger(MaxHeightTag)
-            maxResolution = Pair(maxWidth, maxHeight)
+            maxResolution = maxWidth by maxHeight
         }
         precisionMode = nbt.getBoolean(PreciseTag)
 
         if (nbt.hasKey(ViewportWidthTag)) {
             val vpw = nbt.getInteger(ViewportWidthTag)
             val vph = nbt.getInteger(ViewportHeightTag)
-            viewport = Pair(minOf(vpw, data.width).coerceAtLeast(1), minOf(vph, data.height).coerceAtLeast(1))
+            viewport = minOf(vpw, data.width).coerceAtLeast(1) by minOf(vph, data.height).coerceAtLeast(1)
         } else {
             viewport = data.size
         }
@@ -521,11 +517,11 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         SaveHandler.scheduleSave(host, nbt, bufferPath()) { data.save(it) }
         nbt.setBoolean(IsOnTag, isDisplaying)
         nbt.setBoolean(HasPowerTag, hasPower)
-        nbt.setInteger(MaxWidthTag, maxResolution.first)
-        nbt.setInteger(MaxHeightTag, maxResolution.second)
+        nbt.setInteger(MaxWidthTag, maxResolution.width)
+        nbt.setInteger(MaxHeightTag, maxResolution.height)
         nbt.setBoolean(PreciseTag, precisionMode)
-        nbt.setInteger(ViewportWidthTag, viewport.first)
-        nbt.setInteger(ViewportHeightTag, viewport.second)
+        nbt.setInteger(ViewportWidthTag, viewport.width)
+        nbt.setInteger(ViewportHeightTag, viewport.height)
     }
 
     companion object {
@@ -650,14 +646,14 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     }
 
     class ClientProxy(override val owner: TextBuffer) : Proxy() {
-        val renderer = object : TextBufferRenderData() {
+        val renderer = object : TextBufferRenderData {
             override var dirty: Boolean
                 get() = this@ClientProxy.dirty
                 set(value) { this@ClientProxy.dirty = value }
 
             override val data: UtilTextBuffer get() = owner.data
 
-            override val viewport: Pair<Int, Int> get() = owner.viewport
+            override val viewport: ScreenResolution get() = owner.viewport
         }
 
         override fun render(): Boolean {

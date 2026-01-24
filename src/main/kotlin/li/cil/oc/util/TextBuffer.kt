@@ -19,7 +19,7 @@ import kotlin.math.min
  */
 @OptIn(ExperimentalStdlibApi::class)
 class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.ColorFormat) {
-    constructor(size: Pair<Int, Int>, format: PackedColor.ColorFormat) : this(size.first, size.second, format)
+    constructor(size: ScreenResolution, format: PackedColor.ColorFormat) : this(size.width, size.height, format)
 
     private var _format: PackedColor.ColorFormat = initialFormat
 
