@@ -12,6 +12,7 @@ import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.machine.Value
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.mapArray
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
@@ -147,10 +148,12 @@ internal object Registry: DriverAPI {
     }
   }
 
+  fun Array<out Any?>.convert(): Array<out Any?>
+    = this.mapArray { convertRecursively(it, IdentityHashMap()) }
+
+  @Deprecated("use value.convert()")
   fun convert(value: Array<*>?): Array<Any?>?
-    = value
-      ?.map { convertRecursively(it, IdentityHashMap()) }
-      ?.toTypedArray()
+    = value?.mapArray { convertRecursively(it, IdentityHashMap()) }
 
   fun convertRecursively(value: Any?, memo: IdentityHashMap<Any, Any>, force: Boolean = false): Any? {
     val valueRef = when (value) {

@@ -52,7 +52,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.pushClosure { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val args = lua.toSimpleJavaObjects(2)
-      owner.invoke { Registry.convert(arrayOf(value.apply(machine, ArgumentsImpl(args)))) }
+      owner.invoke { Registry.run { arrayOf(value.apply(machine, ArgumentsImpl(args))).convert() } }
     }
     lua.setField(-2, "apply")
 
@@ -69,7 +69,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.pushClosure { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val args = lua.toSimpleJavaObjects(2)
-      owner.invoke { Registry.convert(value.call(machine, ArgumentsImpl(args))) }
+      owner.invoke { Registry.run { value.call(machine, ArgumentsImpl(args)).convert() } }
     }
     lua.setField(-2, "call")
 
@@ -86,10 +86,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
 
     lua.pushClosure { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
-      lua.pushValue(machine.methods(value).map(entry => {
-        val (name, annotation) = entry
-        name -> annotation.direct
-      }))
+      lua.pushValue(machine.methods(value).mapValues { (_, annotation) -> annotation.direct })
       1
     }
     lua.setField(-2, "methods")
@@ -105,7 +102,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.pushClosure { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val method = lua.checkString(2)
-      owner.documentation { machine.methods(value)(method).doc }
+      owner.documentation { machine.methods(value)?.get(method)?.doc }
     }
     lua.setField(-2, "doc")
 
