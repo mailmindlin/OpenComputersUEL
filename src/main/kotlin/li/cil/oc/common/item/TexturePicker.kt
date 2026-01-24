@@ -12,17 +12,13 @@ import net.minecraft.util.EnumFacing
 class TexturePicker(parent: Delegator) : AbstractDelegate(parent) {
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
-        val block = world.getBlock(position)
-        return if (block is Block) {
-            if (world.isRemote) {
-                val model = Minecraft.getMinecraft().blockRendererDispatcher.getModelForState(world.getBlockState(position.toBlockPos()))
-                if (model?.particleTexture?.iconName != null) {
-                    player.sendMessage(Localization.Chat.TextureName(model.particleTexture.iconName))
-                }
+        val block = world.getBlock(position) ?: return super.onItemUse(stack, player, position, side, hitX, hitY, hitZ)
+        if (world.isRemote) {
+            val model = Minecraft.getMinecraft().blockRendererDispatcher.getModelForState(world.getBlockState(position.toBlockPos()))
+            if (model?.particleTexture?.iconName != null) {
+                player.sendMessage(Localization.Chat.TextureName(model.particleTexture.iconName))
             }
-            true
-        } else {
-            super.onItemUse(stack, player, position, side, hitX, hitY, hitZ)
         }
+        return true
     }
 }
