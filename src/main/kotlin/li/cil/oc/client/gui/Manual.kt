@@ -43,10 +43,10 @@ class Manual : GuiScreen(), Window {
     override var xSize: Int = 0
     override var ySize: Int = 0
 
-    var isDragging = false
-    var document: Segment? = null
-    var documentHeight = 0
-    var currentSegment: InteractiveSegment? = null
+    private var isDragging = false
+    private var document: Segment? = null
+    private var documentHeight = 0
+    private var currentSegment: InteractiveSegment? = null
     protected var scrollButton: ImageButton? = null
 
     private val canScroll: Boolean
@@ -69,7 +69,8 @@ class Manual : GuiScreen(), Window {
     fun refreshPage() {
         val content = ManualAPI.contentFor(ManualAPI.history.top.path)
             ?: listOf("Document not found: ${ManualAPI.history.top.path}")
-        document = Document.parse(content)
+        val document = Document.parse(content)
+        this.document = document
         documentHeight = Document.height(document, documentMaxWidth, fontRenderer)
         scrollTo(offset)
     }
@@ -129,7 +130,7 @@ class Manual : GuiScreen(), Window {
             }
         }
 
-        currentSegment = Document.render(document, guiLeft + 8, guiTop + 8, documentMaxWidth, documentMaxHeight, offset, fontRenderer, mouseX, mouseY)
+        currentSegment = Document.render(document!!, guiLeft + 8, guiTop + 8, documentMaxWidth, documentMaxHeight, offset, fontRenderer, mouseX, mouseY)
 
         if (!isDragging) {
             currentSegment?.tooltip?.let { text ->
@@ -168,7 +169,7 @@ class Manual : GuiScreen(), Window {
     override fun handleMouseInput() {
         super.handleMouseInput()
         if (Mouse.hasWheel() && Mouse.getEventDWheel() != 0) {
-            if (Mouse.getEventDWheel().toDouble().sign < 0) scrollDown()
+            if (Mouse.getEventDWheel().toDouble() < 0) scrollDown()
             else scrollUp()
         }
     }
