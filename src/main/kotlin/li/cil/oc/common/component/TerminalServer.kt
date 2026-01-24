@@ -102,7 +102,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
         )
     }
 
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     // ----------------------------------------------------------------------- //
     // Environment

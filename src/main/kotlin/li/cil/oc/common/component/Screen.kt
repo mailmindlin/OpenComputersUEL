@@ -7,9 +7,11 @@ import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.server.PacketSender as ServerPacketSender
 
 class Screen(val screen: TEScreen) : TextBuffer(screen) {
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():boolean -- Whether touch mode is inverted (sneak-activate opens GUI, instead of normal activate).""")
     fun isTouchModeInverted(computer: Context, args: Arguments): Array<Any?> = result(screen.invertTouchMode)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:boolean):boolean -- Sets whether to invert touch mode (sneak-activate opens GUI, instead of normal activate).""")
     fun setTouchModeInverted(computer: Context, args: Arguments): Array<Any?> {
         val newValue = args.checkBoolean(0)

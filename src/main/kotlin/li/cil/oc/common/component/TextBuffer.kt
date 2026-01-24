@@ -53,6 +53,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         .withComponent("screen")
         .withConnector()
         .create()
+    override fun node(): Node = node
 
     override val internalRasterizerBuffers: MutableMap<String, VideoRamRasterizer.VirtualRamDevice> = mutableMapOf()
 
@@ -350,7 +351,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         proxy.onBufferSet(col, row, s, vertical)
     }
 
-    fun onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, ram: GpuTextBuffer, fromCol: Int, fromRow: Int) {
+    override fun onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, ram: GpuTextBuffer, fromCol: Int, fromRow: Int) {
         proxy.onBufferBitBlt(col, row, w, h, ram, fromCol, fromRow)
     }
 
@@ -360,10 +361,6 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override fun onBufferRamDestroy(ram: GpuTextBuffer) {
         proxy.onBufferRamDestroy(ram)
-    }
-
-    override fun onBufferBitBlt(col: Int, row: Int, w: Int, h: Int, ram: GpuTextBuffer, fromCol: Int, fromRow: Int) {
-        proxy.onBufferBitBlt(col, row, w, h, ram, fromCol, fromRow)
     }
 
     override fun rawSetText(col: Int, row: Int, text: Array<IntArray>) {
@@ -544,6 +541,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
         @JvmStatic
         @SubscribeEvent
+        @SuppressWarnings("unused")
         fun onWorldUnload(e: WorldEvent.Unload) {
             clientBuffers = clientBuffers.filter { t ->
                 val keep = t.host.world() != e.world
