@@ -296,7 +296,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
         }
     }
 
-    override fun render(proxy: tileentity.RobotProxy, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
+    override fun render(proxy: RobotProxy, x: Double, y: Double, z: Double, f: Float, damage: Int, alpha: Float) {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         val robot = proxy.robot

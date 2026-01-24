@@ -288,7 +288,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
     }
 
     private fun wireThingsTogether() {
-        api.Network.joinNewNetwork(machine!!.node())
+        Network.joinNewNetwork(machine!!.node())
         machine.node().connect(control!!.node())
         machine.setCostPerTick(Settings.get.droneCost)
         components.connectComponents()
@@ -550,7 +550,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
         if (isDead) return
         super.outOfWorld()
         if (!world.isRemote) {
-            val stack = api.Items.get(Constants.ItemName.Drone).createItemStack(1)
+            val stack = Items.get(Constants.ItemName.Drone).createItemStack(1)
             info.storedEnergy = control!!.node().localBuffer().toInt()
             info.save(stack)
             val entity = EntityItem(world, posX, posY, posZ, stack)
@@ -598,12 +598,12 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
         if (world.isRemote) return
         components.saveComponents()
         info.storedEnergy = globalBuffer
-        nbt.extendedNBT().setNewCompoundTag("info") { info.save(it) }
+        nbt.setNewCompoundTag("info", info::save)
         if (!world.isRemote) {
-            nbt.extendedNBT().setNewCompoundTag("machine") { machine!!.save(it) }
-            nbt.extendedNBT().setNewCompoundTag("control") { control!!.save(it) }
-            nbt.extendedNBT().setNewCompoundTag("components") { components.save(it) }
-            nbt.extendedNBT().setNewCompoundTag("inventory") { mainInventory.save(it) }
+            nbt.setNewCompoundTag("machine", machine!!::save)
+            nbt.setNewCompoundTag("control", control!!::save)
+            nbt.setNewCompoundTag("components", components::save)
+            nbt.setNewCompoundTag("inventory", mainInventory::save)
         }
         nbt.setFloat("targetX", targetX)
         nbt.setFloat("targetY", targetY)
@@ -619,26 +619,26 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
 
     companion object {
         @JvmField
-        val DataRunning: DataParameter<java.lang.Boolean> = EntityDataManager.createKey(Drone::class.java, DataSerializers.BOOLEAN)
+        val DataRunning: DataParameter<Boolean> = EntityDataManager.createKey(Drone::class.java, DataSerializers.BOOLEAN)
         @JvmField
-        val DataTargetX: DataParameter<java.lang.Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
+        val DataTargetX: DataParameter<Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
         @JvmField
-        val DataTargetY: DataParameter<java.lang.Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
+        val DataTargetY: DataParameter<Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
         @JvmField
-        val DataTargetZ: DataParameter<java.lang.Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
+        val DataTargetZ: DataParameter<Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
         @JvmField
-        val DataMaxAcceleration: DataParameter<java.lang.Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
+        val DataMaxAcceleration: DataParameter<Float> = EntityDataManager.createKey(Drone::class.java, DataSerializers.FLOAT)
         @JvmField
-        val DataSelectedSlot: DataParameter<Integer> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
+        val DataSelectedSlot: DataParameter<Int> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
         @JvmField
-        val DataCurrentEnergy: DataParameter<Integer> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
+        val DataCurrentEnergy: DataParameter<Int> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
         @JvmField
-        val DataMaxEnergy: DataParameter<Integer> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
+        val DataMaxEnergy: DataParameter<Int> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
         @JvmField
         val DataStatusText: DataParameter<String> = EntityDataManager.createKey(Drone::class.java, DataSerializers.STRING)
         @JvmField
-        val DataInventorySize: DataParameter<Integer> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
+        val DataInventorySize: DataParameter<Int> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
         @JvmField
-        val DataLightColor: DataParameter<Integer> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
+        val DataLightColor: DataParameter<Int> = EntityDataManager.createKey(Drone::class.java, DataSerializers.VARINT)
     }
 }

@@ -187,12 +187,12 @@ open class SmartBlockModelBase : IBakedModel {
         val vz = (face.zOffset * 127) and 0xFF
 
         return intArrayOf(
-            java.lang.Float.floatToRawIntBits(x.toFloat()),
-            java.lang.Float.floatToRawIntBits(y.toFloat()),
-            java.lang.Float.floatToRawIntBits(z.toFloat()),
+            x.toFloat().toRawBits(),
+            y.toFloat().toRawBits(),
+            z.toFloat().toRawBits(),
             getFaceShadeColor(face, colorRGB),
-            java.lang.Float.floatToRawIntBits(u),
-            java.lang.Float.floatToRawIntBits(v),
+            u.toRawBits(),
+            v.toRawBits(),
             vx or (vy shl 0x08) or (vz shl 0x10)
         )
     }

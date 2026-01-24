@@ -399,7 +399,7 @@ object Recipes {
 
     @JvmStatic
     @Suppress("UNCHECKED_CAST")
-    fun parseIngredient(entry: Any?): Any? {
+    fun parseIngredient(entry: Any?): Any {
         return when (entry) {
             is Map<*, *> -> {
                 val map = entry as Map<Any, Any>

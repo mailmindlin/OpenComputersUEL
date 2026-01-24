@@ -32,8 +32,11 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.Hub as TraitHub
+import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
 
-class Microcontroller : TileEntityBase(), traits.PowerAcceptor, traits.Hub, traits.Computer, ISidedInventory, InternalMicrocontroller, DeviceInfoKt {
+class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitComputer, ISidedInventory, InternalMicrocontroller, DeviceInfoKt {
     @JvmField
     val info = MicrocontrollerData()
 

@@ -10,7 +10,7 @@ interface PowerAcceptor {
 
     // ----------------------------------------------------------------------- //
 
-    fun powerAcceptorTooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    fun powerAcceptorTooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         tooltip.addAll(Tooltip.extended("poweracceptor", energyThroughput.toInt()))
     }
 }

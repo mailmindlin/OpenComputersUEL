@@ -13,7 +13,7 @@ import li.cil.oc.api.event.RobotUsedToolEvent
 import li.cil.oc.api.internal.Agent
 import li.cil.oc.api.internal.Robot
 import li.cil.oc.api.network.Node
-import li.cil.oc.server.UpgradeExperience
+import li.cil.oc.server.component.UpgradeExperience
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
@@ -101,14 +101,14 @@ object ExperienceUpgradeHandler {
 
     private fun getLevel(agent: Agent): Int {
         var level = 0
-        foreachUpgrade(agent.machine().node()) { upgrade -> level += upgrade.level }
+        forEachUpgrade(agent.machine().node()) { upgrade -> level += upgrade.level }
         return level
     }
 
     private fun getLevelAndExperience(agent: Agent): Pair<Int, Double> {
         var level = 0
         var experience = 0.0
-        foreachUpgrade(agent.machine().node()) { upgrade ->
+        forEachUpgrade(agent.machine().node()) { upgrade ->
             level += upgrade.level
             experience += upgrade.experience
         }
@@ -116,10 +116,10 @@ object ExperienceUpgradeHandler {
     }
 
     private fun addExperience(agent: Agent, amount: Double) {
-        foreachUpgrade(agent.machine().node()) { upgrade -> upgrade.addExperience(amount) }
+        forEachUpgrade(agent.machine().node()) { upgrade -> upgrade.addExperience(amount) }
     }
 
-    private fun foreachUpgrade(node: Node, f: (UpgradeExperience) -> Unit) {
+    private inline fun forEachUpgrade(node: Node, f: (UpgradeExperience) -> Unit) {
         node.reachableNodes().forEach { n ->
             val host = n.host()
             if (host is UpgradeExperience) {

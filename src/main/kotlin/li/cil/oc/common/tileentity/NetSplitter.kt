@@ -21,8 +21,11 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
+import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 
-class NetSplitter : TileEntityBase(), traits.Environment, traits.OpenSides, traits.RedstoneAware, SidedEnvironment, DeviceInfo {
+class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfo {
     private val deviceInfo: java.util.Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,

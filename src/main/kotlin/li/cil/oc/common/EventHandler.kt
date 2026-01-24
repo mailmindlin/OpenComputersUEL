@@ -298,16 +298,16 @@ object EventHandler {
             if (player is FakePlayer) return
             if (player is EntityPlayerMP) {
                 if (!LuaStateFactory.isAvailable && !LuaStateFactory.luajRequested) {
-                    player.sendMessage(Localization.Chat.WarningLuaFallback)
+                    player.sendMessage(Localization.Chat.WarningLuaFallback())
                 }
                 if (Recipes.hadErrors) {
-                    player.sendMessage(Localization.Chat.WarningRecipes)
+                    player.sendMessage(Localization.Chat.WarningRecipes())
                 }
                 if (ClassTransformer.hadErrors) {
-                    player.sendMessage(Localization.Chat.WarningClassTransformer)
+                    player.sendMessage(Localization.Chat.WarningClassTransformer())
                 }
                 if (ClassTransformer.hadSimpleComponentErrors) {
-                    player.sendMessage(Localization.Chat.WarningSimpleComponent)
+                    player.sendMessage(Localization.Chat.WarningSimpleComponent())
                 }
                 // Gaaah, MC 1.8 y u do this to me? Sending the packets here directly can lead to them
                 // arriving on the client before it has a world and player instance, which causes all

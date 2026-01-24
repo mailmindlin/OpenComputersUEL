@@ -170,7 +170,7 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     }
 
     @SideOnly(Side.CLIENT)
-    override fun addInformation(stack: ItemStack, world: World?, tooltip: util.List<String>, flag: ITooltipFlag) {
+    override fun addInformation(stack: ItemStack, world: World?, tooltip: List<String>, flag: ITooltipFlag) {
         super.addInformation(stack, world, tooltip, flag)
         val subItem = Delegator.subItem(stack)
         if (subItem != null) {
@@ -221,7 +221,7 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
 
     // ----------------------------------------------------------------------- //
 
-    override fun computePreferredMountPoint(stack: ItemStack, robot: Robot, availableMountPoints: util.Set<String>): String =
+    override fun computePreferredMountPoint(stack: ItemStack, robot: Robot, availableMountPoints: Set<String>): String =
         UpgradeRenderer.preferredMountPoint(stack, availableMountPoints)
 
     override fun render(stack: ItemStack, mountPoint: MountPoint, robot: Robot, pt: Float) =

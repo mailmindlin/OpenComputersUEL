@@ -18,9 +18,9 @@ class Assembler(playerInventory: InventoryPlayer, val assembler: TEAssembler) : 
             val index = inventorySlots.size
             addSlotToContainer(object : StaticComponentSlot(this, otherInventory, index, 12, 12, "template", CommonTier.Any) {
                 @SideOnly(Side.CLIENT)
-                override fun isEnabled(): Boolean = !isAssembling && super.isEnabled()
+                override fun isEnabled(): Boolean = !isAssembling() && super.isEnabled()
 
-                override fun getBackgroundLocation() = if (isAssembling) Textures.Icons.get(CommonTier.None) else super.getBackgroundLocation()
+                override fun getBackgroundLocation() = if (isAssembling()) Textures.Icons.get(CommonTier.None) else super.getBackgroundLocation()
             })
         }
 

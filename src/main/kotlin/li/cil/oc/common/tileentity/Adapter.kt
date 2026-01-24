@@ -12,9 +12,13 @@ import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
-import li.cil.oc.common.tileentity.traits.OpenSides
-import li.cil.oc.common.tileentity.traits.Tickable
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
+import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.api.internal.Adapter as InternalAdapter
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.SoundEvents
 import net.minecraft.item.ItemStack
@@ -23,10 +27,8 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
 import net.minecraftforge.common.util.Constants as NBTConstants
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
-import li.cil.oc.api.Network as ApiNetwork
 
-class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Tickable, OpenSides, Analyzable, internal.Adapter, DeviceInfo {
+class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfo {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network).create()
 
@@ -68,8 +70,8 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
     // ----------------------------------------------------------------------- //
 
     override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> {
-        val blockNodes = blocks.mapNotNull { it?.first?.node }
-        val componentNodes = components.mapNotNull { it?.node }
+        val blockNodes = blocks.mapNotNull { it?.first?.node() }
+        val componentNodes = components.mapNotNull { it?.node() }
         return (blockNodes + componentNodes).toTypedArray()
     }
 
@@ -85,10 +87,10 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
     }
 
     fun neighborChanged(d: EnumFacing) {
-        if (node != null && node.network != null) {
+        if (node != null && node.network() != null) {
             val blockPos = pos.offset(d)
             when (world.getTileEntity(blockPos)) {
-                is traits.Environment -> {
+                is TraitEnvironment -> {
                     // Don't provide adaption for our stuffs. This is mostly to avoid
                     // cables and other non-functional stuff popping up in the adapter
                     // due to having a power interface. Might revisit this at some point,
@@ -106,7 +108,7 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
                                 blocks[d.ordinal] = null
                                 updatingBlocks.remove(oldEnvironment)
                                 blocksData[d.ordinal] = null
-                                node.disconnect(oldEnvironment.node)
+                                node.disconnect(oldEnvironment.node())
 
                                 // Then rebuild - if we have something.
                                 val environment = newDriver.createEnvironment(world, blockPos, d)
@@ -116,7 +118,7 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
                                         updatingBlocks.add(environment)
                                     }
                                     blocksData[d.ordinal] = BlockData(environment.javaClass.name, NBTTagCompound())
-                                    node.connect(environment.node)
+                                    node.connect(environment.node())
                                 }
                             } // else: the more things change, the more they stay the same.
                         } else {
@@ -135,7 +137,7 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
                                     environment.load(data.data)
                                 }
                                 blocksData[d.ordinal] = BlockData(environment.javaClass.name, NBTTagCompound())
-                                node.connect(environment.node)
+                                node.connect(environment.node())
                             }
                         }
                     } else {
@@ -143,9 +145,9 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
                         if (existing != null) {
                             val (environment, _) = existing
                             // We had something there, but it's gone now...
-                            node.disconnect(environment.node)
+                            node.disconnect(environment.node())
                             blocksData[d.ordinal]?.let { environment.save(it.data) }
-                            environment.node?.remove()
+                            environment.node()?.remove()
                             blocks[d.ordinal] = null
                             updatingBlocks.remove(environment)
                         } // else: Nothing before, nothing now.
@@ -156,7 +158,7 @@ class Adapter: TileEntityBase(), TraitEnvironment, traits.ComponentInventory, Ti
     }
 
     fun neighborChanged() {
-        if (node != null && node.network != null) {
+        if (node != null && node.network() != null) {
             for (d in EnumFacing.values()) {
                 neighborChanged(d)
             }

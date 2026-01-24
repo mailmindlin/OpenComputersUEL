@@ -26,8 +26,14 @@ import net.minecraftforge.common.util.Constants as NBTConstants
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
+import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
+import li.cil.oc.common.tileentity.traits.PlayerInputAware as TraitPlayerInputAware
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Disassembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor, traits.Inventory, traits.StateAware, traits.PlayerInputAware, traits.Tickable, DeviceInfo {
+class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfo {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)

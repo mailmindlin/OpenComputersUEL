@@ -65,7 +65,7 @@ abstract class Template {
             warnings.add(0, Localization.Assembler.Warnings())
         }
 
-        return arrayOf(valid as java.lang.Boolean, progress, warnings.toTypedArray())
+        return arrayOf(valid, progress, warnings.toTypedArray())
     }
 
     protected fun exists(inventory: IInventory, p: (ItemStack) -> Boolean): Boolean {

@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 
 class Redstone : RedstoneAware() {
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, advanced)
         // todo more generic way for redstone mods to provide lines
         if (Mods.ProjectRedTransmission.isModAvailable) {

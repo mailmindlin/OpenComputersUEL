@@ -8,6 +8,7 @@ import li.cil.oc.common.item.traits.FileSystemLike
 import li.cil.oc.server.component.DiskDriveMountable
 import li.cil.oc.server.component.Server
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.getTileEntity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World

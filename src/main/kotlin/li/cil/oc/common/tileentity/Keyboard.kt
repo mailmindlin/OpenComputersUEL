@@ -13,8 +13,11 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
+import li.cil.oc.common.tileentity.traits.ImmibisMicroblock as TraitImmibisMicroblock
 
-class Keyboard : TileEntityBase(), traits.Environment, traits.Rotatable, traits.ImmibisMicroblock, SidedEnvironment, Analyzable {
+class Keyboard : TileEntityBase(), TraitEnvironment, TraitRotatable, TraitImmibisMicroblock, SidedEnvironment, Analyzable {
     override val validFacings: Array<EnumFacing> = EnumFacing.values()
 
     @JvmField
@@ -23,20 +26,20 @@ class Keyboard : TileEntityBase(), traits.Environment, traits.Rotatable, traits.
         Driver.driverFor(keyboardItem, javaClass).createEnvironment(keyboardItem, this)
     }
 
-    override fun getNode(): Node = keyboard.node()
+    override fun node(): Node = keyboard.node()
 
     fun hasNodeOnSide(side: EnumFacing): Boolean =
-        side != facing && (isOnWall || side.opposite != forward)
+        side != facing() && (isOnWall || side.opposite != forward)
 
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
     override fun canConnect(side: EnumFacing): Boolean = hasNodeOnSide(side)
 
-    override fun sidedNode(side: EnumFacing): Node? = if (hasNodeOnSide(side)) node else null
+    override fun sidedNode(side: EnumFacing): Node? = if (hasNodeOnSide(side)) node() else null
 
     // Override automatic analyzer implementation for sided environments.
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(node)
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(node())
 
     // ----------------------------------------------------------------------- //
 
@@ -60,7 +63,7 @@ class Keyboard : TileEntityBase(), traits.Environment, traits.Rotatable, traits.
 
     // ----------------------------------------------------------------------- //
 
-    private val isOnWall: Boolean get() = facing != EnumFacing.UP && facing != EnumFacing.DOWN
+    private val isOnWall: Boolean get() = facing() != EnumFacing.UP && facing() != EnumFacing.DOWN
 
     private val forward: EnumFacing get() = if (isOnWall) EnumFacing.UP else yaw
 }

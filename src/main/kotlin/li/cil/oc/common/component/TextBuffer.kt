@@ -107,7 +107,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     }
 
     val proxy: Proxy =
-        if (SideTracker.isClient) ClientProxy(this)
+        if (SideTracker.isClient()) ClientProxy(this)
         else ServerProxy(this)
 
     override val data: UtilTextBuffer = UtilTextBuffer(maxResolution, PackedColor.Depth.format(maxDepth))
@@ -180,7 +180,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             _pendingCommands = null
         }
 
-        if (SideTracker.isClient && syncCooldown > 0) {
+        if (SideTracker.isClient() && syncCooldown > 0) {
             syncCooldown -= 1
             if (syncCooldown == 0) {
                 syncCooldown = syncInterval
@@ -218,7 +218,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         context.pause(0.25)
         return when (host) {
             is TEScreen -> {
-                arrayOf((host as TEScreen).screens.mapNotNull { it.node }
+                arrayOf((host as TEScreen).screens.mapNotNull { it.node() }
                     .flatMap { it.neighbors().filter { n -> n.host() is Keyboard }.map { n -> n.address() } }
                     .toTypedArray())
             }
@@ -461,7 +461,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override fun load(nbt: NBTTagCompound) {
         super.load(nbt)
-        if (SideTracker.isClient) {
+        if (SideTracker.isClient()) {
             if (!Strings.isNullOrEmpty(proxy.nodeAddress)) return // Only load once.
             proxy.nodeAddress = nbt.getCompoundTag(NodeData.NodeTag).getString(NodeData.AddressTag)
             Companion.registerClientBuffer(this)
@@ -960,7 +960,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         private fun sendToKeyboards(name: String, vararg values: Any?) {
             when (val host = owner.host) {
                 is TEScreen -> {
-                    host.screens.forEach { it.node?.sendToNeighbors(name, *values) }
+                    host.screens.forEach { it.node()?.let { node -> node.sendToNeighbors(name, *values) } }
                 }
                 else -> {
                     owner.node.sendToNeighbors(name, *values)

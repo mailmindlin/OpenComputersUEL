@@ -21,8 +21,11 @@ import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import net.minecraftforge.common.property.ExtendedBlockState
 import net.minecraftforge.common.property.IExtendedBlockState
+import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.block.traits.StateAware as TraitStateAware
+import li.cil.oc.common.block.traits.GUI as TraitGUI
 
-class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GUI {
+class Rack : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
     override fun createBlockState() = ExtendedBlockState(this, arrayOf(PropertyRotatable.Facing), arrayOf(PropertyTile))
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta))
@@ -84,7 +87,7 @@ class Rack : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GU
 
             val facings = EnumFacing.VALUES
             for (i in facings.indices) {
-                if (tileEntity.facing != facings[i]) {
+                if (tileEntity.facing() != facings[i]) {
                     intersect(collisionBounds[i])
                 }
             }

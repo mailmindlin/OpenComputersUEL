@@ -69,9 +69,9 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
             val dz = (sender.z() + 0.5) - player.posZ
             val dSquared = Math.sqrt(dx * dx + dy * dy + dz * dz)
             if (dSquared <= CommandRange) {
-                val header = packet.data.firstOrNull()
+                val header = packet.data().firstOrNull()
                 if (header is ByteArray && String(header, Charsets.UTF_8) == "nanomachines") {
-                    val command = packet.data.drop(1).map { value ->
+                    val command = packet.data().drop(1).map { value ->
                         when (value) {
                             is ByteArray -> String(value, Charsets.UTF_8)
                             else -> value

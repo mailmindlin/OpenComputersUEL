@@ -48,7 +48,7 @@ class DynamicComponentSlot(
     }
 
     override fun clearIfInvalid(player: EntityPlayer) {
-        if (SideTracker.isServer && hasStack && !isItemValid(stack)) {
+        if (SideTracker.isServer() && hasStack && !isItemValid(stack)) {
             val stack = this.stack
             putStack(ItemStack.EMPTY)
             InventoryUtils.addToPlayerInventory(stack, player)

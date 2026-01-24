@@ -118,7 +118,7 @@ class Analyzer(override val parent: Delegator) : Delegate {
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
         val tileEntity = world.getTileEntity(position)
-        if (tileEntity is TEScreen && side == tileEntity.facing) {
+        if (tileEntity is TEScreen && side == tileEntity.facing()) {
             return if (player.isSneaking) {
                 tileEntity.copyToAnalyzer(hitX, hitY, hitZ)
             } else if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "clipboard")) {

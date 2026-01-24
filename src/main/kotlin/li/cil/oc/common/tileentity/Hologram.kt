@@ -22,10 +22,13 @@ import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Hologram @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-): TileEntityBase(), traits.Environment, SidedEnvironment, Analyzable, traits.RotatableTile, traits.Tickable, DeviceInfo {
+): TileEntityBase(), TraitEnvironment, SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfo {
 
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network)
@@ -501,7 +504,7 @@ class Hologram @JvmOverloads constructor(
     // ----------------------------------------------------------------------- //
 
     private val dataPath: String
-        get() = node.address + "_data"
+        get() = node.address() + "_data"
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         tier = maxOf(0, minOf(1, nbt.getByte(TierTag).toInt()))

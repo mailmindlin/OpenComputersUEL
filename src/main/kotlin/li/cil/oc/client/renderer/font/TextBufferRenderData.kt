@@ -1,5 +1,6 @@
 package li.cil.oc.client.renderer.font
 
+import li.cil.oc.util.ScreenResolution
 import li.cil.oc.util.TextBuffer
 
 interface TextBufferRenderData {
@@ -7,5 +8,5 @@ interface TextBufferRenderData {
 
     val data: TextBuffer
 
-    val viewport: Pair<Int, Int>
+    val viewport: ScreenResolution
 }

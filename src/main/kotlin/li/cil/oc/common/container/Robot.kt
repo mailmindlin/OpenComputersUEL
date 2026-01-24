@@ -61,7 +61,7 @@ class Robot(playerInventory: InventoryPlayer, val robot: TERobot) : Player(playe
 
     override fun detectAndSendChanges() {
         super.detectAndSendChanges()
-        if (SideTracker.isServer) {
+        if (SideTracker.isServer()) {
             val currentBuffer = robot.globalBuffer.toInt() / factor
             if (currentBuffer != lastSentBuffer) {
                 lastSentBuffer = currentBuffer

@@ -2,7 +2,7 @@ package li.cil.oc.client.renderer.markdown.segment
 
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
-import li.cil.oc.ApiManual as ApiManual
+import li.cil.oc.api.Manual as ApiManual
 import li.cil.oc.client.Manual
 import li.cil.oc.client.renderer.markdown.MarkupFormat
 import net.minecraft.client.Minecraft

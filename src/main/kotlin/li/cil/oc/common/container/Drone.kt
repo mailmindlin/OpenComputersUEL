@@ -3,7 +3,7 @@ package li.cil.oc.common.container
 import li.cil.oc.client.Textures
 import li.cil.oc.common.Slot as CommonSlot
 import li.cil.oc.common.Tier as CommonTier
-import li.cil.oc.common.EntityDrone as EntityDrone
+import li.cil.oc.common.entity.Drone as EntityDrone
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
@@ -26,7 +26,7 @@ class Drone(playerInventory: InventoryPlayer, val drone: EntityDrone) : Player(p
         addPlayerInventorySlots(8, 66)
     }
 
-    inner class InventorySlot(container: Player, inventory: IInventory, index: Int, x: Int, y: Int)
+    inner class InventorySlot(container: Player<IInventory>, inventory: IInventory, index: Int, x: Int, y: Int)
         : StaticComponentSlot(container, inventory, index, x, y, CommonSlot.Any, CommonTier.Any) {
 
         val isValid: Boolean

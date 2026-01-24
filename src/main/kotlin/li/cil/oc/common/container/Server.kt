@@ -18,33 +18,33 @@ class Server @JvmOverloads constructor(
 
     init {
         for (i in 0..1) {
-            val slot = InventorySlots.server(serverInventory.tier)[inventory.size]
+            val slot = InventorySlots.server[serverInventory.tier][inventory.size]
             addSlotToContainer(76, 7 + i * slotSize, slot.slot, slot.tier)
         }
 
         val verticalSlots = minOf(3, 1 + serverInventory.tier)
         for (i in 0..verticalSlots) {
-            val slot = InventorySlots.server(serverInventory.tier)[inventory.size]
+            val slot = InventorySlots.server[serverInventory.tier][inventory.size]
             addSlotToContainer(100, 7 + i * slotSize, slot.slot, slot.tier)
         }
 
         for (i in 0..verticalSlots) {
-            val slot = InventorySlots.server(serverInventory.tier)[inventory.size]
+            val slot = InventorySlots.server[serverInventory.tier][inventory.size]
             addSlotToContainer(124, 7 + i * slotSize, slot.slot, slot.tier)
         }
 
         for (i in 0..verticalSlots) {
-            val slot = InventorySlots.server(serverInventory.tier)[inventory.size]
+            val slot = InventorySlots.server[serverInventory.tier][inventory.size]
             addSlotToContainer(148, 7 + i * slotSize, slot.slot, slot.tier)
         }
 
         for (i in 2..verticalSlots) {
-            val slot = InventorySlots.server(serverInventory.tier)[inventory.size]
+            val slot = InventorySlots.server[serverInventory.tier][inventory.size]
             addSlotToContainer(76, 7 + i * slotSize, slot.slot, slot.tier)
         }
 
         run {
-            val slot = InventorySlots.server(serverInventory.tier)[inventory.size]
+            val slot = InventorySlots.server[serverInventory.tier][inventory.size]
             addSlotToContainer(26, 34, slot.slot, slot.tier)
         }
 

@@ -1,8 +1,9 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class CarpetedCapacitor : Capacitor(), traits.Tickable {
+class CarpetedCapacitor : Capacitor(), TraitTickable {
     private val carpetBonus: Double
         get() = Settings.get.bufferCapacitor * 0.5
 

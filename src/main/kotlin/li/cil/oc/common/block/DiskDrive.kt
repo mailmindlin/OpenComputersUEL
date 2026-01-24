@@ -14,8 +14,9 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import li.cil.oc.common.block.traits.GUI as TraitGUI
 
-class DiskDrive : SimpleBlock(), traits.GUI {
+class DiskDrive : SimpleBlock(), TraitGUI {
     override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing)
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta))
@@ -24,7 +25,7 @@ class DiskDrive : SimpleBlock(), traits.GUI {
 
     // ----------------------------------------------------------------------- //
 
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, flag: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, flag: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, flag)
         if (Mods.ComputerCraft.isModAvailable) {
             tooltip.addAll(Tooltip.get(javaClass.simpleName + ".CC"))
@@ -57,7 +58,7 @@ class DiskDrive : SimpleBlock(), traits.GUI {
                 val isHoldingDisk = tileEntity.isItemValidForSlot(0, heldItem)
                 if (isDiskInDrive) {
                     if (!world.isRemote) {
-                        tileEntity.dropSlot(0, 1, tileEntity.facing)
+                        tileEntity.dropSlot(0, 1, tileEntity.facing())
                     }
                 }
                 if (isHoldingDisk) {

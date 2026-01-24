@@ -15,7 +15,7 @@ class Raid(playerInventory: InventoryPlayer, val raid: TileEntityRaid) : Dynamic
       8, 6, 0x404040)
 
     fontRenderer.drawSplitString(
-      Localization.Raid.Warning,
+      Localization.Raid.Warning(),
       8, 46, 0x404040, width - 16)
   }
 

@@ -39,7 +39,7 @@ object ScreenRenderer : TileEntitySpecialRenderer<Screen>() {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         this.screen = screen
-        if (!screen.isOrigin) {
+        if (!screen.isOrigin()) {
             return
         }
 
@@ -54,7 +54,7 @@ object ScreenRenderer : TileEntitySpecialRenderer<Screen>() {
 
         // Crude check whether screen text can be seen by the local player based
         // on the player's position -> angle relative to screen.
-        val screenFacing = screen.facing.opposite
+        val screenFacing = screen.facing()!!.opposite
         if (screenFacing.xOffset * (x + 0.5) + screenFacing.yOffset * (eyeDelta + 0.5) + screenFacing.zOffset * (z + 0.5) < 0) {
             return
         }
@@ -131,7 +131,7 @@ object ScreenRenderer : TileEntitySpecialRenderer<Screen>() {
     }
 
     private fun drawOverlay() {
-        if (screen!!.facing == EnumFacing.UP || screen!!.facing == EnumFacing.DOWN) {
+        if (screen!!.facing() == EnumFacing.UP || screen!!.facing() == EnumFacing.DOWN) {
             // Show up vector overlay when holding same screen block.
             val stack = Minecraft.getMinecraft().player.heldItemMainhand
             if (!stack.isEmpty) {
@@ -180,21 +180,21 @@ object ScreenRenderer : TileEntitySpecialRenderer<Screen>() {
         val isy = sy - (4.5f / 16)
 
         // Scale based on actual buffer size.
-        val sizeX = screen!!.buffer.renderWidth
-        val sizeY = screen!!.buffer.renderHeight
+        val sizeX = screen!!.buffer.renderWidth()
+        val sizeY = screen!!.buffer.renderHeight()
         val scaleX = isx / sizeX
         val scaleY = isy / sizeY
         if (true) {
             if (scaleX > scaleY) {
                 GlStateManager.translate((sizeX * 0.5f * (scaleX - scaleY)).toDouble(), 0.0, 0.0)
-                GlStateManager.scale(scaleY, scaleY, 1.0)
+                GlStateManager.scale(scaleY.toDouble(), scaleY.toDouble(), 1.0)
             } else {
                 GlStateManager.translate(0.0, (sizeY * 0.5f * (scaleY - scaleX)).toDouble(), 0.0)
-                GlStateManager.scale(scaleX, scaleX, 1.0)
+                GlStateManager.scale(scaleX.toDouble(), scaleX.toDouble(), 1.0)
             }
         } else {
             // Stretch to fit.
-            GlStateManager.scale(scaleX, scaleY, 1.0)
+            GlStateManager.scale(scaleX.toDouble(), scaleY.toDouble(), 1.0)
         }
 
         // Slightly offset the text so it doesn't clip into the screen.

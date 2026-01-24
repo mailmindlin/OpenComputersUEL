@@ -12,8 +12,11 @@ import li.cil.oc.api.network.Visibility
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.NotAnalyzable as TraitNotAnalyzable
 
-class PowerConverter : TileEntityBase(), traits.PowerAcceptor(), traits.Environment, traits.NotAnalyzable, DeviceInfo {
+class PowerConverter : TileEntityBase(), TraitPowerAcceptor(), TraitEnvironment, TraitNotAnalyzable, DeviceInfo {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)

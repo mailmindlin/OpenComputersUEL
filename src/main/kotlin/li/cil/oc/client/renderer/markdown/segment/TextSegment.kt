@@ -3,8 +3,6 @@ package li.cil.oc.client.renderer.markdown.segment
 import li.cil.oc.client.renderer.markdown.Document
 import net.minecraft.client.gui.FontRenderer
 import net.minecraft.client.renderer.GlStateManager
-import java.util.regex.MatchResult
-import java.util.regex.Pattern
 
 internal open class TextSegment(override val parent: Segment?, override val text: String) : BasicTextSegment {
     override var next: Segment? = null
@@ -35,21 +33,20 @@ internal open class TextSegment(override val parent: Segment?, override val text
         return hovered
     }
 
-    override fun refine(pattern: Pattern, factory: (Segment, MatchResult) -> Segment): Iterable<Segment> {
+    override fun refine(pattern: Regex, factory: (Segment, MatchResult) -> Segment): Iterable<Segment> {
         val result = mutableListOf<Segment>()
 
         // Keep track of last matches end, to generate plain text segments.
         var textStart = 0
-        val matcher = pattern.matcher(text)
-        while (matcher.find()) {
+        for (match in pattern.findAll(text)) {
             // Create segment for leading plain text.
-            if (matcher.start() > textStart) {
-                result.add(TextSegment(this, text.substring(textStart, matcher.start())))
+            if (match.range.first > textStart) {
+                result.add(TextSegment(this, text.substring(textStart, match.range.first)))
             }
-            textStart = matcher.end()
+            textStart = match.range.last
 
             // Create segment for formatted text.
-            result.add(factory(this, matcher.toMatchResult()))
+            result.add(factory(this, match))
         }
 
         // Create segment for remaining plain text.

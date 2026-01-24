@@ -24,8 +24,13 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
+import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Assembler : TileEntityBase(), traits.Environment, traits.PowerAcceptor, traits.Inventory, SidedEnvironment, traits.StateAware, traits.Tickable, DeviceInfo {
+class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, SidedEnvironment, TraitStateAware, TraitTickable, DeviceInfo {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("assembler")

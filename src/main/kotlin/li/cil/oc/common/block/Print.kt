@@ -64,7 +64,7 @@ class Print(protected val tileTag: KClass<TEPrint> = TEPrint::class) : RedstoneA
         super.tooltipTail(metadata, stack, world, tooltip, advanced)
         val data = PrintData(stack)
         if (data.isBeaconBase) {
-            tooltip.add(Localization.Tooltip.PrintBeaconBase)
+            tooltip.add(Localization.Tooltip.PrintBeaconBase())
         }
         if (data.emitRedstone) {
             tooltip.add(Localization.Tooltip.PrintRedstoneLevel(data.redstoneLevel))

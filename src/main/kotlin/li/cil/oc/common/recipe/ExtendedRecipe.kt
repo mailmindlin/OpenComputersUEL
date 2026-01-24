@@ -80,7 +80,7 @@ object ExtendedRecipe {
         }
 
         if (craftedItemName == linkedCard) {
-            if (SideTracker.isServer) {
+            if (SideTracker.isServer()) {
                 Driver.driverFor(craftedStack)?.let { driver ->
                     val nbt = driver.dataTag(craftedStack)
                     nbt.setString(Settings.namespace + "tunnel", UUID.randomUUID().toString())

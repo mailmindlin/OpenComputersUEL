@@ -16,8 +16,11 @@ import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
+import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.block.traits.StateAware as TraitStateAware
+import li.cil.oc.common.block.traits.GUI as TraitGUI
 
-class Charger : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GUI {
+class Charger : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
     override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing)
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta))

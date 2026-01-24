@@ -15,8 +15,11 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.block.traits.StateAware as TraitStateAware
+import li.cil.oc.common.block.traits.GUI as TraitGUI
 
-class Case(val tier: Int) : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.GUI {
+class Case(val tier: Int) : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
     override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing, property.PropertyRunning.Running)
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta shr 1))
@@ -27,7 +30,7 @@ class Case(val tier: Int) : RedstoneAware(), traits.PowerAcceptor, traits.StateA
 
     override fun rarity(stack: ItemStack) = Rarity.byTier(tier)
 
-    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase(), slots))
     }
 

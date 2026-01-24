@@ -26,7 +26,7 @@ class Raid(protected val tileTag: KClass<TERaid> = TERaid::class) : SimpleBlock(
 
     override fun getMetaFromState(state: IBlockState): Int = state.getValue(PropertyRotatable.Facing).horizontalIndex
 
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, advanced)
         if (KeyBindings.showExtendedTooltips) {
             val data = RaidData(stack)

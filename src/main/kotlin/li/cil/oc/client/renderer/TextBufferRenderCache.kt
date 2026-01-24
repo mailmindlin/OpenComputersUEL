@@ -51,7 +51,7 @@ object TextBufferRenderCache : Callable<Int>, RemovalListener<TextBufferRenderDa
                 renderer.generateChars(line)
             }
 
-            val doCompile = !RenderState.compilingDisplayList
+            val doCompile = !RenderState.compilingDisplayList()
             if (doCompile) {
                 buffer.dirty = false
                 GL11.glNewList(list, GL11.GL_COMPILE_AND_EXECUTE)
@@ -59,7 +59,7 @@ object TextBufferRenderCache : Callable<Int>, RemovalListener<TextBufferRenderDa
                 RenderState.checkError(javaClass.name + ".compileOrDraw: glNewList")
             }
 
-            renderer.drawBuffer(buffer.data, buffer.viewport.first, buffer.viewport.second)
+            renderer.drawBuffer(buffer.data, buffer.viewport.width, buffer.viewport.height)
 
             RenderState.checkError(javaClass.name + ".compileOrDraw: drawString")
 

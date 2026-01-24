@@ -64,14 +64,14 @@ abstract class TextureFontRenderer {
             var cbg = 0x000000u
             var x = 0
             var width = 0
-            for (col in color.map { PackedColor.unpackBackground(it, format) }.takeWhile { x + width < viewportWidth }) {
+            for (col in color.map { PackedColor.unpackBackground(it.toUShort(), format) }.takeWhile { x + width < viewportWidth }) {
                 if (col != cbg) {
                     drawQuad(cbg.toInt(), x, y, width)
                     cbg = col
                     x += width
                     width = 0
                 }
-                width = width + 1
+                width += 1
             }
             drawQuad(cbg.toInt(), x, y, width)
         }
@@ -98,7 +98,7 @@ abstract class TextureFontRenderer {
                 var tx = 0f
                 for (n in 0 until viewportWidth) {
                     val ch = line[n]
-                    val col = PackedColor.unpackForeground(color[n], format)
+                    val col = PackedColor.unpackForeground(color[n].toUShort(), format)
                     // Check if color changed.
                     if (col != cfg) {
                         cfg = col

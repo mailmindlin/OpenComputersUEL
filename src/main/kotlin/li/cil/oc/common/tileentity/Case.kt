@@ -9,8 +9,7 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Case as InternalCase
 import li.cil.oc.api.network.Connector
 import li.cil.oc.common.InventorySlots
-import li.cil.oc.Sound
-import li.cil.oc.BlockCase as BlockCase
+import li.cil.oc.common.block.Case as BlockCase
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.property.PropertyRunning
@@ -21,10 +20,13 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
+import li.cil.oc.common.tileentity.traits.Colored as TraitColored
 
 class Case @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-) : TileEntityBase(), traits.PowerAcceptor(), traits.Computer, traits.Colored, InternalCase, DeviceInfo {
+) : TileEntityBase(), TraitPowerAcceptor, TraitComputer, TraitColored, InternalCase, DeviceInfo {
 
     init {
         // If no tier was defined when constructing this case, then we don't yet know the inventory size
@@ -32,7 +34,7 @@ class Case @JvmOverloads constructor(
         if (tier == 0) {
             isSizeInventoryReady = false
         }
-        setColor(Color.rgbValues(Color.byTier(tier)))
+        setColor(Color.rgbValues(Color.byTier[tier]).toInt())
     }
 
     // Used on client side to check whether to render disk activity/network indicators.
@@ -57,10 +59,10 @@ class Case @JvmOverloads constructor(
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing
+    override fun hasConnector(side: EnumFacing): Boolean = side != facing()
 
     override fun connector(side: EnumFacing): Connector? =
-        if (side != facing && machine != null) machine.node as? Connector else null
+        if (side != facing()) machine?.node() as? Connector else null
 
     override fun energyThroughput(): Double = Settings.get.caseRate(tier)
 
@@ -70,14 +72,17 @@ class Case @JvmOverloads constructor(
     // ----------------------------------------------------------------------- //
 
     override fun componentSlot(address: String): Int =
-        components.indexOfFirst { it?.node != null && it.node.address == address }
+        components.indexOfFirst {
+            val node = it?.node()
+            node != null && node.address() == address
+        }
 
     // ----------------------------------------------------------------------- //
 
     override fun updateEntity() {
         if (isServer && isCreative && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
             // Creative case, make it generate power.
-            (node as Connector).changeBuffer(Double.POSITIVE_INFINITY)
+            (node() as Connector).changeBuffer(Double.POSITIVE_INFINITY)
         }
         super.updateEntity()
     }

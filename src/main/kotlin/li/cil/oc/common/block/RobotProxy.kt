@@ -131,9 +131,9 @@ class RobotProxy : RedstoneAware(), StateAware {
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int): tileentity.RobotProxy {
+    override fun createNewTileEntity(world: World, metadata: Int): TERobotProxy {
         val robot = moving.get()
-        return if (robot != null) tileentity.RobotProxy(robot) else tileentity.RobotProxy()
+        return if (robot != null) TERobotProxy(robot) else TERobotProxy()
     }
 
     // ----------------------------------------------------------------------- //
@@ -229,7 +229,7 @@ class RobotProxy : RedstoneAware(), StateAware {
                 robot.ownerName = owner
                 robot.ownerUUID = agent.Player.determineUUID(uuid)
                 robot.info.load(stack)
-                robot.bot.node.changeBuffer(robot.info.robotEnergy - robot.bot.node.localBuffer)
+                robot.bot.node.changeBuffer(robot.info.robotEnergy - robot.bot.node.localBuffer())
                 robot.updateInventorySize()
             }
         }
@@ -245,8 +245,8 @@ class RobotProxy : RedstoneAware(), StateAware {
             // mode in the first place.
             if (robot.isCreative && (!player.capabilities.isCreativeMode || !robot.canInteract(player.name))) return false
             if (!world.isRemote) {
-                if (robot.player == player) return false
-                robot.node.remove()
+                if (robot.player() == player) return false
+                robot.node()?.remove()
                 robot.saveComponents()
                 InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), robot.info.createItemStack())
             }

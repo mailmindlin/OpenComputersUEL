@@ -118,7 +118,7 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
             ClientPacketSender.sendRackRelayState(rack, !rack.isRelayEnabled)
         } else {
             val (mountable, connectable, bus) = decodeButtonId(button.id)
-            if (rack.nodeMapping(mountable)(connectable) != null && rack.nodeMapping(mountable)(connectable) == busToSide[bus]) {
+            if (rack.nodeMapping[mountable][connectable] != null && rack.nodeMapping[mountable][connectable] == busToSide[bus]) {
                 ClientPacketSender.sendRackMountableMapping(rack, mountable, connectable, null)
             } else {
                 ClientPacketSender.sendRackMountableMapping(rack, mountable, connectable, busToSide[bus])
@@ -129,7 +129,7 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         for (bus in 0 until 5) {
             for (mountable in 0 until rack.sizeInventory) {
-                val presence = inventoryContainer.nodePresence(mountable)
+                val presence = inventoryContainer.nodePresence[mountable]
                 for (connectable in 0 until 4) {
                     wireButtons[mountable][connectable][bus]?.visible = presence[connectable]
                 }
@@ -197,13 +197,13 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
         val (spx, spy, spw, sph) = busSlavePresentUVs
 
         for (mountable in 0 until rack.sizeInventory) {
-            val presence = inventoryContainer.nodePresence(mountable)
+            val presence = inventoryContainer.nodePresence[mountable]
 
             // Draw connectable indicators next to item slots.
             val (cx, cy) = connectorStart[mountable]
             if (presence[0]) {
                 drawRect(cx, cy, mcw, mch, mcx, mcy)
-                rack.nodeMapping(mountable)(0)?.let { side ->
+                rack.nodeMapping[mountable][0]?.let { side ->
                     val bus = sideToBus[side]!!
                     val (mwx, mwy, mww, mwh) = wireMasterUVs[bus]
                     for (i in 0..bus) {
@@ -212,7 +212,7 @@ class Rack(playerInventory: InventoryPlayer, val rack: TileEntityRack) :
                     }
                 }
                 for (connectable in 1 until 4) {
-                    rack.nodeMapping(mountable)(connectable)?.let { side ->
+                    rack.nodeMapping[mountable][connectable]?.let { side ->
                         val bus = sideToBus[side]!!
                         val (swx, swy, sww, swh) = wireSlaveUVs[bus]
                         val yOffset = (mch + connectorGap) + (sch + connectorGap) * (connectable - 1)

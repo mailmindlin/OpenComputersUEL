@@ -89,7 +89,7 @@ abstract class SimpleBlock(material: Material = Material.IRON) : BlockContainer(
 
     open fun getFacing(world: IBlockAccess, pos: BlockPos): EnumFacing {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is Rotatable) tileEntity.facing else EnumFacing.SOUTH
+        return if (tileEntity is Rotatable) tileEntity.facing() ?: EnumFacing.SOUTH else EnumFacing.SOUTH
     }
 
     open fun setFacing(world: World, pos: BlockPos, value: EnumFacing): Boolean {
@@ -148,7 +148,7 @@ abstract class SimpleBlock(material: Material = Material.IRON) : BlockContainer(
 
     override fun rotateBlock(world: World, pos: BlockPos, axis: EnumFacing): Boolean {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.traits.Rotatable && tileEntity.rotate(axis)) {
+        return if (tileEntity is li.cil.oc.common.tileentity.traits.Rotatable && tileEntity.rotate(axis)) {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
             true
         } else false

@@ -7,9 +7,12 @@ import li.cil.oc.util.Tooltip
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
+import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.block.traits.StateAware as TraitStateAware
+import li.cil.oc.common.block.traits.GUI as TraitGUI
 
-class Disassembler : SimpleBlock(), traits.PowerAcceptor, traits.StateAware, traits.GUI {
-    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+class Disassembler : SimpleBlock(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
+    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase(), (Settings.get.disassemblerBreakChance * 100).toInt().toString()))
     }
 

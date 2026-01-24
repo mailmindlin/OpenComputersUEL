@@ -4,7 +4,6 @@ import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.Nanomachines
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
@@ -29,8 +28,15 @@ import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
+import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
+import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, traits.RedstoneAware, traits.Rotatable, traits.ComponentInventory, traits.Tickable, Analyzable, traits.StateAware, DeviceInfo {
+class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfo {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
@@ -67,9 +73,9 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing
+    override fun hasConnector(side: EnumFacing): Boolean = side != facing()
 
-    override fun connector(side: EnumFacing): Connector? = if (side != facing) node else null
+    override fun connector(side: EnumFacing): Connector? = if (side != facing()) node else null
 
     override fun energyThroughput(): Double = Settings.get.chargerRate
 
@@ -113,7 +119,7 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
             // Charging of external devices.
             run {
                 val charge = Settings.get.chargeRateExternal * chargeSpeed * Settings.get.tickFrequency
-                canCharge = canCharge || (charge > 0 && node.globalBuffer >= charge * 0.5)
+                canCharge = canCharge || (charge > 0 && node.globalBuffer() >= charge * 0.5)
                 if (canCharge) {
                     for (connector in connectors) {
                         val missing = node.changeBuffer(-charge)
@@ -126,7 +132,7 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
             // Charging of internal devices.
             run {
                 val charge = Settings.get.chargeRateTablet * chargeSpeed * Settings.get.tickFrequency
-                canCharge = canCharge || (charge > 0 && node.globalBuffer >= charge * 0.5)
+                canCharge = canCharge || (charge > 0 && node.globalBuffer() >= charge * 0.5)
                 if (canCharge) {
                     for (slot in 0 until sizeInventory) {
                         chargeStack(getStackInSlot(slot), charge)
@@ -137,7 +143,7 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
             // Charging of equipment
             run {
                 val charge = Settings.get.chargeRateTablet * chargeSpeed * Settings.get.tickFrequency
-                canCharge = canCharge || (charge > 0 && node.globalBuffer >= charge * 0.5)
+                canCharge = canCharge || (charge > 0 && node.globalBuffer() >= charge * 0.5)
                 if (canCharge) {
                     for (stack in equipment) {
                         chargeStack(stack, charge)
@@ -308,9 +314,9 @@ class Charger : TileEntityBase(), traits.Environment, traits.PowerAcceptor, trai
         override fun hashCode(): Int = connector.hashCode()
     }
 
-    class RobotChargeable(val robot: Robot) : ConnectorChargeable(robot.node as Connector) {
+    class RobotChargeable(val robot: Robot) : ConnectorChargeable(robot.node() as Connector) {
         override val pos: Vec3d
-            get() = BlockPosition(robot).toVec3
+            get() = BlockPosition(robot).toVec3()
 
         override fun equals(other: Any?): Boolean =
             other is RobotChargeable && other.robot == robot

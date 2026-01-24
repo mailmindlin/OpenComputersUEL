@@ -52,7 +52,7 @@ class ColorizeRecipe : IForgeRegistryEntry.Impl<net.minecraft.item.crafting.IRec
                 targetStack.count = 1
             } else {
                 val dye = Color.findDye(stack)
-                if (dye.isEmpty) {
+                if (dye.isEmpty()) {
                     return ItemStack.EMPTY
                 }
 

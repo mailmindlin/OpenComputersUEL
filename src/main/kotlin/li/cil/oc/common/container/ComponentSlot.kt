@@ -1,5 +1,6 @@
 package li.cil.oc.common.container
 
+import li.cil.oc.common.tileentity.traits.PlayerInputAware
 import li.cil.oc.common.Slot as CommonSlot
 import li.cil.oc.common.Tier as CommonTier
 import li.cil.oc.PlayerInputAware

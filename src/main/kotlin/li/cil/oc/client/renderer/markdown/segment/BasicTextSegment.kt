@@ -12,7 +12,7 @@ internal interface BasicTextSegment : Segment {
         get() = setOf("- ", "* ")
 
     val rootPrefix: String
-        get() = root.text.take(2)
+        get() = (root as TextSegment).text.take(2)
 
     val text: String
 

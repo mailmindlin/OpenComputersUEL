@@ -10,6 +10,7 @@ import li.cil.oc.common.Loot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.item.*
+import li.cil.oc.common.item.Analyzer as ItemAnalyzer
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.data.DroneData
 import li.cil.oc.common.item.data.HoverBootsData
@@ -65,7 +66,7 @@ object Items : ItemAPI {
                 GameData.register_impl(instance)
                 OpenComputers.proxy.registerModel(instance, id)
 
-                val item: Item = common.block.Item(instance)
+                val item: Item = li.cil.oc.common.block.Item(instance)
                 item.setTranslationKey("oc.$id")
                 item.setRegistryName(id)
                 GameData.register_impl(item)
@@ -100,7 +101,7 @@ object Items : ItemAPI {
 
                 override fun block(): Block? = null
 
-                override fun item(): Delegator = delegate.parent()
+                override fun item(): Delegator = delegate.parent
 
                 override fun createItemStack(size: Int): ItemStack = delegate.createItemStack(size)
             }
@@ -160,7 +161,7 @@ object Items : ItemAPI {
         return if (stack.isEmpty) {
             null
         } else {
-            Delegator.subItem(stack).orElse(null) ?: when (val item = stack.item) {
+            Delegator.subItem(stack) ?: when (val item = stack.item) {
                 is ItemBlock -> item.block
                 else -> item
             }
@@ -411,7 +412,7 @@ object Items : ItemAPI {
     private fun initTools() {
         val tools = newItem(Delegator(), "tool")
 
-        Recipes.addSubItem(Analyzer(tools), Constants.ItemName.Analyzer, "oc:analyzer")
+        Recipes.addSubItem(ItemAnalyzer(tools), Constants.ItemName.Analyzer, "oc:analyzer")
         registerItem(Debugger(tools), Constants.ItemName.Debugger)
         Recipes.addSubItem(Terminal(tools), Constants.ItemName.Terminal, "oc:terminal")
         Recipes.addSubItem(TexturePicker(tools), Constants.ItemName.TexturePicker, "oc:texturePicker")
@@ -419,7 +420,7 @@ object Items : ItemAPI {
         Recipes.addItem(Wrench(), Constants.ItemName.Wrench, "oc:wrench")
 
         // 1.5.11
-        Recipes.addItem(item.HoverBoots(), Constants.ItemName.HoverBoots, "oc:hoverBoots")
+        Recipes.addItem(HoverBoots(), Constants.ItemName.HoverBoots, "oc:hoverBoots")
 
         // 1.5.18
         Recipes.addSubItem(Nanomachines(tools), Constants.ItemName.Nanomachines, "oc:nanomachines")

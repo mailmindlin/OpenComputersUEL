@@ -16,9 +16,8 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Sound
-import li.cil.oc.common.tileentity.traits.ComponentInventory
+import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.InventoryUtils
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -26,14 +25,16 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
-class DiskDrive : TileEntityBase(), traits.Environment, ComponentInventory, traits.Rotatable, Analyzable, DeviceInfo {
+class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfo {
     // Used on client side to check whether to render disk activity indicators.
     @JvmField
     var lastAccess = 0L
 
     val filesystemNode: Node?
-        get() = components.getOrNull(0)?.node
+        get() = components.getOrNull(0)?.node()
 
     private val deviceInfo: Map<String, String> by lazy {
         mapOf(
@@ -66,11 +67,11 @@ class DiskDrive : TileEntityBase(), traits.Environment, ComponentInventory, trai
         val velocity = maxOf(0.0, minOf(1.0, args.optDouble(0, 0.0)))
         val ejected = decrStackSize(0, 1)
         return if (!ejected.isEmpty) {
-            val entity = InventoryUtils.spawnStackInWorld(position, ejected, facing)
+            val entity = InventoryUtils.spawnStackInWorld(position, ejected, facing())
             if (entity != null) {
-                val vx = facing.xOffset * velocity
-                val vy = facing.yOffset * velocity
-                val vz = facing.zOffset * velocity
+                val vx = facing().xOffset * velocity
+                val vy = facing().yOffset * velocity
+                val vz = facing().zOffset * velocity
                 entity.addVelocity(vx, vy, vz)
             }
             result(true)
@@ -85,7 +86,7 @@ class DiskDrive : TileEntityBase(), traits.Environment, ComponentInventory, trai
         return if (fsNode == null) {
             result(Unit, "drive is empty")
         } else {
-            result(fsNode.address)
+            result(fsNode.address())
         }
     }
 
@@ -116,7 +117,7 @@ class DiskDrive : TileEntityBase(), traits.Environment, ComponentInventory, trai
     override fun onItemAdded(slot: Int, stack: ItemStack) {
         super.onItemAdded(slot, stack)
         components.getOrNull(slot)?.let { environment ->
-            (environment.node as? Component)?.setVisibility(Visibility.Network)
+            (environment.node() as? Component)?.setVisibility(Visibility.Network)
         }
         if (isServer) {
             ServerPacketSender.sendFloppyChange(this, stack)

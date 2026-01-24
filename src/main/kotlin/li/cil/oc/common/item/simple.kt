@@ -31,7 +31,7 @@ class InkCartridgeEmpty(parent: Delegator) : AbstractDelegate(parent) {
 }
 class InternetCard(parent: Delegator) : AbstractDelegate(parent), ItemTier
 class Interweb(parent: Delegator) : AbstractDelegate(parent)
-abstract class AbstractTieredDelegate(parent: Delegator, protected val tier: Int): AbstractDelegate(parent) {
+abstract class AbstractTieredDelegate(parent: Delegator, internal val tier: Int): AbstractDelegate(parent) {
     override val unlocalizedName: String get() = super.unlocalizedName + tier
     override val tooltipName: String get() = super.unlocalizedName
 }

@@ -9,8 +9,9 @@ import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 import java.text.DecimalFormat
+import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
 
-class PowerConverter : SimpleBlock(), traits.PowerAcceptor {
+class PowerConverter : SimpleBlock(), TraitPowerAcceptor {
     init {
         if (Settings.get.ignorePower) {
             setCreativeTab(null)
@@ -22,7 +23,7 @@ class PowerConverter : SimpleBlock(), traits.PowerAcceptor {
 
     // ----------------------------------------------------------------------- //
 
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, advanced)
         // TODO more generic way of integration modules of power providing mods to provide tooltip lines
         // if (Mods.Factorization.isAvailable) {
@@ -41,7 +42,7 @@ class PowerConverter : SimpleBlock(), traits.PowerAcceptor {
             else -> formatter.format(x)
         }
 
-    private fun addRatio(tooltip: java.util.List<String>, name: String, ratio: Double) {
+    private fun addRatio(tooltip: MutableList<String>, name: String, ratio: Double) {
         val (a, b) = if (ratio > 1) Pair(1.0, ratio) else Pair(1.0 / ratio, 1.0)
         tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase() + "." + name, addExtension(a), addExtension(b)))
     }

@@ -39,10 +39,10 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
 
     override fun getExtendedState(state: IBlockState, world: IBlockAccess, pos: BlockPos): IBlockState {
         val tileEntity = world.getTileEntity(pos)
-        return if (state is IExtendedBlockState && tileEntity is tileentity.Cable) {
+        return if (state is IExtendedBlockState && tileEntity is TECable) {
             var isCableMask = 0
             for (side in EnumFacing.values()) {
-                if (world.getTileEntity(pos.offset(side)) is tileentity.Cable) {
+                if (world.getTileEntity(pos.offset(side)) is TECable) {
                     isCableMask = mask(side, isCableMask)
                 }
             }
@@ -66,7 +66,7 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
 
     override fun getPickBlock(state: IBlockState, target: RayTraceResult, world: World, pos: BlockPos, player: EntityPlayer): ItemStack {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is tileentity.Cable) tileEntity.createItemStack() else createItemStack()
+        return if (tileEntity is TECable) tileEntity.createItemStack() else createItemStack()
     }
 
     override fun getBoundingBox(state: IBlockState, world: IBlockAccess, pos: BlockPos): AxisAlignedBB = bounds(world, pos)
@@ -97,7 +97,7 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNewTileEntity(world: World, metadata: Int) = tileentity.Cable()
+    override fun createNewTileEntity(world: World, metadata: Int) = TECable()
 
     // ----------------------------------------------------------------------- //
 
@@ -106,21 +106,21 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
         super.neighborChanged(state, world, pos, neighborBlock, sourcePos)
     }
 
-    override fun doCustomInit(tileEntity: tileentity.Cable, player: EntityLivingBase, stack: ItemStack) {
+    override fun doCustomInit(tileEntity: TECable, player: EntityLivingBase, stack: ItemStack) {
         super.doCustomInit(tileEntity, player, stack)
         if (!tileEntity.world.isRemote) {
             tileEntity.fromItemStack(stack)
         }
     }
 
-    override fun doCustomDrops(tileEntity: tileentity.Cable, player: EntityPlayer, willHarvest: Boolean) {
+    override fun doCustomDrops(tileEntity: TECable, player: EntityPlayer, willHarvest: Boolean) {
         super.doCustomDrops(tileEntity, player, willHarvest)
         if (!player.capabilities.isCreativeMode) {
             Block.spawnAsEntity(tileEntity.world, tileEntity.pos, tileEntity.createItemStack())
         }
     }
 
-    override val tileEntityClass: Class<tileentity.Cable> get() = tileentity.Cable::class.java
+    override val tileEntityClass: Class<TECable> get() = TECable::class.java
 
     companion object {
         const val MIN = 0.375
@@ -198,7 +198,7 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
 
         private fun hasNetworkNode(tileEntity: TileEntity?, side: EnumFacing): Boolean {
             if (tileEntity != null) {
-                if (tileEntity is tileentity.RobotProxy) return false
+                if (tileEntity is li.cil.oc.common.tileentity.RobotProxy) return false
 
                 if (tileEntity.hasCapability(Capabilities.SidedEnvironmentCapability, side)) {
                     val host = tileEntity.getCapability(Capabilities.SidedEnvironmentCapability, side)
@@ -232,7 +232,7 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
         }
 
         private fun canConnectFromSideIM(tileEntity: TileEntity?, side: EnumFacing): Boolean {
-            return if (tileEntity is tileentity.traits.ImmibisMicroblock) {
+            return if (tileEntity is li.cil.oc.common.tileentity.traits.ImmibisMicroblock) {
                 tileEntity.ImmibisMicroblocks_isSideOpen(side.ordinal)
             } else true
         }

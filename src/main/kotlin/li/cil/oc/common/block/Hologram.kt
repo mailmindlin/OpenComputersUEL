@@ -38,7 +38,7 @@ class Hologram(val tier: Int) : SimpleBlock() {
 
     override fun rarity(stack: ItemStack) = Rarity.byTier(tier)
 
-    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipBody(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase() + tier))
     }
 

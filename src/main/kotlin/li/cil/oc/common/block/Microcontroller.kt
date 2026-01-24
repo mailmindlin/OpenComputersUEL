@@ -27,8 +27,11 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.RayTraceResult
 import net.minecraft.world.World
 import kotlin.reflect.KClass
+import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.block.traits.StateAware as TraitStateAware
+import li.cil.oc.common.block.traits.CustomDrops as TraitCustomDrops
 
-class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicrocontroller::class) : RedstoneAware(), traits.PowerAcceptor, traits.StateAware, traits.CustomDrops<TEMicrocontroller> {
+class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicrocontroller::class) : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitCustomDrops<TEMicrocontroller> {
     init {
         setCreativeTab(null)
         ItemBlacklist.hide(this)
@@ -49,7 +52,7 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
 
     // ----------------------------------------------------------------------- //
 
-    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: java.util.List<String>, advanced: ITooltipFlag) {
+    override fun tooltipTail(metadata: Int, stack: ItemStack, world: World, tooltip: MutableList<String>, advanced: ITooltipFlag) {
         super.tooltipTail(metadata, stack, world, tooltip, advanced)
         if (KeyBindings.showExtendedTooltips) {
             val info = MicrocontrollerData(stack)
@@ -106,14 +109,14 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
         super.doCustomInit(tileEntity, player, stack)
         if (!tileEntity.world.isRemote) {
             tileEntity.info.load(stack)
-            tileEntity.snooperNode.changeBuffer(tileEntity.info.storedEnergy - tileEntity.snooperNode.localBuffer)
+            tileEntity.snooperNode.changeBuffer(tileEntity.info.storedEnergy - tileEntity.snooperNode.localBuffer())
         }
     }
 
     override fun doCustomDrops(tileEntity: TEMicrocontroller, player: EntityPlayer, willHarvest: Boolean) {
         super.doCustomDrops(tileEntity, player, willHarvest)
         tileEntity.saveComponents()
-        tileEntity.info.storedEnergy = tileEntity.snooperNode.localBuffer.toInt()
+        tileEntity.info.storedEnergy = tileEntity.snooperNode.localBuffer().toInt()
         Block.spawnAsEntity(tileEntity.world, tileEntity.pos, tileEntity.info.createItemStack())
     }
 
