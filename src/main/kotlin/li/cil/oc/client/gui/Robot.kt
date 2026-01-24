@@ -41,6 +41,8 @@ class Robot(
     override val hasKeyboard: Boolean = robot.info.components
         .map { Driver.driverFor(it, robot.javaClass) }
         .contains(DriverKeyboard)
+    override val pressedKeys = mutableMapOf<Int, Char>()
+    override var showKeyboardMissing: Long = 0
 
     private val withScreenHeight = 256
     private val noScreenHeight = 108
@@ -111,7 +113,8 @@ class Robot(
     }
 
     override fun initGui() {
-        super.initGui()
+        super<DynamicGuiContainer>.initGui()
+        super<InputBuffer>.initGui()
         powerButton = ImageButton(
             0, guiLeft + 5, guiTop + 153 - deltaY, 18, 18,
             Textures.GUI.ButtonPower,
