@@ -33,16 +33,12 @@ class Manual(parent: Delegator) : AbstractDelegate(parent) {
 
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
-        val path = ApiManual.pathFor(world, position.toBlockPos())
-        return if (path is String) {
-            if (world.isRemote) {
-                ApiManual.openFor(player)
-                ApiManual.reset()
-                ApiManual.navigate(path)
-            }
-            true
-        } else {
-            super.onItemUse(stack, player, position, side, hitX, hitY, hitZ)
+        val path = ApiManual.pathFor(world, position.toBlockPos()) ?: return super.onItemUse(stack, player, position, side, hitX, hitY, hitZ)
+        if (world.isRemote) {
+            ApiManual.openFor(player)
+            ApiManual.reset()
+            ApiManual.navigate(path)
         }
+        return true
     }
 }
