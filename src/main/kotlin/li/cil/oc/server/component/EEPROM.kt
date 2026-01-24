@@ -41,6 +41,7 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():string -- Get the currently stored byte array.""")
     fun get(context: Context, args: Arguments): Result = result(codeData)
 
@@ -61,9 +62,11 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():string -- Get the label of the EEPROM.""")
     fun getLabel(context: Context, args: Arguments): Result = result(label)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(data:string):string -- Set the label of the EEPROM.""")
     fun setLabel(context: Context, args: Arguments): Result {
         if (readonly) {
@@ -76,12 +79,15 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
         return result(label)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- Get the storage capacity of this EEPROM.""")
     fun getSize(context: Context, args: Arguments): Result = result(Settings.get.eepromSize)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():string -- Get the checksum of the data on this EEPROM.""")
     fun getChecksum(context: Context, args: Arguments): Result = result(checksum)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function(checksum:string):boolean -- Make this EEPROM readonly if it isn't already. This process cannot be reversed!""")
     fun makeReadonly(context: Context, args: Arguments): Result {
         return if (args.checkString(0) == checksum) {
@@ -92,12 +98,15 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- Get the storage capacity of this EEPROM.""")
     fun getDataSize(context: Context, args: Arguments): Result = result(Settings.get.eepromDataSize)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():string -- Get the currently stored byte array.""")
     fun getData(context: Context, args: Arguments): Result = result(volatileData)
 
+    @Suppress("unused")
     @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
     fun setData(context: Context, args: Arguments): Result? {
         if (!node.tryChangeBuffer(-Settings.get.eepromWriteCost)) {

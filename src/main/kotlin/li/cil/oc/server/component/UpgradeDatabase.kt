@@ -44,11 +44,13 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
 
     override fun findStackWithHash(needle: String): Int = indexOf(needle)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(slot:number):table -- Get the representation of the item stack stored in the specified slot.")
     fun get(context: Context, args: Arguments): Array<Any?> {
         return result(data.getStackInSlot(args.checkSlot(data, 0)))
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(slot:number):string -- Computes a hash value for the item stack in the specified slot.")
     fun computeHash(context: Context, args: Arguments): Array<Any?>? {
         val stack = data.getStackInSlot(args.checkSlot(data, 0))
@@ -60,11 +62,13 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(hash:string):number -- Get the index of an item stack with the specified hash. Returns a negative value if no such stack was found.")
     fun indexOf(context: Context, args: Arguments): Array<Any?> {
         return result(indexOf(args.checkString(0), 1))
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(slot:number):boolean -- Clears the specified slot. Returns true if there was something in the slot before.")
     fun clear(context: Context, args: Arguments): Array<Any?> {
         val slot = args.checkSlot(data, 0)
@@ -73,6 +77,7 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
         return result(nonEmpty)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(fromSlot:number, toSlot:number[, address:string]):boolean -- Copies an entry to another slot, optionally to another database. Returns true if something was overwritten.")
     fun copy(context: Context, args: Arguments): Array<Any?> {
         val fromSlot = args.checkSlot(data, 0)

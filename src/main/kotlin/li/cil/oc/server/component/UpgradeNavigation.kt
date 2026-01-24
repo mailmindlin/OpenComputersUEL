@@ -46,6 +46,7 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number, number, number -- Get the current relative position of the robot.")
     fun getPosition(context: Context, args: Arguments): Array<Any?> {
         val info = data.mapData(host.world())!!
@@ -60,12 +61,15 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number -- Get the current orientation of the robot.")
     fun getFacing(context: Context, args: Arguments): Array<Any?> = result(rotatable.facing().ordinal)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number -- Get the operational range of the navigation upgrade.")
     fun getRange(context: Context, args: Arguments): Array<Any?> = result(data.getSize(host.world) / 2)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(range:number):table -- Find waypoints in the specified range.")
     fun findWaypoints(context: Context, args: Arguments): Array<Any?> {
         val range = args.checkDouble(0).coerceIn(0.0, Settings.get.maxWirelessRange[Tier.Two])

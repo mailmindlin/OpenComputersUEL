@@ -38,6 +38,7 @@ class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldA
     private fun isInRange(entity: Entity): Boolean =
         Vec3d(entity.posX, entity.posY, entity.posZ).distanceTo(position.toVec3()) <= maxRange
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():table -- Returns a table of trades in range as userdata objects.")
     fun getTrades(context: Context, args: Arguments): Array<Any?> {
         val merchants = entitiesInBounds(Entity::class.java, position.bounds.grow(maxRange, maxRange, maxRange))

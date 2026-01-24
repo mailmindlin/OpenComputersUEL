@@ -23,7 +23,8 @@ import java.lang.ref.WeakReference
 import java.util.*
 
 class Trade(val info: TradeInfo) : AbstractValue() {
-    constructor() : this(TradeInfo())
+    @Suppress("unused") // For deserialization
+    private constructor() : this(TradeInfo())
 
     constructor(upgrade: UpgradeTrading, merchant: IMerchant, recipeID: Int, merchantID: Int) :
             this(TradeInfo(upgrade.host, merchant, recipeID, merchantID))
@@ -51,23 +52,27 @@ class Trade(val info: TradeInfo) : AbstractValue() {
         info.save(nbt)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number -- Returns a sort index of the merchant that provides this trade")
     fun getMerchantId(context: Context, arguments: Arguments): Array<Any?> =
         result(info.merchantID)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():table, table -- Returns the items the merchant wants for this trade.")
     fun getInput(context: Context, arguments: Arguments): Array<Any?> {
         val recipe = info.recipe
         return result(
             recipe?.itemToBuy?.copy(),
-            if (recipe?.hasSecondItemToBuy == true) recipe.secondItemToBuy?.copy() else null
+            if (recipe?.hasSecondItemToBuy() == true) recipe.secondItemToBuy?.copy() else null
         )
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():table -- Returns the item the merchant offers for this trade.")
     fun getOutput(context: Context, arguments: Arguments): Array<Any?> =
         result(info.recipe?.itemToSell?.copy())
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():boolean -- Returns whether the merchant currently wants to trade this.")
     fun isEnabled(context: Context, arguments: Arguments): Array<Any?> {
         val merchant = info.merchant.get()
@@ -75,6 +80,7 @@ class Trade(val info: TradeInfo) : AbstractValue() {
         return result(merchant != null && recipe?.isRecipeDisabled != true) // Make sure merchant is neither dead/gone nor the recipe has been disabled.
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():boolean, string -- Returns true when trade succeeds and nil, error when not.")
     fun trade(context: Context, arguments: Arguments): Array<Any?> {
         // Make sure we can access an inventory.

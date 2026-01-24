@@ -49,18 +49,20 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(port:number):boolean -- Opens the specified port. Returns true if the port was opened.""")
     fun open(context: Context, args: Arguments): Array<Any?> {
         val port = checkPort(args.checkInteger(0))
         return if (openPorts.contains(port)) {
             result(false)
-        } else if (openPorts.size >= maxOpenPorts()) {
+        } else if (openPorts.size >= maxOpenPorts) {
             throw java.io.IOException("too many open ports")
         } else {
             result(openPorts.add(port))
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function([port:number]):boolean -- Closes the specified port (default: all ports). Returns true if ports were closed.""")
     fun close(context: Context, args: Arguments): Array<Any?> {
         return if (args.count() == 0) {
@@ -73,18 +75,22 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function(port:number):boolean -- Whether the specified port is open.""")
     fun isOpen(context: Context, args: Arguments): Array<Any?> {
         val port = checkPort(args.checkInteger(0))
         return result(openPorts.contains(port))
     }
 
+    @Suppress("unused")
     @Callback(direct = true, doc = """function():boolean -- Whether this card has wireless networking capability.""")
-    fun isWireless(context: Context, args: Arguments): Array<Any?> = result(false)
+    open fun isWireless(context: Context, args: Arguments): Array<Any?> = result(false)
 
+    @Suppress("unused")
     @Callback(direct = true, doc = """function():boolean -- Whether this card has wired networking capability.""")
-    fun isWired(context: Context, args: Arguments): Array<Any?> = result(true)
+    open fun isWired(context: Context, args: Arguments): Array<Any?> = result(true)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(address:string, port:number, data...) -- Sends the specified data to the specified target.""")
     fun send(context: Context, args: Arguments): Array<Any?> {
         val address = args.checkString(0)
@@ -95,6 +101,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
         return result(true)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(port:number, data...) -- Broadcasts the specified data on the specified port.""")
     fun broadcast(context: Context, args: Arguments): Array<Any?> {
         val port = checkPort(args.checkInteger(0))
