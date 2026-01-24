@@ -125,12 +125,12 @@ object Sound {
   private var hasPreloaded = Settings.get.soundVolume <= 0
 
   @SubscribeEvent
-  @Suppress("unused")
+  @Suppress("unused", "unused_parameter")
   fun onTick(e: ClientTickEvent) {
     if (soundSystem != null) {
       if (!hasPreloaded) {
         hasPreloaded = true
-        Thread(Runnable {
+        Thread {
           val preloadConfigLocation = ResourceLocation(Settings.resourceDomain, "sounds/preload.cfg")
           val preloadConfigResource = Minecraft.getMinecraft().resourceManager.getResource(preloadConfigLocation)
           preloadConfigResource.inputStream.bufferedReader(Charsets.UTF_8).use { reader ->
@@ -150,7 +150,7 @@ object Sound {
               }
             }
           }
-        }).start()
+        }.start()
       }
 
       synchronized(sources) {
@@ -161,7 +161,7 @@ object Sound {
   }
 
   @SubscribeEvent
-  @Suppress("unused")
+  @Suppress("unused", "unused_parameter")
   fun onWorldUnload(event: WorldEvent.Unload) {
     synchronized(commandQueue) { commandQueue.clear() }
     synchronized(sources) {
