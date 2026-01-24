@@ -265,10 +265,12 @@ class Robot(
             }
         }
         val yMin = guiTop + scrollY + 1
-        scrollButton?.y = if (maxOffset > 0) {
-            yMin + (scrollHeight - 15) * inventoryOffset / maxOffset
-        } else {
-            yMin
+        scrollButton?.let {
+            it.y = if (maxOffset > 0) {
+                yMin + (scrollHeight - 15) * inventoryOffset / maxOffset
+            } else {
+                yMin
+            }
         }
     }
 
