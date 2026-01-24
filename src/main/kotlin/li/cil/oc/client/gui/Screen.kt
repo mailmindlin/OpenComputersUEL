@@ -19,7 +19,7 @@ class Screen(
 
     override fun doesGuiPauseGame(): Boolean = false
 
-    override val buffer: TextBuffer? get() = _buffer
+    override val buffer: TextBuffer get() = _buffer
 
     override val hasKeyboard: Boolean get() = hasKeyboardCallback()
 
@@ -51,7 +51,7 @@ class Screen(
 
     override fun initGui() {
         super<GuiScreen>.initGui()
-        initGuiInputBuffer(this)
+        initGuiInputBuffer()
     }
 
     override fun handleMouseInput() {
@@ -133,7 +133,7 @@ class Screen(
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         this.drawDefaultBackground()
         super.drawScreen(mouseX, mouseY, dt)
-        drawBufferLayerWithInput(this)
+        drawBufferLayerWithInput()
     }
 
     override fun drawBuffer() {

@@ -13,7 +13,7 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import org.lwjgl.input.Keyboard
 import org.lwjgl.opengl.GL11
 
-interface InputBuffer : DisplayBuffer {
+internal interface InputBuffer : DisplayBuffer {
     val buffer: TextBuffer?
 
     override val bufferColumns: Int
@@ -28,15 +28,13 @@ interface InputBuffer : DisplayBuffer {
 
     var showKeyboardMissing: Long
 
-    fun doesGuiPauseGame(): Boolean = false
-
-    fun initGuiInputBuffer(screen: GuiScreen) {
-        initGui(screen)
+    fun initGuiInputBuffer() {
+        initGui()
         Keyboard.enableRepeatEvents(true)
     }
 
-    fun drawBufferLayerWithInput(screen: GuiScreen) {
-        drawBufferLayer(screen)
+    fun drawBufferLayerWithInput() {
+        drawBufferLayer()
 
         if (System.currentTimeMillis() - showKeyboardMissing < 1000) {
             Textures.bind(Textures.GUI.KeyboardMissing)
@@ -56,7 +54,7 @@ interface InputBuffer : DisplayBuffer {
 
             GlStateManager.enableDepth()
 
-            RenderState.checkError(screen.javaClass.name + ".drawBufferLayer: keyboard icon")
+            RenderState.checkError(this.javaClass.name + ".drawBufferLayer: keyboard icon")
         }
     }
 

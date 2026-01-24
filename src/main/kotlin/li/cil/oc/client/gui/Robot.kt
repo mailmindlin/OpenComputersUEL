@@ -5,6 +5,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.client.Textures
+import li.cil.oc.client.gui.traits.DisplayBuffer
+import li.cil.oc.client.gui.traits.InputBuffer
 import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.gui.BufferRenderer
@@ -29,7 +31,7 @@ import kotlin.math.sign
 class Robot(
     playerInventory: InventoryPlayer,
     val robot: TileEntityRobot
-) : DynamicGuiContainer<ContainerRobot>(ContainerRobot(playerInventory, robot)), li.cil.oc.client.gui.traits.InputBuffer {
+) : DynamicGuiContainer<ContainerRobot>(ContainerRobot(playerInventory, robot)), InputBuffer {
 
     override val buffer: TextBuffer? = robot.components
         .filterNotNull()
@@ -76,6 +78,7 @@ class Robot(
 
     override val bufferY: Int
         get() = (8 + (maxBufferHeight - bufferRenderHeight) / 2).toInt()
+    override var displayBufferState: DisplayBuffer.State = DisplayBuffer.State()
 
     private val inventoryX = 169
     private val inventoryY = 155 - deltaY
@@ -141,7 +144,8 @@ class Robot(
                 GlStateManager.translate(0f, (buf.renderHeight() * (scaleY - scale) / 2).toFloat(), 0f)
             }
             GlStateManager.scale(scale, scale, scale)
-            GlStateManager.scale(this.scale, this.scale, 1.0)
+            val displayScale = this.displayBufferState.scale
+            GlStateManager.scale(displayScale, displayScale, 1.0)
             BufferRenderer.drawText(buf)
         }
     }

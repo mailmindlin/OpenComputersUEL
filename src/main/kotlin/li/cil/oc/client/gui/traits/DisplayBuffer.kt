@@ -14,25 +14,21 @@ interface DisplayBuffer {
 
     val bufferRows: Int
 
-    var guiSizeChanged: Boolean
-
-    var currentWidth: Int
-    var currentHeight: Int
-
-    var scale: Double
+    var displayBufferState: State
 
     fun initGui() {
         BufferRenderer.init(Minecraft.getMinecraft().renderEngine)
-        guiSizeChanged = true
+        displayBufferState.guiSizeChanged = true
     }
 
     fun drawBufferLayer() {
-        val oldWidth = currentWidth
-        val oldHeight = currentHeight
-        currentWidth = bufferColumns
-        currentHeight = bufferRows
-        scale = changeSize(currentWidth.toDouble(), currentHeight.toDouble(),
-            guiSizeChanged || oldWidth != currentWidth || oldHeight != currentHeight)
+        val displayBufferState = displayBufferState
+        val oldWidth = displayBufferState.currentWidth
+        val oldHeight = displayBufferState.currentHeight
+        displayBufferState.currentWidth = bufferColumns
+        displayBufferState.currentHeight = bufferRows
+        displayBufferState.scale = changeSize(displayBufferState.currentWidth.toDouble(), displayBufferState.currentHeight.toDouble(),
+            displayBufferState.guiSizeChanged || oldWidth != displayBufferState.currentWidth || oldHeight != displayBufferState.currentHeight)
 
         RenderState.checkError(this.javaClass.name + ".drawBufferLayer: entering (aka: wasntme)")
 
@@ -47,4 +43,11 @@ interface DisplayBuffer {
     fun drawBuffer()
 
     fun changeSize(w: Double, h: Double, recompile: Boolean): Double
+
+    data class State(
+        internal var guiSizeChanged: Boolean = false,
+        internal var currentWidth: Int = -1,
+        internal var currentHeight: Int = -1,
+        internal var scale: Double = 0.0,
+    )
 }

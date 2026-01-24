@@ -1,4 +1,4 @@
-package li.cil.oc.util
+package li.cil.oc.server.machine.luaj
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
@@ -16,8 +16,8 @@ class LuaClosure(val f: (Varargs) -> Varargs) : VarArgFunction() {
         fun wrapClosure(f: (Varargs) -> LuaValue): LuaClosure = LuaClosure { args ->
             when (val result = f(args)) {
                 is Varargs -> result
-                LuaValue.NONE -> LuaValue.NONE
-                else -> LuaValue.varargsOf(arrayOf(result))
+                NONE -> NONE
+                else -> varargsOf(arrayOf(result))
             }
         }
 
@@ -25,12 +25,12 @@ class LuaClosure(val f: (Varargs) -> Varargs) : VarArgFunction() {
         fun wrapVarArgClosure(f: (Varargs) -> Varargs): LuaClosure = LuaClosure(f)
 
         @JvmStatic
-        fun toLuaValue(value: Any?): LuaValue {
-            val normalizedValue: Any? = when (value) {
-                is Number -> value
-                is Any -> value
+        fun Any?.toLuaValue(): LuaValue {
+            val normalizedValue: Any? = when (this) {
+                is Number -> this
+                is Any -> this
                 null -> null
-                else -> value
+                else -> this
             }
             return when (normalizedValue) {
                 null, Unit -> LuaValue.NIL
