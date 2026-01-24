@@ -5,7 +5,9 @@ import li.cil.oc.Constants
 import li.cil.oc.CreativeTab
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.*
+import li.cil.oc.api.API
+import li.cil.oc.api.Machine
+import li.cil.oc.api.CreativeTab as ApiCreativeTab
 import li.cil.oc.common.capabilities.Capabilities
 import li.cil.oc.common.entity.Drone
 import li.cil.oc.common.init.Blocks
@@ -13,6 +15,7 @@ import li.cil.oc.common.init.Items
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.DiamondChip
 import li.cil.oc.common.item.traits.Delegate
+import li.cil.oc.common.nanomachines.Nanomachines
 import li.cil.oc.common.recipe.Recipes
 import li.cil.oc.integration.Mods
 import li.cil.oc.server.driver.Registry
@@ -23,7 +26,6 @@ import li.cil.oc.server.machine.luac.NativeLua52Architecture
 import li.cil.oc.server.machine.luac.NativeLua53Architecture
 import li.cil.oc.server.machine.luac.NativeLua54Architecture
 import li.cil.oc.server.machine.luaj.LuaJLuaArchitecture
-import li.cil.oc.server.nanomachines.Nanomachines
 import li.cil.oc.server.network.NetworkObject
 import net.minecraft.block.Block
 import net.minecraft.item.Item
@@ -62,7 +64,7 @@ open class Proxy {
         OreDictionary.registerOre("materialEnderPearl", net.minecraft.init.Items.ENDER_PEARL)
 
         // Make mods that use old wireless card name not have broken recipes
-        OreDictionary.registerOre("oc:wlanCard", Items.get(Constants.ItemName.WirelessNetworkCardTier2).createItemStack(1))
+        OreDictionary.registerOre("oc:wlanCard", Items.get(Constants.ItemName.WirelessNetworkCardTier2)!!.createItemStack(1))
 
         tryRegisterNugget<DiamondChip>(Constants.ItemName.DiamondChip, "chipDiamond", net.minecraft.init.Items.DIAMOND, "gemDiamond")
 
@@ -75,34 +77,34 @@ open class Proxy {
 
         OpenComputers.log.info("Initializing OpenComputers API.")
 
-        api.CreativeTab.instance = CreativeTab
-        api.API.driver = Registry
-        api.API.fileSystem = FileSystem
-        api.API.items = Items
-        api.API.machine = MachineCompanion
-        api.API.nanomachines = Nanomachines
-        api.API.network = NetworkObject
+        ApiCreativeTab.instance = CreativeTab
+        API.driver = Registry
+        API.fileSystem = FileSystem
+        API.items = Items
+        API.machine = MachineCompanion
+        API.nanomachines = Nanomachines
+        API.network = NetworkObject
 
-        api.API.config = Settings.get.config
+        API.config = Settings.get.config
 
         if (LuaStateFactory.isAvailable) {
             if (LuaStateFactory.include53) {
-                api.Machine.add(NativeLua53Architecture::class.java)
+                Machine.add(NativeLua53Architecture::class.java)
             }
             if (LuaStateFactory.include54) {
-                api.Machine.add(NativeLua54Architecture::class.java)
+                Machine.add(NativeLua54Architecture::class.java)
             }
             if (LuaStateFactory.include52) {
-                api.Machine.add(NativeLua52Architecture::class.java)
+                Machine.add(NativeLua52Architecture::class.java)
             }
         }
         if (LuaStateFactory.includeLuaJ) {
-            api.Machine.add(LuaJLuaArchitecture::class.java)
+            Machine.add(LuaJLuaArchitecture::class.java)
         }
 
-        api.Machine.LuaArchitecture =
+        Machine.LuaArchitecture =
             if (Settings.get.forceLuaJ) LuaJLuaArchitecture::class.java
-            else api.Machine.architectures().first()
+            else Machine.architectures().first()
     }
 
     open fun init(e: FMLInitializationEvent) {
@@ -123,7 +125,7 @@ open class Proxy {
         OpenComputers.log.info("Initializing capabilities.")
         Capabilities.init()
 
-        api.API.isPowerEnabled = !Settings.get.ignorePower
+        API.isPowerEnabled = !Settings.get.ignorePower
     }
 
     open fun postInit(e: FMLPostInitializationEvent) {
@@ -131,8 +133,8 @@ open class Proxy {
         Registry.locked = true
     }
 
-    inline fun <reified TItem : Delegate> tryRegisterNugget(nuggetItemName: String, nuggetOredictName: String, ingotItem: Item, ingotOredictName: String) {
-        val nugget = Items.get(nuggetItemName).createItemStack(1)
+    private inline fun <reified TItem : Delegate> tryRegisterNugget(nuggetItemName: String, nuggetOredictName: String, ingotItem: Item, ingotOredictName: String) {
+        val nugget = Items.get(nuggetItemName)!!.createItemStack(1)
 
         registerExclusive(nuggetOredictName, nugget)
 
