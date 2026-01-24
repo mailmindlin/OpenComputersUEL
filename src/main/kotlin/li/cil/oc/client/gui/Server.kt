@@ -17,6 +17,7 @@ class Server(
     val rack: TileEntityRack? = null,
     val slot: Int = 0
 ) : DynamicGuiContainer<ContainerServer>(ContainerServer(playerInventory, serverInventory)), li.cil.oc.client.gui.traits.LockedHotbar {
+    private val serverInventory get() = inventoryContainer.otherInventory
 
     protected var powerButton: ImageButton? = null
 
