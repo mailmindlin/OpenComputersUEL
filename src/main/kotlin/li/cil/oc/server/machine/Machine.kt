@@ -8,61 +8,43 @@ import li.cil.oc.api.detail.MachineAPI
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.item.CallBudget
 import li.cil.oc.api.driver.item.Processor
-import li.cil.oc.api.machine.Architecture
-import li.cil.oc.api.machine.Arguments
-import li.cil.oc.api.machine.Callback
-import li.cil.oc.api.machine.Context
-import li.cil.oc.api.machine.ExecutionResult
-import li.cil.oc.api.machine.LimitReachedException
-import li.cil.oc.api.machine.MachineHost
-import li.cil.oc.api.machine.Value
-import li.cil.oc.api.network.Component
-import li.cil.oc.api.network.ComponentConnector
-import li.cil.oc.api.network.Message
-import li.cil.oc.api.network.Node
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.machine.*
+import li.cil.oc.api.network.*
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.Slot
-import li.cil.oc.common.tileentity
+import li.cil.oc.common.tileentity.traits.Computer
 import li.cil.oc.server.PacketSender
 import li.cil.oc.server.component.world
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
-import li.cil.oc.util.ExtendedNBT.setNewCompoundTag
-import li.cil.oc.util.ExtendedNBT.setNewTagList
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.oc.util.ThreadPoolFactory
+import li.cil.oc.util.setNewCompoundTag
+import li.cil.oc.util.setNewTagList
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagByte
-import net.minecraft.nbt.NBTTagByteArray
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagDouble
-import net.minecraft.nbt.NBTTagList
-import net.minecraft.nbt.NBTTagLong
-import net.minecraft.nbt.NBTTagString
+import net.minecraft.nbt.*
 import net.minecraft.server.integrated.IntegratedServer
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.common.FMLCommonHandler
-import java.util.LinkedHashSet
-import java.util.UUID
 import java.util.concurrent.TimeUnit
 import kotlin.math.max
 import kotlin.math.min
 import li.cil.oc.api.machine.Machine as APIMachine
 
 class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine, Runnable, DeviceInfo {
-    override val node: ComponentConnector = Network.newNode(this, Visibility.Network)
+    val node: ComponentConnector = Network.newNode(this, Visibility.Network)
         .withComponent("computer", Visibility.Neighbors)
         .withConnector(Settings.get.bufferComputer)
         .create()
 
+    override fun node(): Node = node
+
     val tmp = if (Settings.get.tmpSize > 0) {
         FileSystem.asManagedEnvironment(
-            FileSystem.fromMemory(Settings.get.tmpSize * 1024),
+            FileSystem.fromMemory(Settings.get.tmpSize.toLong() * 1024),
             "tmpfs", null, null, 5
         )
     } else null
@@ -166,7 +148,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
 
     override fun components(): MutableMap<String, String> = _components
 
-    fun componentCount(): Int {
+    override fun componentCount(): Int {
         val baseCount = _components.entries.fold(0.0) { acc, (_, name) ->
             acc + (if (name != "filesystem") 1.0 else 0.25)
         }
@@ -319,7 +301,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
     }
 
     override fun beep(frequency: Short, duration: Short) {
-        PacketSender.sendSound(host.world(), host.xPosition(), host.yPosition(), host.zPosition(), frequency, duration)
+        PacketSender.sendSound(host.world(), host.xPosition(), host.yPosition(), host.zPosition(), frequency.toInt(), duration.toInt())
     }
 
     override fun beep(pattern: String) {
@@ -397,7 +379,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
         return true
     }
 
-    override fun popSignal(): APIMachine.Signal? = synchronized(signals) {
+    override fun popSignal(): li.cil.oc.api.machine.Signal? = synchronized(signals) {
         if (signals.isEmpty()) null else signals.poll().convert()
     }
 
@@ -579,8 +561,8 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
                     usersChanged = false
                     users()
                 }
-                if (host is tileentity.traits.Computer) {
-                    PacketSender.sendComputerUserList(host as tileentity.traits.Computer, list)
+                if (host is Computer) {
+                    PacketSender.sendComputerUserList(host, list)
                 }
             }
 
@@ -1156,7 +1138,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
     }
 
     /** Signals are messages sent to the Lua state from Java asynchronously. */
-    class Signal(val name: String, val args: Array<Any?>) : APIMachine.Signal {
+    class Signal(val name: String, val args: Array<Any?>) : li.cil.oc.api.machine.Signal {
         override fun name() = name
         override fun args() = args
         fun convert() = Signal(name, Registry.convert(args))
@@ -1184,9 +1166,9 @@ object MachineCompanion : MachineAPI {
 
     override fun architectures(): MutableList<Class<out Architecture>> = checked.toMutableList()
 
-    fun getArchitectureName(architecture: Class<out Architecture>): String {
+    override fun getArchitectureName(architecture: Class<out Architecture>): String {
         val annotation = architecture.getAnnotation(Architecture.Name::class.java)
-        return annotation?.value() ?: architecture.simpleName
+        return annotation?.value ?: architecture.simpleName
     }
 
     override fun create(host: MachineHost): APIMachine = Machine(host)
