@@ -176,7 +176,7 @@ abstract class DynamicGuiContainer<C : Container>(container: C) : CustomGuiConta
     }
 
     private fun isInPlayerInventory(slot: Slot): Boolean = when (val c = inventoryContainer) {
-        is Player -> slot.inventory == c.playerInventory
+        is Player<*> -> slot.inventory == c.playerInventory
         else -> false
     }
 

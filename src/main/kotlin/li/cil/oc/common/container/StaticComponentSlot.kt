@@ -6,7 +6,7 @@ import net.minecraft.inventory.IInventory
 import net.minecraft.util.ResourceLocation
 
 open class StaticComponentSlot(
-    override val container: Player,
+    override val container: Player<IInventory>,
     inventory: IInventory,
     index: Int,
     x: Int,

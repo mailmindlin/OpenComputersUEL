@@ -5,7 +5,7 @@ import li.cil.oc.common.tileentity.Relay as TERelay
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
 
-class Relay(playerInventory: InventoryPlayer, val relay: TERelay) : Player(playerInventory, relay) {
+class Relay(playerInventory: InventoryPlayer, val relay: TERelay) : Player<TERelay>(playerInventory, relay) {
     init {
         addSlotToContainer(151, 15, Slot.CPU)
         addSlotToContainer(151, 34, Slot.Memory)

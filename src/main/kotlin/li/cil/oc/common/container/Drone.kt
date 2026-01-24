@@ -11,7 +11,7 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Drone(playerInventory: InventoryPlayer, val drone: EntityDrone) : Player(playerInventory, drone.mainInventory) {
+class Drone(playerInventory: InventoryPlayer, val drone: EntityDrone) : Player<IInventory>(playerInventory, drone.mainInventory) {
     val deltaY: Int = 0
 
     init {

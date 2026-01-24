@@ -11,7 +11,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Assembler(playerInventory: InventoryPlayer, val assembler: TEAssembler) : Player(playerInventory, assembler) {
+class Assembler(playerInventory: InventoryPlayer, val assembler: TEAssembler) : Player<TEAssembler>(playerInventory, assembler) {
     init {
         // Computer case.
         run {

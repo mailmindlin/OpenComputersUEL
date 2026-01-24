@@ -13,7 +13,7 @@ import net.minecraft.util.ResourceLocation
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-class Robot(playerInventory: InventoryPlayer, val robot: TERobot) : Player(playerInventory, robot) {
+class Robot(playerInventory: InventoryPlayer, val robot: TERobot) : Player<TERobot>(playerInventory, robot) {
     val hasScreen: Boolean = robot.components.any { it is TextBuffer }
     private val withScreenHeight = 256
     private val noScreenHeight = 108
@@ -76,7 +76,7 @@ class Robot(playerInventory: InventoryPlayer, val robot: TERobot) : Player(playe
         }
     }
 
-    inner class InventorySlot(container: Player, inventory: IInventory, index: Int, x: Int, y: Int)
+    inner class InventorySlot(container: Player<IInventory>, inventory: IInventory, index: Int, x: Int, y: Int)
         : StaticComponentSlot(container, inventory, index, x, y, CommonSlot.Any, CommonTier.Any) {
 
         val isValid: Boolean

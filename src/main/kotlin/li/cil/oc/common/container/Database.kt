@@ -9,7 +9,7 @@ import net.minecraft.item.ItemStack
 import kotlin.math.ceil
 import kotlin.math.sqrt
 
-class Database(playerInventory: InventoryPlayer, val databaseInventory: DatabaseInventory) : Player(playerInventory, databaseInventory) {
+class Database(playerInventory: InventoryPlayer, val databaseInventory: DatabaseInventory) : Player<DatabaseInventory>(playerInventory, databaseInventory) {
     val rows: Int = ceil(sqrt(databaseInventory.sizeInventory.toDouble())).toInt()
     val offset: Int = 8 + arrayOf(3, 2, 0)[databaseInventory.tier] * slotSize
 

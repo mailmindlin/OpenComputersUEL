@@ -11,7 +11,7 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.util.Constants.NBT
 
-class Rack(playerInventory: InventoryPlayer, val rack: TERack) : Player(playerInventory, rack) {
+class Rack(playerInventory: InventoryPlayer, val rack: TERack) : Player<TERack>(playerInventory, rack) {
     companion object {
         const val MaxConnections = 4
     }

@@ -3,7 +3,6 @@ package li.cil.oc.common.container
 import li.cil.oc.common.tileentity.traits.PlayerInputAware
 import li.cil.oc.common.Slot as CommonSlot
 import li.cil.oc.common.Tier as CommonTier
-import li.cil.oc.PlayerInputAware
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.inventory.Slot
@@ -13,7 +12,7 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
 abstract class ComponentSlot(inventory: IInventory, index: Int, x: Int, y: Int) : Slot(inventory, index, x, y) {
-    abstract val container: Player
+    abstract val container: Player<IInventory>
 
     abstract val slot: String
 

@@ -16,7 +16,7 @@ import net.minecraft.nbt.NBTBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.FakePlayer
 
-abstract class Player(val playerInventory: InventoryPlayer, val otherInventory: IInventory) : Container() {
+abstract class Player<out I: IInventory>(val playerInventory: InventoryPlayer, val otherInventory: I) : Container() {
     /** Number of player inventory slots to display horizontally. */
     protected val playerInventorySizeX: Int = minOf(9, InventoryPlayer.getHotbarSize())
 

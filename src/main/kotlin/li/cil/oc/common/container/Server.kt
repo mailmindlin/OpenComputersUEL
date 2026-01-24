@@ -11,7 +11,7 @@ class Server @JvmOverloads constructor(
     playerInventory: InventoryPlayer,
     serverInventory: ServerInventory,
     val server: ServerComponent? = null
-) : Player(playerInventory, serverInventory) {
+) : Player<ServerInventory>(playerInventory, serverInventory) {
 
     var isRunning: Boolean = false
     var isItem: Boolean = true

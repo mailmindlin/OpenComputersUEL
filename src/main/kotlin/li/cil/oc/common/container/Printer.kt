@@ -5,7 +5,7 @@ import li.cil.oc.common.tileentity.Printer as TEPrinter
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
 
-class Printer(playerInventory: InventoryPlayer, val printer: TEPrinter) : Player(playerInventory, printer) {
+class Printer(playerInventory: InventoryPlayer, val printer: TEPrinter) : Player<TEPrinter>(playerInventory, printer) {
     init {
         addSlotToContainer(18, 19, Slot.Filtered)
         addSlotToContainer(18, 51, Slot.Filtered)

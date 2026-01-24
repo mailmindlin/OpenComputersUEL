@@ -6,7 +6,7 @@ import li.cil.oc.common.tileentity.Case as TECase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.InventoryPlayer
 
-class Case(playerInventory: InventoryPlayer, val computer: TECase) : Player(playerInventory, computer) {
+class Case(playerInventory: InventoryPlayer, val computer: TECase) : Player<TECase>(playerInventory, computer) {
     init {
         for (i in 0..(if (computer.tier >= Tier.Three) 2 else 1)) {
             val slot = InventorySlots.computer(computer.tier)[inventory.size]
