@@ -18,10 +18,10 @@ import net.minecraft.nbt.NBTTagCompound
 
 interface Component : NetComponent, Node {
   val name: String
+  override fun name(): String = name
 
   var _visibility: Visibility
-
-  override fun getVisibility(): Visibility = _visibility
+  override fun visibility(): Visibility = _visibility
 
   fun getCallbacks(): Map<String, Callbacks.Callback>
 

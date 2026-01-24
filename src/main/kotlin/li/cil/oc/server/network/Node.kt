@@ -12,7 +12,9 @@ interface Node : ImmutableNode {
   override fun host(): Environment
   override fun reachability(): Visibility
   var address: String?
-  override var network: ApiNetwork?
+  override fun address(): String? = address
+  var network: ApiNetwork?
+  override fun network(): ApiNetwork? = network
 
   override fun canBeReachedFrom(other: ImmutableNode): Boolean = when (reachability()) {
     Visibility.None -> false

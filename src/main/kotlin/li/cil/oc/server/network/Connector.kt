@@ -10,7 +10,9 @@ import kotlin.math.min
 
 interface Connector : NetConnector, Node {
   var localBufferSize: Double
+  override fun localBufferSize(): Double = localBufferSize
   var localBuffer: Double
+  override fun localBuffer(): Double = localBuffer
   var distributor: Distributor?
 
   // ----------------------------------------------------------------------- //
