@@ -2,7 +2,6 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Agent
@@ -10,13 +9,17 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.common.tileentity.Robot as RobotTileEntity
-import li.cil.oc.server.component.traits.*
+import li.cil.oc.server.component.traits.InventoryAnalytics
+import li.cil.oc.server.component.traits.InventoryWorldControlMk2
+import li.cil.oc.server.component.traits.ItemInventoryControl
+import li.cil.oc.server.component.traits.WorldInventoryAnalytics
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedArguments.checkSideAny
-import li.cil.oc.util.ExtendedArguments.checkSideForAction
+import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.checkSideForAction
+import li.cil.oc.common.tileentity.Robot as RobotTileEntity
 
 object UpgradeInventoryController {
 

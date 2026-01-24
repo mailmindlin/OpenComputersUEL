@@ -7,12 +7,14 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.integration.util.BundledRedstone
-import li.cil.oc.server.RedstoneComponent as RedstoneComponent
+import li.cil.oc.server.component.Redstone as RedstoneComponent
 import li.cil.oc.server.RedstoneComponentVanilla
-import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.nbt.NBTTagCompound
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.BundledRedstoneAware as TraitBundledRedstoneAware
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Redstone : TileEntityBase(), traits.Environment, traits.BundledRedstoneAware, traits.Tickable {
+class Redstone : TileEntityBase(), TraitEnvironment, TraitBundledRedstoneAware, TraitTickable {
     @JvmField
     val instance: RedstoneVanilla = if (BundledRedstone.isAvailable()) {
         RedstoneComponent.Bundled(this)

@@ -9,9 +9,9 @@ import li.cil.oc.client.Sound
 import li.cil.oc.common.tileentity.RobotProxy
 import li.cil.oc.common.tileentity.TileEntityBase
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
-import li.cil.oc.server.agent
+import li.cil.oc.util.setNewCompoundTag
+import li.cil.oc.util.setNewTagList
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.ExtendedNBT.extendedNBT
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -22,7 +22,10 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
 
-abstract class Computer : TileEntityBase(), Environment, Rotatable, BundledRedstoneAware, api.network.Analyzable, api.machine.MachineHost, StateAware, Tickable {
+/**
+ * Base computer (Compuer/Robot/Microcontroller) TileEntity
+ */
+abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, BundledRedstoneAware, Analyzable, MachineHost, StateAware, Tickable {
     private val _machine: Machine? by lazy { if (isServer) ApiMachine.create(this) else null }
 
     open val machine: Machine? get() = _machine

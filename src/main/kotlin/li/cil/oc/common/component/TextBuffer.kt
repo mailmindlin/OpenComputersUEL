@@ -31,12 +31,12 @@ import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.CompressedPacketBuilder
 import li.cil.oc.common.PacketBuilder
 import li.cil.oc.common.PacketType
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.Keyboard
+import li.cil.oc.util.*
+import li.cil.oc.util.by
 import li.cil.oc.server.ComponentTracker as ServerComponentTracker
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.PackedColor
-import li.cil.oc.util.SideTracker
 import li.cil.oc.util.TextBuffer as UtilTextBuffer
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
@@ -48,9 +48,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(), TextBufferProxy, VideoRamRasterizer, DeviceInfo {
-
-    override val node: Node = ApiNetwork.newNode(this, Visibility.Network)
+open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(), TextBufferProxy, VideoRamRasterizer, DeviceInfoKt {
+    private val node: Node = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("screen")
         .withConnector()
         .create()

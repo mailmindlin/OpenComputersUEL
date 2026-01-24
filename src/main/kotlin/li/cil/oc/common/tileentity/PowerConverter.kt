@@ -34,7 +34,7 @@ class PowerConverter : TileEntityBase(), TraitPowerAcceptor(), TraitEnvironment,
         )
     }
 
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo as Map<String, String>
 
     @SideOnly(Side.CLIENT)
     override fun hasConnector(side: EnumFacing): Boolean = true

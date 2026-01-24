@@ -24,8 +24,10 @@ import java.util.*
 import kotlin.collections.LinkedHashSet
 import kotlin.math.max
 import kotlin.math.min
+import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
+import li.cil.oc.common.tileentity.traits.Colored as TraitColored
 
-class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnvironment, Rotatable, traits.RedstoneAware, traits.Colored, Analyzable, Comparable<Screen> {
+class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnvironment, Rotatable, TraitRedstoneAware, TraitColored, Analyzable, Comparable<Screen> {
 
     init {
         // Enable redstone functionality.

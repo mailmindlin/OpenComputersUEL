@@ -3,11 +3,8 @@ package li.cil.oc.server.machine.luac
 import java.util.UUID
 
 import li.cil.oc.Settings
-import li.cil.oc.util.ExtendedLuaState._
 import li.cil.repack.com.naef.jnlua.LuaState
 import net.minecraft.nbt.NBTTagCompound
-
-import scala.collection.mutable
 
 class PersistenceAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
   private var persistKey = "__persist" + UUID.randomUUID().toString().replace("-", "")

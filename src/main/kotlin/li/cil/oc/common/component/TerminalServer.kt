@@ -28,7 +28,6 @@ import li.cil.oc.api.util.StateAware.State
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.Terminal
-import li.cil.oc.util.ExtendedNBT.extendedNBT
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound

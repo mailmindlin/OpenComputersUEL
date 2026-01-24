@@ -26,7 +26,7 @@ import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
 import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 
 class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfo {
-    private val deviceInfo: java.util.Map<String, String> by lazy {
+    private val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
             DeviceAttribute.Description to "Ethernet controller",
@@ -34,10 +34,10 @@ class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRed
             DeviceAttribute.Product to "NetSplits",
             DeviceAttribute.Version to "1.0",
             DeviceAttribute.Width to "6"
-        ) as java.util.Map<String, String>
+        ) as Map<String, String>
     }
 
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     init {
         _isOutputEnabled = true

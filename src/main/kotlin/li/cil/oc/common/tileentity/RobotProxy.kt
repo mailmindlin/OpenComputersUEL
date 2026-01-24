@@ -30,8 +30,10 @@ import net.minecraftforge.fluids.Fluid
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
 import net.minecraftforge.fluids.capability.IFluidTankProperties
+import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
+import li.cil.oc.common.tileentity.traits.PowerInformation as TraitPowerInformation
+import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
-class RobotProxy(val robot: Robot = Robot()) : TileEntityBase(), traits.Computer(), traits.PowerInformation, traits.RotatableTile, ISidedInventory, IFluidHandler, InternalRobot {
 
     // ----------------------------------------------------------------------- //
 

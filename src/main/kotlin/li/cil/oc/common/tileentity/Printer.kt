@@ -26,8 +26,13 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
+import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Printer : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rotatable, SidedEnvironment, traits.StateAware, traits.Tickable, ISidedInventory, DeviceInfo {
+class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfo {
     @JvmField
     val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("printer3d")
@@ -71,7 +76,7 @@ class Printer : TileEntityBase(), traits.Environment, traits.Inventory, traits.R
         )
     }
 
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo as Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

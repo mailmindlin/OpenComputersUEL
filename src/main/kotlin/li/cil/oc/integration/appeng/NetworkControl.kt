@@ -99,7 +99,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     }
   }
 
-  private fun getFilter(args: Arguments, index: Int): java.util.Map<Any?, Any?> {
+  private fun getFilter(args: Arguments, index: Int): Map<Any?, Any?> {
     val hash = java.util.HashMap<Any?, Any?>()
     Registry.convert(arrayOf(args.optTable(index, emptyMap<Any?, Any?>())))
       .firstOrNull()?.let { converted ->
@@ -121,13 +121,13 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   private fun allCraftables(): Iterable<IAEItemStack> =
     allItems().filter { it.isCraftable }.map { aeCraftItem(it) }
 
-  private fun convert(aeItem: IAEItemStack): java.util.Map<Any?, Any?> {
+  private fun convert(aeItem: IAEItemStack): Map<Any?, Any?> {
     // I would prefer to move the convert code to the registry for IAEItemStack
     // but craftables need the device that crafts them
     val hash = java.util.HashMap<Any?, Any?>()
     Registry.convert(arrayOf(aePotentialItem(aeItem).createItemStack()))
       .firstOrNull()
-      ?.let { it as? java.util.Map<*, *> }
+      ?.let { it as? Map<*, *> }
       ?.forEach { (key, value) ->
         hash[key] = value
       }
@@ -240,14 +240,14 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     return result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).getEnergyDemand(Double.MAX_VALUE))
   }
 
-  private fun matches(stack: java.util.Map<Any?, Any?>?, filter: Map<Any?, Any?>): Boolean {
+  private fun matches(stack: Map<Any?, Any?>?, filter: Map<Any?, Any?>): Boolean {
     if (stack == null) return false
     return filter.all { (key, value) ->
       contains(stack, key, value)
     }
   }
 
-  private fun contains(stack: java.util.Map<Any?, Any?>, key: Any?, value: Any?): Boolean {
+  private fun contains(stack: Map<Any?, Any?>, key: Any?, value: Any?): Boolean {
     return stack.containsKey(key) && valueMatch(value, stack[key])
   }
 

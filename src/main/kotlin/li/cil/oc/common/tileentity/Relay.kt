@@ -36,8 +36,11 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.Hub as TraitHub
+import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
-class Relay : TileEntityBase(), traits.Hub(), traits.ComponentInventory, traits.PowerAcceptor, Analyzable, WirelessEndpoint, QuantumNetwork.QuantumNode {
+class Relay : TileEntityBase(), TraitHub(), TraitComponentInventory, TraitPowerAcceptor, Analyzable, WirelessEndpoint, QuantumNetwork.QuantumNode {
     val WirelessNetworkCardTier1: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier1) }
     val WirelessNetworkCardTier2: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier2) }
     val LinkedCard: ItemInfo by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }

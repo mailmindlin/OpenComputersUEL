@@ -57,7 +57,7 @@ class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitI
         )
     }
 
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo as Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

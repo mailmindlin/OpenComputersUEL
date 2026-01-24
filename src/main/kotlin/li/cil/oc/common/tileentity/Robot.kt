@@ -34,12 +34,7 @@ import li.cil.oc.server.component.GraphicsCard
 import li.cil.oc.server.component.Robot as RobotComponent
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedNBT.extendedNBT
-import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.StackOption
-import li.cil.oc.util.SomeStack
-import li.cil.oc.util.EmptyStack
 import net.minecraft.block.Block
 import net.minecraft.block.BlockLiquid
 import net.minecraft.client.Minecraft
@@ -63,6 +58,8 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.UUID
+import li.cil.oc.common.tileentity.traits.PowerInformation as TraitPowerInformation
+import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
 // Implementation note: this tile entity is never directly added to the world.
 // It is always wrapped by a `RobotProxy` tile entity, which forwards any
@@ -70,7 +67,7 @@ import java.util.UUID
 // robot moves we only create a new proxy tile entity, hook the instance of this
 // class that was held by the old proxy to it and can then safely forget the
 // old proxy, which will be cleaned up by Minecraft like any other tile entity.
-class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidHandler, InternalRobot, InventorySelection, TankSelection {
+class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandler, InternalRobot, InventorySelection, TankSelection {
     @JvmField
     var proxy: RobotProxy? = null
 

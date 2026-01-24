@@ -1,19 +1,13 @@
 package li.cil.oc.server.machine.luaj
 
 //import li.cil.oc.api
-import li.cil.oc.Settings
-import li.cil.oc.api.Driver
-import li.cil.oc.api.Machine
-import li.cil.oc.api.driver.item.MutableProcessor
-import li.cil.oc.api.driver.item.Processor
-import li.cil.oc.api.network.Connector
 import li.cil.oc.server.machine.ComputerApi.energy
 import li.cil.oc.server.machine.ComputerApi.maxEnergy
 import li.cil.oc.server.machine.ComputerApi.getArchitecture
 import li.cil.oc.server.machine.ComputerApi.getArchitectures
 import li.cil.oc.server.machine.ComputerApi.setArchitecture
 import li.cil.oc.server.machine.UnknownArchitectureException
-import li.cil.oc.util.LuaClosure.Companion.toSimpleJavaObjects
+import li.cil.oc.server.machine.luaj.LuaClosure.Companion.toSimpleJavaObjects
 import li.cil.repack.org.luaj.vm2.LuaValue
 
 internal class ComputerAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {

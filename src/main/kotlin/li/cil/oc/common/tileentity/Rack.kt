@@ -14,7 +14,7 @@ import li.cil.oc.api.network.Packet
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.Slot
-import li.cil.oc.common.tileentity.traits.ComponentInventory
+import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.server.PacketSender as ServerPacketSender
@@ -30,8 +30,14 @@ import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.common.tileentity.traits.Hub as TraitHub
+import li.cil.oc.common.tileentity.traits.PowerBalancer as TraitPowerBalancer
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
+import li.cil.oc.common.tileentity.traits.BundledRedstoneAware as TraitBundledRedstoneAware
+import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Rack : TileEntityBase(), traits.PowerAcceptor(), traits.Hub, traits.PowerBalancer, ComponentInventory, traits.Rotatable, traits.BundledRedstoneAware, Analyzable, InternalRack, traits.StateAware {
+class Rack : TileEntityBase(), TraitPowerAcceptor(), TraitHub, TraitPowerBalancer, TraitComponentInventory, TraitRotatable, TraitBundledRedstoneAware, Analyzable, InternalRack, TraitStateAware {
     @JvmField
     var isRelayEnabled = false
 

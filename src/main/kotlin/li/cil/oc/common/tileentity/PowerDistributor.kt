@@ -1,10 +1,10 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
+import li.cil.oc.api.Network
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
@@ -19,7 +19,7 @@ class PowerDistributor: TileEntityBase(), TraitEnvironment, TraitPowerBalancer, 
     override fun getNode(): Node? = null
 
     private val nodes: Array<Connector> = Array(6) {
-        api.Network.newNode(this, Visibility.None)
+        Network.newNode(this, Visibility.None)
             .withConnector(Settings.get.bufferDistributor)
             .create()
     }

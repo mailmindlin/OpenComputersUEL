@@ -4,7 +4,7 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.api.machine.Value
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.machine.ArgumentsImpl
-import li.cil.oc.util.LuaClosure.Companion.toSimpleJavaObjects
+import li.cil.oc.server.machine.luaj.LuaClosure.Companion.toSimpleJavaObjects
 import li.cil.repack.org.luaj.vm2.LuaValue
 import li.cil.repack.org.luaj.vm2.Varargs
 

@@ -1,8 +1,7 @@
 package li.cil.oc.server.machine.luaj
 
 import li.cil.oc.api.network.Component
-import li.cil.oc.util.LuaClosure
-import li.cil.oc.util.LuaClosure.Companion.toSimpleJavaObjects
+import li.cil.oc.server.machine.luaj.LuaClosure.Companion.toSimpleJavaObjects
 import li.cil.repack.org.luaj.vm2.LuaTable
 import li.cil.repack.org.luaj.vm2.LuaValue
 import li.cil.repack.org.luaj.vm2.Varargs

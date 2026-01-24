@@ -9,9 +9,9 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Machine as ApiMachine
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.api.machine.ExecutionResult
-import li.cil.oc.api.machine.LimitReachedException
-import li.cil.oc.server.machine.Machine
-import li.cil.oc.util.LuaClosure
+import li.cil.oc.server.machine.*
+import li.cil.oc.server.machine.luaj.LuaClosure.Companion.toLuaValue
+import li.cil.oc.util.mapArray
 import li.cil.repack.org.luaj.vm2.*
 import li.cil.repack.org.luaj.vm2.lib.jse.JsePlatform
 import net.minecraft.item.ItemStack

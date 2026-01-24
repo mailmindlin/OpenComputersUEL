@@ -7,7 +7,7 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Packet
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.util.ExtendedNBT.extendedNBT
+import li.cil.oc.api.network.Environment
 import li.cil.oc.util.MovingAverage
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -48,7 +48,7 @@ abstract class Hub : Environment, SidedEnvironment, Tickable {
 
     protected open val relayBaseDelay: Int get() = Settings.get.switchDefaultRelayDelay
 
-    protected open val relayDelayPerUpgrade: Int get() = Settings.get.switchRelayDelayUpgrade
+    protected open val relayDelayPerUpgrade: Int get() = Settings.get.switchRelayDelayUpgrade.toInt()
 
     protected open val relayBaseAmount: Int get() = Settings.get.switchDefaultRelayAmount
 
@@ -167,7 +167,7 @@ abstract class Hub : Environment, SidedEnvironment, Tickable {
 
     protected open fun createPlug(side: EnumFacing): Plug = Plug(side)
 
-    open inner class Plug(val side: EnumFacing) : api.network.Environment {
+    open inner class Plug(val side: EnumFacing) : Environment {
         val node: Node? = createNode(this)
 
         override fun node(): Node? = node

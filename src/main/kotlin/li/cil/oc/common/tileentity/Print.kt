@@ -19,12 +19,14 @@ import net.minecraft.util.math.RayTraceResult
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
+import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
 class Print @JvmOverloads constructor(
     val canToggle: (() -> Boolean)? = null,
     val scheduleUpdate: ((Int) -> Unit)? = null,
     val onStateChange: (() -> Unit)? = null
-) : TileEntityBase(), traits.RedstoneAware, traits.RotatableTile {
+) : TileEntityBase(), TraitRedstoneAware, TraitRotatableTile {
 
     init {
         _isOutputEnabled = true
@@ -44,7 +46,7 @@ class Print @JvmOverloads constructor(
 
     val bounds: AxisAlignedBB get() = if (state) boundsOn else boundsOff
     val noclip: Boolean get() = if (state) data.noclipOn else data.noclipOff
-    val shapes: java.util.List<PrintData.Shape> get() = if (state) data.stateOn else data.stateOff
+    val shapes: MutableList<PrintData.Shape> get() = if (state) data.stateOn else data.stateOff
 
     fun isSideSolid(side: EnumFacing): Boolean {
         for (shape in shapes) {
@@ -68,7 +70,7 @@ class Print @JvmOverloads constructor(
         return false
     }
 
-    fun addCollisionBoxesToList(mask: AxisAlignedBB?, list: java.util.List<AxisAlignedBB>, pos: BlockPos = BlockPos.ORIGIN) {
+    fun addCollisionBoxesToList(mask: AxisAlignedBB?, list: MutableList<AxisAlignedBB>, pos: BlockPos = BlockPos.ORIGIN) {
         if (!noclip) {
             if (shapes.isEmpty()) {
                 val unitBounds = AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0).offset(pos)
@@ -125,8 +127,8 @@ class Print @JvmOverloads constructor(
         return false
     }
 
-    private fun buildValueSet(value: Int): java.util.Map<Any, Any> {
-        val map: java.util.Map<Any, Any> = java.util.HashMap()
+    private fun buildValueSet(value: Int): Map<Any, Any> {
+        val map: Map<Any, Any> = java.util.HashMap()
         EnumFacing.values().forEach { side ->
             map.put(Integer.valueOf(side.ordinal), Integer.valueOf(value))
         }

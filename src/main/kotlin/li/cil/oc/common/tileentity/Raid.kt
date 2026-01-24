@@ -13,7 +13,6 @@ import li.cil.oc.common.item.data.DriveData
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -21,8 +20,11 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.UUID
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
-class Raid : TileEntityBase(), traits.Environment, traits.Inventory, traits.Rotatable, Analyzable {
+class Raid : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, Analyzable {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
 
