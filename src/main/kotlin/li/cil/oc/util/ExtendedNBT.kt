@@ -216,7 +216,7 @@ fun NBTBase.toTypedMap(): Map<String, Any?> = mapOf(
  */
 fun NBTTagCompound.extendedNBT(): NBTTagCompound = this
 
-fun NBTTagCompound.setNewCompoundTag(name: String, f: (NBTTagCompound) -> Any): NBTTagCompound {
+fun NBTTagCompound.setNewCompoundTag(name: String, f: (NBTTagCompound) -> Unit): NBTTagCompound {
     val t = NBTTagCompound()
     f(t)
     setTag(name, t)
