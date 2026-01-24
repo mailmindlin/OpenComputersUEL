@@ -21,7 +21,7 @@ interface Capacity : OutputStreamFileSystem {
     // ----------------------------------------------------------------------- //
 
     override fun delete(path: String): Boolean {
-        val freed = Settings.get().fileCost + size(path)
+        val freed = Settings.get.fileCost + size(path)
         return if (super.delete(path)) {
             used = maxOf(0, used - freed)
             true
@@ -32,7 +32,7 @@ interface Capacity : OutputStreamFileSystem {
 
     override fun rename(from: String, to: String): Boolean {
         return if (exists(to)) {
-            val freed = Settings.get().fileCost + size(to)
+            val freed = Settings.get.fileCost + size(to)
             if (super.rename(from, to)) {
                 used = maxOf(0, used - freed)
                 true
@@ -45,11 +45,11 @@ interface Capacity : OutputStreamFileSystem {
     }
 
     override fun makeDirectory(path: String): Boolean {
-        if (capacity - used < Settings.get().fileCost && !ignoreCapacity) {
+        if (capacity - used < Settings.get.fileCost && !ignoreCapacity) {
             throw IOException("not enough space")
         }
         return if (super.makeDirectory(path)) {
-            used += Settings.get().fileCost
+            used += Settings.get.fileCost
             true
         } else {
             false
@@ -88,7 +88,7 @@ interface Capacity : OutputStreamFileSystem {
     fun capacityOpenOutputHandle(id: Int, path: String, mode: Mode, superOpenOutputHandle: (Int, String, Mode) -> OutputStreamFileSystem.OutputHandle?): OutputStreamFileSystem.OutputHandle? {
         val delta = when {
             exists(path) -> if (mode == Mode.Write) -size(path) else 0 // Overwrite clears, append no change
-            else -> Settings.get().fileCost // File creation.
+            else -> Settings.get.fileCost // File creation.
         }
         if (capacity - used < delta && !ignoreCapacity) {
             throw IOException("not enough space")
@@ -108,7 +108,7 @@ interface Capacity : OutputStreamFileSystem {
     // ----------------------------------------------------------------------- //
 
     fun computeSize(path: String): Long =
-        Settings.get().fileCost +
+        Settings.get.fileCost +
             size(path) +
             if (isDirectory(path)) {
                 (list(path) ?: emptyArray()).fold(0L) { acc, child -> acc + computeSize(path + child) }

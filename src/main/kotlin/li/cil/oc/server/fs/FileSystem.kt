@@ -23,7 +23,7 @@ import li.cil.oc.api.fs.FileSystem as ApiFileSystem
 
 object FileSystem : FileSystemAPI {
     val isCaseInsensitive: Boolean by lazy {
-        Settings.get().forceCaseInsensitive || run {
+        Settings.get.forceCaseInsensitive || run {
             try {
                 val uuid = UUID.randomUUID().toString()
                 val lowerCase = File(DimensionManager.getCurrentSaveRootDirectory(), "${uuid}oc_rox")
