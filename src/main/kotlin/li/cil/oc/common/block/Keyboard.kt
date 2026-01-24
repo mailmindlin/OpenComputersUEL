@@ -56,7 +56,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
             }
             val side = ExtendedEnumFacing.getRotation(forward, up)
             val sizes = floatArrayOf(7f / 16f, 4f / 16f, 7f / 16f)
-            val x0 = -up.xOffset * sizes[1] - side.xOffset * sizes[2] - forward.xOffset * sizes[0]
+            val x0 = -up!!.xOffset * sizes[1] - side!!.xOffset * sizes[2] - forward!!.xOffset * sizes[0]
             val x1 = up.xOffset * sizes[1] + side.xOffset * sizes[2] - forward.xOffset * 0.5f
             val y0 = -up.yOffset * sizes[1] - side.yOffset * sizes[2] - forward.yOffset * sizes[0]
             val y1 = up.yOffset * sizes[1] + side.yOffset * sizes[2] - forward.yOffset * 0.5f
@@ -91,13 +91,14 @@ class Keyboard : SimpleBlock(Material.ROCK) {
     override fun canPlaceBlockOnSide(world: World, pos: BlockPos, side: EnumFacing): Boolean {
         if (!world.isSideSolid(pos.offset(side.opposite), side)) return false
         val tileEntity = world.getTileEntity(pos.offset(side.opposite))
-        return if (tileEntity is TEScreen) tileEntity.facing != side else true
+        return if (tileEntity is TEScreen) tileEntity.facing() != side else true
     }
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {
         val tileEntity = world.getTileEntity(pos)
         if (tileEntity is TEKeyboard) {
-            if (!canPlaceBlockOnSide(world, pos, tileEntity.facing)) {
+            val facing = tileEntity.facing() ?: return
+            if (!canPlaceBlockOnSide(world, pos, facing)) {
                 world.setBlockToAir(pos)
                 InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), api.Items.get(Constants.BlockName.Keyboard).createItemStack(1))
             }
@@ -114,14 +115,15 @@ class Keyboard : SimpleBlock(Material.ROCK) {
     fun adjacencyInfo(world: World, pos: BlockPos): AdjacentScreenInfo? {
         val tileEntity = world.getTileEntity(pos)
         if (tileEntity is TEKeyboard) {
-            val blockPos = pos.offset(tileEntity.facing.opposite)
+            val facing = tileEntity.facing() ?: return null
+            val blockPos = pos.offset(facing.opposite)
             val block = world.getBlockState(blockPos).block
             if (block is Screen) {
-                return AdjacentScreenInfo(tileEntity, block, blockPos, tileEntity.facing.opposite)
+                return AdjacentScreenInfo(tileEntity, block, blockPos, facing.opposite)
             }
             // Special case #1: check for screen in front of the keyboard.
-            val forward = when (tileEntity.facing) {
-                EnumFacing.UP, EnumFacing.DOWN -> tileEntity.yaw
+            val forward = when (facing) {
+                EnumFacing.UP, EnumFacing.DOWN -> tileEntity.yaw ?: EnumFacing.NORTH
                 else -> EnumFacing.UP
             }
             val blockPos2 = pos.offset(forward)
@@ -129,7 +131,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
             if (block2 is Screen) {
                 return AdjacentScreenInfo(tileEntity, block2, blockPos2, forward)
             }
-            if (tileEntity.facing != EnumFacing.UP && tileEntity.facing != EnumFacing.DOWN) {
+            if (facing != EnumFacing.UP && facing != EnumFacing.DOWN) {
                 // Special case #2: check for screen below keyboards on walls.
                 val blockPos3 = pos.offset(forward.opposite)
                 val block3 = world.getBlockState(blockPos3).block
