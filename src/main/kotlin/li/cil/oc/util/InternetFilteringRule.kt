@@ -6,112 +6,26 @@ import java.net.Inet4Address
 import java.net.Inet6Address
 import java.net.InetAddress
 
-class InternetFilteringRule(val ruleString: String) {
-    private var _invalid: Boolean = false
-    private val validator: (InetAddress, String) -> Boolean?
+internal sealed interface Filter {
+    fun matches(inetAddress: InetAddress, host: String): Boolean
 
-    init {
-        validator = try {
-            val ruleParts = ruleString.split(' ')
-            when (ruleParts.first()) {
-                "allow", "deny" -> {
-                    val value = ruleParts.first() == "allow"
-                    val predicates = mutableListOf<(InetAddress, String) -> Boolean>()
-                    ruleParts.drop(1).forEach { f ->
-                        val filter = f.split(":", limit = 2)
-                        when (filter.first()) {
-                            "default" -> {
-                                if (!value) {
-                                    predicates.add { _, _ -> false }
-                                } else {
-                                    predicates.add { inetAddress, host ->
-                                        defaultRules.asSequence()
-                                            .map { r -> r.apply(inetAddress, host) }
-                                            .firstOrNull { it != null } ?: false
-                                    }
-                                }
-                            }
-                            "private" -> {
-                                predicates.add { inetAddress, _ ->
-                                    inetAddress.isAnyLocalAddress || inetAddress.isLoopbackAddress ||
-                                        inetAddress.isLinkLocalAddress || inetAddress.isSiteLocalAddress
-                                }
-                            }
-                            "bogon" -> {
-                                predicates.add { inetAddress, _ ->
-                                    bogonMatchingRules.any { rule -> rule.matches(inetAddress) }
-                                }
-                            }
-                            "ipv4" -> {
-                                predicates.add { inetAddress, _ ->
-                                    inetAddress is Inet4Address
-                                }
-                            }
-                            "ipv6" -> {
-                                predicates.add { inetAddress, _ ->
-                                    inetAddress is Inet6Address
-                                }
-                            }
-                            "ipv4-embedded-ipv6" -> {
-                                predicates.add { inetAddress, _ ->
-                                    inetAddress is Inet6Address && InetAddresses.hasEmbeddedIPv4ClientAddress(inetAddress)
-                                }
-                            }
-                            "domain" -> {
-                                val domain = filter[1]
-                                val addresses = InetAddress.getAllByName(domain)
-                                predicates.add { inetAddress, host ->
-                                    host == domain || addresses.any { a -> a == inetAddress }
-                                }
-                            }
-                            "ip" -> {
-                                val ipStringParts = filter[1].split("/", limit = 2)
-                                if (ipStringParts.size == 2) {
-                                    val ipRange = InetAddressRange.parse(ipStringParts[0], ipStringParts[1])
-                                    predicates.add { inetAddress, _ -> ipRange.matches(inetAddress) }
-                                } else {
-                                    val ipAddress = InetAddresses.forString(ipStringParts[0])
-                                    predicates.add { inetAddress, _ -> ipAddress == inetAddress }
-                                }
-                                predicates.add { inetAddress, _ ->
-                                    inetAddress.isAnyLocalAddress || inetAddress.isLoopbackAddress ||
-                                        inetAddress.isLinkLocalAddress || inetAddress.isSiteLocalAddress
-                                }
-                            }
-                            "all" -> { /* no predicate needed */ }
-                        }
-                    };
-
-                    { inetAddress: InetAddress, host: String ->
-                        if (predicates.all { p -> p(inetAddress, host) }) value else null
-                    }
-                }
-                "removeme" -> {
-                    // Ignore this rule.
-                    { _, _ -> null }
-                }
-                else -> {
-                    { _, _ -> null }
-                }
-            }
-        } catch (t: Throwable) {
-            OpenComputers.log.error("Invalid Internet filteringRules rule in configuration: \"$ruleString\".", t)
-            _invalid = true
-            { _, _ -> false }
-        }
+    object IPv4: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = inetAddress is Inet4Address
     }
-
-    fun invalid(): Boolean = _invalid
-
-    fun apply(inetAddress: InetAddress, host: String): Boolean? = validator(inetAddress, host)
-
-    companion object {
-        private val defaultRules = arrayOf(
-            InternetFilteringRule("deny private"),
-            InternetFilteringRule("deny bogon"),
-            InternetFilteringRule("allow all")
-        )
-
+    object IPv6: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = inetAddress is Inet6Address
+    }
+    object IPv4EmbeddedIPv6: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = inetAddress is Inet6Address && InetAddresses.hasEmbeddedIPv4ClientAddress(inetAddress)
+    }
+    object Private: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean
+            = inetAddress.isAnyLocalAddress
+            || inetAddress.isLoopbackAddress
+            || inetAddress.isLinkLocalAddress
+            || inetAddress.isSiteLocalAddress
+    }
+    object Bogon: Filter {
         private val bogonMatchingRules = arrayOf(
             "0.0.0.0/8",
             "10.0.0.0/8",
@@ -138,8 +52,108 @@ class InternetFilteringRule(val ruleString: String) {
             "fec0::/10",
             "ff00::/8"
         )
-            .map { s -> s.split("/", limit = 2) }
-            .map { s -> InetAddressRange.parse(s[0], s[1]) }
+            .map { it.split("/", limit = 2) }
+            .map { InetAddressRange.parse(it[0], it[1]) }
             .toTypedArray()
+        override fun matches(inetAddress: InetAddress, host: String): Boolean
+            = bogonMatchingRules.any { it.matches(inetAddress) }
+    }
+    class Domain(private val domain: String): Filter {
+        private val addresses: Array<out InetAddress> = InetAddress.getAllByName(domain)
+        override fun matches(inetAddress: InetAddress, host: String): Boolean
+            = host == domain && addresses.any { it == inetAddress }
+    }
+    class IpAddress(private val address: InetAddress): Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = inetAddress == address && Private.matches(inetAddress, host)
+    }
+    class IpRange(private val range: InetAddressRange): Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = range.matches(inetAddress) && Private.matches(inetAddress, host)
+    }
+    object Never: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = false
+    }
+    object Always: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean = true
+    }
+
+    /**
+     * Default for `allow default`. Equivalent to `"deny private"`, `"deny bogon"`, `"allow all"`
+     */
+    object Default: Filter {
+        override fun matches(inetAddress: InetAddress, host: String): Boolean
+            // deny private
+            = !Private.matches(inetAddress, host)
+            // deny bogon
+            && !Bogon.matches(inetAddress, host)
+            // allow all
+            && Always.matches(inetAddress, host)
+    }
+
+    companion object {
+        internal fun parse(filter: String, value: Boolean): Filter {
+            val filter = filter.split(":", limit = 2)
+            return when (filter.first()) {
+                "default" -> if (!value) Filter.Never else Filter.Default
+                "private" -> Filter.Private
+                "bogon" -> Filter.Bogon
+                "ipv4" -> Filter.IPv4
+                "ipv6" -> Filter.IPv6
+                "ipv4-embedded-ipv6" -> Filter.IPv4EmbeddedIPv6
+                "domain" -> Filter.Domain(filter[1])
+                "ip" -> {
+                    val ipStringParts = filter[1].split("/", limit = 2)
+                    if (ipStringParts.size == 2) {
+                        Filter.IpRange(InetAddressRange.parse(ipStringParts[0], ipStringParts[1]))
+                    } else {
+                        Filter.IpAddress(InetAddresses.forString(ipStringParts[0]))
+                    }
+                }
+                "all" -> Filter.Always
+                else -> throw IllegalArgumentException("Unknown filter rule ${filter.first()}")
+            }
+        }
+    }
+}
+
+sealed interface InternetFilteringRule {
+    fun invalid(): Boolean = false
+    fun apply(inetAddress: InetAddress, host: String): Boolean?;
+
+    object Invalid: InternetFilteringRule {
+        override fun invalid(): Boolean = true
+        override fun apply(inetAddress: InetAddress, host: String): Boolean? = false
+    }
+    object Ignore: InternetFilteringRule {
+        override fun apply(inetAddress: InetAddress, host: String): Boolean? = null
+    }
+    class All internal constructor(private val allow: Boolean, private vararg val rules: Filter): InternetFilteringRule {
+        override fun apply(inetAddress: InetAddress, host: String): Boolean? = if (rules.all { it.matches(inetAddress, host) }) allow else null
+    }
+
+    companion object {
+        @JvmStatic
+        fun parse(ruleString: String): InternetFilteringRule {
+            return try {
+                val ruleParts = ruleString.split(' ')
+                when (ruleParts.first()) {
+                    "allow", "deny" -> {
+                        val value = ruleParts.first() == "allow"
+                        val predicates = ruleParts
+                            .asSequence()
+                            .drop(1)
+                            .map { Filter.parse(it, value) }
+                            .toList()
+                            .toTypedArray()
+                        return InternetFilteringRule.All(value, *predicates)
+                    }
+                    // Ignore this rule.
+                    "removeme" -> Ignore
+                    else -> Ignore
+                }
+            } catch (e: Exception) {
+                OpenComputers.log.error("Invalid Internet filteringRules rule in configuration: \"$ruleString\".", e)
+                Invalid
+            }
+        }
     }
 }
