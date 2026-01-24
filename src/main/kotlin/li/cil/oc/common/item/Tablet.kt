@@ -623,7 +623,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
             client.PacketSender.sendMachineItemStateRequest(stack)
         }
         if (!world.isRemote) {
-            if (isCreative && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+            if (isCreative && Settings.get.isTickMultiple(world)) {
                 (machine.node() as Connector).changeBuffer(Double.POSITIVE_INFINITY)
             }
             machine.update()

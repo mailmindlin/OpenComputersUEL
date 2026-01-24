@@ -433,7 +433,7 @@ class Hologram @JvmOverloads constructor(
                     resetDirtyFlag()
                 }
             }
-            if (world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+            if (Settings.get.isTickMultiple(world)) {
                 if (litRatio < 0) {
                     synchronized(this) {
                         litRatio = 0.0

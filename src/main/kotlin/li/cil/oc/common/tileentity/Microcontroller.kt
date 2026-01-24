@@ -147,7 +147,7 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
         super.updateEntity()
 
         // Pump energy into the internal network.
-        if (isServer && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (isServer && Settings.get.isTickMultiple(world)) {
             for (side in EnumFacing.values()) {
                 if (side != facing) {
                     val node = sidedNode(side)

@@ -148,7 +148,7 @@ class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitI
 
     override fun updateEntity() {
         super.updateEntity()
-        if (!output.isEmpty && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (!output.isEmpty && Settings.get.isTickMultiple(world)) {
             val want = maxOf(1.0, minOf(requiredEnergy, Settings.get.assemblerTickAmount * Settings.get.tickFrequency))
             val have = want + (if (Settings.get.ignorePower) 0.0 else node.changeBuffer(-want))
             requiredEnergy -= have

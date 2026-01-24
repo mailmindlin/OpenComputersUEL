@@ -371,7 +371,7 @@ class Robot : Computer(), traits.PowerInformation, traits.RotatableTile, IFluidH
         }
         super.updateEntity()
         if (isServer) {
-            if (world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+            if (Settings.get.isTickMultiple(world)) {
                 if (info.tier == 3) {
                     bot!!.node().changeBuffer(Double.POSITIVE_INFINITY)
                 }

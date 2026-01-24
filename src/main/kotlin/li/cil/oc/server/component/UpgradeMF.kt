@@ -152,7 +152,7 @@ class UpgradeMF(
                 env.update()
             }
         }
-        if (host.world().totalWorldTime % Settings.get.tickFrequency.toLong() == 0L) {
+        if (Settings.get.isTickMultiple(host.world)) {
             val distance = coord.toVec3().distanceTo(Vec3d(host.xPosition(), host.yPosition(), host.zPosition()))
             if (!node.tryChangeBuffer(-Settings.get.mfuCost * Settings.get.tickFrequency * distance)) {
                 disconnect()

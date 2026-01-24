@@ -39,7 +39,7 @@ sealed class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentK
 
     override fun update() {
         super.update()
-        if (host.world.totalWorldTime % Settings.get.tickFrequency.toInt() == 0L && ticket != null) {
+        if (Settings.get.isTickMultiple(host.world) && ticket != null) {
             if (!node.tryChangeBuffer(-Settings.get.chunkloaderCost * Settings.get.tickFrequency)) {
                 ticket?.let { t ->
                     try {

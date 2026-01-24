@@ -101,7 +101,7 @@ class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, Tra
 
     override fun updateEntity() {
         super.updateEntity()
-        if (isServer && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (isServer && Settings.get.isTickMultiple(world)) {
             if (queue.isEmpty()) {
                 val instant = disassembleNextInstantly // Is reset via decrStackSize
                 disassemble(decrStackSize(0, 1), instant)

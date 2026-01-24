@@ -151,6 +151,8 @@ class Settings(val config: Config) {
     val ignorePower: Boolean = config.getBoolean("power.ignorePower")
     val tickFrequency: Double = max(config.getDouble("power.tickFrequency"), 1.0)
     val chargeRateExternal: Double = config.getDouble("power.chargerChargeRate")
+    fun isTickMultiple(worldTime: Long): Boolean = worldTime % tickFrequency.toLong() == 0L
+    fun isTickMultiple(world: World): Boolean = isTickMultiple(world.totalWorldTime)
     val chargeRateTablet: Double = config.getDouble("power.chargerChargeRateTablet")
     val generatorEfficiency: Double = config.getDouble("power.generatorEfficiency")
     val solarGeneratorEfficiency: Double = config.getDouble("power.solarGeneratorEfficiency")

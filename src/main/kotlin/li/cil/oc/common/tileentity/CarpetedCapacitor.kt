@@ -12,7 +12,7 @@ class CarpetedCapacitor : Capacitor(), TraitTickable {
 
     override fun updateEntity() {
         super.updateEntity()
-        if (isServer && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (isServer && Settings.get.isTickMultiple(world)) {
             val entity = world.findNearestEntityWithinAABB(
                 net.minecraft.entity.passive.EntityOcelot::class.java,
                 net.minecraft.util.math.AxisAlignedBB(pos).grow(3.0),

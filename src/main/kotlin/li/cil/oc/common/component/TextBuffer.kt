@@ -138,7 +138,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override fun update() {
         super.update()
-        if (isDisplaying && host.world().totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (isDisplaying && Settings.get.isTickMultiple(host.world())) {
             if (relativeLitArea < 0) {
                 // The relative lit area is the number of pixels that are not blank
                 // versus the number of pixels in the *current* resolution. This is

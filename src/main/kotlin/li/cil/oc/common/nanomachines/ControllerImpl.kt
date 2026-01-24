@@ -284,7 +284,7 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
             active.forEach { it.update() }
 
             if (isServer) {
-                if (player.entityWorld.totalWorldTime % Settings.get.tickFrequency == 0L) {
+                if (Settings.get.isTickMultiple(player.entityWorld)) {
                     changeBuffer(-Settings.get.nanomachineCost * Settings.get.tickFrequency * (activeInputs + 0.5))
                     PacketSender.sendNanomachinePower(player)
                 }

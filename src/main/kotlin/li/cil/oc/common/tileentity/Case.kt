@@ -80,7 +80,7 @@ class Case @JvmOverloads constructor(
     // ----------------------------------------------------------------------- //
 
     override fun updateEntity() {
-        if (isServer && isCreative && world.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (isServer && isCreative && Settings.get.isTickMultiple(world)) {
             // Creative case, make it generate power.
             (node() as Connector).changeBuffer(Double.POSITIVE_INFINITY)
         }

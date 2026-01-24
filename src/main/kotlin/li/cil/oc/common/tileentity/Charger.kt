@@ -113,7 +113,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
             updateConnectors()
         }
 
-        if (isServer && world.worldInfo.worldTotalTime % Settings.get.tickFrequency == 0L) {
+        if (isServer && Settings.get.isTickMultiple(world.worldInfo.worldTotalTime)) {
             var canCharge = Settings.get.ignorePower
 
             // Charging of external devices.
