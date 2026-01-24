@@ -18,12 +18,15 @@ class UpgradeSolarGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
     private var ticksUntilCheck = 0
     private var isSunShining = false
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Power,
-        DeviceAttribute.Description to "Solar panel",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "Enligh10"
-    )
+    override val deviceInfo get() = Companion.deviceInfo
+    companion object {
+        val deviceInfo = mapOf(
+            DeviceAttribute.Class to DeviceClass.Power,
+            DeviceAttribute.Description to "Solar panel",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Enligh10"
+        )
+    }
 
     // ----------------------------------------------------------------------- //
 
