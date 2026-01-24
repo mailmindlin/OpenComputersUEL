@@ -8,20 +8,17 @@ import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.traits.Delegate
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
-import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.ItemMeshDefinition
 import net.minecraft.client.renderer.block.model.IBakedModel
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
 import net.minecraft.client.renderer.block.statemap.StateMapperBase
 import net.minecraft.item.Item
-import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 import net.minecraft.util.registry.RegistrySimple
 import net.minecraftforge.client.event.ModelBakeEvent
 import net.minecraftforge.client.event.ModelRegistryEvent
 import net.minecraftforge.client.model.ModelLoader
-import net.minecraftforge.client.model.ModelLoaderRegistry
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
@@ -40,7 +37,8 @@ object ModelInitialization {
 
     private val meshableItems = mutableListOf<Item>()
     private val itemDelegates = mutableListOf<Pair<String, Delegate>>()
-    private val itemDelegatesCustom = mutableListOf<Delegate>()
+    /** Note: type is `CustomModel + Delegate` */
+    private val itemDelegatesCustom = mutableListOf<CustomModel>()
 
     fun preInit() {
         MinecraftForge.EVENT_BUS.register(this)
@@ -82,7 +80,7 @@ object ModelInitialization {
     // -----------------------------------------------------------------------
 
     private fun registerModel(blockName: String, blockLocation: ModelResourceLocation, itemLocation: ModelResourceLocation) {
-        val descriptor = Items.get(blockName)
+        val descriptor = Items.get(blockName)!!
         val block = descriptor.block()
         val stack = descriptor.createItemStack(1)
 
@@ -120,14 +118,14 @@ object ModelInitialization {
 
     private fun registerSubItemsCustom() {
         for (item in itemDelegatesCustom) {
-            ModelLoader.setCustomMeshDefinition(item.parent, ItemMeshDefinition { stack ->
+            ModelLoader.setCustomMeshDefinition((item as Delegate).parent) { stack ->
                 val subItem = Delegator.subItem(stack)
                 if (subItem is CustomModel) {
                     subItem.getModelLocation(stack)
                 } else {
                     null
                 }
-            })
+            }
             item.registerModelLocations()
         }
     }
