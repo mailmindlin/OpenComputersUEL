@@ -10,6 +10,7 @@ import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.server.component.Result
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.tis3d.api.ManualAPI
 import li.cil.tis3d.api.SerialAPI
@@ -55,6 +56,7 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
 
         // -----------------------------------------------------------------------
 
+        override fun node(): Node = node
         val node: Node = Network.newNode(this, Visibility.Network).withComponent("serial_port").create()
 
         override fun onMessage(message: Message) {}
@@ -66,13 +68,13 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
         // -----------------------------------------------------------------------
 
         @Callback
-        fun setReading(context: Context, args: Arguments): Array<Any>? {
+        fun setReading(context: Context, args: Arguments): Result? {
             isReading = args.checkBoolean(0)
             return null
         }
 
         @Callback
-        fun read(context: Context, args: Arguments): Array<Any>? {
+        fun read(context: Context, args: Arguments): Result? {
             synchronized(readBuffer) {
                 return if (readBuffer.isNotEmpty()) {
                     result(readBuffer.poll())
@@ -83,7 +85,7 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
         }
 
         @Callback
-        fun write(context: Context, args: Arguments): Array<Any> {
+        fun write(context: Context, args: Arguments): Result {
             synchronized(writeBuffer) {
                 return if (writeBuffer.size < BufferCapacity) {
                     writeBuffer.add(args.checkInteger(0).toShort())

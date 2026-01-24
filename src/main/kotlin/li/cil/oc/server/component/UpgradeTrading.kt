@@ -19,7 +19,7 @@ import net.minecraft.entity.IMerchant
 import net.minecraft.util.math.Vec3d
 import java.util.*
 
-sealed class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
+class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("trading")
         .create()
@@ -33,9 +33,9 @@ sealed class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(),
 
     override val position get() = BlockPosition(host)
 
-    val maxRange get() = Settings.get.tradingRange
+    private val maxRange get() = Settings.get.tradingRange
 
-    fun isInRange(entity: Entity): Boolean =
+    private fun isInRange(entity: Entity): Boolean =
         Vec3d(entity.posX, entity.posY, entity.posZ).distanceTo(position.toVec3()) <= maxRange
 
     @Callback(doc = "function():table -- Returns a table of trades in range as userdata objects.")

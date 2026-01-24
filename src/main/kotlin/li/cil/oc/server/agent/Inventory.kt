@@ -1,9 +1,9 @@
 package li.cil.oc.server.agent
 
 import li.cil.oc.api.internal.Agent
-import li.cil.oc.util.ExtendedInventory.indices
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.notEmpty
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.InventoryPlayer
@@ -21,8 +21,8 @@ class Inventory(playerEntity: EntityPlayer, val agent: Agent) : InventoryPlayer(
     override fun getCurrentItem(): ItemStack = agent.equipmentInventory().getStackInSlot(0)
 
     override fun getFirstEmptyStack(): Int {
-        return if (selectedItemStack.isEmpty) agent.selectedSlot()
-        else inventorySlots.firstOrNull { getStackInSlot(it).isEmpty } ?: -1
+        return if (selectedItemStack.isEmpty()) agent.selectedSlot()
+        else inventorySlots.firstOrNull { getStackInSlot(it).isEmpty() } ?: -1
     }
 
     override fun changeCurrentItem(direction: Int) {}
@@ -31,13 +31,11 @@ class Inventory(playerEntity: EntityPlayer, val agent: Agent) : InventoryPlayer(
 
     override fun decrementAnimations() {
         for (slot in 0 until sizeInventory) {
-            val stackOpt = StackOption(getStackInSlot(slot))
-            if (stackOpt is StackOption.SomeStack) {
-                try {
-                    stackOpt.stack.updateAnimation(agent.world(), if (!agent.world().isRemote) agent.player() else null, slot, slot == 0)
-                } catch (ignored: NullPointerException) {
-                    // Client side item updates that need a player instance...
-                }
+            val stack = getStackInSlot(slot).notEmpty() ?: continue
+            try {
+                stack.updateAnimation(agent.world(), if (!agent.world().isRemote) agent.player() else null, slot, slot == 0)
+            } catch (ignored: NullPointerException) {
+                // Client side item updates that need a player instance...
             }
         }
     }
@@ -48,10 +46,10 @@ class Inventory(playerEntity: EntityPlayer, val agent: Agent) : InventoryPlayer(
     }
 
     override fun canHarvestBlock(state: IBlockState): Boolean =
-        state.material.isToolNotRequired || (!currentItem.isEmpty && currentItem.canHarvestBlock(state))
+        state.material.isToolNotRequired || (!currentItem.isEmpty() && currentItem.canHarvestBlock(state))
 
     override fun getDestroySpeed(state: IBlockState): Float =
-        if (currentItem.isEmpty) 1f else currentItem.getDestroySpeed(state)
+        if (currentItem.isEmpty()) 1f else currentItem.getDestroySpeed(state)
 
     override fun writeToNBT(nbt: NBTTagList): NBTTagList = nbt
 
@@ -64,7 +62,7 @@ class Inventory(playerEntity: EntityPlayer, val agent: Agent) : InventoryPlayer(
     override fun dropAllItems() {}
 
     override fun hasItemStack(stack: ItemStack): Boolean =
-        (0 until sizeInventory).map { getStackInSlot(it) }.filter { !it.isEmpty }.any { it.isItemEqual(stack) }
+        (0 until sizeInventory).map { getStackInSlot(it) }.filter { !it.isEmpty() }.any { it.isItemEqual(stack) }
 
     override fun copyInventory(from: InventoryPlayer) {}
 

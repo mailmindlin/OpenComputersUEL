@@ -19,7 +19,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
 abstract class Item : DriverItem {
-  override fun worksWith(stack: ItemStack, host: Class<out EnvironmentHost>): Boolean =
+  fun worksWith(stack: ItemStack, host: Class<out EnvironmentHost>): Boolean =
     worksWith(stack) && !Registry.blacklist.any { (blacklistedStack, blacklistedHost) ->
       stack.isItemEqual(blacklistedStack) &&
         blacklistedHost.any { it.isAssignableFrom(host) }
@@ -51,10 +51,10 @@ abstract class Item : DriverItem {
   companion object {
     @JvmStatic
     fun dataTag(stack: ItemStack): NBTTagCompound {
-      if (!stack.hasTagCompound) {
+      if (!stack.hasTagCompound()) {
         stack.tagCompound = NBTTagCompound()
       }
-      val nbt = stack.tagCompound
+      val nbt = stack.tagCompound!!
       if (!nbt.hasKey(Settings.namespace + "data")) {
         nbt.setTag(Settings.namespace + "data", NBTTagCompound())
       }
@@ -72,8 +72,8 @@ abstract class Item : DriverItem {
     private fun getTag(stack: ItemStack?, keys: Array<String>): NBTTagCompound? {
       return when {
         stack == null || stack.count == 0 || stack.isEmpty -> null
-        !stack.hasTagCompound -> null
-        else -> getTag(stack.tagCompound, keys)
+        !stack.hasTagCompound() -> null
+        else -> getTag(stack.tagCompound!!, keys)
       }
     }
 

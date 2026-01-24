@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack
 
 internal object ItemBlacklist {
   /** Lazily evaluated stacks to avoid creating stacks with unregistered items/blocks. */
-  private val hiddenItems = mutableSetOf<() -> ItemStack>()
+  internal val hiddenItems = mutableSetOf<() -> ItemStack>()
 
   /** List of consumers for item stacks (blacklisting for NEI and JEI). */
   private val consumers =  mutableSetOf<(ItemStack) -> Unit>()

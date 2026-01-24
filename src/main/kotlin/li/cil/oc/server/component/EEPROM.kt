@@ -20,12 +20,12 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
         .withConnector()
         .create()
 
-    var codeData = ByteArray(0)
-    var volatileData = ByteArray(0)
+    private var codeData = ByteArray(0)
+    private var volatileData = ByteArray(0)
     var readonly = false
     var label = "EEPROM"
 
-    val checksum: String
+    private val checksum: String
         get() = Hashing.crc32().hashBytes(codeData).toString()
 
     // ----------------------------------------------------------------------- //
@@ -42,10 +42,10 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
     // ----------------------------------------------------------------------- //
 
     @Callback(direct = true, doc = """function():string -- Get the currently stored byte array.""")
-    fun get(context: Context, args: Arguments): Array<Any?> = result(codeData)
+    fun get(context: Context, args: Arguments): Result = result(codeData)
 
     @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
-    fun set(context: Context, args: Arguments): Array<Any?>? {
+    fun set(context: Context, args: Arguments): Result? {
         if (readonly) {
             return result(null, "storage is readonly")
         }
@@ -62,10 +62,10 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
     }
 
     @Callback(direct = true, doc = """function():string -- Get the label of the EEPROM.""")
-    fun getLabel(context: Context, args: Arguments): Array<Any?> = result(label)
+    fun getLabel(context: Context, args: Arguments): Result = result(label)
 
     @Callback(doc = """function(data:string):string -- Set the label of the EEPROM.""")
-    fun setLabel(context: Context, args: Arguments): Array<Any?> {
+    fun setLabel(context: Context, args: Arguments): Result {
         if (readonly) {
             return result(null, "storage is readonly")
         }
@@ -77,13 +77,13 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
     }
 
     @Callback(direct = true, doc = """function():number -- Get the storage capacity of this EEPROM.""")
-    fun getSize(context: Context, args: Arguments): Array<Any?> = result(Settings.get.eepromSize)
+    fun getSize(context: Context, args: Arguments): Result = result(Settings.get.eepromSize)
 
     @Callback(direct = true, doc = """function():string -- Get the checksum of the data on this EEPROM.""")
-    fun getChecksum(context: Context, args: Arguments): Array<Any?> = result(checksum)
+    fun getChecksum(context: Context, args: Arguments): Result = result(checksum)
 
     @Callback(direct = true, doc = """function(checksum:string):boolean -- Make this EEPROM readonly if it isn't already. This process cannot be reversed!""")
-    fun makeReadonly(context: Context, args: Arguments): Array<Any?> {
+    fun makeReadonly(context: Context, args: Arguments): Result {
         return if (args.checkString(0) == checksum) {
             readonly = true
             result(true)
@@ -93,13 +93,13 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
     }
 
     @Callback(direct = true, doc = """function():number -- Get the storage capacity of this EEPROM.""")
-    fun getDataSize(context: Context, args: Arguments): Array<Any?> = result(Settings.get.eepromDataSize)
+    fun getDataSize(context: Context, args: Arguments): Result = result(Settings.get.eepromDataSize)
 
     @Callback(direct = true, doc = """function():string -- Get the currently stored byte array.""")
-    fun getData(context: Context, args: Arguments): Array<Any?> = result(volatileData)
+    fun getData(context: Context, args: Arguments): Result = result(volatileData)
 
     @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
-    fun setData(context: Context, args: Arguments): Array<Any?>? {
+    fun setData(context: Context, args: Arguments): Result? {
         if (!node.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
             return result(null, "not enough energy")
         }
@@ -115,10 +115,10 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
     // ----------------------------------------------------------------------- //
 
     companion object {
-        private val EEPROMTag = Settings.namespace + "eeprom"
-        private val LabelTag = Settings.namespace + "label"
-        private val ReadonlyTag = Settings.namespace + "readonly"
-        private val UserdataTag = Settings.namespace + "userdata"
+        private const val EEPROMTag = Settings.namespace + "eeprom"
+        private const val LabelTag = Settings.namespace + "label"
+        private const val ReadonlyTag = Settings.namespace + "readonly"
+        private const val UserdataTag = Settings.namespace + "userdata"
     }
 
     override fun load(nbt: NBTTagCompound) {

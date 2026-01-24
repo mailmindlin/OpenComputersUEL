@@ -40,16 +40,16 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
 
   override fun onConnect(node: Node) {
     if (node == this.node) {
-      for ((_, environment) in environments if environment.node != null) {
-        node.connect(environment.node)
+      for ((_, environment) in environments if environment.node() != null) {
+        node.connect(environment.node())
       }
     }
   }
 
   override fun onDisconnect(node: Node) {
     if (node == this.node) {
-      for ((_, environment) in environments if environment.node != null) {
-        environment.node.remove()
+      for ((_, environment) in environments if environment.node() != null) {
+        environment.node().remove()
       }
     }
   }
@@ -76,7 +76,7 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
     node.save(nbt)
     for ((driver, environment) in environments) {
       try {
-        nbt.setNewCompoundTag(driver, environment.save)
+        nbt.setNewCompoundTag(driver, environment.save())
       } catch (e: Exception) {
         OpenComputers.log.warn("A block component of type '${environment.javaClass.name}' (provided by driver '$driver') threw an error while saving.", e)
       }

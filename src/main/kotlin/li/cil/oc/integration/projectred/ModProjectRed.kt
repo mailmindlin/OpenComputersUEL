@@ -24,7 +24,7 @@ internal object ModProjectRed : ModProxy, RedstoneProvider {
     override fun computeInput(pos: BlockPosition, side: EnumFacing): Int = 0
 
     override fun computeBundledInput(pos: BlockPosition, side: EnumFacing): IntArray? {
-        val bundledInput = ProjectRedAPI.transmissionAPI.getBundledInput(pos.world().get(), pos.toBlockPos(), side)
-        return bundledInput?.map { it and 0xFF }?.toIntArray()
+        val bundledInput = ProjectRedAPI.transmissionAPI.getBundledInput(pos.world!!, pos.toBlockPos(), side)
+        return bundledInput?.map { it.toInt() and 0xFF }?.toIntArray()
     }
 }

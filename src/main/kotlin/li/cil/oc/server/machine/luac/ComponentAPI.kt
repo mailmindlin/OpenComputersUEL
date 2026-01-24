@@ -75,7 +75,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.pushClosure { lua ->
       withComponent(lua.checkString(1)) { component ->
         val method = lua.checkString(2)
-        val methods = machine.methods(component.host)
+        val methods = machine.methods(component.host())
         owner.documentation(() => Option(methods.get(method)).map(_.doc).orNull)
       })
     })
@@ -84,7 +84,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.setGlobal("component")
   }
 
-  private fun withComponent(address: String, f: (Component) -> Int) = Option(node.network.node(address)) match {
+  private fun withComponent(address: String, f: (Component) -> Int) = Option(node.network().node(address)) match {
     case Some(component: Component) if component.canBeSeenFrom(node) || component == node =>
       f(component)
     case _ =>

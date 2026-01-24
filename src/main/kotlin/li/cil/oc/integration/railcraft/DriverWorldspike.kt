@@ -7,6 +7,7 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
+import li.cil.oc.server.component.Result
 import li.cil.oc.util.ResultWrapper.result
 import mods.railcraft.common.blocks.machine.worldspike.TileWorldspike
 import mods.railcraft.common.blocks.machine.worldspike.WorldspikeVariant
@@ -29,11 +30,11 @@ object DriverWorldspike : DriverSidedTileEntity() {
         override fun priority() = 5
 
         @Callback(doc = "function():int -- Get the amount of fuel.")
-        fun getFuel(context: Context, args: Arguments): Array<Any> =
+        fun getFuel(context: Context, args: Arguments): Result =
             result(tile.fuelAmount)
 
         @Callback(doc = "function():string -- Get the anchor owner name.")
-        fun getOwner(context: Context, args: Arguments): Array<Any> {
+        fun getOwner(context: Context, args: Arguments): Result {
             val owner = tile.owner
             return if (owner == null || owner.name == null || Objects.equals(owner.name, "[unknown]")) {
                 result()
@@ -43,7 +44,7 @@ object DriverWorldspike : DriverSidedTileEntity() {
         }
 
         @Callback(doc = "function():string -- Get the anchor type.")
-        fun getType(context: Context, args: Arguments): Array<Any> =
+        fun getType(context: Context, args: Arguments): Result =
             when (tile.machineType) {
                 WorldspikeVariant.STANDARD -> result("world")
                 WorldspikeVariant.ADMIN -> result("admin")
@@ -53,7 +54,7 @@ object DriverWorldspike : DriverSidedTileEntity() {
             }
 
         @Callback(doc = "function():table -- Get the anchor fuel slot's contents.")
-        fun getFuelSlotContents(context: Context, args: Arguments): Array<Any> =
+        fun getFuelSlotContents(context: Context, args: Arguments): Result =
             if (tile.needsFuel()) {
                 result(tile.getStackInSlot(0))
             } else {
@@ -61,7 +62,7 @@ object DriverWorldspike : DriverSidedTileEntity() {
             }
 
         @Callback(doc = "function():boolean -- If the anchor is disabled (powered by redstone).")
-        fun isDisabled(context: Context, args: Arguments): Array<Any> =
+        fun isDisabled(context: Context, args: Arguments): Result =
             result(tile.isPowered)
     }
 }

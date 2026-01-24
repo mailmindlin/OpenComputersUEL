@@ -1,12 +1,13 @@
 package li.cil.oc.integration.util
 
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.asStackOption
 import net.minecraft.client.gui.inventory.GuiContainer
+import net.minecraft.item.ItemStack
 
 object ItemSearch {
-
-    val focusedInput = mutableSetOf<() -> Boolean>()
-    val stackFocusing = mutableSetOf<(GuiContainer, Int, Int) -> StackOption>()
+    private val focusedInput = mutableSetOf<() -> Boolean>()
+    internal val stackFocusing = mutableSetOf<(GuiContainer, Int, Int) -> ItemStack?>()
 
     fun isInputFocused(): Boolean {
         for (f in focusedInput) {
@@ -18,10 +19,10 @@ object ItemSearch {
     fun hoveredStack(container: GuiContainer, mouseX: Int, mouseY: Int): StackOption {
         for (f in stackFocusing) {
             val result = f(container, mouseX, mouseY)
-            if (result.isDefined) {
-                return result
+            if (result != null) {
+                return result.asStackOption()
             }
         }
-        return StackOption.EmptyStack
+        return StackOption.empty()
     }
 }

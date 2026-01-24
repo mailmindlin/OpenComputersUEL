@@ -2,22 +2,14 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal.Drone as InternalDrone
-import li.cil.oc.api.internal.Rotatable as InternalRotatable
-import li.cil.oc.api.internal.Tablet as InternalTablet
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedArguments.optSideAny
-import li.cil.oc.util.ExtendedArguments.optSideForAction
 import li.cil.oc.util.optSideAny
 import li.cil.oc.util.optSideForAction
 import net.minecraft.block.BlockPistonBase
@@ -25,6 +17,10 @@ import net.minecraft.block.material.EnumPushReaction
 import net.minecraft.init.SoundEvents
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
+import li.cil.oc.api.internal.Drone as InternalDrone
+import li.cil.oc.api.internal.Rotatable as InternalRotatable
+import li.cil.oc.api.internal.Tablet as InternalTablet
+import li.cil.oc.server.PacketSender as ServerPacketSender
 
 object PistonTraits {
     interface ExtendAware {
@@ -53,7 +49,7 @@ object PistonTraits {
     }
 }
 
-abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo, PistonTraits.ExtendAware {
+abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt, PistonTraits.ExtendAware {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("piston")
         .withConnector()
@@ -113,6 +109,11 @@ abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnviro
         val side = pushDirection(args, index = 0)
         return doPistonAction(context, side, true)
     }
+
+
+    class Drone(drone: InternalDrone) : UpgradePiston(drone), PistonTraits.DroneLike
+    open class Rotatable(override val rotatable: InternalRotatable) : UpgradePiston(rotatable), PistonTraits.RotatableLike
+    class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
 }
 
 abstract class UpgradeStickyPiston(host: EnvironmentHost) : UpgradePiston(host) {

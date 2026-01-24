@@ -11,9 +11,10 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.*
 import li.cil.oc.common.Tier
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedWorld.isBlockLoaded
+import li.cil.oc.util.isBlockLoaded
 import net.minecraft.nbt.NBTTagCompound
 import java.io.IOException
+import kotlin.math.sqrt
 
 abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), WirelessEndpoint {
     override val node = Network.newNode(this, Visibility.Network)
@@ -39,11 +40,11 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
 
     override fun world() = host.world
 
-    fun receivePacket(packet: Packet, source: WirelessEndpoint) {
-        val dx = (source.x() + 0.5) - host.xPosition
-        val dy = (source.y() + 0.5) - host.yPosition
-        val dz = (source.z() + 0.5) - host.zPosition
-        val distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
+    override fun receivePacket(packet: Packet, source: WirelessEndpoint) {
+        val dx = (source.x() + 0.5) - host.xPosition()
+        val dy = (source.y() + 0.5) - host.yPosition()
+        val dz = (source.z() + 0.5) - host.zPosition()
+        val distance = sqrt(dx * dx + dy * dy + dz * dz)
         receivePacket(packet, distance, host)
     }
 
@@ -131,25 +132,23 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
         super.save(nbt)
         nbt.setDouble(StrengthTag, strength)
     }
-}
 
-object WirelessNetworkCard {
-    open class Tier1(host: EnvironmentHost) : WirelessNetworkCard(host) {
+    sealed class Tier1(host: EnvironmentHost) : WirelessNetworkCard(host) {
         override val wirelessCostPerRange: Double
-            get() = Settings.get.wirelessCostPerRange(Tier.One)
+            get() = Settings.get.wirelessCostPerRange[Tier.One]
 
         override val maxWirelessRange: Double
-            get() = Settings.get.maxWirelessRange(Tier.One)
+            get() = Settings.get.maxWirelessRange[Tier.One]
 
         // wired network card is before wireless cards in max port list
         override val maxOpenPorts: Int
-            get() = Settings.get.maxOpenPorts(Tier.One + 1)
+            get() = Settings.get.maxOpenPorts[Tier.One + 1]
 
         override val shouldSendWiredTraffic: Boolean = false
 
         // ----------------------------------------------------------------------- //
 
-        private val deviceInfo = mapOf(
+        override val deviceInfo = mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
             DeviceAttribute.Description to "Wireless ethernet controller",
             DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
@@ -159,8 +158,6 @@ object WirelessNetworkCard {
             DeviceAttribute.Size to maxOpenPorts.toString(),
             DeviceAttribute.Width to maxWirelessRange.toString()
         )
-
-        override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
 
         override fun isPacketAccepted(packet: Packet, distance: Double): Boolean {
             return if (distance <= maxWirelessRange && (distance > 0 || shouldSendWiredTraffic)) {
@@ -173,20 +170,20 @@ object WirelessNetworkCard {
 
     class Tier2(host: EnvironmentHost) : Tier1(host) {
         override val wirelessCostPerRange: Double
-            get() = Settings.get.wirelessCostPerRange(Tier.Two)
+            get() = Settings.get.wirelessCostPerRange[Tier.Two]
 
         override val maxWirelessRange: Double
-            get() = Settings.get.maxWirelessRange(Tier.Two)
+            get() = Settings.get.maxWirelessRange[Tier.Two]
 
         // wired network card is before wireless cards in max port list
         override val maxOpenPorts: Int
-            get() = Settings.get.maxOpenPorts(Tier.Two + 1)
+            get() = Settings.get.maxOpenPorts[Tier.Two + 1]
 
         override val shouldSendWiredTraffic: Boolean = true
 
         // ----------------------------------------------------------------------- //
 
-        private val deviceInfo = mapOf(
+        override val deviceInfo = mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
             DeviceAttribute.Description to "Wireless ethernet controller",
             DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
@@ -196,7 +193,5 @@ object WirelessNetworkCard {
             DeviceAttribute.Size to maxOpenPorts.toString(),
             DeviceAttribute.Width to maxWirelessRange.toString()
         )
-
-        override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
     }
 }
