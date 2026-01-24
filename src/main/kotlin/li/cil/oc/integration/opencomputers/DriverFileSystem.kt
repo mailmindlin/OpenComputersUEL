@@ -29,7 +29,7 @@ object DriverFileSystem : Item() {
     ApiItems.get(Constants.ItemName.HDDTier2),
     ApiItems.get(Constants.ItemName.HDDTier3),
     ApiItems.get(Constants.ItemName.Floppy)) &&
-    (!stack.hasTagCompound || !stack.tagCompound.hasKey(Settings.namespace + "lootPath"))
+    (!stack.hasTagCompound() || !stack.tagCompound!!.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world != null && host.world.isRemote) null
@@ -53,7 +53,7 @@ object DriverFileSystem : Item() {
     }
 
   private fun createEnvironment(stack: ItemStack, capacity: Int, platterCount: Int, host: EnvironmentHost, speed: Int) = if (DimensionManager.getWorld(0) != null) {
-    if (stack.hasTagCompound && stack.tagCompound.hasKey(Settings.namespace + "lootFactory")) {
+    if (stack.hasTagCompound() && stack.tagCompound.hasKey(Settings.namespace + "lootFactory")) {
       // Loot disk, create file system using factory callback.
       Loot.factories[stack.tagCompound.getString(Settings.namespace + "lootFactory")]?.let { factory ->
         val label =

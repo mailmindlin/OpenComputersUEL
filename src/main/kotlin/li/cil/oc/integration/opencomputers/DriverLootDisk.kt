@@ -18,11 +18,11 @@ import net.minecraftforge.common.DimensionManager
 object DriverLootDisk : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
     ApiItems.get(Constants.ItemName.Floppy)) &&
-    (stack.hasTagCompound && stack.tagCompound.hasKey(Settings.namespace + "lootPath"))
+    (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (!host.world.isRemote && stack.hasTagCompound && DimensionManager.getWorld(0) != null) {
-      val lootPath = "loot/" + stack.tagCompound.getString(Settings.namespace + "lootPath")
+    if (!host.world().isRemote && stack.hasTagCompound() && DimensionManager.getWorld(0) != null) {
+      val lootPath = "loot/" + stack.tagCompound!!.getString(Settings.namespace + "lootPath")
       val savePath = File(DimensionManager.getCurrentSaveRootDirectory(), Settings.savePath + lootPath)
       val fs =
         if (savePath.exists() && savePath.isDirectory) {
