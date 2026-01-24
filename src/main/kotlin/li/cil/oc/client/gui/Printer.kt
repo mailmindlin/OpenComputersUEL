@@ -38,10 +38,6 @@ class Printer(
         override val barTexture get() = Textures.GUI.PrinterProgress
     })
 
-    override fun initGui() {
-        super.initGui()
-    }
-
     override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
         super.drawSecondaryForegroundLayer(mouseX, mouseY)
         fontRenderer.drawString(
