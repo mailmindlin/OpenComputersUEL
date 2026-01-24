@@ -10,7 +10,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
  * Like Rotatable, but stores the rotation information in the TE's NBT instead
  * of the block's metadata.
  */
-abstract class RotatableTile : Rotatable() {
+abstract class RotatableTile : Rotatable {
     // ----------------------------------------------------------------------- //
     // State
     // ----------------------------------------------------------------------- //

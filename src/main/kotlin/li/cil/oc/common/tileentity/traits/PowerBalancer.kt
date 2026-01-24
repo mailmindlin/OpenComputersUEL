@@ -13,7 +13,7 @@ interface PowerBalancer : PowerInformation(), SidedEnvironment, Tickable {
 
     override fun updateEntity() {
         super.updateEntity()
-        if (isServer && isConnected && getWorld().totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (isServer && isConnected && Settings.get.isTickMultiple(world!!)) {
             val nodes = connectors
             fun network(connector: Connector?) = if (connector?.network() != null) connector.network() else this
             // Yeeeeah, so that just happened... it's not a beauty, but it works. This

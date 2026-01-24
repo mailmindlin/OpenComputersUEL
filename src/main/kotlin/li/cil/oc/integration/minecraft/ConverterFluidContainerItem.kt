@@ -6,7 +6,7 @@ import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandlerItem
 
 object ConverterFluidContainerItem : Converter {
-    override fun convert(value: Any?, output: MutableMap<Any, Any>) {
+    override fun convert(value: Any?, output: MutableMap<Any?, Any?>) {
         when (value) {
             is ItemStack -> if (value.hasCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)) {
                 val capability = value.getCapability(CapabilityFluidHandler.FLUID_HANDLER_ITEM_CAPABILITY, null)

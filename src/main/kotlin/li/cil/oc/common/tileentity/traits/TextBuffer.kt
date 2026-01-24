@@ -4,7 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Items as ApiItems
-import li.cil.oc.api.InternalTextBuffer as InternalTextBuffer
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 import li.cil.oc.api.network.Node
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fml.relauncher.Side

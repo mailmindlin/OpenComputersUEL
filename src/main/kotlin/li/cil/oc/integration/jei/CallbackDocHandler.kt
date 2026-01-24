@@ -107,7 +107,7 @@ object CallbackDocHandler {
 
         override fun drawInfo(@Nonnull minecraft: Minecraft, recipeWidth: Int, recipeHeight: Int, mouseX: Int, mouseY: Int) {
             page.lines().forEachIndexed { line, text ->
-                minecraft.fontRenderer.drawString(text, 4, 4 + line * (minecraft.fontRenderer.FONT_HEIGHT + 1), 0x333333, false)
+                minecraft.fontRenderer.drawString(text, 4f, 4f + line * (minecraft.fontRenderer.FONT_HEIGHT + 1), 0x333333, false)
             }
         }
     }

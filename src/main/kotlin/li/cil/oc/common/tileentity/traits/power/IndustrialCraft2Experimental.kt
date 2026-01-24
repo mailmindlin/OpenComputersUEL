@@ -34,7 +34,7 @@ interface IndustrialCraft2Experimental : Common, IndustrialCraft2Common, Tickabl
     // ----------------------------------------------------------------------- //
 
     override fun updateEntity() {
-        if (useIndustrialCraft2Power() && world != null && world!!.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (useIndustrialCraft2Power() && world != null && Settings.get.isTickMultiple(world!!)) {
             updateIC2Energy()
         }
     }

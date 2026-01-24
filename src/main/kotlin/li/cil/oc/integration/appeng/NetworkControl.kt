@@ -187,11 +187,11 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
       .map { aePotentialItem(it) }
       .toList()
     val offset = args.optSlot(database.data, 2, 0)
-    val count = args.optInteger(3, Int.MAX_VALUE).coerceAtMost(database.size - offset).coerceAtMost(items.size)
+    val count = args.optInteger(3, Int.MAX_VALUE).coerceAtMost(database.size() - offset).coerceAtMost(items.size)
     var slot = offset
     for (i in 0 until count) {
       val stack = items[i]?.createItemStack()?.copy()
-      while (!database.getStackInSlot(slot).isEmpty && slot < database.size) slot += 1
+      while (!database.getStackInSlot(slot).isEmpty && slot < database.size()) slot += 1
       if (database.getStackInSlot(slot).isEmpty) {
         database.setStackInSlot(slot, stack)
       }

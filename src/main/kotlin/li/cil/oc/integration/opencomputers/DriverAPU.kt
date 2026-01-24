@@ -19,7 +19,7 @@ object DriverAPU : DriverCPU(), HostAware {
     ApiItems.get(Constants.ItemName.APUCreative))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (gpuTier(stack)) {
       Tier.One -> ComponentAPU(Tier.One)
       Tier.Two -> ComponentAPU(Tier.Two)

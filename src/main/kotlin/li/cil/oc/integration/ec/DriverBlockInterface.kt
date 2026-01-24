@@ -16,7 +16,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 
 object DriverBlockInterface : DriverSidedTileEntity() {
-    override fun getTileEntityClass(): Class<*> = AEUtil.interfaceClass
+    override fun getTileEntityClass(): Class<*> = AEUtil.interfaceClass()!!
 
     override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment {
         val tile = world.getTileEntity(pos) as TileEntity

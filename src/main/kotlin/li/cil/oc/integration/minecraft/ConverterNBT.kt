@@ -4,7 +4,7 @@ import li.cil.oc.api.driver.Converter
 import net.minecraft.nbt.*
 
 object ConverterNBT : Converter {
-    override fun convert(value: Any?, output: MutableMap<Any, Any>) {
+    override fun convert(value: Any?, output: MutableMap<Any?, Any?>) {
         when (value) {
             is NBTTagCompound -> output["oc:flatten"] = convert(value)
         }

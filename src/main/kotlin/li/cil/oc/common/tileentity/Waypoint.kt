@@ -14,8 +14,12 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumParticleTypes
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
+import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Waypoint: TileEntityBase(), traits.Environment, traits.Rotatable, traits.RedstoneAware, traits.Tickable {
+class Waypoint: TileEntityBase(), TraitEnvironment, TraitRotatable, TraitRedstoneAware, TraitTickable {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("waypoint")
@@ -45,17 +49,17 @@ class Waypoint: TileEntityBase(), traits.Environment, traits.Rotatable, traits.R
     override fun updateEntity() {
         super.updateEntity()
         if (isClient) {
-            val origin = position.toVec3.add(
-                facing.xOffset * 0.5,
-                facing.yOffset * 0.5,
-                facing.zOffset * 0.5
+            val origin = position.toVec3().add(
+                facing().xOffset * 0.5,
+                facing().yOffset * 0.5,
+                facing().zOffset * 0.5
             )
             val dx = (world.rand.nextFloat() - 0.5f) * 0.8f
             val dy = (world.rand.nextFloat() - 0.5f) * 0.8f
             val dz = (world.rand.nextFloat() - 0.5f) * 0.8f
-            val vx = (world.rand.nextFloat() - 0.5f) * 0.2f + facing.xOffset * 0.3f
-            val vy = (world.rand.nextFloat() - 0.5f) * 0.2f + facing.yOffset * 0.3f - 0.5f
-            val vz = (world.rand.nextFloat() - 0.5f) * 0.2f + facing.zOffset * 0.3f
+            val vx = (world.rand.nextFloat() - 0.5f) * 0.2f + facing().xOffset * 0.3f
+            val vy = (world.rand.nextFloat() - 0.5f) * 0.2f + facing().yOffset * 0.3f - 0.5f
+            val vz = (world.rand.nextFloat() - 0.5f) * 0.2f + facing().zOffset * 0.3f
             world.spawnParticle(
                 EnumParticleTypes.PORTAL,
                 origin.x + dx, origin.y + dy, origin.z + dz,

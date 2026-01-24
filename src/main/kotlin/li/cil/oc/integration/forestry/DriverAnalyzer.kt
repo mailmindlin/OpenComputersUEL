@@ -8,6 +8,7 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
+import li.cil.oc.server.component.Result
 import li.cil.oc.util.ResultWrapper.result
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
@@ -27,15 +28,15 @@ class DriverAnalyzer : DriverSidedTileEntity() {
         override fun priority() = 0
 
         @Callback(doc = "function():boolean -- Get whether the analyzer can work.")
-        fun isWorking(context: Context, args: Arguments): Array<Any> =
+        fun isWorking(context: Context, args: Arguments): Result =
             result(tileEntity.hasWork())
 
         @Callback(doc = "function():double -- Get the progress of the current operation.")
-        fun getProgress(context: Context, args: Arguments): Array<Any> =
+        fun getProgress(context: Context, args: Arguments): Result =
             result(1.0 - tileEntity.getProgressScaled(100) / 100.0)
 
         @Callback(doc = "function():table -- Get info on the currently present bee.")
-        fun getIndividualOnDisplay(context: Context, args: Arguments): Array<Any> =
+        fun getIndividualOnDisplay(context: Context, args: Arguments): Result =
             result(AlleleManager.alleleRegistry.getIndividual(tileEntity.individualOnDisplay))
     }
 }

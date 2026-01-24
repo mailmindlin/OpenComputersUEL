@@ -10,8 +10,9 @@ import li.cil.oc.integration.util.BundledRedstone
 import li.cil.oc.integration.util.BundledRedstone.RedstoneProvider
 import li.cil.oc.integration.vanilla.ConverterFluidContainerItem
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedWorld.extendBlockPos
-import li.cil.oc.util.ExtendedWorld.extendWorld
+import li.cil.oc.util.computeRedstoneSignal
+import li.cil.oc.util.getBlock
+import li.cil.oc.util.getBlockMetadata
 import net.minecraft.block.BlockRedstoneWire
 import net.minecraft.init.Blocks
 import net.minecraft.util.EnumFacing
@@ -65,7 +66,7 @@ internal object ModMinecraft : ModProxy, RedstoneProvider {
     }
 
     override fun computeInput(pos: BlockPosition, side: EnumFacing): Int {
-        val world = pos.world.get()
+        val world = pos.world!!
         return maxOf(
             world.computeRedstoneSignal(pos, side),
             if (world.getBlock(pos.offset(side)) == Blocks.REDSTONE_WIRE)

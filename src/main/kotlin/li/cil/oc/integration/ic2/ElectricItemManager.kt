@@ -12,7 +12,7 @@ object ElectricItemManager : IElectricItemManager {
     override fun getCharge(stack: ItemStack?): Double {
         if (stack == null) return 0.0
         return when (val item = stack.item) {
-            is Chargeable -> Power.toEU(Int.MAX_VALUE + item.charge(stack, -Int.MAX_VALUE, true))
+            is Chargeable -> Power.toEU(Int.MAX_VALUE + item.charge(stack, (-Int.MAX_VALUE).toDouble(), true))
             else -> 0.0
         }
     }

@@ -9,6 +9,7 @@ import li.cil.oc.integration.jei.ManualUsageHandler.ManualUsageRecipe
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.integration.util.ItemSearch
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.notEmpty
 import mezz.jei.api.IJeiRuntime
 import mezz.jei.api.IModPlugin
 import mezz.jei.api.IModRegistry
@@ -54,7 +55,7 @@ class ModPluginOpenComputers : IModPlugin {
         ModJEI.ingredientRegistry = registry.ingredientRegistry
     }
 
-    private var stackUnderMouse: ((GuiContainer, Int, Int) -> StackOption)? = null
+    private var stackUnderMouse: ((GuiContainer, Int, Int) -> ItemStack?)? = null
 
     override fun onRuntimeAvailable(jeiRuntime: IJeiRuntime) {
         if (stackUnderMouse == null) {
@@ -62,7 +63,7 @@ class ModPluginOpenComputers : IModPlugin {
                 stackUnderMouse?.invoke(container, mouseX, mouseY)
             }
         }
-        stackUnderMouse = { _, _, _ -> StackOption(jeiRuntime.itemListOverlay.stackUnderMouse) }
+        stackUnderMouse = { _, _, _ -> jeiRuntime.itemListOverlay.stackUnderMouse.notEmpty() }
 
         ModJEI.runtime = jeiRuntime
     }
@@ -74,7 +75,7 @@ class ModPluginOpenComputers : IModPlugin {
         fun useNBT(vararg names: String) {
             names.map { name ->
                 val info = Items.get(name)
-                Item.getItemFromBlock(info.block) ?: info.item()
+                Item.getItemFromBlock(info.block()) ?: info.item()
             }.filterNotNull().distinct().forEach {
                 subtypeRegistry.useNbtForSubtypes(it)
             }

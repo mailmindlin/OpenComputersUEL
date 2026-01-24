@@ -156,7 +156,7 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
         }
 
     inner class CCContext(val computer: IComputerAccess, val context: ILuaContext) : Context {
-        override fun node() = relay.node
+        override fun node() = relay.node()
 
         override fun isPaused() = false
 

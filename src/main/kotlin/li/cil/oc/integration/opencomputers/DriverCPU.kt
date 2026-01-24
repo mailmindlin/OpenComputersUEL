@@ -44,7 +44,7 @@ abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
   override fun allArchitectures(): List<Class<out Architecture>> = Machine.architectures().toList()
 
   override fun architecture(stack: ItemStack): Class<out Architecture>? {
-    if (stack.hasTagCompound) {
+    if (stack.hasTagCompound()) {
       val archClass = when (val clazz = stack.tagCompound.getString(Settings.namespace + "archClass")) {
         NativeLuaArchitecture::class.java.name -> {
           // Migrate old saved CPUs to new versions (since the class they refer still
@@ -68,7 +68,7 @@ abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
 
   override fun setArchitecture(stack: ItemStack, architecture: Class<out Architecture>) {
     if (!worksWith(stack)) throw IllegalArgumentException("Unsupported processor type.")
-    if (!stack.hasTagCompound) stack.tagCompound = NBTTagCompound()
+    if (!stack.hasTagCompound()) stack.tagCompound = NBTTagCompound()
     stack.tagCompound.setString(Settings.namespace + "archClass", architecture.name)
     stack.tagCompound.setString(Settings.namespace + "archName", Machine.getArchitectureName(architecture))
   }

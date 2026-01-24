@@ -9,6 +9,7 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.server.component.Result
 import li.cil.oc.util.ResultWrapper.result
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
@@ -43,19 +44,19 @@ object DriverEnergyStorage : DriverBlock {
         }
 
         @Callback(doc = "function():number -- Returns the amount of stored energy on the connected side.")
-        fun getEnergyStored(context: Context, args: Arguments): Array<Any> =
+        fun getEnergyStored(context: Context, args: Arguments): Result =
             result(storage.energyStored)
 
         @Callback(doc = "function():number -- Returns the maximum amount of stored energy on the connected side.")
-        fun getMaxEnergyStored(context: Context, args: Arguments): Array<Any> =
+        fun getMaxEnergyStored(context: Context, args: Arguments): Result =
             result(storage.maxEnergyStored)
 
         @Callback(doc = "function():number -- Returns whether this component can have energy extracted from the connected side.")
-        fun canExtract(context: Context, args: Arguments): Array<Any> =
+        fun canExtract(context: Context, args: Arguments): Result =
             result(storage.canExtract())
 
         @Callback(doc = "function():number -- Returns whether this component can receive energy on the connected side.")
-        fun canReceive(context: Context, args: Arguments): Array<Any> =
+        fun canReceive(context: Context, args: Arguments): Result =
             result(storage.canReceive())
 
         override fun preferredName(): String = "energy_device"
