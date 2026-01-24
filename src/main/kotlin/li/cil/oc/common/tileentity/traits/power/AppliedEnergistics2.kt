@@ -62,7 +62,7 @@ interface AppliedEnergistics2 : Common, IGridHost {
     }
 
     fun updateAE2Entity() {
-        if (useAppliedEnergistics2Power() && world != null && world!!.totalWorldTime % Settings.get.tickFrequency == 0L) {
+        if (useAppliedEnergistics2Power() && world != null && Settings.get.isTickMultiple(world!!)) {
             updateAE2Energy()
         }
     }
