@@ -10,15 +10,19 @@ import li.cil.oc.api.network.Visibility
 
 // Note-to-self: this has a component to allow the robot telling it has the
 // upgrade.
-sealed class UpgradeAngel : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeAngel : ManagedEnvironmentKt(), DeviceInfoKt {
     override val node: Node = Network.newNode(this, Visibility.Network)
         .create()
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Angel upgrade",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "FreePlacer (TM)",
-        DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString()
-    )
+    companion object {
+        val deviceInfo = mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Angel upgrade",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "FreePlacer (TM)",
+            DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString()
+        )
+    }
+
+    override val deviceInfo = Companion.deviceInfo
 }
