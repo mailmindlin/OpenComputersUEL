@@ -4,21 +4,19 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.driver.DriverBlock
 import li.cil.oc.api.network.*
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.event.BlockChangeHandler
 import li.cil.oc.common.event.BlockChangeHandler.ChangeListener
-import li.cil.oc.server.network.NetworkObject as ServerNetwork
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedWorld.getTileEntity
+import li.cil.oc.util.getTileEntity
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.Vec3d
+import li.cil.oc.server.network.NetworkObject as ServerNetwork
 
 /**
  * Mostly stolen from [li.cil.oc.common.tileentity.Adapter]
@@ -29,7 +27,7 @@ class UpgradeMF(
     val host: EnvironmentHost,
     val coord: BlockPosition,
     val dir: EnumFacing
-) : ManagedEnvironmentKt(), ChangeListener, DeviceInfo {
+) : ManagedEnvironmentKt(), ChangeListener, DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.None)
         .withConnector()
         .create()
@@ -57,7 +55,7 @@ class UpgradeMF(
         val coordWorld = coord.world
         if (node != null && node.network() != null && coordWorld != null &&
             coordWorld.provider.dimension == host.world.provider.dimension &&
-            coord.toVec3().distanceTo(Vec3d(host.xPosition, host.yPosition, host.zPosition)) <= Settings.get.mfuRange
+            coord.toVec3().distanceTo(Vec3d(host.xPosition(), host.yPosition(), host.zPosition())) <= Settings.get.mfuRange
         ) {
             when (val te = host.world().getTileEntity(coord)) {
                 is Environment -> {

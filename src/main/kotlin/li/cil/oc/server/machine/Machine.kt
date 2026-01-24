@@ -27,6 +27,7 @@ import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.Slot
 import li.cil.oc.common.tileentity
 import li.cil.oc.server.PacketSender
+import li.cil.oc.server.component.world
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
 import li.cil.oc.util.ExtendedNBT.setNewCompoundTag
@@ -552,7 +553,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
             callBudget = maxCallBudget
 
             // Make sure we have enough power.
-            if (host.world().totalWorldTime % Settings.get.tickFrequency == 0L) {
+            if (Settings.get.isTickMultiple(host.world)) {
                 synchronized(state) {
                     when (state.peek()) {
                         State.Paused, State.Restarting, State.Stopping, State.Stopped -> { } // No power consumption.

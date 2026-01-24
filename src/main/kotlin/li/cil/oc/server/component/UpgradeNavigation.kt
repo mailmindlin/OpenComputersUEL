@@ -3,29 +3,23 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Rotatable
-import li.cil.oc.api.internal.Tablet
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.data.NavigationUpgradeData
 import li.cil.oc.server.network.Waypoints
 import li.cil.oc.util.BlockPosition
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.util.EnumFacing
+import kotlin.math.abs
 
-class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
+class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
     private val rotatable: Rotatable
         get() = host as Rotatable
 
@@ -54,7 +48,7 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
         val relativeX = host.xPosition() - info.xCenter
         val relativeZ = host.zPosition() - info.zCenter
 
-        return if (Math.abs(relativeX) <= size / 2 && Math.abs(relativeZ) <= size / 2) {
+        return if (abs(relativeX) <= size / 2 && abs(relativeZ) <= size / 2) {
             result(relativeX, host.yPosition(), relativeZ)
         } else {
             result(Unit, "out of range")
@@ -77,7 +71,6 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
             return result(emptyArray<Any>())
         if (!node.tryChangeBuffer(-range * Settings.get.wirelessCostPerRange[Tier.Two] * 0.25))
             return result(Unit, "not enough energy")
-        }
         context.pause(0.5)
         val position = BlockPosition(host)
         val positionVec = position.toVec3()
@@ -85,10 +78,10 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
         val waypoints = Waypoints.findWaypoints(position, range)
             .filter { waypoint -> waypoint.getDistanceSq(positionVec.x, positionVec.y, positionVec.z) <= rangeSq }
         return result(waypoints.map { waypoint ->
-            val delta = waypoint.position.offset(waypoint.facing).toVec3().subtract(positionVec)
+            val delta = waypoint.position.offset(waypoint.facing()!!).toVec3().subtract(positionVec)
             mapOf(
                 "position" to arrayOf(delta.x, delta.y, delta.z),
-                "redstone" to waypoint.maxInput,
+                "redstone" to waypoint.maxInput(),
                 "label" to waypoint.label,
                 "address" to waypoint.node.address()
             )
