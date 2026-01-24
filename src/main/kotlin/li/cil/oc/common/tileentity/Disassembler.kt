@@ -13,8 +13,8 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.template.DisassemblerTemplates
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.ItemUtils
 import net.minecraft.entity.player.EntityPlayer
@@ -33,7 +33,7 @@ import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.PlayerInputAware as TraitPlayerInputAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfo {
+class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfoKt {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
@@ -69,7 +69,7 @@ class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, Tra
         }
     }
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Disassembler",
@@ -77,8 +77,6 @@ class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, Tra
             DeviceAttribute.Product to "Break.3R-100"
         )
     }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

@@ -15,8 +15,9 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.NotAnalyzable as TraitNotAnalyzable
+import li.cil.oc.server.component.DeviceInfoKt
 
-class PowerConverter : TileEntityBase(), TraitPowerAcceptor(), TraitEnvironment, TraitNotAnalyzable, DeviceInfo {
+class PowerConverter : TileEntityBase(), TraitPowerAcceptor(), TraitEnvironment, TraitNotAnalyzable, DeviceInfoKt {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
@@ -24,7 +25,7 @@ class PowerConverter : TileEntityBase(), TraitPowerAcceptor(), TraitEnvironment,
 
     override fun getNode(): Node = node
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Power,
             DeviceAttribute.Description to "Power converter",
@@ -33,8 +34,6 @@ class PowerConverter : TileEntityBase(), TraitPowerAcceptor(), TraitEnvironment,
             DeviceAttribute.Capacity to energyThroughput().toString()
         )
     }
-
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo as Map<String, String>
 
     @SideOnly(Side.CLIENT)
     override fun hasConnector(side: EnumFacing): Boolean = true

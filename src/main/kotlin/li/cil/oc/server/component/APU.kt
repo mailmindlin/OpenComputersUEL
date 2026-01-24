@@ -15,6 +15,4 @@ class APU(tier: Int) : GraphicsCard(tier) {
         DeviceAttribute.Width to widthInfo,
         DeviceAttribute.Clock to "${(Settings.get.callBudgets[tier] * 1000).toInt()}+${clockInfo}"
     )
-
-    override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
 }

@@ -185,9 +185,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
 
     // ----------------------------------------------------------------------- //
 
-    override fun getDeviceInfo(): MutableMap<String, String>? = if (host is DeviceInfo) {
-        (host as DeviceInfo).deviceInfo
-    } else null
+    override fun getDeviceInfo(): MutableMap<String, String>? = (host as? DeviceInfo)?.deviceInfo
 
     // ----------------------------------------------------------------------- //
 

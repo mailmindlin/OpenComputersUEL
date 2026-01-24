@@ -18,6 +18,7 @@ import li.cil.oc.common.Slot
 import li.cil.oc.common.Sound
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.InventoryUtils
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -28,7 +29,7 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
-class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfo {
+class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfoKt {
     // Used on client side to check whether to render disk activity indicators.
     @JvmField
     var lastAccess = 0L
@@ -36,7 +37,7 @@ class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, T
     val filesystemNode: Node?
         get() = components.getOrNull(0)?.node()
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Disk,
             DeviceAttribute.Description to "Floppy disk drive",
@@ -44,8 +45,6 @@ class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, T
             DeviceAttribute.Product to "Spinner 520p1"
         )
     }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
 
     // ----------------------------------------------------------------------- //
     // Environment

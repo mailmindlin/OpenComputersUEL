@@ -28,6 +28,7 @@ import li.cil.oc.api.util.StateAware.State
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.Terminal
+import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -36,7 +37,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraftforge.common.util.Constants.NBT
 
-class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfo {
+class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfoKt {
 
     override val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
 
@@ -93,7 +94,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     // ----------------------------------------------------------------------- //
     // DeviceInfo
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class.toString() to DeviceClass.Generic.toString(),
             DeviceAttribute.Description.toString() to "Terminal server",
@@ -101,8 +102,6 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
             DeviceAttribute.Product.toString() to "RemoteViewing EX"
         )
     }
-
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     // ----------------------------------------------------------------------- //
     // Environment

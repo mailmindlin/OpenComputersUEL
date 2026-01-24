@@ -17,6 +17,7 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentIn
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.internal.Adapter as InternalAdapter
 import net.minecraft.entity.player.EntityPlayer
@@ -28,7 +29,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
 import net.minecraftforge.common.util.Constants as NBTConstants
 
-class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfo {
+class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfoKt {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network).create()
 
@@ -40,7 +41,7 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
 
     private val blocksData: Array<BlockData?> = arrayOfNulls(6)
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Bus,
             DeviceAttribute.Description to "Adapter",
@@ -48,8 +49,6 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
             DeviceAttribute.Product to "Multiplug Ext.1"
         )
     }
-
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     // ----------------------------------------------------------------------- //
 

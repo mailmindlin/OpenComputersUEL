@@ -18,6 +18,7 @@ import li.cil.oc.common.Slot
 import li.cil.oc.common.entity.Drone
 import li.cil.oc.integration.util.ItemCharge
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.BlockPosition
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -36,7 +37,7 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentIn
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfo {
+class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfoKt {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
@@ -59,7 +60,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
     @JvmField
     var invertSignal = false
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Charger",
@@ -67,8 +68,6 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
             DeviceAttribute.Product to "PowerUpper"
         )
     }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

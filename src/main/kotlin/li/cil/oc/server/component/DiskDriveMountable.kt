@@ -49,8 +49,6 @@ class DiskDriveMountable(
         DeviceAttribute.Product to "RackDrive 100 Rev. 2"
     )
 
-    override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
-
     // ----------------------------------------------------------------------- //
     // Environment
 

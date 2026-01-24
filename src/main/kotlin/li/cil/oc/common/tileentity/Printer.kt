@@ -16,6 +16,7 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.StackOption
 import li.cil.oc.util.StackOption._
@@ -32,7 +33,7 @@ import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfo {
+class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfoKt {
     @JvmField
     val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("printer3d")
@@ -67,7 +68,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
     val slotInk = 1
     val slotOutput = 2
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Printer,
             DeviceAttribute.Description to "3D Printer",
@@ -75,8 +76,6 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
             DeviceAttribute.Product to "Omni-Materializer T6.1"
         )
     }
-
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo as Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

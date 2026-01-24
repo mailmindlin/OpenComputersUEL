@@ -2,8 +2,6 @@ package li.cil.oc.server.machine.luac
 
 import li.cil.oc.api.network.Component
 
-import scala.collection.convert.WrapAsScala._
-
 class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
   override fun initialize() {
     lua.newTable()

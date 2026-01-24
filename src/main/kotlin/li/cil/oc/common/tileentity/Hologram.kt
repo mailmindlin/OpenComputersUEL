@@ -15,6 +15,7 @@ import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -28,7 +29,7 @@ import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Hologram @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-): TileEntityBase(), TraitEnvironment, SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfo {
+): TileEntityBase(), TraitEnvironment, SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfoKt {
 
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network)
@@ -36,7 +37,7 @@ class Hologram @JvmOverloads constructor(
         .withConnector()
         .create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
 
     @JvmField
     val width = 3 * 16
@@ -44,7 +45,7 @@ class Hologram @JvmOverloads constructor(
     @JvmField
     val height = 2 * 16 // 32 bit in an int
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Display,
             DeviceAttribute.Description to "Holographic projector",
@@ -54,8 +55,6 @@ class Hologram @JvmOverloads constructor(
             DeviceAttribute.Width to colors.size.toString()
         )
     }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

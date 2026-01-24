@@ -15,6 +15,7 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.template.AssemblerTemplates
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.StackOption
 import li.cil.oc.util.StackOption.EmptyStack
@@ -30,7 +31,7 @@ import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, SidedEnvironment, TraitStateAware, TraitTickable, DeviceInfo {
+class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, SidedEnvironment, TraitStateAware, TraitTickable, DeviceInfoKt {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("assembler")
@@ -48,7 +49,7 @@ class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitI
     @JvmField
     var requiredEnergy: Double = 0.0
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Assembler",
@@ -56,8 +57,6 @@ class Assembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitI
             DeviceAttribute.Product to "Factorizer R1D1"
         )
     }
-
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo as Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

@@ -23,10 +23,11 @@ import net.minecraftforge.fml.relauncher.SideOnly
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
 import li.cil.oc.common.tileentity.traits.Colored as TraitColored
+import li.cil.oc.server.component.DeviceInfoKt
 
 class Case @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-) : TileEntityBase(), TraitPowerAcceptor, TraitComputer, TraitColored, InternalCase, DeviceInfo {
+) : TileEntityBase(), TraitPowerAcceptor, TraitComputer, TraitColored, InternalCase, DeviceInfoKt {
 
     init {
         // If no tier was defined when constructing this case, then we don't yet know the inventory size
@@ -44,7 +45,7 @@ class Case @JvmOverloads constructor(
     @JvmField
     var lastNetworkActivity = 0L
 
-    private val deviceInfo: Map<String, String> by lazy {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.System,
             DeviceAttribute.Description to "Computer",
@@ -53,8 +54,6 @@ class Case @JvmOverloads constructor(
             DeviceAttribute.Capacity to sizeInventory.toString()
         )
     }
-
-    override fun getDeviceInfo(): java.util.Map<String, String> = deviceInfo as java.util.Map<String, String>
 
     // ----------------------------------------------------------------------- //
 

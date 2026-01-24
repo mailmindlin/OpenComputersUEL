@@ -19,20 +19,18 @@ import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.checkSideAny
 
 object Transposer {
-    abstract sealed class Common : AbstractManagedEnvironment(), WorldInventoryAnalytics, WorldTankAnalytics, InventoryTransfer, DeviceInfo {
+    abstract sealed class Common : AbstractManagedEnvironment(), WorldInventoryAnalytics, WorldTankAnalytics, InventoryTransfer, DeviceInfoKt {
         override val node = Network.newNode(this, Visibility.Network)
             .withComponent("transposer")
             .withConnector()
             .create()
 
-        private val deviceInfo = mapOf(
+        override val deviceInfo = mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Transposer",
             DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
             DeviceAttribute.Product to "TP4k-iX"
         )
-
-        override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
 
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
 

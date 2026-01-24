@@ -18,13 +18,17 @@ import li.cil.oc.common.tileentity.Robot as TERobot
 
 object UpgradeTankController {
 
-    interface Common : DeviceInfo {
-        override fun getDeviceInfo(): MutableMap<String, String> = mapOf(
-            DeviceAttribute.Class to DeviceClass.Generic,
-            DeviceAttribute.Description to "Tank controller",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "FlowCheckDX"
-        ).toMutableMap()
+    interface Common : DeviceInfoKt {
+        override val deviceInfo get() = Common.Companion.deviceInfo
+
+        companion object {
+            private val deviceInfo = mapOf(
+                DeviceAttribute.Class to DeviceClass.Generic,
+                DeviceAttribute.Description to "Tank controller",
+                DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+                DeviceAttribute.Product to "FlowCheckDX"
+            )
+        }
     }
 
     sealed class Adapter(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldTankAnalytics, Common {

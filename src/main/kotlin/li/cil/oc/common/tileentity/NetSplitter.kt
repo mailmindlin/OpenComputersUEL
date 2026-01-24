@@ -15,6 +15,7 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -25,8 +26,8 @@ import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
 import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 
-class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfo {
-    private val deviceInfo: Map<String, String> by lazy {
+class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfoKt {
+    override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
             DeviceAttribute.Description to "Ethernet controller",
@@ -34,10 +35,8 @@ class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRed
             DeviceAttribute.Product to "NetSplits",
             DeviceAttribute.Version to "1.0",
             DeviceAttribute.Width to "6"
-        ) as Map<String, String>
+        )
     }
-
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     init {
         _isOutputEnabled = true
