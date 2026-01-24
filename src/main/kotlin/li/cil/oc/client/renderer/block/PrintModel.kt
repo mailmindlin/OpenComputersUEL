@@ -7,10 +7,7 @@ import li.cil.oc.client.Textures
 import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.tileentity.Print
-import li.cil.oc.util.Color
-import li.cil.oc.util.ExtendedAABB
-import li.cil.oc.util.max
-import li.cil.oc.util.min
+import li.cil.oc.util.*
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.renderer.block.model.BakedQuad
 import net.minecraft.client.renderer.block.model.IBakedModel
@@ -34,7 +31,7 @@ object PrintModel : SmartBlockModelBase() {
 
                 for (shape in tile.shapes) {
                     if (!Strings.isNullOrEmpty(shape.texture)) {
-                        val bounds = shape.bounds.rotateTowards(tile.facing())
+                        val bounds = shape.bounds.rotateTowards(tile.facing()!!)
                         val texture = resolveTexture(shape.texture)
                         faces.addAll(bakeQuads(makeBox(bounds.min, bounds.max), Array(6) { texture }, shape.tint?.toInt() ?: White))
                     }

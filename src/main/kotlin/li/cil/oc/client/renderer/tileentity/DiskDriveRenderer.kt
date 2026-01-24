@@ -32,10 +32,10 @@ object DiskDriveRenderer : TileEntitySpecialRenderer<DiskDrive>() {
             else -> {} // No yaw.
         }
 
-        val stack = drive.items(0)
+        val stack = drive.items[0]
         if (!stack.isEmpty) {
             GlStateManager.pushMatrix()
-            GlStateManager.translate(0.0, 3.5f / 16, 6 / 16f.toDouble())
+            GlStateManager.translate(0f, 3.5f / 16f, 6f / 16f)
             GlStateManager.rotate(90f, -1f, 0f, 0f)
             GlStateManager.scale(0.5f, 0.5f, 0.5f)
 

@@ -300,7 +300,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
         RenderState.checkError(javaClass.name + ".render: entering (aka: wasntme)")
 
         val robot = proxy.robot
-        val worldTime = robot.world.totalWorldTime + f
+        val worldTime = robot.world!!.totalWorldTime + f
 
         GlStateManager.pushMatrix()
         RenderState.pushAttrib()

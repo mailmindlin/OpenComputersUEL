@@ -35,7 +35,7 @@ object RobotModel : SmartBlockModelBase() {
         // I don't know why this is super-bright when using 0xFF888888 :/
         private const val tint = 0xFF555555.toInt()
 
-        protected val robotTexture: Any
+        private val robotTexture: Any
             get() = Textures.getSprite(Textures.Item.Robot)
 
         private fun interpolate(v0: FloatArray, v1: FloatArray) =

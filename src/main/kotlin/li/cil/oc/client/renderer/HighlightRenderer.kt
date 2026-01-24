@@ -11,6 +11,7 @@ import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.rotateTowards
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.RenderState
+import li.cil.oc.util.getBlock
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
@@ -143,7 +144,7 @@ object HighlightRenderer {
                         GlStateManager.depthMask(false)
 
                         for (shape in te.shapes) {
-                            val bounds = shape.bounds.rotateTowards(te.facing)
+                            val bounds = shape.bounds.rotateTowards(te.facing() ?: EnumFacing.NORTH)
                             RenderGlobal.drawSelectionBoundingBox(
                                 bounds.grow(expansion.toDouble(), expansion.toDouble(), expansion.toDouble())
                                     .offset(blockPos.x.toDouble(), blockPos.y.toDouble(), blockPos.z.toDouble())

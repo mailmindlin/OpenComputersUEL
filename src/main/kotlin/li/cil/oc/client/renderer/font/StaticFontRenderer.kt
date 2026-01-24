@@ -40,14 +40,14 @@ class StaticFontRenderer : TextureFontRenderer() {
     private val uSize = uStep
     private val vStep = (charHeight + 1) / 256.0
     private val vSize = charHeight / 256.0
-    private val s = Settings.get().fontCharScale
+    private val s = Settings.get.fontCharScale
     private val dw = charWidth * s - charWidth
     private val dh = charHeight * s - charHeight
 
     override val textureCount = 1
 
     override fun bindTexture(index: Int) {
-        if (Settings.get().textAntiAlias) {
+        if (Settings.get.textAntiAlias) {
             Textures.bind(Textures.Font.AntiAliased)
         } else {
             Textures.bind(Textures.Font.Aliased)

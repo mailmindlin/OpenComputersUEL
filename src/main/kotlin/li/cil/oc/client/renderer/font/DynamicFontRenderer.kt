@@ -16,7 +16,7 @@ import org.lwjgl.opengl.GL11
  * to it. It's pretty broken right now, and font rendering looks crappy as hell.
  */
 class DynamicFontRenderer : TextureFontRenderer(), IResourceManagerReloadListener {
-    private val glyphProvider: IGlyphProvider = when (Settings.get().fontRenderer) {
+    private val glyphProvider: IGlyphProvider = when (Settings.get.fontRenderer) {
         else -> FontParserHex()
     }
 
@@ -64,7 +64,7 @@ class DynamicFontRenderer : TextureFontRenderer(), IResourceManagerReloadListene
     }
 
     override fun generateChar(char: Int) {
-        charMap.getOrPut(char) { createCharIcon(char) }
+        charMap.getOrPut(char) { createCharIcon(char) ?: return@generateChar }
     }
 
     override fun drawChar(tx: Float, ty: Float, char: Int) {
@@ -78,7 +78,7 @@ class DynamicFontRenderer : TextureFontRenderer(), IResourceManagerReloadListene
     private fun createCharIcon(char: Int): CharIcon? {
         return if (FontUtils.wcwidth(char) < 1 || glyphProvider.getGlyph(char) == null) {
             if (char == '?'.code) null
-            else charMap.getOrPut('?'.code) { createCharIcon('?'.code) }
+            else charMap.getOrPut('?'.code) { createCharIcon('?'.code) ?: return@createCharIcon null }
         } else {
             if (textures.last().isFull(char)) {
                 textures += CharTexture(this)
@@ -93,7 +93,7 @@ class DynamicFontRenderer : TextureFontRenderer(), IResourceManagerReloadListene
 
         init {
             RenderState.bindTexture(id)
-            if (Settings.get().textLinearFiltering) {
+            if (Settings.get.textLinearFiltering) {
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR)
             } else {
                 GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST)
