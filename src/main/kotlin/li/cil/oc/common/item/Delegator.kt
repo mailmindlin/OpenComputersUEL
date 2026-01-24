@@ -29,7 +29,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-open class Delegator : Item(), UpgradeRenderer, Chargeable {
+open class Delegator : Item(), li.cil.oc.api.driver.item.UpgradeRenderer, Chargeable {
     init {
         setHasSubtypes(true)
         creativeTab = CreativeTab
@@ -40,7 +40,7 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     // ----------------------------------------------------------------------- //
 
     override fun getItemStackLimit(stack: ItemStack): Int {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return if (subItem != null) {
             val address = OpenComputersItem.address(stack)
             if (address != null) 1 else subItem.maxStackSize
@@ -77,80 +77,74 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     // ----------------------------------------------------------------------- //
 
     override fun getTranslationKey(stack: ItemStack): String {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return if (subItem != null) "item.oc.${subItem.unlocalizedName}" else translationKey
     }
 
     override fun isBookEnchantable(itemA: ItemStack, itemB: ItemStack): Boolean = false
 
     override fun getRarity(stack: ItemStack): EnumRarity {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.rarity(stack) ?: EnumRarity.COMMON
     }
 
     override fun getContainerItem(stack: ItemStack): ItemStack {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.getContainerItem(stack) ?: super.getContainerItem(stack)
     }
 
     override fun hasContainerItem(stack: ItemStack): Boolean {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.hasContainerItem(stack) ?: super.hasContainerItem(stack)
     }
 
     // ----------------------------------------------------------------------- //
 
     override fun doesSneakBypassUse(stack: ItemStack, world: IBlockAccess, pos: BlockPos, player: EntityPlayer): Boolean {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.doesSneakBypassUse(world, pos, player) ?: super.doesSneakBypassUse(stack, world, pos, player)
     }
 
     override fun onItemUseFirst(player: EntityPlayer, world: World, pos: BlockPos, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, hand: EnumHand): EnumActionResult {
         val stack = player.getHeldItem(hand)
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.onItemUseFirst(stack, player, BlockPosition(pos, world), side, hitX, hitY, hitZ)
             ?: super.onItemUseFirst(player, world, pos, side, hitX, hitY, hitZ, hand)
     }
 
     override fun onItemUse(player: EntityPlayer, world: World, pos: BlockPos, hand: EnumHand, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
         val stack = player.getHeldItem(hand)
-        val subItem = Delegator.subItem(stack)
-        return if (subItem != null) {
-            if (subItem.onItemUse(stack, player, BlockPosition(pos, world), side, hitX, hitY, hitZ)) {
-                EnumActionResult.SUCCESS
-            } else {
-                EnumActionResult.PASS
-            }
-        } else {
-            super.onItemUse(player, world, pos, hand, side, hitX, hitY, hitZ)
-        }
+        val subItem = subItem(stack) ?: return super.onItemUse(player, world, pos, hand, side, hitX, hitY, hitZ)
+        return if (subItem.onItemUse(stack, player, BlockPosition(pos, world), side, hitX, hitY, hitZ))
+            EnumActionResult.SUCCESS
+        else EnumActionResult.PASS
     }
 
     override fun onItemRightClick(world: World, player: EntityPlayer, hand: EnumHand): ActionResult<ItemStack> {
         val stack = player.getHeldItem(hand)
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.onItemRightClick(stack, world, player) ?: super.onItemRightClick(world, player, hand)
     }
 
     // ----------------------------------------------------------------------- //
 
     override fun onItemUseFinish(stack: ItemStack, world: World, entity: EntityLivingBase): ItemStack {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.onItemUseFinish(stack, world, entity) ?: super.onItemUseFinish(stack, world, entity)
     }
 
     override fun getItemUseAction(stack: ItemStack): EnumAction {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.getItemUseAction(stack) ?: super.getItemUseAction(stack)
     }
 
     override fun getMaxItemUseDuration(stack: ItemStack): Int {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.getMaxItemUseDuration(stack) ?: super.getMaxItemUseDuration(stack)
     }
 
     override fun onPlayerStoppedUsing(stack: ItemStack, world: World, entity: EntityLivingBase, timeLeft: Int) {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         if (subItem != null) {
             subItem.onPlayerStoppedUsing(stack, entity, timeLeft)
         } else {
@@ -161,7 +155,7 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     fun internalGetItemStackDisplayName(stack: ItemStack): String = super.getItemStackDisplayName(stack)
 
     override fun getItemStackDisplayName(stack: ItemStack): String {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return if (subItem != null) {
             subItem.displayName(stack) ?: super.getItemStackDisplayName(stack)
         } else {
@@ -170,9 +164,9 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     }
 
     @SideOnly(Side.CLIENT)
-    override fun addInformation(stack: ItemStack, world: World?, tooltip: List<String>, flag: ITooltipFlag) {
+    override fun addInformation(stack: ItemStack, world: World?, tooltip: MutableList<String>, flag: ITooltipFlag) {
         super.addInformation(stack, world, tooltip, flag)
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         if (subItem != null) {
             try {
                 subItem.tooltipLines(stack, world, tooltip, flag)
@@ -183,17 +177,17 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     }
 
     override fun getDurabilityForDisplay(stack: ItemStack): Double {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.durability(stack) ?: super.getDurabilityForDisplay(stack)
     }
 
     override fun showDurabilityBar(stack: ItemStack): Boolean {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem?.showDurabilityBar(stack) ?: super.showDurabilityBar(stack)
     }
 
     override fun onUpdate(stack: ItemStack, world: World, player: Entity, slot: Int, selected: Boolean) {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         if (subItem != null) {
             subItem.update(stack, world, player, slot, selected)
         } else {
@@ -206,12 +200,12 @@ open class Delegator : Item(), UpgradeRenderer, Chargeable {
     // ----------------------------------------------------------------------- //
 
     override fun canCharge(stack: ItemStack): Boolean {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return subItem is Chargeable
     }
 
     override fun charge(stack: ItemStack, amount: Double, simulate: Boolean): Double {
-        val subItem = Delegator.subItem(stack)
+        val subItem = subItem(stack)
         return if (subItem is Chargeable) {
             subItem.charge(stack, amount, simulate)
         } else {
