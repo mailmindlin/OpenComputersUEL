@@ -9,10 +9,16 @@ import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Machine
+import li.cil.oc.api.Items
+import li.cil.oc.api.Network
+import li.cil.oc.api.Machine as MachineFactory
+import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.driver.item.Container
+import li.cil.oc.api.internal.Keyboard
+import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Connector
+import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import li.cil.oc.client.KeyBindings
@@ -23,13 +29,11 @@ import li.cil.oc.common.inventory.ComponentInventory
 import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.item.traits.Chargeable
 import li.cil.oc.common.item.traits.Delegate
+import li.cil.oc.server.component.Tablet as ComponentTablet
 import li.cil.oc.integration.opencomputers.DriverScreen
-import li.cil.oc.server.PacketSender
-import li.cil.oc.util.Audio
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.Rarity
-import li.cil.oc.util.RotationHelper
-import li.cil.oc.util.Tooltip
+import li.cil.oc.util.*
+import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.client.PacketSender as ClientPacketSender
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.ModelBakery
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
@@ -112,7 +116,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
 
     @SideOnly(Side.CLIENT)
     override fun getModelLocation(stack: ItemStack): ModelResourceLocation {
-        val wrapper = Tablet.Companion.Client.getWeak(stack)
+        val wrapper = Tablet.Client.getWeak(stack)
         val running = wrapper?.data?.isRunning
         return modelLocationFromState(running)
     }
@@ -143,15 +147,15 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
     override fun update(stack: ItemStack, world: World, entity: Entity, slot: Int, selected: Boolean) {
         if (entity is EntityPlayer) {
             // Play an audio cue to let players know when they finished analyzing a block.
-            if (world.isRemote && entity.itemInUseCount == TimeToAnalyze && api.Items.get(entity.activeItemStack) == api.Items.get(Constants.ItemName.Tablet)) {
+            if (world.isRemote && entity.itemInUseCount == TimeToAnalyze && Items.get(entity.activeItemStack) == Items.get(Constants.ItemName.Tablet)) {
                 Audio.play(entity.posX.toFloat(), entity.posY.toFloat() + 2, entity.posZ.toFloat(), ".")
             }
-            TabletObject.get(stack, entity).update(world, entity, slot, selected)
+            Tablet.get(stack, entity).update(world, entity, slot, selected)
         }
     }
 
     override fun onItemUseFirst(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): EnumActionResult {
-        TabletObject.currentlyAnalyzing = Triple(position, side, Triple(hitX, hitY, hitZ))
+        Tablet.currentlyAnalyzing = Triple(position, side, Triple(hitX, hitY, hitZ))
         return super.onItemUseFirst(stack, player, position, side, hitX, hitY, hitZ)
     }
 
@@ -173,10 +177,10 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
             val didAnalyze = getMaxItemUseDuration(stack) - duration >= TimeToAnalyze
             if (didAnalyze) {
                 if (!world.isRemote) {
-                    val analyzing = TabletObject.currentlyAnalyzing
+                    val analyzing = Tablet.currentlyAnalyzing
                     if (analyzing != null) {
                         try {
-                            val computer = TabletObject.get(stack, entity).machine
+                            val computer = Tablet.get(stack, entity).machine
                             if (computer.isRunning) {
                                 val data = NBTTagCompound()
                                 val (position, side, hit) = analyzing
@@ -193,7 +197,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
             } else {
                 if (entity.isSneaking) {
                     if (!world.isRemote) {
-                        val tablet = TabletObject.Server.get(stack, entity)
+                        val tablet = Tablet.Server.get(stack, entity)
                         tablet.machine.stop()
                         if (tablet.data.tier > Tier.One) {
                             entity.openGui(OpenComputers, GuiType.TabletInner.id, world, 0, 0, 0)
@@ -201,7 +205,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                     }
                 } else {
                     if (!world.isRemote) {
-                        val computer = TabletObject.get(stack, entity).machine
+                        val computer = Tablet.get(stack, entity).machine
                         computer.start()
                         val lastError = computer.lastError()
                         if (lastError != null) {
@@ -290,12 +294,12 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
         }
 
         abstract class Cache : Callable<TabletWrapper>, RemovalListener<String, TabletWrapper> {
+            protected open val timeout: Int = 10
+
             val cache: com.google.common.cache.Cache<String, TabletWrapper> = CacheBuilder.newBuilder()
                 .expireAfterAccess(timeout.toLong(), TimeUnit.SECONDS)
                 .removalListener(this)
                 .build()
-
-            protected open val timeout: Int = 10
 
             // To allow access in cache entry init.
             private var currentStack: ItemStack? = null
@@ -315,7 +319,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                             if (timesChanged != weak.timesChanged) {
                                 if (!weak.isDirty) {
                                     weak.isDirty = true
-                                    client.PacketSender.sendMachineItemStateRequest(stack)
+                                    ClientPacketSender.sendMachineItemStateRequest(stack)
                                 }
                                 weak.timesChanged = timesChanged
                             }
@@ -418,14 +422,14 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
     // kept the same and components are not required to properly handle world changes.
     val world: World = player.world
 
-    val machine: api.machine.Machine by lazy {
+    val machine: Machine by lazy {
         if (world.isRemote) throw IllegalStateException("Machine not available on client")
-        else Machine.create(this)
+        else MachineFactory.create(this)
     }
 
     val data = TabletData()
 
-    val tablet: component.Tablet? = if (world.isRemote) null else component.Tablet(this)
+    val tablet: ComponentTablet? = if (world.isRemote) null else ComponentTablet(this)
 
     //// Client side only
     private var isInitialized = !world.isRemote
@@ -443,7 +447,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
 
     val isCreative: Boolean get() = data.tier == Tier.Four
 
-    val items: Array<ItemStack> get() = data.items
+    override val items: Array<ItemStack> get() = data.items
 
     override fun facing(): EnumFacing = RotationHelper.fromYaw(player.rotationYaw)
 
@@ -488,8 +492,9 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
     init {
         readFromNBT()
         if (!world.isRemote) {
-            api.Network.joinNewNetwork(machine.node())
-            val charge = (data.energy - tablet!!.node().globalBuffer()).coerceAtLeast(0.0)
+            Network.joinNewNetwork(machine.node())
+            val tablet = tablet!!
+            val charge = (data.energy - tablet.node().globalBuffer()).coerceAtLeast(0.0)
             tablet.node().changeBuffer(charge)
             writeToNBT()
         }
@@ -503,8 +508,8 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
             node.connect(tablet?.node())
         } else {
             val host = node.host()
-            if (host is api.internal.TextBuffer) {
-                host.setMaximumColorDepth(api.internal.TextBuffer.ColorDepth.FourBit)
+            if (host is TextBuffer) {
+                host.setMaximumColorDepth(TextBuffer.ColorDepth.FourBit)
                 host.setMaximumResolution(80, 25)
             }
         }
@@ -513,18 +518,17 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
     override fun connectItemNode(node: Node?) {
         super.connectItemNode(node)
         if (node != null) {
-            val host = node.host()
-            when (host) {
-                is api.internal.TextBuffer -> {
+            when (val host = node.host()) {
+                is TextBuffer -> {
                     for (comp in components) {
-                        if (comp is api.internal.Keyboard) {
+                        if (comp is Keyboard) {
                             host.node().connect(comp.node())
                         }
                     }
                 }
-                is api.internal.Keyboard -> {
+                is Keyboard -> {
                     for (comp in components) {
-                        if (comp is api.internal.TextBuffer) {
+                        if (comp is TextBuffer) {
                             host.node().connect(comp.node())
                         }
                     }
@@ -542,7 +546,8 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
 
     override fun onMessage(message: Message) {}
 
-    override fun host(): TabletWrapper = this
+    override val host: TabletWrapper
+        get() = this
 
     override fun getSizeInventory(): Int = items.size
 
@@ -614,13 +619,13 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
             // caused this wrapper's initialization).
             connectComponents()
             for (comp in components) {
-                if (comp is api.internal.TextBuffer) {
-                    comp.setMaximumColorDepth(api.internal.TextBuffer.ColorDepth.FourBit)
+                if (comp is TextBuffer) {
+                    comp.setMaximumColorDepth(TextBuffer.ColorDepth.FourBit)
                     comp.setMaximumResolution(80, 25)
                 }
             }
 
-            client.PacketSender.sendMachineItemStateRequest(stack)
+            ClientPacketSender.sendMachineItemStateRequest(stack)
         }
         if (!world.isRemote) {
             if (isCreative && Settings.get.isTickMultiple(world)) {
@@ -637,12 +642,12 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
                 markDirty()
 
                 if (player is EntityPlayerMP) {
-                    server.PacketSender.sendMachineItemState(player, stack, machine.isRunning)
+                    ServerPacketSender.sendMachineItemState(player, stack, machine.isRunning)
                 }
 
                 if (machine.isRunning) {
                     for (comp in components) {
-                        if (comp is api.internal.TextBuffer) {
+                        if (comp is TextBuffer) {
                             comp.setPowerState(true)
                         }
                     }
