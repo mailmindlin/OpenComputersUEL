@@ -44,13 +44,15 @@ class Drone(
 
         override val data get() = buffer
 
-        override fun viewport(): Pair<Int, Int> = buffer.size
+        override val viewport: ScreenResolution
+            get() = buffer.size
     }
 
     override val bufferX = 9
     override val bufferY = 9
     override val bufferColumns = 80
     override val bufferRows = 16
+    override var displayBufferState: DisplayBuffer.State = DisplayBuffer.State()
 
     private val inventoryX = 97
     private val inventoryY = 7
@@ -76,7 +78,9 @@ class Drone(
     }
 
     override fun initGui() {
-        super.initGui()
+        //TODO: not sure which order to call them in
+        super<DisplayBuffer>.initGui()
+        super<DynamicGuiContainer>.initGui()
         powerButton = ImageButton(
             0, guiLeft + 7, guiTop + 45, 18, 18,
             Textures.GUI.ButtonPower,
@@ -89,6 +93,7 @@ class Drone(
         GlStateManager.translate(bufferX.toFloat(), bufferY.toFloat(), 0f)
         RenderState.disableEntityLighting()
         RenderState.makeItBlend()
+        val scale = displayBufferState.scale
         GlStateManager.scale(scale, scale, 1.0)
         RenderState.pushAttrib()
         GlStateManager.depthMask(false)
