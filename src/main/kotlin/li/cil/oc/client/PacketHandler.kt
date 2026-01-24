@@ -525,12 +525,10 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onRedstoneState(p: PacketParser) {
-        val t = p.readTileEntity<RedstoneAware>()
-        if (t != null) {
-            t.setOutputEnabled(p.readBoolean())
-            for (d in EnumFacing.values()) {
-                t.setOutput(d, p.readByte().toInt())
-            }
+        val t = p.readTileEntity<RedstoneAware>() ?: return
+        t.outputEnabled = p.readBoolean()
+        for (d in EnumFacing.values()) {
+            t.setOutput(d, p.readByte())
         }
     }
 
