@@ -48,7 +48,10 @@ internal object Registry: DriverAPI {
 
   val inventoryProviders = mutableListOf<InventoryProvider>()
 
-  val blacklist = mutableListOf<Pair<ItemStack, Set<Class<*>>>>()
+  private val blacklistInner = mutableListOf<Pair<ItemStack, MutableSet<Class<*>>>>()
+
+  internal val blacklist: List<Pair<ItemStack, Set<Class<*>>>>
+    get() = blacklistInner
 
   /** Used to keep track of whether we're past the init phase. */
   var locked = false
