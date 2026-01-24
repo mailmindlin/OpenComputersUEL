@@ -32,28 +32,27 @@ interface Chargeable : ApiChargeable {
 
     @Optional.Method(modid = Mods.IDs.IndustrialCraft2)
     fun getManager(stack: ItemStack): IElectricItemManager = ElectricItemManager
-}
+    companion object {
+        @JvmField
+        val KEY = ResourceLocation(ModOpenComputers.mod.id, "chargeable")
 
-object Chargeable {
-    @JvmField
-    val KEY = ResourceLocation(ModOpenComputers.getMod().id, "chargeable")
+        @JvmStatic
+        fun convertForgeEnergyToOpenComputers(fe: Int): Double = fe / Settings.get.ratioForgeEnergy
 
-    @JvmStatic
-    fun convertForgeEnergyToOpenComputers(fe: Int): Double = fe / Settings.get.ratioForgeEnergy
+        @JvmStatic
+        fun convertOpenComputersToForgeEnergy(oc: Double): Int = (oc * Settings.get.ratioForgeEnergy).toInt()
 
-    @JvmStatic
-    fun convertOpenComputersToForgeEnergy(oc: Double): Int = (oc * Settings.get.ratioForgeEnergy).toInt()
-
-    @JvmStatic
-    fun applyCharge(amount: Double, current: Double, maximum: Double, save: (Double) -> Unit): Double {
-        val target = current + amount
-        val result = target.coerceIn(0.0, maximum)
-        val used = result - current
-        val unused = amount - used
-        if (used > Double.MIN_VALUE || used < -Double.MIN_VALUE) {
-            save(used)
+        @JvmStatic
+        fun applyCharge(amount: Double, current: Double, maximum: Double, save: (Double) -> Unit): Double {
+            val target = current + amount
+            val result = target.coerceIn(0.0, maximum)
+            val used = result - current
+            val unused = amount - used
+            if (used > Double.MIN_VALUE || used < -Double.MIN_VALUE) {
+                save(used)
+            }
+            return unused
         }
-        return unused
     }
 
     class Provider(private val stack: ItemStack, private val item: Chargeable) : ICapabilityProvider, IEnergyStorage {
