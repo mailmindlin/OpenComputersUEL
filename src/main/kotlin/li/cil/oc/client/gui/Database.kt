@@ -1,18 +1,19 @@
 package li.cil.oc.client.gui
 
 import li.cil.oc.client.Textures
+import li.cil.oc.client.gui.traits.LockedHotbar
 import li.cil.oc.common.Tier
 import li.cil.oc.common.container.Database as ContainerDatabase
 import li.cil.oc.common.inventory.DatabaseInventory
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.player.InventoryPlayer
 
-class Database(playerInventory: InventoryPlayer, val databaseInventory: DatabaseInventory) : DynamicGuiContainer<ContainerDatabase>(ContainerDatabase(playerInventory, databaseInventory)), traits.LockedHotbar {
+class Database(playerInventory: InventoryPlayer, val databaseInventory: DatabaseInventory) : DynamicGuiContainer<ContainerDatabase>(ContainerDatabase(playerInventory, databaseInventory)), LockedHotbar {
   init {
     ySize = 256
   }
 
-  override fun lockedStack() = databaseInventory.container
+  override val lockedStack get() = databaseInventory.container
 
   override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {}
 
