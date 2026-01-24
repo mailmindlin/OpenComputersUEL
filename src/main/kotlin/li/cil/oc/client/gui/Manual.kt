@@ -38,10 +38,7 @@ class Manual : GuiScreen(), Window {
         get() = Textures.GUI.Manual
 
     // Implement variables from Window trait
-    override var guiLeft: Int = 0
-    override var guiTop: Int = 0
-    override var xSize: Int = 0
-    override var ySize: Int = 0
+    override val windowState: Window.State = Window.State()
 
     private var isDragging = false
     private var document: Segment? = null

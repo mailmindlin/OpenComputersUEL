@@ -2,6 +2,7 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
+import li.cil.oc.client.gui.traits.Window
 import li.cil.oc.client.PacketSender as ClientPacketSender
 import li.cil.oc.common.item.data.DriveData
 import net.minecraft.client.gui.GuiButton
@@ -10,17 +11,17 @@ import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.item.ItemStack
 
 class Drive(
-    playerInventory: InventoryPlayer,
+    private val playerInventory: InventoryPlayer,
     val driveStack: () -> ItemStack
-) : GuiScreen(), li.cil.oc.client.gui.traits.Window {
-
+) : GuiScreen(), Window {
+    override var windowState: Window.State = Window.State()
     override val windowHeight = 120
 
     override val backgroundImage get() = Textures.GUI.Drive
 
-    protected var managedButton: ImageButton? = null
-    protected var unmanagedButton: ImageButton? = null
-    protected var lockedButton: ImageButton? = null
+    private var managedButton: ImageButton? = null
+    private var unmanagedButton: ImageButton? = null
+    private var lockedButton: ImageButton? = null
 
     override fun actionPerformed(button: GuiButton) {
         when (button.id) {
@@ -53,7 +54,7 @@ class Drive(
         managedButton = ImageButton(
             0, guiLeft + 11, guiTop + 11, 74, 18,
             Textures.GUI.ButtonDriveMode,
-            text = Localization.Drive.Managed,
+            text = Localization.Drive.Managed(),
             textColor = 0x608060,
             canToggle = true
         )
@@ -75,10 +76,6 @@ class Drive(
         add(buttonList, unmanagedButton!!)
         add(buttonList, lockedButton!!)
         updateButtonStates()
-    }
-
-    override fun updateScreen() {
-        super.updateScreen()
     }
 
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
