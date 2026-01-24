@@ -117,6 +117,12 @@ internal sealed interface Filter {
 
 sealed interface InternetFilteringRule {
     fun invalid(): Boolean = false
+
+    /**
+     * Evaluate this rule against a resolved host
+     *
+     * @return true/false if accepted/rejected, or null if not applicable
+     */
     fun apply(inetAddress: InetAddress, host: String): Boolean?;
 
     object Invalid: InternetFilteringRule {
