@@ -6,8 +6,6 @@ import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.block.RobotAfterimage
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.blockExists
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
@@ -94,6 +92,7 @@ abstract class PacketHandler {
                     return robot.proxy as T
                 }
             }
+            return null
         }
 
         inline fun <reified T> getEntity(dimension: Int, id: Int): T? {
