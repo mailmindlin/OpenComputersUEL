@@ -32,7 +32,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
     protected val openPorts = mutableSetOf<Int>()
 
     // wired network card is the 1st in the max ports list (before both wireless cards)
-    protected open fun maxOpenPorts(): Int = Settings.get.maxOpenPorts[Tier.One]
+    protected open val maxOpenPorts: Int get() = Settings.get.maxOpenPorts[Tier.One]
 
     // ----------------------------------------------------------------------- //
 
@@ -43,7 +43,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
         DeviceAttribute.Product to "42i520 (MPN-01)",
         DeviceAttribute.Version to "1.0",
         DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString(),
-        DeviceAttribute.Size to maxOpenPorts().toString(),
+        DeviceAttribute.Size to maxOpenPorts.toString(),
         DeviceAttribute.Width to Settings.get.maxNetworkPacketParts.toString()
     )
 

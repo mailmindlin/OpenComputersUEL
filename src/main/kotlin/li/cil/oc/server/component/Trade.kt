@@ -36,7 +36,7 @@ class Trade(val info: TradeInfo) : AbstractValue() {
             val merchantOpt = info.merchant.get()
             val hostOpt = info.host
             return if (merchantOpt is Entity && hostOpt != null) {
-                merchantOpt.getDistanceSq(hostOpt.xPosition, hostOpt.yPosition, hostOpt.zPosition) < maxRange * maxRange
+                merchantOpt.getDistanceSq(hostOpt.xPosition(), hostOpt.yPosition(), hostOpt.zPosition()) < maxRange * maxRange
             } else {
                 false
             }
@@ -225,7 +225,7 @@ class TradeInfo(var host: EnvironmentHost?, var merchant: WeakReference<IMerchan
         val z = nbt.getInteger(HostZTag)
 
         return when (val te = world.getTileEntity(BlockPos(x, y, z))) {
-            is RobotProxy -> te.robot()
+            is RobotProxy -> te.robot
             is Agent -> te
             else -> null
         }

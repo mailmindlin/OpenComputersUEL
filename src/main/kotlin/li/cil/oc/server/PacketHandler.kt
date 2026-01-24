@@ -168,7 +168,7 @@ object PacketHandler : CommonPacketHandler() {
             if (value) {
                 if (!computer.isPaused) {
                     computer.start()
-                    computer.lastError?.let { message ->
+                    computer.lastError()?.let { message ->
                         player.sendMessage(Localization.Analyzer.LastError(message))
                     }
                 }
@@ -324,7 +324,7 @@ object PacketHandler : CommonPacketHandler() {
             val buffer = ComponentTracker.get(p.player.world, address)
             if (buffer is TextBuffer) {
                 val host = buffer.host
-                if (host !is Screen || host.isOrigin) {
+                if (host !is Screen || host.isOrigin()) {
                     val nbt = NBTTagCompound()
                     buffer.data.save(nbt)
                     nbt.setInteger("maxWidth", buffer.maximumWidth)

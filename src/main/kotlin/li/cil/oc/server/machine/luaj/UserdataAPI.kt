@@ -10,7 +10,7 @@ import li.cil.repack.org.luaj.vm2.Varargs
 
 private fun Varargs.checkValue(i: Int = 1): Value = checkuserdata(i, Value::class.java) as Value
 
-internal sealed class UserdataAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
+internal class UserdataAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
   override fun initialize() {
     val userdata = LuaValue.tableOf()
 

@@ -18,7 +18,7 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.server.PacketSender
 import li.cil.oc.server.network.DebugNetwork
-import li.cil.oc.server.network.DebugNetwork.DebugNode
+import li.cil.oc.server.network.DebugNode
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.checkSideAny
 import li.cil.oc.util.ExtendedBlock.extendedBlock
@@ -211,7 +211,7 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
     @Callback(doc = """function(command:string):number -- Runs an arbitrary command using a fake player.""")
     fun runCommand(context: Context, args: Arguments): Array<Any?> {
         checkAccess()
-        val commands: Iterable<Any> = if (args.isTable(0)) {
+        val commands: Iterable<Any?> = if (args.isTable(0)) {
             args.checkTable(0).values
         } else {
             listOf(args.checkString(0))

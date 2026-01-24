@@ -68,11 +68,11 @@ class DiskDriveMountable(
         val velocity = args.optDouble(0, 0.0).coerceIn(0.0, 1.0)
         val ejected = decrStackSize(0, 1)
         if (!ejected.isEmpty) {
-            val entity = InventoryUtils.spawnStackInWorld(BlockPosition(rack), ejected, rack.facing)
+            val entity = InventoryUtils.spawnStackInWorld(BlockPosition(rack), ejected, rack.facing())
             if (entity != null) {
-                val vx = rack.facing.xOffset * velocity
-                val vy = rack.facing.yOffset * velocity
-                val vz = rack.facing.zOffset * velocity
+                val vx = rack.facing().xOffset * velocity
+                val vy = rack.facing().yOffset * velocity
+                val vz = rack.facing().zOffset * velocity
                 entity.addVelocity(vx, vy, vz)
             }
             return result(true)
@@ -186,7 +186,7 @@ class DiskDriveMountable(
             val isHoldingDisk = isItemValidForSlot(0, heldItem)
             if (isDiskInDrive) {
                 if (!rack.world.isRemote) {
-                    InventoryUtils.dropSlot(BlockPosition(rack), this, 0, 1, rack.facing)
+                    InventoryUtils.dropSlot(BlockPosition(rack), this, 0, 1, rack.facing())
                 }
             }
             if (isHoldingDisk) {

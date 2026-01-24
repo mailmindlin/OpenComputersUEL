@@ -3,7 +3,6 @@ package li.cil.oc.server.component
 import com.google.common.hash.Hashing
 import li.cil.oc.Constants
 import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Database
@@ -11,15 +10,14 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.util.DatabaseAccess
-import li.cil.oc.util.ExtendedArguments.checkSlot
 import li.cil.oc.util.ItemUtils
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.checkSlot
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 
-class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, DeviceInfo {
+class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("database")
         .create()
@@ -70,7 +68,7 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(slot:number):boolean -- Clears the specified slot. Returns true if there was something in the slot before.")
-    fun clear(context: Context, args: Arguments): Array<Any?> {
+    fun clear(context: Context, args: Arguments): Result {
         val slot = args.checkSlot(data, 0)
         val nonEmpty = data.getStackInSlot(slot) != ItemStack.EMPTY // zero size stacks
         data.setInventorySlotContents(slot, ItemStack.EMPTY)
@@ -79,11 +77,11 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(fromSlot:number, toSlot:number[, address:string]):boolean -- Copies an entry to another slot, optionally to another database. Returns true if something was overwritten.")
-    fun copy(context: Context, args: Arguments): Array<Any?> {
+    fun copy(context: Context, args: Arguments): Result {
         val fromSlot = args.checkSlot(data, 0)
         val entry = data.getStackInSlot(fromSlot)
 
-        fun set(inventory: IInventory): Array<Any?> {
+        fun set(inventory: IInventory): Result {
             val toSlot = args.checkSlot(inventory, 1)
             val nonEmpty = inventory.getStackInSlot(toSlot) != ItemStack.EMPTY // zero size stacks
             inventory.setInventorySlotContents(toSlot, entry.copy())
@@ -100,7 +98,7 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
     }
 
     @Callback(doc = "function(address:string):number -- Copies the data stored in this database to another database with the specified address.")
-    fun clone(context: Context, args: Arguments): Array<Any?> {
+    fun clone(context: Context, args: Arguments): Result {
         return DatabaseAccess.withDatabase(node, args.checkString(0)) { database ->
             val numberToCopy = minOf(data.sizeInventory, database.data.sizeInventory)
             for (slot in 0 until numberToCopy) {

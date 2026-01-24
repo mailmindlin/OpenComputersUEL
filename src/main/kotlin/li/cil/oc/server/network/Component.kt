@@ -31,7 +31,7 @@ interface Component : NetComponent, Node {
     if (value.ordinal > reachability().ordinal) {
       throw IllegalArgumentException("Trying to set computer visibility to '$value' on a '$name' node with reachability '${reachability()}'. It will be limited to the node's reachability.")
     }
-    if (SideTracker.isServer) {
+    if (SideTracker.isServer()) {
       if (network != null) {
         when (_visibility) {
           Visibility.Neighbors -> when (value) {

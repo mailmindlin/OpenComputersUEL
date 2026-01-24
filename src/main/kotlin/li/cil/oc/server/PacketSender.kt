@@ -415,7 +415,7 @@ object PacketSender {
 
     pb.writeTileEntity(t)
     pb.writeBoolean(t.isInverted)
-    pb.writeByte(t.compressSides)
+    pb.writeByte(t.compressSides().toInt())
 
     pb.sendToPlayersNearTileEntity(t)
   }
@@ -541,7 +541,7 @@ object PacketSender {
 
     pb.writeTileEntity(t)
     pb.writeBoolean(t.isOutputEnabled)
-    for (d in EnumFacing.values) {
+    for (d in EnumFacing.values()) {
       pb.writeByte(t.getOutput(d))
     }
 

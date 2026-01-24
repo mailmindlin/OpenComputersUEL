@@ -24,10 +24,10 @@ interface Node : ImmutableNode {
   override fun isNeighborOf(other: ImmutableNode): Boolean =
     isInSameNetwork(other) && network?.neighbors(this)?.any { it == other } == true
 
-  override fun reachableNodes(): java.lang.Iterable<ImmutableNode> =
+  override fun reachableNodes(): Iterable<ImmutableNode> =
     network?.nodes(this) ?: emptyList()
 
-  override fun neighbors(): java.lang.Iterable<ImmutableNode> =
+  override fun neighbors(): Iterable<ImmutableNode> =
     network?.neighbors(this) ?: emptyList()
 
   // A node should be added to a network before it can connect to a node
@@ -98,18 +98,18 @@ interface Node : ImmutableNode {
 // for some reason it fails compiling on Linux otherwise (no clue why).
 interface NodeVarargPart : ImmutableNode {
   override fun sendToAddress(target: String, name: String, vararg data: Any?) {
-    network?.sendToAddress(this, target, name, *data)
+    network()?.sendToAddress(this, target, name, *data)
   }
 
   override fun sendToNeighbors(name: String, vararg data: Any?) {
-    network?.sendToNeighbors(this, name, *data)
+    network()?.sendToNeighbors(this, name, *data)
   }
 
   override fun sendToReachable(name: String, vararg data: Any?) {
-    network?.sendToReachable(this, name, *data)
+    network()?.sendToReachable(this, name, *data)
   }
 
   override fun sendToVisible(name: String, vararg data: Any?) {
-    network?.sendToVisible(this, name, *data)
+    network()?.sendToVisible(this, name, *data)
   }
 }

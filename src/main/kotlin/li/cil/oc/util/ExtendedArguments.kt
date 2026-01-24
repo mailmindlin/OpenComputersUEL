@@ -58,6 +58,7 @@ fun Arguments.optTankProperties(handler: IFluidHandler, n: Int, default: IFluidT
     if (!isDefined(n)) default
     else checkTankProperties(handler, n)
 
+/** Get the argument at `index` as a side */
 fun Arguments.checkSideAny(index: Int): EnumFacing =
     checkSide(index, *EnumFacing.values())
 

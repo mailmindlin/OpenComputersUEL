@@ -3,12 +3,6 @@ package li.cil.oc.server.component.traits
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.util.*
-import li.cil.oc.util.ExtendedBlock.getBlock
-import li.cil.oc.util.ExtendedBlock.getBlockMetadata
-import li.cil.oc.util.ExtendedBlock.isAir
-import li.cil.oc.util.ExtendedBlock.isReplaceable
-import li.cil.oc.util.ExtendedBlock.getCollisionBoundingBoxFromPool
-import li.cil.oc.util.ExtendedWorld.bounds
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityMinecart
@@ -25,12 +19,12 @@ import net.minecraftforge.fml.common.eventhandler.Event
 import net.minecraftforge.items.wrapper.InvWrapper
 import net.minecraft.util.EnumHand
 
-interface WorldAware {
+interface WorldAware: HasFakePlayer {
     val position: BlockPosition
 
-    val world get() = position.world.get()
+    val world get() = position.world!!
 
-    val fakePlayer: EntityPlayer
+    override val fakePlayer: EntityPlayer
         get() {
             val player = FakePlayerFactory.get(world as WorldServer, Settings.get.fakePlayerProfile)
             player.posX = position.x + 0.5
@@ -68,7 +62,7 @@ interface WorldAware {
         }
 
         val sourceAccessible = when (inv) {
-            is BlockInventorySource -> mayInteract(inv.position, inv.side)
+            is BlockInventorySource -> mayInteract(inv.position, inv.side!!)
             is EntityInventorySource -> mayInteract(inv.entity)
             else -> true
         }
@@ -76,21 +70,18 @@ interface WorldAware {
         return inventoryUsable && sourceAccessible
     }
 
-    fun <T : Entity> entitiesInBounds(clazz: Class<T>, bounds: AxisAlignedBB): List<T> {
-        return world.getEntitiesWithinAABB(clazz, bounds)
-    }
+    fun <T : Entity> entitiesInBounds(clazz: Class<T>, bounds: AxisAlignedBB): List<T>
+        = world.getEntitiesWithinAABB(clazz, bounds)
 
-    fun <T : Entity> entitiesInBlock(clazz: Class<T>, blockPos: BlockPosition): List<T> {
-        return entitiesInBounds(clazz, blockPos.bounds())
-    }
+    fun <T : Entity> entitiesInBlock(clazz: Class<T>, blockPos: BlockPosition): List<T>
+        = entitiesInBounds(clazz, blockPos.bounds())
 
-    fun <T : Entity> entitiesOnSide(clazz: Class<T>, side: EnumFacing): List<T> {
-        return entitiesInBlock(clazz, position.offset(side))
-    }
+    fun <T : Entity> entitiesOnSide(clazz: Class<T>, side: EnumFacing): List<T>
+        = entitiesInBlock(clazz, position.offset(side))
 
     fun <T : Entity> closestEntity(clazz: Class<T>, side: EnumFacing): T? {
         val blockPos = position.offset(side)
-        return world.findNearestEntityWithinAABB(clazz, blockPos.bounds(), fakePlayer)
+        return world.findNearestEntityWithinAABB(clazz, blockPos.bounds(), fakePlayer) as T?
     }
 
     fun blockContent(side: EnumFacing): Pair<Boolean, String> {

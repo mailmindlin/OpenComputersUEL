@@ -4,15 +4,10 @@ import li.cil.oc.Constants
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal.Tablet
-import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.*
-import li.cil.oc.util.BlockPosition
-import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.item.ItemStack
+import li.cil.oc.util.getTileEntity
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
-import net.minecraft.util.EnumFacing
 
 sealed class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.Network)

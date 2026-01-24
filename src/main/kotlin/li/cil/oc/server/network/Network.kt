@@ -2,7 +2,9 @@ package li.cil.oc.server.network
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api
+import li.cil.oc.api.network.Message as IMessage
+import li.cil.oc.api.network.Network as INetwork
+import li.cil.oc.api.network.Packet as IPacket
 import li.cil.oc.api.detail.NetworkAPI
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Visibility
@@ -512,7 +514,7 @@ internal class Network private constructor(private val data: MutableMap<String, 
     private val _source: ImmutableNode,
     private val _name: String,
     private val _data: Array<Any?>
-  ) : api.network.Message {
+  ) : IMessage {
     private var _isCanceled = false
 
     override fun source() = _source
@@ -524,7 +526,7 @@ internal class Network private constructor(private val data: MutableMap<String, 
 
   // ----------------------------------------------------------------------- //
 
-  class Wrapper internal constructor(internal val network: Network) : api.network.Network, Distributor {
+  class Wrapper internal constructor(internal val network: Network) : INetwork, Distributor {
     override fun connect(nodeA: ImmutableNode, nodeB: ImmutableNode): Boolean =
       network.connect(nodeA as Node, nodeB as Node)
 
@@ -535,12 +537,12 @@ internal class Network private constructor(private val data: MutableMap<String, 
 
     override fun node(address: String): ImmutableNode? = network.node(address)
 
-    override fun nodes(): java.lang.Iterable<ImmutableNode> = network.nodes.toMutableList()
+    override fun nodes(): Iterable<ImmutableNode> = network.nodes.toMutableList()
 
-    override fun nodes(reference: ImmutableNode): java.lang.Iterable<ImmutableNode> =
+    override fun nodes(reference: ImmutableNode): Iterable<ImmutableNode> =
       network.reachableNodes(reference).toMutableList()
 
-    override fun neighbors(node: ImmutableNode): java.lang.Iterable<ImmutableNode> =
+    override fun neighbors(node: ImmutableNode): Iterable<ImmutableNode> =
       network.neighbors(node).toMutableList()
 
     override fun sendToAddress(source: ImmutableNode, target: String, name: String, vararg data: Any?) =
@@ -652,7 +654,7 @@ object NetworkObject : NetworkAPI {
 
       if (tileEntity.hasCapability(Capabilities.EnvironmentCapability, side)) {
         val host = tileEntity.getCapability(Capabilities.EnvironmentCapability, side)
-        if (host != null) return host.node
+        if (host != null) return host.node()
       }
     }
 
@@ -663,7 +665,7 @@ object NetworkObject : NetworkAPI {
     if (tileEntity != null) {
       if (tileEntity.hasCapability(Capabilities.ColoredCapability, null)) {
         val colored = tileEntity.getCapability(Capabilities.ColoredCapability, null)
-        if (colored != null && colored.controlsConnectivity) return colored.color
+        if (colored != null && colored.controlsConnectivity()) return colored.color
       }
     }
 
@@ -704,7 +706,7 @@ object NetworkObject : NetworkAPI {
 
   // ----------------------------------------------------------------------- //
 
-  override fun sendWirelessPacket(source: WirelessEndpoint, strength: Double, packet: api.network.Packet) {
+  override fun sendWirelessPacket(source: WirelessEndpoint, strength: Double, packet: IPacket) {
     for (endpoint in WirelessNetwork.computeReachableFrom(source, strength)) {
       endpoint.receivePacket(packet, source)
     }
@@ -714,7 +716,7 @@ object NetworkObject : NetworkAPI {
 
   override fun newNode(host: Environment, reachability: Visibility): NodeBuilder = NodeBuilder(host, reachability)
 
-  override fun newPacket(source: String, destination: String?, port: Int, data: Array<Any?>): api.network.Packet {
+  override fun newPacket(source: String, destination: String?, port: Int, data: Array<Any?>): IPacket {
     val packet = Packet(source, destination, port, data)
     // We do the size check here instead of in the constructor of the packet
     // itself to avoid errors when loading packets.
@@ -724,7 +726,7 @@ object NetworkObject : NetworkAPI {
     return packet
   }
 
-  override fun newPacket(nbt: NBTTagCompound): api.network.Packet {
+  override fun newPacket(nbt: NBTTagCompound): IPacket {
     val source = nbt.getString("source")
     val destination = if (!nbt.hasKey("dest")) null else nbt.getString("dest")
     val port = nbt.getInteger("port")
@@ -767,7 +769,7 @@ object NetworkObject : NetworkAPI {
         override fun host() = _host
         override fun reachability() = _reachability
         override var address: String? = null
-        override var network: api.network.Network? = null
+        override var network: INetwork? = null
       }
     } else null
   }
@@ -790,7 +792,7 @@ object NetworkObject : NetworkAPI {
         override val name = _name
         override var _visibility = Visibility.None
         override var address: String? = null
-        override var network: api.network.Network? = null
+        override var network: INetwork? = null
 
         private val callbacks by lazy { Component.createCallbacks(host()) }
         private val hosts by lazy { Component.createHosts(host(), callbacks) }
@@ -820,7 +822,7 @@ object NetworkObject : NetworkAPI {
         override fun host() = _host
         override fun reachability() = _reachability
         override var address: String? = null
-        override var network: api.network.Network? = null
+        override var network: INetwork? = null
         override var localBufferSize = _bufferSize
         override var localBuffer = 0.0
         override var distributor: Distributor? = null
@@ -842,7 +844,7 @@ object NetworkObject : NetworkAPI {
         override val name = _name
         override var _visibility = Visibility.None
         override var address: String? = null
-        override var network: api.network.Network? = null
+        override var network: INetwork? = null
         override var localBufferSize = _bufferSize
         override var localBuffer = 0.0
         override var distributor: Distributor? = null
@@ -868,7 +870,7 @@ object NetworkObject : NetworkAPI {
     private var _port: Int,
     private var _data: Array<Any?>,
     private var _ttl: Int = Settings.get.initialNetworkPacketTTL
-  ) : api.network.Packet {
+  ) : IPacket {
     val size: Int = run {
       val values = _data
       if (values.size > Settings.get.maxNetworkPacketParts) {
@@ -877,13 +879,13 @@ object NetworkObject : NetworkAPI {
       values.size * 2 + values.fold(0) { acc, arg ->
         acc + when (arg) {
           null, Unit -> 1
-          is java.lang.Boolean -> 1
-          is java.lang.Byte -> 2 /* FIXME: Bytes are currently sent as shorts */
-          is java.lang.Short -> 2
-          is java.lang.Integer -> 4
-          is java.lang.Long -> 8
-          is java.lang.Float -> 4
-          is java.lang.Double -> 8
+          is Boolean -> 1
+          is Byte -> 2 /* FIXME: Bytes are currently sent as shorts */
+          is Short -> 2
+          is Int -> 4
+          is Long -> 8
+          is Float -> 4
+          is Double -> 8
           is String -> maxOf(arg.length, 1)
           is ByteArray -> maxOf(arg.size, 1)
           else -> throw IllegalArgumentException("unsupported data type: $arg (${arg.javaClass.canonicalName})")
@@ -897,7 +899,7 @@ object NetworkObject : NetworkAPI {
     override fun data() = _data
     override fun ttl() = _ttl
 
-    override fun hop(): api.network.Packet = Packet(_source, _destination, _port, _data, _ttl - 1)
+    override fun hop(): IPacket = Packet(_source, _destination, _port, _data, _ttl - 1)
 
     override fun save(nbt: NBTTagCompound) {
       nbt.setString("source", _source)
@@ -910,13 +912,13 @@ object NetworkObject : NetworkAPI {
       for (i in _data.indices) {
         when (val value = _data[i]) {
           null, Unit -> { }
-          is java.lang.Boolean -> nbt.setBoolean("data$i", value)
-          is java.lang.Byte -> nbt.setShort("data$i", value.toShort())
-          is java.lang.Short -> nbt.setShort("data$i", value)
-          is java.lang.Integer -> nbt.setInteger("data$i", value)
-          is java.lang.Long -> nbt.setLong("data$i", value)
-          is java.lang.Float -> nbt.setFloat("data$i", value)
-          is java.lang.Double -> nbt.setDouble("data$i", value)
+          is Boolean -> nbt.setBoolean("data$i", value)
+          is Byte -> nbt.setShort("data$i", value.toShort())
+          is Short -> nbt.setShort("data$i", value)
+          is Int -> nbt.setInteger("data$i", value)
+          is Long -> nbt.setLong("data$i", value)
+          is Float -> nbt.setFloat("data$i", value)
+          is Double -> nbt.setDouble("data$i", value)
           is String -> nbt.setString("data$i", value)
           is ByteArray -> nbt.setByteArray("data$i", value)
           else -> OpenComputers.log.warn("Unexpected type while saving network packet: ${value.javaClass.name}")
