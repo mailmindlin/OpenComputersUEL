@@ -115,7 +115,7 @@ class PersistenceAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.pop(1)
   }
 
-  private fun persist(index: Int): ByteArray {
+  internal fun persist(index: Int): ByteArray {
     if (Settings.get.allowPersistence) {
       configure()
       try {
@@ -147,7 +147,7 @@ class PersistenceAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     return byteArrayOf()
   }
 
-  private fun unpersist(value: ByteArray): Boolean {
+  internal fun unpersist(value: ByteArray): Boolean {
     if (!Settings.get.allowPersistence)
       return false
     configure()

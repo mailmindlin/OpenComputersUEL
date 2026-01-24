@@ -76,20 +76,22 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
       withComponent(lua.checkString(1)) { component ->
         val method = lua.checkString(2)
         val methods = machine.methods(component.host())
-        owner.documentation(() => Option(methods.get(method)).map(_.doc).orNull)
-      })
-    })
+        owner.documentation { methods.get(method)?.doc }
+      }
+    }
     lua.setField(-2, "doc")
 
     lua.setGlobal("component")
   }
 
-  private fun withComponent(address: String, f: (Component) -> Int) = Option(node.network().node(address)) match {
-    case Some(component: Component) if component.canBeSeenFrom(node) || component == node =>
+  private fun withComponent(address: String, f: (Component) -> Int): Int {
+    val component = node.network().node(address)
+    return if (component != null && component is Component && (component.canBeReachedFrom(node) || component == node)) {
       f(component)
-    case _ =>
+    } else {
       lua.pushNil()
       lua.pushString("no such component")
       2
+    }
   }
 }

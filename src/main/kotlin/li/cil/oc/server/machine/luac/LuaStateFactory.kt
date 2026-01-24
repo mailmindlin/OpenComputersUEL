@@ -64,7 +64,7 @@ abstract class LuaStateFactory {
 
   private var currentLib = ""
 
-  private val libraryName = {
+  private val libraryName = run {
     val libExtension = {
       if (SystemUtils.IS_OS_MAC) ".dylib"
       else if (SystemUtils.IS_OS_WINDOWS) ".dll"
