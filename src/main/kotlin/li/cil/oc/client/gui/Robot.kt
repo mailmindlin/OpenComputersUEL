@@ -66,10 +66,10 @@ class Robot(
     private val maxBufferHeight = 140.0
 
     private val bufferRenderWidth: Double
-        get() = (TextBufferRenderCache.renderer.charRenderWidth * Settings.screenResolutionsByTier[0].first).toDouble().coerceAtMost(maxBufferWidth)
+        get() = (TextBufferRenderCache.renderer.charRenderWidth * Settings.screenResolutionsByTier[0].width).toDouble().coerceAtMost(maxBufferWidth)
 
     private val bufferRenderHeight: Double
-        get() = (TextBufferRenderCache.renderer.charRenderHeight * Settings.screenResolutionsByTier[0].second).toDouble().coerceAtMost(maxBufferHeight)
+        get() = (TextBufferRenderCache.renderer.charRenderHeight * Settings.screenResolutionsByTier[0].height).toDouble().coerceAtMost(maxBufferHeight)
 
     override val bufferX: Int
         get() = (8 + (maxBufferWidth - bufferRenderWidth) / 2).toInt()
