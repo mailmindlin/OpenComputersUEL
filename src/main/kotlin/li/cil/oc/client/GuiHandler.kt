@@ -3,12 +3,14 @@ package li.cil.oc.client
 import com.google.common.base.Strings
 import li.cil.oc.Localization
 import li.cil.oc.Settings
+import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.common.GuiType
 import li.cil.oc.client.gui.*
 import li.cil.oc.common.inventory.DatabaseInventory
 import li.cil.oc.common.inventory.DiskDriveMountableInventory
 import li.cil.oc.common.inventory.ServerInventory
 import li.cil.oc.common.item.Delegator
+import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.GuiHandler as CommonGuiHandler
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.getTileEntity
@@ -52,7 +54,7 @@ object GuiHandler : CommonGuiHandler() {
           is li.cil.oc.common.tileentity.Relay -> if (id == GuiType.Relay.id) li.cil.oc.client.gui.Relay(player.inventory, t) else null
           is li.cil.oc.common.tileentity.RobotProxy -> if (id == GuiType.Robot.id) li.cil.oc.client.gui.Robot(player.inventory, t.robot) else null
           is li.cil.oc.common.tileentity.Screen -> if (id == GuiType.Screen.id) {
-            li.cil.oc.client.gui.Screen(t.origin.buffer, t.tier > 0, { t.origin.hasKeyboard() }, { t.origin.buffer.isRenderingEnabled })
+            Screen(t.origin.buffer, t.tier > 0, { t.origin.hasKeyboard() }, { t.origin.buffer.isRenderingEnabled })
           } else null
           is li.cil.oc.common.tileentity.Waypoint -> if (id == GuiType.Waypoint.id) li.cil.oc.client.gui.Waypoint(t) else null
           else -> null
@@ -84,11 +86,10 @@ object GuiHandler : CommonGuiHandler() {
             GuiType.Tablet.id -> {
               val stack = itemStackInUse
               if (stack.hasTagCompound()) {
-                val bufferOption = li.cil.oc.common.item.Tablet.get(stack, player).components.mapNotNull { component ->
-                  if (component is li.cil.oc.api.internal.TextBuffer) component else null
-                }.firstOrNull()
+                val bufferOption =
+                  Tablet.get(stack, player).components.firstNotNullOfOrNull { component -> component as? TextBuffer }
                 if (bufferOption != null) {
-                  li.cil.oc.client.gui.Screen(bufferOption, true, { true }, { bufferOption.isRenderingEnabled })
+                  Screen(bufferOption, true, { true }, { bufferOption.isRenderingEnabled })
                 } else null
               } else null
             }
@@ -119,7 +120,7 @@ object GuiHandler : CommonGuiHandler() {
                     fun inRange() = player.isEntityAlive && !rack.isInvalid && rack.getDistanceSq(player.posX, player.posY, player.posZ) < term.range * term.range
                     if (inRange()) {
                       if (term.sidedKeys.contains(key)) {
-                        return li.cil.oc.client.gui.Screen(term.buffer, true, { true }) {
+                        return Screen(term.buffer, true, { true }) {
                           // Check if someone else bound a term to our server.
                           if (stack.tagCompound!!.getString(Settings.namespace + "key") != key) {
                             Minecraft.getMinecraft().displayGuiScreen(null)
