@@ -68,7 +68,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
     var buffer: Array<IntArray> = Array(height) { IntArray(width) { 0x20 } }
 
     /** The current buffer size in columns by rows. */
-    val size: Pair<Int, Int> get() = width to height
+    val size: ScreenResolution get() = width by height
 
     /**
      * Set the new buffer size, returns true if the size changed.
@@ -77,7 +77,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
      * buffer valid as possible if the size decreases, i.e. only data outside the
      * new buffer size will be truncated, all data still inside will be copied.
      */
-    fun setSize(value: Pair<Int, Int>): Boolean {
+    fun setSize(value: ScreenResolution): Boolean {
         val (iw, ih) = value
         val w = max(iw, 1)
         val h = max(ih, 1)
@@ -270,10 +270,10 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
     }
 
     fun load(nbt: NBTTagCompound) {
-        val maxResolution = max(Settings.screenResolutionsByTier.last().first, Settings.screenResolutionsByTier.last().second)
-        val w = min(max(nbt.getInteger("width"), 1), maxResolution)
-        val h = min(max(nbt.getInteger("height"), 1), maxResolution)
-        setSize(w to h)
+        val maxResolution = max(Settings.screenResolutionsByTier.last().width, Settings.screenResolutionsByTier.last().height)
+        val w = nbt.getInteger("width").coerceIn(1 .. maxResolution)
+        val h = nbt.getInteger("height").coerceIn(1 .. maxResolution)
+        setSize(w by h)
 
         val b = nbt.getTagList("buffer", NBT.TAG_STRING)
         for (i in 0 until min(h, b.tagCount())) {

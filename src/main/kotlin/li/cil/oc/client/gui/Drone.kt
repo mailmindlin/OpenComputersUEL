@@ -2,6 +2,7 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
+import li.cil.oc.client.gui.traits.DisplayBuffer
 import li.cil.oc.client.gui.widget.ProgressBar
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.font.TextBufferRenderData
@@ -10,6 +11,7 @@ import li.cil.oc.common.container.Drone as ContainerDrone
 import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.RenderState
+import li.cil.oc.util.ScreenResolution
 import li.cil.oc.util.TextBuffer
 import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
@@ -21,7 +23,7 @@ import org.lwjgl.opengl.GL11
 class Drone(
     playerInventory: InventoryPlayer,
     val drone: EntityDrone
-) : DynamicGuiContainer<ContainerDrone>(ContainerDrone(playerInventory, drone)), li.cil.oc.client.gui.traits.DisplayBuffer {
+) : DynamicGuiContainer<ContainerDrone>(ContainerDrone(playerInventory, drone)), DisplayBuffer {
 
     init {
         xSize = 176
@@ -30,7 +32,7 @@ class Drone(
 
     protected var powerButton: ImageButton? = null
 
-    private val buffer = TextBuffer(20, 2, PackedColor.SingleBitFormat(0x33FF33))
+    private val buffer = TextBuffer(20, 2, PackedColor.SingleBitFormat(0x33FF33u))
     private val bufferRenderer = object : TextBufferRenderData {
         private var _dirty = true
 
