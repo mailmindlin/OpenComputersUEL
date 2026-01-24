@@ -2,16 +2,24 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.event.SignChangeEvent
+import li.cil.oc.api.internal.Rotatable
+import li.cil.oc.api.machine.Arguments
+import li.cil.oc.api.machine.Callback
+import li.cil.oc.api.machine.Context
 import li.cil.oc.api.internal.Robot as InternalRobot
 import li.cil.oc.api.internal.Tablet as InternalTablet
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
+import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.getTileEntity
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -24,7 +32,7 @@ import net.minecraftforge.common.util.FakePlayerFactory
 import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.common.eventhandler.Event
 
-abstract class UpgradeSign : AbstractManagedEnvironment(), DeviceInfoKt {
+abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfoKt {
     override val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "Sign upgrade",
@@ -100,25 +108,55 @@ abstract class UpgradeSign : AbstractManagedEnvironment(), DeviceInfoKt {
 
     override fun onMessage(message: Message) {
         super.onMessage(message)
-        if (message.name() == "tablet.use") {
-            val sourceHost = message.source().host()
-            if (sourceHost is Machine) {
-                val machineHost = sourceHost.host()
-                val data = message.data
-                if (machineHost is InternalTablet && data.size >= 8 &&
-                    data[0] is NBTTagCompound && data[1] is ItemStack && data[2] is EntityPlayer &&
-                    data[3] is BlockPosition && data[4] is EnumFacing &&
-                    data[5] is Float && data[6] is Float && data[7] is Float
-                ) {
-                    val nbt = data[0] as NBTTagCompound
-                    val blockPos = data[3] as BlockPosition
-                    when (val te = host.world().getTileEntity(blockPos)) {
-                        is TileEntitySign -> {
-                            nbt.setString("signText", te.signText.joinToString("\n") { it.unformattedText })
-                        }
-                    }
-                }
-            }
-        }
+        val message = TabletUseMessage.tryParse(message) ?: return
+
+
+        val te = host.world().getTileEntity(message.blockPos) as? TileEntitySign ?: return
+        message.nbt
+            .setString("signText", te.signText.joinToString("\n") { it.unformattedText })
+    }
+
+    class UpgradeSignInAdapter(override val host: EnvironmentHost) : UpgradeSign() {
+        override val node = Network.newNode(this, Visibility.Network)
+            .withComponent("sign", Visibility.Network)
+            .withConnector()
+            .create()
+
+        // ----------------------------------------------------------------------- //
+
+        @Suppress("unused", "unused_parameter")
+        @Callback(doc = "function(side:number):string -- Get the text on the sign on the specified side of the adapter.")
+        fun getValue(context: Context, args: Arguments): Array<Any?> =
+            super.getValue(findSign(args.checkSideAny(0)))
+
+        @Suppress("unused", "unused_parameter")
+        @Callback(doc = "function(side:number, value:string):string -- Set the text on the sign on the specified side of the adapter.")
+        fun setValue(context: Context, args: Arguments): Array<Any?> =
+            super.setValue(findSign(args.checkSideAny(0)), args.checkString(1))
+    }
+
+    class UpgradeSignInRotatable(private val rotatableHost: EnvironmentHost) : UpgradeSign() {
+        override val host: EnvironmentHost
+            get() = rotatableHost
+
+        private val rotatable: Rotatable
+            get() = rotatableHost as Rotatable
+
+        override val node = Network.newNode(this, Visibility.Network)
+            .withComponent("sign", Visibility.Neighbors)
+            .withConnector()
+            .create()
+
+        // ----------------------------------------------------------------------- //
+
+        @Suppress("unused", "unused_parameter")
+        @Callback(doc = "function():string -- Get the text on the sign in front of the host.")
+        fun getValue(context: Context, args: Arguments): Array<Any?> =
+            super.getValue(findSign(rotatable.facing()))
+
+        @Suppress("unused", "unused_parameter")
+        @Callback(doc = "function(value:string):string -- Set the text on the sign in front of the host.")
+        fun setValue(context: Context, args: Arguments): Array<Any?> =
+            super.setValue(findSign(rotatable.facing()), args.checkString(0))
     }
 }
