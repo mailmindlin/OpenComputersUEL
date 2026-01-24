@@ -27,13 +27,11 @@ object Manual: ManualAPI {
 
   val tabs = mutableListOf<Tab>()
 
-  val pathProviders = mutableListOf<PathProvider>()
-
+  private val pathProviders = mutableListOf<PathProvider>()
   private val contentProviders = mutableListOf<ContentProvider>()
+  private val imageProviders = mutableListOf<Pair<String, ImageProvider>>()
 
-  val imageProviders = mutableListOf<Pair<String, ImageProvider>>()
-
-  val history = mutableListOf<History>()
+  val history = Stack<History>()
 
   init { reset() }
 
@@ -112,13 +110,13 @@ object Manual: ManualAPI {
 
   override fun reset() {
     history.clear()
-    history.add(History("$LanguageKey/index.md"))
+    history.push(History("$LanguageKey/index.md"))
   }
 
   override fun navigate(path: String) {
     when (val manual = Minecraft.getMinecraft().currentScreen) {
       is GuiManual -> manual.pushPage(path)
-      else -> history.add(History(path))
+      else -> history.push(History(path))
     }
   }
 
@@ -151,5 +149,19 @@ object Manual: ManualAPI {
       }
     }
     return null
+  }
+
+  class Stack<T>(private val inner: MutableList<T> = mutableListOf()){
+    fun clear() {
+      this.inner.clear()
+    }
+    fun push(item: T) {
+      this.inner.add(item)
+    }
+    fun pop(): T = this.inner.removeLast()
+    val size: Int
+      get() = this.inner.size
+    val top: T
+      get() = this.inner.last()
   }
 }
