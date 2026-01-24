@@ -2,6 +2,7 @@ package li.cil.oc.server.network
 
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
+import li.cil.oc.api.detail.Builder
 import li.cil.oc.api.network.Message as IMessage
 import li.cil.oc.api.network.Network as INetwork
 import li.cil.oc.api.network.Packet as IPacket
@@ -217,7 +218,8 @@ internal class Network private constructor(private val data: MutableMap<String, 
   fun sendToVisible(source: ImmutableNode, name: String, vararg args: Any?) {
     if (source.network() != wrapper)
       throw IllegalArgumentException("Source node must be in this network.")
-    send(source, reachableNodes(source).filterIsInstance<api.network.Component>()
+    send(source, reachableNodes(source)
+      .filterIsInstance<li.cil.oc.api.network.Component>()
       .filter { it.canBeSeenFrom(source) }, name, *args)
   }
 
@@ -515,13 +517,12 @@ internal class Network private constructor(private val data: MutableMap<String, 
     private val _name: String,
     private val _data: Array<Any?>
   ) : IMessage {
-    private var _isCanceled = false
+    private var isCanceled = false
 
     override fun source() = _source
     override fun name() = _name
     override fun data() = _data
-    override fun isCanceled() = _isCanceled
-    override fun cancel() { _isCanceled = true }
+    override fun cancel() { isCanceled = true }
   }
 
   // ----------------------------------------------------------------------- //
@@ -639,7 +640,7 @@ object NetworkObject : NetworkAPI {
     }
   }
 
-  fun joinNewNetwork(node: ImmutableNode) {
+  override fun joinNewNetwork(node: ImmutableNode) {
     if (node is Node && node.network == null) {
       Network(node)
     }
@@ -661,11 +662,11 @@ object NetworkObject : NetworkAPI {
     return null
   }
 
-  private fun getConnectionColor(tileEntity: TileEntity?): Int {
+  private fun getConnectionColor(tileEntity: TileEntity?): UInt {
     if (tileEntity != null) {
       if (tileEntity.hasCapability(Capabilities.ColoredCapability, null)) {
         val colored = tileEntity.getCapability(Capabilities.ColoredCapability, null)
-        if (colored != null && colored.controlsConnectivity()) return colored.color
+        if (colored != null && colored.controlsConnectivity()) return colored.color.toUInt()
       }
     }
 
@@ -753,16 +754,16 @@ object NetworkObject : NetworkAPI {
 
   var isServer: () -> Boolean = SideTracker::isServer
 
-  class NodeBuilder(private val _host: Environment, private val _reachability: Visibility) : api.detail.Builder.NodeBuilder {
-    override fun withComponent(name: String, visibility: Visibility): api.detail.Builder.ComponentBuilder =
+  class NodeBuilder(private val _host: Environment, private val _reachability: Visibility) : Builder.NodeBuilder {
+    override fun withComponent(name: String, visibility: Visibility): Builder.ComponentBuilder =
       ComponentBuilder(_host, _reachability, name, visibility)
 
-    override fun withComponent(name: String): api.detail.Builder.ComponentBuilder = withComponent(name, _reachability)
+    override fun withComponent(name: String): Builder.ComponentBuilder = withComponent(name, _reachability)
 
-    override fun withConnector(bufferSize: Double): api.detail.Builder.ConnectorBuilder =
+    override fun withConnector(bufferSize: Double): Builder.ConnectorBuilder =
       ConnectorBuilder(_host, _reachability, bufferSize)
 
-    override fun withConnector(): api.detail.Builder.ConnectorBuilder = withConnector(0.0)
+    override fun withConnector(): Builder.ConnectorBuilder = withConnector(0.0)
 
     override fun create(): ImmutableNode? = if (isServer()) {
       object : Node, NodeVarargPart {
@@ -779,13 +780,13 @@ object NetworkObject : NetworkAPI {
     private val _reachability: Visibility,
     private val _name: String,
     private val _visibility: Visibility
-  ) : api.detail.Builder.ComponentBuilder {
-    override fun withConnector(bufferSize: Double): api.detail.Builder.ComponentConnectorBuilder =
+  ) : Builder.ComponentBuilder {
+    override fun withConnector(bufferSize: Double): Builder.ComponentConnectorBuilder =
       ComponentConnectorBuilder(_host, _reachability, _name, _visibility, bufferSize)
 
-    override fun withConnector(): api.detail.Builder.ComponentConnectorBuilder = withConnector(0.0)
+    override fun withConnector(): Builder.ComponentConnectorBuilder = withConnector(0.0)
 
-    override fun create(): api.network.Component? = if (isServer()) {
+    override fun create(): li.cil.oc.api.network.Component? = if (isServer()) {
       object : Component, NodeVarargPart {
         override fun host() = _host
         override fun reachability() = _reachability
@@ -801,7 +802,7 @@ object NetworkObject : NetworkAPI {
         override fun getHosts() = hosts
 
         init {
-          setVisibility(_visibility)
+          this.setVisibility(_visibility)
         }
       }
     } else null
@@ -811,13 +812,13 @@ object NetworkObject : NetworkAPI {
     private val _host: Environment,
     private val _reachability: Visibility,
     private val _bufferSize: Double
-  ) : api.detail.Builder.ConnectorBuilder {
-    override fun withComponent(name: String, visibility: Visibility): api.detail.Builder.ComponentConnectorBuilder =
+  ) : Builder.ConnectorBuilder {
+    override fun withComponent(name: String, visibility: Visibility): Builder.ComponentConnectorBuilder =
       ComponentConnectorBuilder(_host, _reachability, name, visibility, _bufferSize)
 
-    override fun withComponent(name: String): api.detail.Builder.ComponentConnectorBuilder = withComponent(name, _reachability)
+    override fun withComponent(name: String): Builder.ComponentConnectorBuilder = withComponent(name, _reachability)
 
-    override fun create(): api.network.Connector? = if (isServer()) {
+    override fun create(): li.cil.oc.api.network.Connector? = if (isServer()) {
       object : Connector, NodeVarargPart {
         override fun host() = _host
         override fun reachability() = _reachability
@@ -836,8 +837,8 @@ object NetworkObject : NetworkAPI {
     private val _name: String,
     private val _visibility: Visibility,
     private val _bufferSize: Double
-  ) : api.detail.Builder.ComponentConnectorBuilder {
-    override fun create(): api.network.ComponentConnector? = if (isServer()) {
+  ) : Builder.ComponentConnectorBuilder {
+    override fun create(): li.cil.oc.api.network.ComponentConnector? = if (isServer()) {
       object : ComponentConnector, NodeVarargPart {
         override fun host() = _host
         override fun reachability() = _reachability
@@ -847,6 +848,7 @@ object NetworkObject : NetworkAPI {
         override var network: INetwork? = null
         override var localBufferSize = _bufferSize
         override var localBuffer = 0.0
+
         override var distributor: Distributor? = null
 
         private val callbacks by lazy { Component.createCallbacks(host()) }
@@ -873,9 +875,8 @@ object NetworkObject : NetworkAPI {
   ) : IPacket {
     val size: Int = run {
       val values = _data
-      if (values.size > Settings.get.maxNetworkPacketParts) {
+      if (values.size > Settings.get.maxNetworkPacketParts)
         throw IllegalArgumentException("packet has too many parts")
-      }
       values.size * 2 + values.fold(0) { acc, arg ->
         acc + when (arg) {
           null, Unit -> 1
@@ -892,6 +893,7 @@ object NetworkObject : NetworkAPI {
         }
       }
     }
+    override fun size(): Int = size
 
     override fun source() = _source
     override fun destination() = _destination
