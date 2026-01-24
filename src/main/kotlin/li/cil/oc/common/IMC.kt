@@ -135,13 +135,14 @@ object IMC {
     }
 
     @JvmStatic
-    fun getStaticMethod(name: String, vararg signature: Class<*>): Method {
+    fun getStaticMethod(name: String, vararg signature: Class<*>, returnType: Class<*>? = null): Method {
         val nameSplit = name.lastIndexOf('.')
         val className = name.substring(0, nameSplit)
         val methodName = name.substring(nameSplit + 1)
         val clazz = Class.forName(className)
         val method = clazz.getDeclaredMethod(methodName, *signature)
         if (!Modifier.isStatic(method.modifiers)) throw IllegalArgumentException("Method $name is not static.")
+        assert(returnType == null || returnType.isAssignableFrom(method.returnType)) { "Invalid return type" }
         return method
     }
 
