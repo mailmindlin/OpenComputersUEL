@@ -90,7 +90,7 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
                             val nanomachines = Items.get(Constants.ItemName.Nanomachines)
                             try {
                                 val index = player.inventory.mainInventory.indexOfFirst { stack ->
-                                    Items.get(stack) == nanomachines && NanomachineData(stack).configuration.isEmpty()
+                                    Items.get(stack) == nanomachines && NanomachineData(stack).configuration?.isEmpty != false
                                 }
                                 if (index >= 0) {
                                     val stack = player.inventory.decrStackSize(index, 1)
@@ -170,8 +170,8 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
                 val epsilon = 0.1
                 if (changeBuffer(-cost) > -epsilon) {
                     val packetData = (listOf("nanomachines") + data.toList()).toTypedArray()
-                    val packet = api.Network.newPacket(uuid, null, responsePort, packetData)
-                    api.Network.sendWirelessPacket(this, CommandRange, packet)
+                    val packet = Network.newPacket(uuid, null, responsePort, packetData)
+                    Network.sendWirelessPacket(this, CommandRange, packet)
                 }
             }
         }
@@ -186,9 +186,9 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
             activeBehaviorsDirty = true
 
             if (player is EntityPlayerMP && player.connection != null) {
-                player.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("blindness"), 100))
-                player.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("poison"), 150))
-                player.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("slowness"), 200))
+                player.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("blindness")!!, 100))
+                player.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("poison")!!, 150))
+                player.addPotionEffect(PotionEffect(Potion.getPotionFromResourceLocation("slowness")!!, 200))
                 changeBuffer(-Settings.get.nanomachineReconfigureCost)
 
                 hasSentConfiguration = false
@@ -259,11 +259,11 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
             // no dimension change event is fired if the player actually logged
             // out in another dimension... yay)
             if (player.world.provider.dimension != previousDimension) {
-                api.Network.leaveWirelessNetwork(this, previousDimension)
-                api.Network.joinWirelessNetwork(this)
+                Network.leaveWirelessNetwork(this, previousDimension)
+                Network.joinWirelessNetwork(this)
                 previousDimension = player.world.provider.dimension
             } else {
-                api.Network.updateWirelessNetwork(this)
+                Network.updateWirelessNetwork(this)
             }
         }
 
@@ -334,7 +334,7 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
     fun dispose() {
         reset()
         if (isServer) {
-            api.Network.leaveWirelessNetwork(this)
+            Network.leaveWirelessNetwork(this)
         }
     }
 

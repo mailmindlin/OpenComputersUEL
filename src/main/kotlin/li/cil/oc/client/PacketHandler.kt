@@ -466,7 +466,7 @@ object PacketHandler : CommonPacketHandler() {
         val t = p.readTileEntity<RedstoneAware>() ?: return
         t.outputEnabled = p.readBoolean()
         for (d in EnumFacing.values()) {
-            t.setOutput(d, p.readByte())
+            t.setOutput(d, p.readByte().toInt() and 0xFF)
         }
     }
 

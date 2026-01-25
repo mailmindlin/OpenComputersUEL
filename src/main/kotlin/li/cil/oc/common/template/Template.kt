@@ -131,7 +131,7 @@ abstract class Template {
             acc + if (driver is Processor) driver.tier(stack) else 0
         }
         return if (caseTier >= Tier.One && cpuTier >= Tier.One) {
-            Settings.deviceComplexityByTier(caseTier) - (minOf(2, caseTier) - cpuTier) * 6
+            Settings.deviceComplexityByTier[caseTier] - (minOf(2, caseTier) - cpuTier) * 6
         } else 0
     }
 

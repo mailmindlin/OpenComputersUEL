@@ -10,9 +10,11 @@ import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import net.minecraft.nbt.NBTTagCompound
 
 abstract class RedstoneSignaller : AbstractManagedEnvironment() {
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("redstone", Visibility.Neighbors)
-        .create()
+    init {
+        setNode(Network.newNode(this, Visibility.Network)
+            .withComponent("redstone", Visibility.Neighbors)
+            .create())
+    }
 
     var wakeThreshold = 0
 
@@ -38,12 +40,12 @@ abstract class RedstoneSignaller : AbstractManagedEnvironment() {
         if (args.color >= 0) {
             flatArgs.add(args.color)
         }
-        node.sendToReachable("computer.signal", *flatArgs.toTypedArray())
+        node().sendToReachable("computer.signal", *flatArgs.toTypedArray())
         if (args.oldValue < wakeThreshold && args.newValue >= wakeThreshold) {
             if (wakeNeighborsOnly)
-                node.sendToNeighbors("computer.start")
+                node().sendToNeighbors("computer.start")
             else
-                node.sendToReachable("computer.start")
+                node().sendToReachable("computer.start")
         }
     }
 

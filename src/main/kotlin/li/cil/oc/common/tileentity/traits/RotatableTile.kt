@@ -2,7 +2,6 @@ package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.Settings
 import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
-import li.cil.oc.common.tileentity.traits.delegates.RotatableDelegate
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side

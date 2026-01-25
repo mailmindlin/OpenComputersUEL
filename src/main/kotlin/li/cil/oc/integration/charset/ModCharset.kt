@@ -31,7 +31,7 @@ internal object ModCharset : ModProxy, RedstoneProvider {
     }
 
     override fun computeInput(pos: BlockPosition, side: EnumFacing): Int {
-        val world = pos.world.get() ?: return 0
+        val world = pos.world ?: return 0
         val npos = pos.toBlockPos().offset(side)
         val tile = world.getTileEntity(npos) as? TileEntity ?: return 0
 
@@ -45,7 +45,7 @@ internal object ModCharset : ModProxy, RedstoneProvider {
     }
 
     override fun computeBundledInput(pos: BlockPosition, side: EnumFacing): IntArray? {
-        val world = pos.world.get() ?: return null
+        val world = pos.world ?: return null
         val npos = pos.toBlockPos().offset(side)
         val tile = world.getTileEntity(npos) as? TileEntity ?: return null
 

@@ -6,7 +6,7 @@ import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.tileentity.Rack as TERack
-import li.cil.oc.common.tileentity.TileEntity as TETileEntity
+import li.cil.oc.common.tileentity.TileEntityBase as TETileEntity
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack

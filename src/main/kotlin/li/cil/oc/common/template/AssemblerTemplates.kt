@@ -16,7 +16,7 @@ import java.lang.reflect.Method
 
 object AssemblerTemplates {
     @JvmField
-    val NoSlot = Slot(Slot.None, Tier.None, null, null)
+    val NoSlot = Slot(li.cil.oc.common.Slot.None, Tier.None, null, null)
 
     private val templates = mutableListOf<Template>()
     private val templateFilters = mutableListOf<Method>()
@@ -31,14 +31,14 @@ object AssemblerTemplates {
         val containerSlots = mutableListOf<Slot>()
         val containerList = template.getTagList("containerSlots", NBT.TAG_COMPOUND)
         for (i in 0 until minOf(3, containerList.tagCount())) {
-            containerSlots.add(parseSlot(containerList.getCompoundTagAt(i), Slot.Container, hostClass))
+            containerSlots.add(parseSlot(containerList.getCompoundTagAt(i), li.cil.oc.common.Slot.Container, hostClass))
         }
         while (containerSlots.size < 3) containerSlots.add(NoSlot)
 
         val upgradeSlots = mutableListOf<Slot>()
         val upgradeList = template.getTagList("upgradeSlots", NBT.TAG_COMPOUND)
         for (i in 0 until minOf(9, upgradeList.tagCount())) {
-            upgradeSlots.add(parseSlot(upgradeList.getCompoundTagAt(i), Slot.Upgrade, hostClass))
+            upgradeSlots.add(parseSlot(upgradeList.getCompoundTagAt(i), li.cil.oc.common.Slot.Upgrade, hostClass))
         }
         while (upgradeSlots.size < 9) upgradeSlots.add(NoSlot)
 
@@ -92,7 +92,7 @@ object AssemblerTemplates {
         }
 
         fun assemble(inventory: IInventory): Pair<ItemStack, Double> {
-            return when (val result = IMC.tryInvokeStatic(assembler, inventory, null as Array<Any>?)) {
+            return when (val result = IMC.tryInvokeStatic(assembler, inventory, default = null as Array<Any>?)) {
                 is Array<*> -> when {
                     result.size >= 2 && result[0] is ItemStack && result[1] is Number ->
                         Pair(result[0] as ItemStack, (result[1] as Number).toDouble())
@@ -113,7 +113,7 @@ object AssemblerTemplates {
     ) {
         fun validate(inventory: IInventory, slot: Int, stack: ItemStack): Boolean {
             return if (validator != null) {
-                IMC.tryInvokeStatic(validator, inventory, slot, tier, stack, false) as Boolean
+                IMC.tryInvokeStatic(validator, inventory, slot, tier, stack, default = false) as Boolean
             } else {
                 val driver = if (hostClass != null) Driver.driverFor(stack, hostClass) else Driver.driverFor(stack)
                 if (driver != null) {
@@ -129,7 +129,7 @@ object AssemblerTemplates {
     }
 
     private fun parseSlot(nbt: NBTTagCompound, kindOverride: String?, hostClass: Class<out EnvironmentHost>?): Slot {
-        val kind = kindOverride ?: if (nbt.hasKey("type")) nbt.getString("type") else Slot.None
+        val kind = kindOverride ?: if (nbt.hasKey("type")) nbt.getString("type") else li.cil.oc.common.Slot.None
         val tier = if (nbt.hasKey("tier")) nbt.getInteger("tier") else Tier.Any
         val validator = if (nbt.hasKey("validate")) IMC.getStaticMethod(nbt.getString("validate"), IInventory::class.java, Int::class.java, Int::class.java, ItemStack::class.java) else null
         return Slot(kind, tier, validator, hostClass)

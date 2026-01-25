@@ -3,7 +3,6 @@ package li.cil.oc.integration.minecraft
 import li.cil.oc.Settings
 import li.cil.oc.api.driver.Converter
 import li.cil.oc.integration.Mods
-import li.cil.oc.util.ExtendedNBT.extendNBTTagCompound
 import li.cil.oc.util.ItemUtils
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.item.Item

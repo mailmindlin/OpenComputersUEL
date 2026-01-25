@@ -24,7 +24,7 @@ class ComputerCraftWritableFileSystem(override val mount: IWritableMount) :
         false
     }
 
-    protected override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputHandle? = try {
+    protected override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputStreamFileSystem.OutputHandle? = try {
         val stream = when (mode) {
             Mode.Append -> mount.openForAppend(path)
             Mode.Write -> mount.openForWrite(path)
@@ -41,7 +41,7 @@ class ComputerCraftWritableFileSystem(override val mount: IWritableMount) :
         owner: OutputStreamFileSystem,
         handle: Int,
         path: String
-    ) : OutputHandle(owner, handle, path) {
+    ) : OutputStreamFileSystem.OutputHandle(owner, handle, path) {
         override fun length(): Long = mount.getSize(path)
 
         override fun position(): Long = throw IOException("bad file descriptor")

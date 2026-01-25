@@ -182,7 +182,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     // ----------------------------------------------------------------------- //
 
-    override fun node(): Node? = if (isServer) machine.node() else null
+    override fun node(): Node? = if (isServer) machine!!.node() else null
 
     @JvmField
     var globalBuffer = 0.0
@@ -571,7 +571,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     override fun onMachineDisconnect(node: Node) {
         super.onDisconnect(node)
         if (node == this.node()) {
-            node().remove()
+            node.remove()
             bot!!.node().remove()
             for (slot in componentSlots) {
                 getComponentInSlot(slot)?.node()?.remove()
@@ -598,7 +598,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
                 world.notifyBlocksOfNeighborChange(position, blockType, false)
             }
             if (isInventorySlot(slot)) {
-                machine.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
+                machine!!.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
             }
         } else super.onItemAdded(slot, stack)
     }
@@ -617,7 +617,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
                 Sound.playDiskEject(this)
             }
             if (isInventorySlot(slot)) {
-                machine.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
+                machine!!.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
             }
             if (isComponentSlot(slot, stack)) {
                 world.notifyBlocksOfNeighborChange(position, blockType, false)
@@ -849,7 +849,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     override fun drain(resource: FluidStack?, doDrain: Boolean): FluidStack? =
         tryGetTank(selectedTank)?.let { t ->
-            if (t.fluid != null && t.fluid.isFluidEqual(resource)) t.drain(resource!!.amount, doDrain)
+            if (t.fluid?.isFluidEqual(resource) == true) t.drain(resource!!.amount, doDrain)
             else null
         }
 

@@ -50,7 +50,7 @@ class Waypoint : RedstoneAware() {
         return super.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
     }
 
-    override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing> {
+    override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing>? {
         val tileEntity = world.getTileEntity(pos)
         return if (tileEntity is TEWaypoint) {
             val facing = tileEntity.facing() ?: return super.getValidRotations(world, pos)

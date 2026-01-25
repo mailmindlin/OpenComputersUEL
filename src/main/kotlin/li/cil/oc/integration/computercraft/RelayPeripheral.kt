@@ -127,7 +127,7 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
             throw LuaException(t.message)
         }
 
-    override fun equals(other: IPeripheral): Boolean {
+    override fun equals(other: Any?): Boolean {
         return when (other) {
             is RelayPeripheral -> other.relay == relay
             else -> false
@@ -152,7 +152,7 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
     private val visibleComponents: Iterable<Component>
         get() = EnumFacing.values().flatMap { side ->
             val node = relay.sidedNode(side)
-            node.reachableNodes().filterIsInstance<Component>().filter { it.canBeSeenFrom(node) }
+            node!!.reachableNodes().filterIsInstance<Component>().filter { it.canBeSeenFrom(node) }
         }
 
     inner class CCContext(val computer: IComputerAccess, val context: ILuaContext) : Context {

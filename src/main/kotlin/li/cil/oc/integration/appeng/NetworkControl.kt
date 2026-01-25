@@ -28,6 +28,7 @@ import li.cil.oc.util.DatabaseAccess
 import li.cil.oc.util.setNewTagList
 import li.cil.oc.util.NbtDataStream
 import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.optSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
@@ -44,7 +45,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   fun node(): Node
 
   private fun aeCraftItem(aeItem: IAEItemStack): IAEItemStack {
-    val patterns = AEUtil.getGridCrafting(tile.getGridNode(pos).grid).getCraftingFor(aeItem, null, 0, tile.world)
+    val patterns = AEUtil.getGridCrafting(tile.getGridNode(pos)!!.grid).getCraftingFor(aeItem, null, 0, tile.world)
     return patterns.firstOrNull { pattern ->
       pattern.outputs.any { it.isSameType(aeItem) }
     }?.outputs?.firstOrNull { it.isSameType(aeItem) }
@@ -102,7 +103,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   private fun getFilter(args: Arguments, index: Int): Map<Any?, Any?> {
     val hash = java.util.HashMap<Any?, Any?>()
     Registry.convert(arrayOf(args.optTable(index, emptyMap<Any?, Any?>())))
-      .firstOrNull()?.let { converted ->
+      ?.firstOrNull()?.let { converted ->
         when (converted) {
           is Map<*, *> -> converted.forEach { (key, value) ->
             hash[reduceLuaValue(key)] = reduceLuaValue(value)
@@ -202,7 +203,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   @Callback(doc = """function():table -- Get a list of the stored fluids in the network.""")
   fun getFluidsInNetwork(context: Context, args: Arguments): Array<Any?> =
     result(
-      AEUtil.getGridStorage(tile.getGridNode(pos).grid)
+      AEUtil.getGridStorage(tile.getGridNode(pos)!!.grid)
         .getInventory(AEUtil.fluidStorageChannel)
         .storageList
         .filterNotNull()
@@ -212,32 +213,32 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
 
   @Callback(doc = """function():number -- Get the average power injection into the network.""")
   fun getAvgPowerInjection(context: Context, args: Arguments): Array<Any?> =
-    result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).avgPowerInjection)
+    result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).avgPowerInjection)
 
   @Callback(doc = """function():number -- Get the average power usage of the network.""")
   fun getAvgPowerUsage(context: Context, args: Arguments): Array<Any?> =
-    result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).avgPowerUsage)
+    result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).avgPowerUsage)
 
   @Callback(doc = """function():number -- Get the idle power usage of the network.""")
   fun getIdlePowerUsage(context: Context, args: Arguments): Array<Any?> =
-    result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).idlePowerUsage)
+    result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).idlePowerUsage)
 
   @Callback(doc = """function():number -- Get the maximum stored power in the network.""")
   fun getMaxStoredPower(context: Context, args: Arguments): Array<Any?> =
-    result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).maxStoredPower)
+    result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).maxStoredPower)
 
   @Callback(doc = """function():number -- Get the stored power in the network. """)
   fun getStoredPower(context: Context, args: Arguments): Array<Any?> =
-    result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).storedPower)
+    result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).storedPower)
 
   @Callback(doc = """function():boolean -- True if the AE network is considered online""")
   fun isNetworkPowered(context: Context, args: Arguments): Array<Any?> =
-    result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).isNetworkPowered)
+    result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).isNetworkPowered)
 
   @Callback(direct = false, doc = """function():number -- Returns the energy demand on the AE network""")
   fun getEnergyDemand(context: Context, args: Arguments): Array<Any?> {
     context.consumeCallBudget(1.5)
-    return result(AEUtil.getGridEnergy(tile.getGridNode(pos).grid).getEnergyDemand(Double.MAX_VALUE))
+    return result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).getEnergyDemand(Double.MAX_VALUE))
   }
 
   private fun matches(stack: Map<Any?, Any?>?, filter: Map<Any?, Any?>): Boolean {

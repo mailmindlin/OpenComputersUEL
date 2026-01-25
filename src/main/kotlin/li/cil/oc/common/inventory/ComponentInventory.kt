@@ -110,7 +110,7 @@ interface ComponentInventory : Inventory, Environment {
 
     override fun save(nbt: NBTTagCompound) {
         saveComponents()
-        super.save(nbt) // Save items after updating their tags.
+        super<Inventory>.save(nbt) // Save items after updating their tags.
     }
 
     fun saveComponents() {

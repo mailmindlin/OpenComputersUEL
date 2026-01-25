@@ -26,7 +26,7 @@ import net.minecraft.nbt.NBTTagString
 import net.minecraftforge.common.util.Constants as NBT
 import java.util.*
 
-class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, DeviceInfo {
+class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("leash")
         .create()
@@ -43,7 +43,7 @@ class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, Devic
 
     val leashedEntities = mutableSetOf<UUID>()
 
-    override val position get() = BlockPosition.apply(host)
+    override val position: BlockPosition get() = BlockPosition(host)
 
     @Callback(doc = "function(side:number):boolean -- Tries to put an entity on the specified side of the device onto a leash.")
     fun leash(context: Context, args: Arguments): Array<Any?>? {

@@ -3,13 +3,13 @@ package li.cil.oc.common.block
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Items
-import li.cil.oc.ApiItems as ApiItems
+import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.Keyboard as TEKeyboard
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
-import li.cil.oc.common.tileentity.Rotatable as TERotatable
+import li.cil.oc.common.tileentity.traits.Rotatable as TERotatable
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.util.ITooltipFlag

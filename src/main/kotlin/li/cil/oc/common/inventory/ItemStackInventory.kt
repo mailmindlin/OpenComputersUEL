@@ -3,7 +3,7 @@ package li.cil.oc.common.inventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
-abstract class ItemStackInventory : Inventory() {
+abstract class ItemStackInventory : Inventory {
     // The item stack that provides the inventory.
     abstract val container: ItemStack
 

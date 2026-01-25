@@ -17,7 +17,7 @@ class DroneData : MicrocontrollerData {
 
     override fun load(nbt: NBTTagCompound) {
         super.load(nbt)
-        name = ItemUtils.getDisplayName(nbt).orElse("")
+        name = ItemUtils.getDisplayName(nbt) ?: ""
         if (Strings.isNullOrEmpty(name)) {
             name = RobotData.randomName
         }

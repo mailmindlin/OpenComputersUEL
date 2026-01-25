@@ -58,8 +58,8 @@ abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
           return Class.forName(archClass).asSubclass(Architecture::class.java)
         } catch (t: Throwable) {
           OpenComputers.log.warn("Failed getting class for CPU architecture. Resetting CPU to use the default.", t)
-          stack.tagCompound.removeTag(Settings.namespace + "archClass")
-          stack.tagCompound.removeTag(Settings.namespace + "archName")
+          stack.tagCompound!!.removeTag(Settings.namespace + "archClass")
+          stack.tagCompound!!.removeTag(Settings.namespace + "archName")
         }
       }
     }
@@ -69,8 +69,8 @@ abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
   override fun setArchitecture(stack: ItemStack, architecture: Class<out Architecture>) {
     if (!worksWith(stack)) throw IllegalArgumentException("Unsupported processor type.")
     if (!stack.hasTagCompound()) stack.tagCompound = NBTTagCompound()
-    stack.tagCompound.setString(Settings.namespace + "archClass", architecture.name)
-    stack.tagCompound.setString(Settings.namespace + "archName", Machine.getArchitectureName(architecture))
+    stack.tagCompound!!.setString(Settings.namespace + "archClass", architecture.name)
+    stack.tagCompound!!.setString(Settings.namespace + "archName", Machine.getArchitectureName(architecture))
   }
 
   override fun getCallBudget(stack: ItemStack): Double = Settings.get.callBudgets(tier(stack).coerceIn(Tier.One, Tier.Three))

@@ -4,6 +4,7 @@ import li.cil.oc.Settings
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import li.cil.oc.server.fs
+import li.cil.oc.server.fs.FileSystem
 import net.minecraft.entity.player.EntityPlayer
 
 class DriveData : ItemData {
@@ -52,7 +53,7 @@ class DriveData : ItemData {
         fun setUnmanaged(stack: ItemStack, unmanaged: Boolean) {
             val data = DriveData(stack)
             if (data.isUnmanaged != unmanaged) {
-                fs.FileSystem.removeAddress(stack)
+                FileSystem.removeAddress(stack)
                 data.lockInfo = ""
             }
             data.isUnmanaged = unmanaged

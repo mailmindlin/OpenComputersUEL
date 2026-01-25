@@ -21,6 +21,7 @@ import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.minecraftforge.items.IItemHandler
 
 object DriverBlockInterface : DriverSidedTileEntity() {
   override fun getTileEntityClass(): Class<*>? = AEUtil.interfaceClass()
@@ -40,7 +41,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
 
     @Callback(doc = "function([slot:number]):table -- Get the configuration of the interface.")
     fun getInterfaceConfiguration(context: Context, args: Arguments): Array<Any?> {
-      val config = (tileEntity as ISegmentedInventory).getInventoryByName("config")
+      val config: IItemHandler = (tileEntity as ISegmentedInventory).getInventoryByName("config")
       val slot = args.optSlot(config, 0, 0)
       val stack = config.getStackInSlot(slot)
       return result(stack)
@@ -48,7 +49,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
 
     @Callback(doc = "function([slot:number][, database:address, entry:number[, size:number]]):boolean -- Configure the interface.")
     fun setInterfaceConfiguration(context: Context, args: Arguments): Array<Any?> {
-      val config = (tileEntity as ISegmentedInventory).getInventoryByName("config")
+      val config: IItemHandler = (tileEntity as ISegmentedInventory).getInventoryByName("config")
       val slot = if (args.isString(0)) 0 else args.optSlot(config, 0, 0)
       val stack = if (args.count() > 1) {
         val (address, entry, size) =

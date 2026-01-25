@@ -10,6 +10,7 @@ import li.cil.oc.api.internal.Microcontroller as InternalMicrocontroller
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.ComponentConnector
 import li.cil.oc.api.network.Connector
@@ -44,6 +45,11 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+    override val rotatableDelegate = register(li.cil.oc.common.tileentity.traits.Rotatable::RotatableDelegate)
+    override val hubDelegate: Hub.Delegate = register(Hub::Delegate)
+
+    // Resolve isConnected from multiple inheritance - use Computer's implementation
+    override val isConnected: Boolean get() = super<Computer>.isConnected
 
     override fun node(): Node? = null
 
@@ -64,6 +70,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     }
 
     init {
+        val machine = machine
         if (machine != null) {
             (machine.node() as Connector).setLocalBufferSize(0.0)
             machine.setCostPerTick(Settings.get.microcontrollerCost)
@@ -112,7 +119,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     override fun internalComponents(): Iterable<ItemStack> = info.components.asIterable()
 
-    override fun componentSlot(address: String): Int = components.indexOfFirst { it?.node != null && it.node.address() == address }
+    override fun componentSlot(address: String): Int = components.indexOfFirst { it?.node()?.address() == address }
 
     // ----------------------------------------------------------------------- //
 
@@ -191,6 +198,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     override fun onPlugConnect(plug: Hub.Plug, node: Node) {
         super.onPlugConnect(plug, node)
         if (node == plug.node) {
+            val machine = machine!!
             ApiNetwork.joinNewNetwork(machine.node())
             machine.node().connect(snooperNode)
             connectComponents()

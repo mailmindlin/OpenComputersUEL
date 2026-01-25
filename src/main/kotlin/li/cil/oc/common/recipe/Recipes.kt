@@ -142,7 +142,8 @@ object Recipes {
                 FileUtils.copyURLToFile(Recipes::class.java.getResource("/assets/opencomputers/recipes/$recipeSet.recipes"), File(recipeDirectory, "$recipeSet.recipes"))
             }
 
-            val config: ConfigParseOptions = ConfigParseOptions.defaults()
+            var config: ConfigParseOptions? = null
+            config = ConfigParseOptions.defaults()
                 .setSyntax(ConfigSyntax.CONF)
                 .setIncluder(object : ConfigIncluder, ConfigIncluderFile {
                     var fallback: ConfigIncluder? = null
@@ -157,7 +158,7 @@ object Recipes {
 
                     override fun includeFile(context: ConfigIncludeContext, what: File): ConfigObject {
                         val input = if (what.isAbsolute) FileReader(what) else FileReader(File(userRecipes.parentFile, what.path))
-                        val result = ConfigFactory.parseReader(input, config)
+                        val result = ConfigFactory.parseReader(input, config!!)
                         input.close()
                         return result.root()
                     }

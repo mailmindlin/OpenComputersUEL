@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.util.setNewTagList
 import li.cil.oc.util.toArray
+import li.cil.oc.util.toNbt
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.Constants.NBT
@@ -37,7 +38,7 @@ class RaidData : ItemData {
     }
 
     override fun save(nbt: NBTTagCompound) {
-        nbt.setNewTagList(DisksTag, disks.asIterable())
+        nbt.setNewTagList(DisksTag, disks.asIterable().map { it.toNbt() })
         nbt.setTag(FileSystemTag, filesystem)
         label?.let { nbt.setString(LabelTag, it) }
     }

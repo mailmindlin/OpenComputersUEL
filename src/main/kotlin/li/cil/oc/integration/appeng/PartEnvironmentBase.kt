@@ -9,7 +9,9 @@ import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.optSlot
 import net.minecraft.item.ItemStack
+import net.minecraftforge.items.IItemHandler
 
 interface PartEnvironmentBase : ManagedEnvironment {
   val host: IPartHost
@@ -35,7 +37,7 @@ interface PartEnvironmentBase : ManagedEnvironment {
     val side = args.checkSideAny(0)
     return when (val part = host.getPart(side)) {
       is ISegmentedInventory -> {
-        val config = part.getInventoryByName("config")
+        val config: IItemHandler = part.getInventoryByName("config")
         val slot = if (args.isString(1)) 0 else args.optSlot(config, 1, 0)
         val stack = if (args.count() > 2) {
           val (address, entry, size) =

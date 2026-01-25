@@ -41,7 +41,7 @@ class NavigationUpgradeData : ItemData {
         if (!stack.hasTagCompound()) {
             stack.tagCompound = NBTTagCompound()
         }
-        save(stack.getCompoundTag(DataTag))
+        save(stack.tagCompound!!.getCompoundTag(DataTag))
     }
 
     override fun load(nbt: NBTTagCompound) {

@@ -230,7 +230,7 @@ class RobotProxy : RedstoneAware(), StateAware {
                 robot.ownerName = owner
                 robot.ownerUUID = Player.determineUUID(uuid)
                 robot.info.load(stack)
-                robot.bot.node.changeBuffer(robot.info.robotEnergy - robot.bot.node.localBuffer())
+                robot.bot!!.node.changeBuffer(robot.info.robotEnergy - robot.bot.node.localBuffer())
                 robot.updateInventorySize()
             }
         }

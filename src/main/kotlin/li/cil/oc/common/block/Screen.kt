@@ -138,7 +138,7 @@ class Screen(val tier: Int) : RedstoneAware() {
 
     // ----------------------------------------------------------------------- //
 
-    override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing> {
+    override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing>? {
         val tileEntity = world.getTileEntity(pos) as? TEScreen ?: return super.getValidRotations(world, pos)
         return if (tileEntity.facing() == EnumFacing.UP || tileEntity.facing() == EnumFacing.DOWN) {
             EnumFacing.values()

@@ -211,5 +211,5 @@ interface Hub : Environment, SidedEnvironment, Tickable {
         }
     }
 
-    fun createNode(plug: Plug): Node? = ApiNetwork.newNode(plug, Visibility.Network).create()
+    fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network).create()
 }

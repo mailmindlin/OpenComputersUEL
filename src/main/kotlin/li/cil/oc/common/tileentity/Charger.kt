@@ -6,7 +6,6 @@ import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Nanomachines
 import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.nanomachines.Controller
@@ -33,6 +32,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumParticleTypes
 import net.minecraft.util.math.Vec3d
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
@@ -82,6 +82,8 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
             DeviceAttribute.Product to "PowerUpper"
         )
     }
+
+    override fun getDisplayName(): ITextComponent = super<ComponentInventory>.getDisplayName()
 
     // ----------------------------------------------------------------------- //
 
@@ -265,7 +267,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
 
     override fun updateRedstoneInput(side: EnumFacing) {
         super.updateRedstoneInput(side)
-        val signal = minOf(15, input.max())
+        val signal = minOf(15, maxInput)
 
         chargeSpeed = if (invertSignal) (15 - signal) / 15.0 else signal / 15.0
         if (isServer) {

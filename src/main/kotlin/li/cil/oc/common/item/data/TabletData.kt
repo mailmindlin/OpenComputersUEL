@@ -33,7 +33,8 @@ class TabletData : ItemData {
     private val ContainerTag = Settings.namespace + "container"
 
     override fun load(nbt: NBTTagCompound) {
-        nbt.getTagList(ItemsTag, NBT.TAG_COMPOUND).forEach<NBTTagCompound> { slotNbt ->
+        nbt.getTagList(ItemsTag, NBT.TAG_COMPOUND).forEach { slotNbt ->
+            val slotNbt = slotNbt as NBTTagCompound
             val slot = slotNbt.getByte(SlotTag).toInt()
             if (slot >= 0 && slot < items.size) {
                 items[slot] = ItemStack(slotNbt.getCompoundTag(ItemTag))

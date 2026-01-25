@@ -8,7 +8,6 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.common.Slot
 import li.cil.oc.common.component.TerminalServer
-import li.cil.oc.util.ExtendedInventory.extendedInventory
 import li.cil.oc.util.asExtended
 import net.minecraft.item.ItemStack
 

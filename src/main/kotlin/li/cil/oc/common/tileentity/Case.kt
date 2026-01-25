@@ -3,25 +3,20 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Machine
-import li.cil.oc.api.internal.Case as InternalCase
 import li.cil.oc.api.network.Connector
 import li.cil.oc.common.InventorySlots
-import li.cil.oc.common.block.Case as BlockCase
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Sound
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.property.PropertyRunning
+import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.Colored
-import li.cil.oc.common.tileentity.traits.Computer
-import li.cil.oc.common.tileentity.traits.RedstoneAware
-import li.cil.oc.common.tileentity.traits.delegates.RotatableDelegate
-import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
+import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.Color
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -29,10 +24,10 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
-import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
+import li.cil.oc.api.internal.Case as InternalCase
+import li.cil.oc.common.block.Case as BlockCase
 import li.cil.oc.common.tileentity.traits.Colored as TraitColored
-import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
 class Case @JvmOverloads constructor(
     @JvmField var tier: Int = 0
@@ -41,88 +36,19 @@ class Case @JvmOverloads constructor(
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
     override val colorDelegate: Colored.Delegate = register(Colored::Delegate)
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
 
     init {
         // If no tier was defined when constructing this case, then we don't yet know the inventory size
         // this is set back to true when the nbt data is loaded
         if (tier == 0) {
-            isSizeInventoryReady = false
+            componentInventoryDelegate.isSizeInventoryReady = false
         }
         setColor(Color.rgbValues(Color.byTier[tier]).toInt())
     }
+    override fun machine(): Machine? = machine
 
-    override fun isEmpty(): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun decrStackSize(index: Int, count: Int): ItemStack {
-        TODO("Not yet implemented")
-    }
-
-    override fun removeStackFromSlot(index: Int): ItemStack {
-        TODO("Not yet implemented")
-    }
-
-    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
-        TODO("Not yet implemented")
-    }
-
-    override fun openInventory(player: EntityPlayer) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getField(id: Int): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun setField(id: Int, value: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun getFieldCount(): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun clear() {
-        TODO("Not yet implemented")
-    }
-    override fun closeInventory(player: EntityPlayer) {
-        TODO("Not yet implemented")
-    }
-    override fun getInventoryStackLimit(): Int {
-        TODO("Not yet implemented")
-    }
-    override fun getStackInSlot(slot: Int): ItemStack {
-        TODO("Not yet implemented")
-    }
-
-    override fun isComponentSlot(slot: Int, stack: ItemStack): Boolean {
-        TODO("Not yet implemented")
-    }
-
-    override fun items(): Array<ItemStack> {
-        TODO("Not yet implemented")
-    }
-
-    override fun updateComponents() {
-        TODO("Not yet implemented")
-    }
-
-    override fun machine(): Machine {
-        TODO("Not yet implemented")
-    }
-
-    override fun tier(): Int {
-        TODO("Not yet implemented")
-    }
-
-    override fun getName(): String {
-        TODO("Not yet implemented")
-    }
-
-    override fun hasCustomName(): Boolean {
-        TODO("Not yet implemented")
-    }
+    override fun tier(): Int = tier
 
     // Used on client side to check whether to render disk activity/network indicators.
     @JvmField
@@ -197,7 +123,7 @@ class Case @JvmOverloads constructor(
         tier = maxOf(0, minOf(3, nbt.getByte(TierTag).toInt()))
         color = Color.rgbValues(Color.byTier[tier])
         super.readFromNBTForServer(nbt)
-        isSizeInventoryReady = true
+        componentInventoryDelegate.isSizeInventoryReady = true
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
@@ -224,7 +150,7 @@ class Case @JvmOverloads constructor(
                 Sound.playDiskEject(this)
             }
             if (slotType == Slot.CPU) {
-                machine.stop()
+                machine!!.stop()
             }
         }
     }

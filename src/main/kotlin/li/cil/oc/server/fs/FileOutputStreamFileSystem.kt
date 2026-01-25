@@ -50,7 +50,7 @@ interface FileOutputStreamFileSystem : FileInputStreamFileSystem, OutputStreamFi
     // ----------------------------------------------------------------------- //
 
     override fun save(nbt: NBTTagCompound) {
-        super.save(nbt)
+        super<OutputStreamFileSystem>.save(nbt)
         root.mkdirs()
         root.setLastModified(System.currentTimeMillis())
     }

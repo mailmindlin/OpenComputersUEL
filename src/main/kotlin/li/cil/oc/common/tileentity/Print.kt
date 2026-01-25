@@ -60,7 +60,7 @@ class Print @JvmOverloads constructor(
     fun isSideSolid(side: EnumFacing): Boolean {
         for (shape in shapes) {
             if (!Strings.isNullOrEmpty(shape.texture)) {
-                val bounds = shape.bounds.rotateTowards(facing())
+                val bounds = shape.bounds.rotateTowards(facing()!!)
                 val fullX = bounds.minX == 0.0 && bounds.maxX == 1.0
                 val fullY = bounds.minY == 0.0 && bounds.maxY == 1.0
                 val fullZ = bounds.minZ == 0.0 && bounds.maxZ == 1.0
@@ -88,7 +88,7 @@ class Print @JvmOverloads constructor(
                 }
             } else {
                 for (shape in shapes) {
-                    val bounds = shape.bounds.rotateTowards(facing()).offset(pos)
+                    val bounds = shape.bounds.rotateTowards(facing()!!).offset(pos)
                     if (mask == null || bounds.intersects(mask)) {
                         list.add(bounds)
                     }

@@ -45,8 +45,8 @@ object DriverTablet : Item() {
     val index = data.items.indexOfFirst { fs ->
       !fs.isEmpty && DriverFileSystem.worksWith(fs)
     }
-    return if (index >= 0 && stack.hasTagCompound() && stack.tagCompound.hasKey(Settings.namespace + "items")) {
-      val baseTag = stack.tagCompound.getTagList(Settings.namespace + "items", NBT.TAG_COMPOUND).getCompoundTagAt(index)
+    return if (index >= 0 && stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "items")) {
+      val baseTag = stack.tagCompound!!.getTagList(Settings.namespace + "items", NBT.TAG_COMPOUND).getCompoundTagAt(index)
       if (!baseTag.hasKey("item")) {
         baseTag.setTag("item", NBTTagCompound())
       }

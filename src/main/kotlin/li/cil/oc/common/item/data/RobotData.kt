@@ -10,6 +10,7 @@ import li.cil.oc.integration.opencomputers.DriverScreen
 import li.cil.oc.util.ItemUtils
 import li.cil.oc.util.setNewTagList
 import li.cil.oc.util.toArray
+import li.cil.oc.util.toNbt
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.Constants.NBT
@@ -47,7 +48,7 @@ class RobotData : ItemData {
     private val LightColorTag = Settings.namespace + "lightColor"
 
     override fun load(nbt: NBTTagCompound) {
-        name = ItemUtils.getDisplayName(nbt).orElse("")
+        name = ItemUtils.getDisplayName(nbt) ?: ""
         if (Strings.isNullOrEmpty(name)) {
             name = RobotData.randomName
         }
@@ -74,8 +75,8 @@ class RobotData : ItemData {
         nbt.setInteger(StoredEnergyTag, totalEnergy)
         nbt.setInteger(RobotEnergyTag, robotEnergy)
         nbt.setInteger(TierTag, tier)
-        nbt.setNewTagList(ComponentsTag, components.asIterable())
-        nbt.setNewTagList(ContainersTag, containers.asIterable())
+        nbt.setNewTagList(ComponentsTag, components.asIterable().map { it.toNbt() })
+        nbt.setNewTagList(ContainersTag, containers.asIterable().map { it.toNbt() })
         nbt.setInteger(LightColorTag, lightColor)
     }
 

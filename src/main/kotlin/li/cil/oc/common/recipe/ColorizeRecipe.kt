@@ -21,9 +21,8 @@ class ColorizeRecipe : IForgeRegistryEntry.Impl<net.minecraft.item.crafting.IRec
         this.sourceItems = source ?: arrayOf(target)
     }
 
-    constructor(target: Block, source: Array<Item>) : this(Item.getItemFromBlock(target), source)
-
-    constructor(target: Block) : this(target, null)
+    @JvmOverloads
+    constructor(target: Block, source: Array<Item>? = null) : this(Item.getItemFromBlock(target), source)
 
     override fun matches(crafting: InventoryCrafting, world: World): Boolean {
         val stacks = (0 until crafting.sizeInventory).mapNotNull { i ->
@@ -51,12 +50,9 @@ class ColorizeRecipe : IForgeRegistryEntry.Impl<net.minecraft.item.crafting.IRec
                 targetStack = stack.copy()
                 targetStack.count = 1
             } else {
-                val dye = Color.findDye(stack)
-                if (dye.isEmpty()) {
-                    return ItemStack.EMPTY
-                }
+                val dye = Color.findDye(stack) ?: return ItemStack.EMPTY
 
-                val itemColor = Color.byOreName(dye.get()).colorComponentValues
+                val itemColor = Color.byOreName[dye]!!.colorComponentValues
                 val red = (itemColor[0] * 255.0F).toInt()
                 val green = (itemColor[1] * 255.0F).toInt()
                 val blue = (itemColor[2] * 255.0F).toInt()

@@ -99,7 +99,7 @@ object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, 
         }
 
         GlStateManager.rotate(hologram.rotationAngle, hologram.rotationX, hologram.rotationY, hologram.rotationZ)
-        GlStateManager.rotate(hologram.rotationSpeed * (hologram.world?.totalWorldTime ?: 0L % (360 * 20 - 1) + f) / 20f, hologram.rotationSpeedX, hologram.rotationSpeedY, hologram.rotationSpeedZ)
+        GlStateManager.rotate(hologram.rotationSpeed * (hologram.world?.totalWorldTime ?: 0L % (360 * 20 - 1) + f).toFloat() / 20f, hologram.rotationSpeedX, hologram.rotationSpeedY, hologram.rotationSpeedZ)
 
         GlStateManager.scale(1.001, 1.001, 1.001) // Avoid z-fighting with other blocks.
         GlStateManager.translate(
