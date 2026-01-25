@@ -65,7 +65,7 @@ interface IndustrialCraft2Experimental : Common, IndustrialCraft2Common, Tickabl
         @Optional.Method(modid = Mods.IDs.IndustrialCraft2)
         override fun update() {
             if (!tile.useIndustrialCraft2Power) return
-            if (tile.world?.let(Settings.get::isTickMultiple) == true)
+            if (Settings.get.isTickMultiple(tile.world))
                 updateEnergy()
         }
 

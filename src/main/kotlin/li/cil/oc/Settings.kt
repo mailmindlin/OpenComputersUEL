@@ -167,6 +167,7 @@ class Settings(val config: Config) {
     val tickFrequency: Double = getDouble("power.tickFrequency", atLeast = 1.0)
     fun isTickMultiple(worldTime: Long): Boolean = worldTime % tickFrequency.toLong() == 0L
     fun isTickMultiple(world: World): Boolean = isTickMultiple(world.totalWorldTime)
+    fun isTickMultiple(world: World?): Boolean = world?.let(::isTickMultiple) ?: false
     val chargeRateExternal: Double = getDouble("power.chargerChargeRate")
     val chargeRateTablet: Double = config.getDouble("power.chargerChargeRateTablet")
     val generatorEfficiency: Double = config.getDouble("power.generatorEfficiency")
