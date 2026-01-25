@@ -2,7 +2,7 @@ package li.cil.oc.common.item.data
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.item.ItemMap
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound

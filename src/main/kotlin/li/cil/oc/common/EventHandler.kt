@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
+import li.cil.oc.api.Items
 import li.cil.oc.api.Network
 import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.api.internal.Colored
@@ -28,6 +29,8 @@ import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.item.traits.Chargeable
 import li.cil.oc.common.recipe.Recipes
 import li.cil.oc.common.tileentity.Robot
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.util.WirelessRedstone
 import li.cil.oc.server.PacketSender as ServerPacketSender
@@ -86,7 +89,7 @@ object EventHandler {
 
     private val keyboards: MutableSet<Keyboard> = Collections.newSetFromMap(WeakHashMap<Keyboard, Boolean>())
 
-    private val machines = mutableSetOf<Machine>()
+    private val machines = mutableSetOf<li.cil.oc.server.machine.Machine>()
 
     @JvmStatic
     fun onRobotStart(robot: Robot) {
@@ -104,7 +107,7 @@ object EventHandler {
     }
 
     @JvmStatic
-    fun scheduleClose(machine: Machine) {
+    fun scheduleClose(machine: li.cil.oc.server.machine.Machine) {
         machines.add(machine)
     }
 
@@ -145,7 +148,7 @@ object EventHandler {
 
     @JvmStatic
     @Optional.Method(modid = Mods.IDs.IndustrialCraft2)
-    fun scheduleIC2Add(tileEntity: power.IndustrialCraft2Experimental) {
+    fun scheduleIC2Add(tileEntity: IndustrialCraft2Experimental) {
         if (SideTracker.isServer()) {
             synchronized(pendingServer) {
                 if (tileEntity is ic2.api.energy.tile.IEnergyTile) {
@@ -162,7 +165,7 @@ object EventHandler {
 
     @JvmStatic
     @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-    fun scheduleAE2Add(tileEntity: power.AppliedEnergistics2) {
+    fun scheduleAE2Add(tileEntity: AppliedEnergistics2) {
         if (SideTracker.isServer()) {
             synchronized(pendingServer) {
                 pendingServer.add { tileEntity.updateGridNodeState() }
@@ -386,18 +389,18 @@ object EventHandler {
                 val persistedData = PlayerUtils.persistedData(entity)
                 if (!persistedData.getBoolean(Settings.namespace + "receivedManual")) {
                     persistedData.setBoolean(Settings.namespace + "receivedManual", true)
-                    entity.inventory.addItemStackToInventory(api.Items.get(Constants.ItemName.Manual).createItemStack(1))
+                    entity.inventory.addItemStackToInventory(Items.get(Constants.ItemName.Manual).createItemStack(1))
                 }
             }
         }
     }
 
-    private val drone by lazy { api.Items.get(Constants.ItemName.Drone) }
-    private val eeprom by lazy { api.Items.get(Constants.ItemName.EEPROM) }
-    private val mcu by lazy { api.Items.get(Constants.BlockName.Microcontroller) }
-    private val navigationUpgrade by lazy { api.Items.get(Constants.ItemName.NavigationUpgrade) }
-    private val robot by lazy { api.Items.get(Constants.BlockName.Robot) }
-    private val tablet by lazy { api.Items.get(Constants.ItemName.Tablet) }
+    private val drone by lazy { Items.get(Constants.ItemName.Drone) }
+    private val eeprom by lazy { Items.get(Constants.ItemName.EEPROM) }
+    private val mcu by lazy { Items.get(Constants.BlockName.Microcontroller) }
+    private val navigationUpgrade by lazy { Items.get(Constants.ItemName.NavigationUpgrade) }
+    private val robot by lazy { Items.get(Constants.BlockName.Robot) }
+    private val tablet by lazy { Items.get(Constants.ItemName.Tablet) }
 
     @SubscribeEvent
     @Suppress("unused")
@@ -416,22 +419,22 @@ object EventHandler {
 
         didRecraft = recraft(e, mcu) { stack ->
             // Restore EEPROM currently used in microcontroller.
-            StackOption(MicrocontrollerData(stack).components.find { api.Items.get(it) == eeprom })
+            StackOption(MicrocontrollerData(stack).components.find { Items.get(it) == eeprom })
         } || didRecraft
 
         didRecraft = recraft(e, drone) { stack ->
             // Restore EEPROM currently used in drone.
-            StackOption(MicrocontrollerData(stack).components.find { api.Items.get(it) == eeprom })
+            StackOption(MicrocontrollerData(stack).components.find { Items.get(it) == eeprom })
         } || didRecraft
 
         didRecraft = recraft(e, robot) { stack ->
             // Restore EEPROM currently used in robot.
-            StackOption(RobotData(stack).components.find { api.Items.get(it) == eeprom })
+            StackOption(RobotData(stack).components.find { Items.get(it) == eeprom })
         } || didRecraft
 
         didRecraft = recraft(e, tablet) { stack ->
             // Restore EEPROM currently used in tablet.
-            StackOption(TabletData(stack).items.filterNot { it.isEmpty }.find { api.Items.get(it) == eeprom })
+            StackOption(TabletData(stack).items.filterNot { it.isEmpty }.find { Items.get(it) == eeprom })
         } || didRecraft
 
         // Presents?
@@ -440,10 +443,10 @@ object EventHandler {
             player is FakePlayer -> {} // No presents for you, automaton. Such discrimination. Much bad conscience.
             player is EntityPlayerMP && player.entityWorld != null && !player.entityWorld.isRemote -> {
                 // Presents!? If we didn't recraft, it's an OC item, and the time is right...
-                if (Settings.get.presentChance > 0 && !didRecraft && api.Items.get(e.crafting) != null &&
+                if (Settings.get.presentChance > 0 && !didRecraft && Items.get(e.crafting) != null &&
                     player.rng.nextFloat() < Settings.get.presentChance && timeForPresents) {
                     // Presents!
-                    val present = api.Items.get(Constants.ItemName.Present).createItemStack(1)
+                    val present = Items.get(Constants.ItemName.Present).createItemStack(1)
                     player.world.playSound(player, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_PLING, SoundCategory.MASTER, 0.2f, 1f)
                     InventoryUtils.addToPlayerInventory(present, player)
                 }
@@ -488,10 +491,10 @@ object EventHandler {
         }
 
     private fun recraft(e: ItemCraftedEvent, item: ItemInfo, callback: (ItemStack) -> StackOption): Boolean {
-        if (api.Items.get(e.crafting) == item) {
+        if (Items.get(e.crafting) == item) {
             for (slot in 0 until e.craftMatrix.sizeInventory) {
                 val stack = e.craftMatrix.getStackInSlot(slot)
-                if (api.Items.get(stack) == item) {
+                if (Items.get(stack) == item) {
                     callback(stack).stack?.let { extra ->
                         InventoryUtils.addToPlayerInventory(extra, e.player)
                     }
@@ -537,7 +540,7 @@ object EventHandler {
                     when (entity) {
                         is MachineHost -> {
                             val machine = entity.machine()
-                            if (machine is Machine) {
+                            if (machine is li.cil.oc.server.machine.Machine) {
                                 scheduleClose(machine)
                             }
                         }

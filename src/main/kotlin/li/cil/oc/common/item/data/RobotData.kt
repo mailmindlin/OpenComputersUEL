@@ -7,8 +7,9 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.integration.opencomputers.DriverScreen
-import li.cil.oc.util.ExtendedNBT._
 import li.cil.oc.util.ItemUtils
+import li.cil.oc.util.setNewTagList
+import li.cil.oc.util.toArray
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.Constants.NBT

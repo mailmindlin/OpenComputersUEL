@@ -2,6 +2,9 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.client.PacketSender
 import li.cil.oc.client.Textures
+import li.cil.oc.common.tileentity.x
+import li.cil.oc.common.tileentity.y
+import li.cil.oc.common.tileentity.z
 import li.cil.oc.common.tileentity.Waypoint as TileEntityWaypoint
 import li.cil.oc.util.OldScaledResolution
 import net.minecraft.client.gui.GuiScreen

@@ -4,7 +4,8 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.Tier
-import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.util.ExtendedNBT.toArray
+import li.cil.oc.util.setNewTagList
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.Constants.NBT

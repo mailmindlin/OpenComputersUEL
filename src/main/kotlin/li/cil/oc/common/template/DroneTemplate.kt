@@ -3,6 +3,7 @@ package li.cil.oc.common.template
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.IMC
+import li.cil.oc.api.Items
 import li.cil.oc.api.internal.Drone
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
@@ -22,13 +23,13 @@ object DroneTemplate : Template() {
     override val hostClass: Class<Drone> = Drone::class.java
 
     @JvmStatic
-    fun selectTier1(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.DroneCaseTier1)
+    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.DroneCaseTier1)
 
     @JvmStatic
-    fun selectTier2(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.DroneCaseTier2)
+    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.DroneCaseTier2)
 
     @JvmStatic
-    fun selectTierCreative(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.DroneCaseCreative)
+    fun selectTierCreative(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.DroneCaseCreative)
 
     @JvmStatic
     fun validate(inventory: IInventory): Array<Any> = validateComputer(inventory)
@@ -41,7 +42,7 @@ object DroneTemplate : Template() {
         data.name = RobotData.randomName
         data.components = items.drop(1).filter { !it.isEmpty }.toTypedArray()
         data.storedEnergy = Settings.get.bufferDrone.toInt()
-        val stack = api.Items.get(Constants.ItemName.Drone).createItemStack(1)
+        val stack = Items.get(Constants.ItemName.Drone)!!.createItemStack(1)
         data.save(stack)
         val energy = Settings.get.droneBaseCost + complexity(inventory) * Settings.get.droneComplexityCost
 
@@ -49,14 +50,15 @@ object DroneTemplate : Template() {
     }
 
     @JvmStatic
-    fun selectDisassembler(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.Drone)
+    @Suppress("unused") // Used via reflection
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.Drone)
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = MicrocontrollerData(stack)
         val itemName = Constants.ItemName.DroneCase(info.tier)
 
-        return arrayOf(api.Items.get(itemName).createItemStack(1)) + info.components
+        return arrayOf(Items.get(itemName).createItemStack(1)) + info.components
     }
 
     @JvmStatic

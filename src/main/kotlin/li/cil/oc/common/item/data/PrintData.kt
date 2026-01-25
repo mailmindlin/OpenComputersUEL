@@ -6,6 +6,7 @@ import li.cil.oc.Settings
 import li.cil.oc.api.*
 import li.cil.oc.common.IMC
 import li.cil.oc.common.item.data.ItemData
+import li.cil.oc.util.setNewTagList
 import li.cil.oc.util.surface
 import li.cil.oc.util.volume
 import net.minecraft.item.ItemStack

@@ -3,7 +3,6 @@ package li.cil.oc.common.container
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.common.Slot
 import li.cil.oc.common.tileentity.Rack as TERack
-import li.cil.oc.util.ExtendedNBT._
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagIntArray
