@@ -206,8 +206,8 @@ class PrintData() : ItemData(Constants.BlockName.Print) {
         @JvmStatic
         fun materialValue(stack: ItemStack): Int {
             return when {
-                api.Items.get(stack) == api.Items.get(Constants.ItemName.Chamelium) -> materialPerItem
-                api.Items.get(stack) == api.Items.get(Constants.BlockName.Print) -> {
+                Items.get(stack) == Items.get(Constants.ItemName.Chamelium) -> materialPerItem
+                Items.get(stack) == Items.get(Constants.BlockName.Print) -> {
                     val data = PrintData(stack)
                     val costs = computeCosts(data)
                     if (costs != null) {

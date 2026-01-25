@@ -24,7 +24,7 @@ class NavigationUpgradeData : ItemData {
     }
 
     fun getSize(world: World): Int {
-        val info = mapData(world)
+        val info = mapData(world)!!
         return 128 * (1 shl info.scale.toInt())
     }
 

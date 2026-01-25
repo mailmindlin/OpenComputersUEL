@@ -37,7 +37,7 @@ object ParticleProvider : ScalaProvider("b48c4bbd-51bb-4915-9367-16cff3220e4b") 
     }
 
     override fun readBehaviorFromNBT(player: EntityPlayer, nbt: NBTTagCompound): Behavior {
-        val effectType = EnumParticleTypes.getParticleFromId(nbt.getInteger("effectName"))
+        val effectType = EnumParticleTypes.getParticleFromId(nbt.getInteger("effectName"))!!
         return ParticleBehavior(effectType, player)
     }
 

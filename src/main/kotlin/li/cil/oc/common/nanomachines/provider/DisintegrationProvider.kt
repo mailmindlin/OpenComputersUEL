@@ -6,7 +6,6 @@ import li.cil.oc.api.nanomachines.Behavior
 import li.cil.oc.api.nanomachines.DisableReason
 import li.cil.oc.api.prefab.AbstractBehavior
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.StackOption
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
@@ -44,7 +43,7 @@ object DisintegrationProvider : ScalaProvider("c4e7e3c2-8069-4fbb-b08e-74b1bddcd
                 when (player) {
                     is FakePlayer -> return // Nope
                     is EntityPlayerMP -> {
-                        val playerMP = player as EntityPlayerMP
+                        val playerMP = player
                         val now = world.totalWorldTime
 
                         // Check blocks in range.
@@ -53,7 +52,7 @@ object DisintegrationProvider : ScalaProvider("c4e7e3c2-8069-4fbb-b08e-74b1bddcd
                         for (x in -actualRange..actualRange) {
                             for (y in 0..(actualRange * 2)) {
                                 for (z in -actualRange..actualRange) {
-                                    val pos = BlockPosition(blockPos.offset(x, y, z))
+                                    val pos = BlockPosition(blockPos.offset(x.toDouble(), y.toDouble(), z.toDouble()))
                                     val existingInfo = breakingMap[pos]
                                     when {
                                         existingInfo != null && existingInfo.checkTool(player) -> {

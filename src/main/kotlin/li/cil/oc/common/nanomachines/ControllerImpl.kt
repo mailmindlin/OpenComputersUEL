@@ -87,10 +87,10 @@ class ControllerImpl(val player: EntityPlayer) : Controller, WirelessEndpoint {
                             respond(sender, "power", localBuffer, localBufferSize)
                         }
                         command.size == 1 && command[0] == "saveConfiguration" -> {
-                            val nanomachines = api.Items.get(Constants.ItemName.Nanomachines)
+                            val nanomachines = Items.get(Constants.ItemName.Nanomachines)
                             try {
                                 val index = player.inventory.mainInventory.indexOfFirst { stack ->
-                                    api.Items.get(stack) == nanomachines && NanomachineData(stack).configuration.isEmpty()
+                                    Items.get(stack) == nanomachines && NanomachineData(stack).configuration.isEmpty()
                                 }
                                 if (index >= 0) {
                                     val stack = player.inventory.decrStackSize(index, 1)

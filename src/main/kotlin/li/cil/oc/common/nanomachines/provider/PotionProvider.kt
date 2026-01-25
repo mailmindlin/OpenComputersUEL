@@ -38,7 +38,7 @@ object PotionProvider : ScalaProvider("c29e4eec-5a46-479a-9b3d-ad0f06da784a") {
 
     override fun readBehaviorFromNBT(player: EntityPlayer, nbt: NBTTagCompound): Behavior {
         val potionId = nbt.getString("potionId")
-        return PotionBehavior(Potion.getPotionFromResourceLocation(potionId), player)
+        return PotionBehavior(Potion.getPotionFromResourceLocation(potionId)!!, player)
     }
 
     class PotionBehavior(val potion: Potion, player: EntityPlayer) : AbstractBehavior(player) {
