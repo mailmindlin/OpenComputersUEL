@@ -3,7 +3,6 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.driver.DriverBlock
@@ -12,6 +11,10 @@ import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
+import li.cil.oc.common.inventory.ComponentInventory
+import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.OpenSides
 import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
@@ -27,18 +30,20 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.common.util.Constants as NBTConstants
 
-class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfoKt {
+class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfoKt {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.Network).create()
+    override fun node(): Node = node
 
-    override fun getNode(): Node = node
+    override val sidesDelegate: OpenSides.Delegate = register(OpenSides::Delegate)
+    override val componentInventoryDelegate: TraitComponentInventory.Delegate = register(TraitComponentInventory::Delegate)
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
 
     private val blocks: Array<Pair<ManagedEnvironment, DriverBlock>?> = arrayOfNulls(6)
-
     private val updatingBlocks: MutableList<ManagedEnvironment> = mutableListOf()
-
     private val blocksData: Array<BlockData?> = arrayOfNulls(6)
 
     override val deviceInfo: Map<String, String> by lazy {
@@ -50,12 +55,15 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
         )
     }
 
+    override fun getDisplayName(): ITextComponent = super<TraitComponentInventory>.getDisplayName()
+
     // ----------------------------------------------------------------------- //
 
     override val defaultState: Boolean = true
 
-    override fun setSideOpen(side: EnumFacing, value: Boolean) {
+    override fun setSideOpen(side: EnumFacing?, value: Boolean) {
         super.setSideOpen(side, value)
+        val side = side ?: return
         if (isServer) {
             ServerPacketSender.sendAdapterState(this)
             world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
@@ -77,7 +85,7 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
     // ----------------------------------------------------------------------- //
 
     override fun updateEntity() {
-        super.updateEntity()
+        super<TEEnvironmentBase>.updateEntity()
         if (isServer && updatingBlocks.isNotEmpty()) {
             for (block in updatingBlocks) {
                 block.update()
@@ -97,7 +105,7 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
                     // inventories, which I actually consider a plus :P
                 }
                 else -> {
-                    val newDriver = api.Driver.driverFor(world, blockPos, d)
+                    val newDriver = Driver.driverFor(world, blockPos, d)
                     if (newDriver != null && isSideOpen(d)) {
                         val existing = blocks[d.ordinal]
                         if (existing != null) {
@@ -167,14 +175,14 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
     // ----------------------------------------------------------------------- //
 
     override fun onConnect(node: Node) {
-        super.onConnect(node)
+        super<TEEnvironmentBase>.onConnect(node)
         if (node == this.node) {
             neighborChanged()
         }
     }
 
     override fun onDisconnect(node: Node) {
-        super.onDisconnect(node)
+        super<TEEnvironmentBase>.onDisconnect(node)
         if (node == this.node) {
             updatingBlocks.clear()
         }
@@ -201,7 +209,7 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
 
         val blocksNbt = nbt.getTagList(BlocksTag, NBTConstants.NBT.TAG_COMPOUND)
         for (i in 0 until minOf(blocksNbt.tagCount(), blocksData.size)) {
@@ -213,7 +221,7 @@ class Adapter : TileEntityBase(), TraitEnvironment, TraitComponentInventory, Tra
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
 
         val blocksNbt = NBTTagList()
         for (i in blocks.indices) {

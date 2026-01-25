@@ -14,13 +14,14 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.text.ITextComponent
 
 interface Inventory : TileEntityTrait, InventoryInterface {
-    override val items: Array<ItemStack>
+    override val items: Array<ItemStack> get() = inventoryDelegate.items
 
     val inventoryDelegate: Delegate
 
     // ----------------------------------------------------------------------- //
 
     class Delegate(val tile: Inventory): NbtSeriailzable {
+        val items: Array<ItemStack> = Array(tile.sizeInventory) { ItemStack.EMPTY }
         override fun readFromNBTForServer(nbt: NBTTagCompound) {
             tile.load(nbt)
         }
