@@ -24,31 +24,48 @@ object DisassemblerTemplates {
     @JvmStatic
     fun select(stack: ItemStack): Template? = templates.find { it.select(stack) }
 
-    class Template(
-        val selector: Method,
-        val disassembler: Method
+    class Template internal constructor(
+        private val selector: Method,
+        private val disassembler: Method,
     ) {
-        fun select(stack: ItemStack): Boolean = IMC.tryInvokeStatic(selector, stack, false) as Boolean
+        fun select(stack: ItemStack): Boolean = IMC.tryInvokeStatic(selector, stack, default = false) as Boolean
 
-        fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Pair<Array<ItemStack>?, Array<ItemStack>?> {
-            return when (val result = IMC.tryInvokeStatic(disassembler, stack, ingredients, null as Array<*>?)) {
-                is Array<*> -> when {
-                    result.size >= 2 && result[0] is Array<*> && result[1] is Array<*> ->
-                        @Suppress("UNCHECKED_CAST")
-                        Pair(result[0] as Array<ItemStack>, result[1] as Array<ItemStack>)
-                    result.size >= 2 && result[0] is ItemStack && result[1] is Array<*> ->
-                        @Suppress("UNCHECKED_CAST")
-                        Pair(arrayOf(result[0] as ItemStack), result[1] as Array<ItemStack>)
-                    result.size >= 2 && result[0] is Array<*> && result[1] is ItemStack ->
-                        @Suppress("UNCHECKED_CAST")
-                        Pair(result[0] as Array<ItemStack>, arrayOf(result[1] as ItemStack))
-                    result.all { it is ItemStack } ->
-                        @Suppress("UNCHECKED_CAST")
-                        Pair(result as Array<ItemStack>, null)
-                    else -> Pair(null, null)
+        fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): DisassembleResult? {
+            val result = IMC.tryInvokeStatic(disassembler, stack, ingredients, default = null as Array<*>?) ?: return null
+            fun tryConvert(r: Any?): Array<out ItemStack>? {
+                when (r) {
+                    is Array<*> -> r.tryCastTo<ItemStack>()?.let { return it }
+                    is ItemStack -> return arrayOf(r)
                 }
-                else -> Pair(null, null)
+                return null
             }
+            if (result.size >= 2) {
+                val (r0, r1) = result
+                if (r0 is Array<*> || r1 is Array<*>) {
+                    tryConvert(r0)?.let { r0 ->
+                        tryConvert(r1)?.let { r1 ->
+                            return DisassembleResult(r0, r1)
+                        }
+                    }
+                    // We know that result.tryCastTo<ItemStack>() would fail
+                    return null
+                }
+            }
+            result.tryCastTo<ItemStack>()?.let { return DisassembleResult(it, null) }
+            return null
         }
     }
+
+    class DisassembleResult(
+        val stacks: Array<out ItemStack>,
+        val drops: Array<out ItemStack>?,
+    )
+}
+
+inline fun <reified R> Array<*>.tryCastTo(): Array<out R>? {
+    if (this.any { it !is R })
+        return null
+    // Valid: we validated the elements
+    @Suppress("UNCHECKED_CAST")
+    return this as Array<out R>
 }
