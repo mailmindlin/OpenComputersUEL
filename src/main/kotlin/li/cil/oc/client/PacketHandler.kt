@@ -117,11 +117,9 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onAdapterState(p: PacketParser) {
-        val t = p.readTileEntity<Adapter>()
-        if (t != null) {
-            t.openSides = t.uncompressSides(p.readByte())
-            t.world!!.notifyBlockUpdate(t.pos)
-        }
+        val t = p.readTileEntity<Adapter>() ?: return
+        t.sidesDelegate.setCompressed(p.readByte())
+        t.world!!.notifyBlockUpdate(t.pos)
     }
 
     private fun onAnalyze(p: PacketParser) {
@@ -133,12 +131,10 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onChargerState(p: PacketParser) {
-        val t = p.readTileEntity<Charger>()
-        if (t != null) {
-            t.chargeSpeed = p.readDouble()
-            t.hasPower = p.readBoolean()
-            t.world!!.notifyBlockUpdate(t.position.toBlockPos())
-        }
+        val t = p.readTileEntity<Charger>() ?: return
+        t.chargeSpeed = p.readDouble()
+        t.hasPower = p.readBoolean()
+        t.world!!.notifyBlockUpdate(t.position.toBlockPos())
     }
 
     private fun onClientLog(p: PacketParser) {
@@ -150,11 +146,9 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onColorChange(p: PacketParser) {
-        val t = p.readTileEntity<Colored>()
-        if (t != null) {
-            t.setColor(p.readInt())
-            t.world!!.notifyBlockUpdate(t.position)
-        }
+        val t = p.readTileEntity<Colored>() ?: return
+        t.setColor(p.readInt())
+        t.world!!.notifyBlockUpdate(t.position)
     }
 
     private fun onMachineItemStateResponse(p: PacketParser) {
@@ -167,19 +161,15 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onComputerState(p: PacketParser) {
-        val t = p.readTileEntity<Computer>()
-        if (t != null) {
-            t.setRunning(p.readBoolean())
-            t.hasErrored = p.readBoolean()
-        }
+        val t = p.readTileEntity<Computer>() ?: return
+        t.setRunning(p.readBoolean())
+        t.hasErrored = p.readBoolean()
     }
 
     private fun onComputerUserList(p: PacketParser) {
-        val t = p.readTileEntity<Computer>()
-        if (t != null) {
-            val count = p.readInt()
-            t.setUsers((0 until count).map { p.readUTF() })
-        }
+        val t = p.readTileEntity<Computer>() ?: return
+        val count = p.readInt()
+        t.setUsers((0 until count).map { p.readUTF() })
     }
 
     private fun onContainerUpdate(p: PacketParser) {
@@ -193,150 +183,120 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onDisassemblerActiveChange(p: PacketParser) {
-        val t = p.readTileEntity<Disassembler>()
-        if (t != null) {
-            t.isActive = p.readBoolean()
-        }
+        val t = p.readTileEntity<Disassembler>() ?: return
+        t.isActive = p.readBoolean()
     }
 
     private fun onFileSystemActivity(p: PacketParser) {
         val sound = p.readUTF()
         val data = CompressedStreamTools.read(p)
         if (p.readBoolean()) {
-            val t = p.readTileEntity<net.minecraft.tileentity.TileEntity>()
-            if (t != null) {
-                MinecraftForge.EVENT_BUS.post(FileSystemAccessEvent.Client(sound, t, data))
-            }
+            val t = p.readTileEntity<net.minecraft.tileentity.TileEntity>() ?: return
+            MinecraftForge.EVENT_BUS.post(FileSystemAccessEvent.Client(sound, t, data))
         } else {
-            val world = world(p.player, p.readInt())
-            if (world != null) {
-                val x = p.readDouble()
-                val y = p.readDouble()
-                val z = p.readDouble()
-                MinecraftForge.EVENT_BUS.post(FileSystemAccessEvent.Client(sound, world, x, y, z, data))
-            }
+            val world = world(p.player, p.readInt()) ?: return
+            val x = p.readDouble()
+            val y = p.readDouble()
+            val z = p.readDouble()
+            MinecraftForge.EVENT_BUS.post(FileSystemAccessEvent.Client(sound, world, x, y, z, data))
         }
     }
 
     private fun onNetworkActivity(p: PacketParser) {
         val data = CompressedStreamTools.read(p)
         if (p.readBoolean()) {
-            val t = p.readTileEntity<net.minecraft.tileentity.TileEntity>()
-            if (t != null) {
-                MinecraftForge.EVENT_BUS.post(NetworkActivityEvent.Client(t, data))
-            }
+            val t = p.readTileEntity<net.minecraft.tileentity.TileEntity>() ?: return
+            MinecraftForge.EVENT_BUS.post(NetworkActivityEvent.Client(t, data))
         } else {
-            val world = world(p.player, p.readInt())
-            if (world != null) {
-                val x = p.readDouble()
-                val y = p.readDouble()
-                val z = p.readDouble()
-                MinecraftForge.EVENT_BUS.post(NetworkActivityEvent.Client(world, x, y, z, data))
-            }
+            val world = world(p.player, p.readInt()) ?: return
+            val x = p.readDouble()
+            val y = p.readDouble()
+            val z = p.readDouble()
+            MinecraftForge.EVENT_BUS.post(NetworkActivityEvent.Client(world, x, y, z, data))
         }
     }
 
     private fun onFloppyChange(p: PacketParser) {
-        val t = p.readTileEntity<DiskDrive>()
-        if (t != null) {
-            t.setInventorySlotContents(0, p.readItemStack())
-        }
+        val t = p.readTileEntity<DiskDrive>() ?: return
+        t.setInventorySlotContents(0, p.readItemStack())
     }
 
     private fun onHologramClear(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            for (i in t.volume.indices) {
-                t.volume[i] = 0
-            }
-            t.needsRendering = true
+        val t = p.readTileEntity<Hologram>() ?: return
+        for (i in t.volume.indices) {
+            t.volume[i] = 0
         }
+        t.needsRendering = true
     }
 
     private fun onHologramColor(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            val index = p.readInt()
-            val value = p.readInt()
-            t.colors[index] = value and 0xFFFFFF
-            t.needsRendering = true
-        }
+        val t = p.readTileEntity<Hologram>() ?: return
+        val index = p.readInt()
+        val value = p.readInt()
+        t.colors[index] = value and 0xFFFFFF
+        t.needsRendering = true
     }
 
     private fun onHologramPowerChange(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            t.hasPower = p.readBoolean()
-        }
+        val t = p.readTileEntity<Hologram>() ?: return
+        t.hasPower = p.readBoolean()
     }
 
     private fun onHologramScale(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            t.scale = p.readDouble()
-        }
+        val t = p.readTileEntity<Hologram>() ?: return
+        t.scale = p.readDouble()
     }
 
     private fun onHologramArea(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            val fromX = p.readByte().toInt()
-            val untilX = p.readByte().toInt()
-            val fromZ = p.readByte().toInt()
-            val untilZ = p.readByte().toInt()
-            for (x in fromX until untilX) {
-                for (z in fromZ until untilZ) {
-                    t.volume[x + z * t.width] = p.readInt()
-                    t.volume[x + z * t.width + t.width * t.width] = p.readInt()
-                }
-            }
-            t.needsRendering = true
-        }
-    }
-
-    private fun onHologramValues(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            val count = p.readInt()
-            for (i in 0 until count) {
-                val xz = p.readShort()
-                val x = (xz.toInt() shr 8).toByte()
-                val z = xz.toByte()
+        val t = p.readTileEntity<Hologram>() ?: return
+        val fromX = p.readByte().toInt()
+        val untilX = p.readByte().toInt()
+        val fromZ = p.readByte().toInt()
+        val untilZ = p.readByte().toInt()
+        for (x in fromX until untilX) {
+            for (z in fromZ until untilZ) {
                 t.volume[x + z * t.width] = p.readInt()
                 t.volume[x + z * t.width + t.width * t.width] = p.readInt()
             }
-            t.needsRendering = true
         }
+        t.needsRendering = true
+    }
+
+    private fun onHologramValues(p: PacketParser) {
+        val t = p.readTileEntity<Hologram>() ?: return
+        val count = p.readInt()
+        for (i in 0 until count) {
+            val xz = p.readShort()
+            val x = (xz.toInt() shr 8).toByte()
+            val z = xz.toByte()
+            t.volume[x + z * t.width] = p.readInt()
+            t.volume[x + z * t.width + t.width * t.width] = p.readInt()
+        }
+        t.needsRendering = true
     }
 
     private fun onHologramPositionOffsetY(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            val x = p.readDouble()
-            val y = p.readDouble()
-            val z = p.readDouble()
-            t.translation = Vec3d(x, y, z)
-        }
+        val t = p.readTileEntity<Hologram>() ?: return
+        val x = p.readDouble()
+        val y = p.readDouble()
+        val z = p.readDouble()
+        t.translation = Vec3d(x, y, z)
     }
 
     private fun onHologramRotation(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            t.rotationAngle = p.readFloat()
-            t.rotationX = p.readFloat()
-            t.rotationY = p.readFloat()
-            t.rotationZ = p.readFloat()
-        }
+        val t = p.readTileEntity<Hologram>() ?: return
+        t.rotationAngle = p.readFloat()
+        t.rotationX = p.readFloat()
+        t.rotationY = p.readFloat()
+        t.rotationZ = p.readFloat()
     }
 
     private fun onHologramRotationSpeed(p: PacketParser) {
-        val t = p.readTileEntity<Hologram>()
-        if (t != null) {
-            t.rotationSpeed = p.readFloat()
-            t.rotationSpeedX = p.readFloat()
-            t.rotationSpeedY = p.readFloat()
-            t.rotationSpeedZ = p.readFloat()
-        }
+        val t = p.readTileEntity<Hologram>() ?: return
+        t.rotationSpeed = p.readFloat()
+        t.rotationSpeedX = p.readFloat()
+        t.rotationSpeedY = p.readFloat()
+        t.rotationSpeedZ = p.readFloat()
     }
 
     private fun onLootDisk(p: PacketParser) {
@@ -362,96 +322,88 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onNanomachinesConfiguration(p: PacketParser) {
-        val player = p.readEntity<EntityPlayer>()
-        if (player != null) {
-            val hasController = p.readBoolean()
-            if (hasController) {
-                when (val controller = Nanomachines.installController(player)) {
-                    is ControllerImpl -> controller.load(p.readNBT()!!)
-                    else -> {} // Wat.
-                }
-            } else {
-                Nanomachines.uninstallController(player)
+        val player = p.readEntity<EntityPlayer>() ?: return
+        val hasController = p.readBoolean()
+        if (hasController) {
+            when (val controller = Nanomachines.installController(player)) {
+                is ControllerImpl -> controller.load(p.readNBT()!!)
+                else -> {} // Wat.
             }
+        } else {
+            Nanomachines.uninstallController(player)
         }
     }
 
     private fun onNanomachinesInputs(p: PacketParser) {
-        val player = p.readEntity<EntityPlayer>()
-        if (player != null) {
-            when (val controller = Nanomachines.getController(player)) {
-                is ControllerImpl -> {
-                    val inputs = ByteArray(p.readInt())
-                    p.read(inputs)
-                    synchronized(controller.configuration) {
-                        for ((index, value) in inputs.withIndex()) {
-                            if (index < controller.configuration.triggers.size) {
-                                controller.configuration.triggers[index].isActive = value == 1.toByte()
-                            }
+        val player = p.readEntity<EntityPlayer>() ?: return
+        when (val controller = Nanomachines.getController(player)) {
+            is ControllerImpl -> {
+                val inputs = ByteArray(p.readInt())
+                p.read(inputs)
+                synchronized(controller.configuration) {
+                    for ((index, value) in inputs.withIndex()) {
+                        if (index < controller.configuration.triggers.size) {
+                            controller.configuration.triggers[index].isActive = value == 1.toByte()
                         }
-                        controller.activeBehaviorsDirty = true
                     }
+                    controller.activeBehaviorsDirty = true
                 }
-                else -> {} // Wat.
             }
+            else -> {} // Wat.
         }
     }
 
     private fun onNanomachinesPower(p: PacketParser) {
-        val player = p.readEntity<EntityPlayer>()
-        if (player != null) {
-            when (val controller = Nanomachines.getController(player)) {
-                is ControllerImpl -> { controller.storedEnergy = p.readDouble() }
-                else -> {} // Wat.
-            }
+        val player = p.readEntity<EntityPlayer>() ?: return
+        when (val controller = Nanomachines.getController(player)) {
+            is ControllerImpl -> { controller.storedEnergy = p.readDouble() }
+            else -> {} // Wat.
         }
     }
 
     private fun onNetSplitterState(p: PacketParser) {
         val t = p.readTileEntity<NetSplitter>() ?: return
         t.isInverted = p.readBoolean()
-        t.openSides = t.uncompressSides(p.readByte())
+        t.sidesDelegate.setCompressed(p.readByte())
         t.world!!.notifyBlockUpdate(t.pos)
     }
 
     private fun onParticleEffect(p: PacketParser) {
         val dimension = p.readInt()
-        val world = world(p.player, dimension)
-        if (world != null) {
-            val x = p.readInt()
-            val y = p.readInt()
-            val z = p.readInt()
-            val velocity = p.readDouble()
-            val direction = p.readDirection()
-            val particleType = EnumParticleTypes.getParticleFromId(p.readInt())
-            val count = p.readUnsignedByte() / (1 shl Minecraft.getMinecraft().gameSettings.particleSetting)
+        val world = world(p.player, dimension) ?: return
+        val x = p.readInt()
+        val y = p.readInt()
+        val z = p.readInt()
+        val velocity = p.readDouble()
+        val direction = p.readDirection()
+        val particleType = EnumParticleTypes.getParticleFromId(p.readInt())
+        val count = p.readUnsignedByte() / (1 shl Minecraft.getMinecraft().gameSettings.particleSetting)
 
-            for (i in 0 until count) {
-                fun rv(f: (EnumFacing) -> Int): Double {
+        for (i in 0 until count) {
+            fun rv(f: (EnumFacing) -> Int): Double {
+                return if (direction != null) {
+                    world.rand.nextFloat() - 0.5 + f(direction) * 0.5
+                } else {
+                    world.rand.nextFloat() * 2.0 - 1
+                }
+            }
+
+            val vx = rv { it.xOffset }
+            val vy = rv { it.yOffset }
+            val vz = rv { it.zOffset }
+            if (vx * vx + vy * vy + vz * vz < 1) {
+                fun rp(x: Int, v: Double, f: (EnumFacing) -> Int): Double {
                     return if (direction != null) {
-                        world.rand.nextFloat() - 0.5 + f(direction) * 0.5
+                        x + 0.5 + v * velocity * 0.5 + f(direction) * velocity
                     } else {
-                        world.rand.nextFloat() * 2.0 - 1
+                        x + 0.5 + v * velocity
                     }
                 }
 
-                val vx = rv { it.xOffset }
-                val vy = rv { it.yOffset }
-                val vz = rv { it.zOffset }
-                if (vx * vx + vy * vy + vz * vz < 1) {
-                    fun rp(x: Int, v: Double, f: (EnumFacing) -> Int): Double {
-                        return if (direction != null) {
-                            x + 0.5 + v * velocity * 0.5 + f(direction) * velocity
-                        } else {
-                            x + 0.5 + v * velocity
-                        }
-                    }
-
-                    val px = rp(x, vx) { it.xOffset }
-                    val py = rp(y, vy) { it.yOffset }
-                    val pz = rp(z, vz) { it.zOffset }
-                    world.spawnParticle(particleType, px, py, pz, vx, vy + velocity * 0.25, vz)
-                }
+                val px = rp(x, vx) { it.xOffset }
+                val py = rp(y, vy) { it.yOffset }
+                val pz = rp(z, vz) { it.zOffset }
+                world.spawnParticle(particleType, px, py, pz, vx, vy + velocity * 0.25, vz)
             }
         }
     }
@@ -477,50 +429,36 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onPowerState(p: PacketParser) {
-        val t = p.readTileEntity<PowerInformation>()
-        if (t != null) {
-            t.globalBuffer = p.readDouble()
-            t.globalBufferSize = p.readDouble()
-        }
+        val t = p.readTileEntity<PowerInformation>() ?: return
+        t.globalBuffer = p.readDouble()
+        t.globalBufferSize = p.readDouble()
     }
 
     private fun onPrinterState(p: PacketParser) {
-        val t = p.readTileEntity<Printer>()
-        if (t != null) {
-            if (p.readBoolean()) {
-                t.requiredEnergy = 9001.0
-            } else {
-                t.requiredEnergy = 0.0
-            }
-        }
+        val t = p.readTileEntity<Printer>() ?: return
+        t.requiredEnergy = if (p.readBoolean()) 9001.0 else 0.0
     }
 
     private fun onRackInventory(p: PacketParser) {
-        val t = p.readTileEntity<Rack>()
-        if (t != null) {
-            val count = p.readInt()
-            for (i in 0 until count) {
-                val slot = p.readInt()
-                t.setInventorySlotContents(slot, p.readItemStack())
-            }
+        val t = p.readTileEntity<Rack>() ?: return
+        val count = p.readInt()
+        for (i in 0 until count) {
+            val slot = p.readInt()
+            t.setInventorySlotContents(slot, p.readItemStack())
         }
     }
 
     private fun onRackMountableData(p: PacketParser) {
-        val t = p.readTileEntity<Rack>()
-        if (t != null) {
-            val mountableIndex = p.readInt()
-            t.lastData[mountableIndex] = p.readNBT()
-            t.world!!.notifyBlockUpdate(t.pos)
-        }
+        val t = p.readTileEntity<Rack>() ?: return
+        val mountableIndex = p.readInt()
+        t.lastData[mountableIndex] = p.readNBT()
+        t.world!!.notifyBlockUpdate(t.pos)
     }
 
     private fun onRaidStateChange(p: PacketParser) {
-        val t = p.readTileEntity<Raid>()
-        if (t != null) {
-            for (slot in 0 until t.getSizeInventory()) {
-                t.presence[slot] = p.readBoolean()
-            }
+        val t = p.readTileEntity<Raid>() ?: return
+        for (slot in 0 until t.getSizeInventory()) {
+            t.presence[slot] = p.readBoolean()
         }
     }
 
@@ -543,47 +481,35 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onRobotAssemblingState(p: PacketParser) {
-        val t = p.readTileEntity<Assembler>()
-        if (t != null) {
-            if (p.readBoolean()) {
-                t.requiredEnergy = 9001.0
-            } else {
-                t.requiredEnergy = 0.0
-            }
-        }
+        val t = p.readTileEntity<Assembler>() ?: return
+        t.requiredEnergy = if (p.readBoolean()) 9001.0 else 0.0
     }
 
     private fun onRobotInventoryChange(p: PacketParser) {
-        val t = p.readTileEntity<RobotProxy>()
-        if (t != null) {
-            val robot = t.robot
-            val slot = p.readInt()
-            val stack = p.readItemStack()
-            if (slot >= robot.sizeInventory - robot.componentCount()) {
-                robot.info.components[slot - (robot.sizeInventory - robot.componentCount())] = stack
-            } else {
-                t.robot.setInventorySlotContents(slot, stack)
-            }
+        val t = p.readTileEntity<RobotProxy>() ?: return
+        val robot = t.robot
+        val slot = p.readInt()
+        val stack = p.readItemStack()
+        if (slot >= robot.sizeInventory - robot.componentCount()) {
+            robot.info.components[slot - (robot.sizeInventory - robot.componentCount())] = stack
+        } else {
+            t.robot.setInventorySlotContents(slot, stack)
         }
     }
 
     private fun onRobotLightChange(p: PacketParser) {
-        val t = p.readTileEntity<RobotProxy>()
-        if (t != null) {
-            t.robot.info.lightColor = p.readInt()
-        }
+        val t = p.readTileEntity<RobotProxy>() ?: return
+        t.robot.info.lightColor = p.readInt()
     }
 
     private fun onRobotNameChange(p: PacketParser) {
-        val t = p.readTileEntity<RobotProxy>()
-        if (t != null) {
-            val len = p.readShort().toInt()
-            val name = CharArray(len)
-            for (x in 0 until len) {
-                name[x] = p.readChar()
-            }
-            t.robot.setName(name.concatToString())
+        val t = p.readTileEntity<RobotProxy>() ?: return
+        val len = p.readShort().toInt()
+        val name = CharArray(len)
+        for (x in 0 until len) {
+            name[x] = p.readChar()
         }
+        t.robot.setName(name.concatToString())
     }
 
     private fun onRobotMove(p: PacketParser) {
@@ -604,25 +530,19 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onRobotSelectedSlotChange(p: PacketParser) {
-        val t = p.readTileEntity<RobotProxy>()
-        if (t != null) {
-            t.robot.selectedSlot = p.readInt()
-        }
+        val t = p.readTileEntity<RobotProxy>() ?: return
+        t.robot.selectedSlot = p.readInt()
     }
 
     private fun onRotatableState(p: PacketParser) {
-        val t = p.readTileEntity<Rotatable>()
-        if (t != null) {
-            t.pitch = p.readDirection()!!
-            t.yaw = p.readDirection()!!
-        }
+        val t = p.readTileEntity<Rotatable>() ?: return
+        t.pitch = p.readDirection()!!
+        t.yaw = p.readDirection()!!
     }
 
     private fun onSwitchActivity(p: PacketParser) {
-        val t = p.readTileEntity<Relay>()
-        if (t != null) {
-            t.lastMessage = System.currentTimeMillis()
-        }
+        val t = p.readTileEntity<Relay>() ?: return
+        t.lastMessage = System.currentTimeMillis()
     }
 
     private fun onTextBufferPowerChange(p: PacketParser) {
@@ -833,24 +753,20 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onScreenTouchMode(p: PacketParser) {
-        val t = p.readTileEntity<Screen>()
-        if (t != null) {
-            t.invertTouchMode = p.readBoolean()
-        }
+        val t = p.readTileEntity<Screen>() ?: return
+        t.invertTouchMode = p.readBoolean()
     }
 
     private fun onSoundEffect(p: PacketParser) {
         val dimension = p.readInt()
-        val world = world(p.player, dimension)
-        if (world != null) {
-            val x = p.readDouble()
-            val y = p.readDouble()
-            val z = p.readDouble()
-            val sound = p.readUTF()
-            val category = SoundCategory.values()[p.readByte().toInt()]
-            val range = p.readFloat()
-            world.playSound(p.player, x, y, z, SoundEvent(ResourceLocation(sound)), category, range / 15 + 0.5F, 1.0F)
-        }
+        val world = world(p.player, dimension) ?: return
+        val x = p.readDouble()
+        val y = p.readDouble()
+        val z = p.readDouble()
+        val sound = p.readUTF()
+        val category = SoundCategory.values()[p.readByte().toInt()]
+        val range = p.readFloat()
+        world.playSound(p.player, x, y, z, SoundEvent(ResourceLocation(sound)), category, range / 15 + 0.5F, 1.0F)
     }
 
     private fun onSound(p: PacketParser) {
@@ -877,16 +793,12 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onTransposerActivity(p: PacketParser) {
-        val transposer = p.readTileEntity<Transposer>()
-        if (transposer != null) {
-            transposer.lastOperation = System.currentTimeMillis()
-        }
+        val t = p.readTileEntity<Transposer>() ?: return
+        t.lastOperation = System.currentTimeMillis()
     }
 
     private fun onWaypointLabel(p: PacketParser) {
-        val waypoint = p.readTileEntity<Waypoint>()
-        if (waypoint != null) {
-            waypoint.label = p.readUTF()
-        }
+        val t = p.readTileEntity<Waypoint>() ?: return
+        t.label = p.readUTF()
     }
 }
