@@ -15,7 +15,7 @@ object DriverMotionSensor : Item(), HostAware {
     ApiItems.get(Constants.BlockName.MotionSensor))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else MotionSensor(host)
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

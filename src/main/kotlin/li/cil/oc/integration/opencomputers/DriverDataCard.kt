@@ -18,7 +18,7 @@ object DriverDataCard : Item() {
     ApiItems.get(Constants.ItemName.DataCardTier3))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (tier(stack)) {
       Tier.One -> ComponentDataCard.Tier1()
       Tier.Two -> ComponentDataCard.Tier2()

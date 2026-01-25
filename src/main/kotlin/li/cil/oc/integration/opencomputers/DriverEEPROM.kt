@@ -14,7 +14,7 @@ object DriverEEPROM : Item() {
     ApiItems.get(Constants.ItemName.EEPROM))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else EEPROM()
 
   override fun slot(stack: ItemStack) = Slot.EEPROM

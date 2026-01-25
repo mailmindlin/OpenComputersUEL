@@ -14,7 +14,7 @@ object DriverTransposer : Item(), HostAware {
     ApiItems.get(Constants.BlockName.Transposer))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else Transposer.Upgrade(host)
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

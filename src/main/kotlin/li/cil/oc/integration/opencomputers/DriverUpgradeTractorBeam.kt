@@ -18,7 +18,7 @@ object DriverUpgradeTractorBeam : Item(), HostAware {
     ApiItems.get(Constants.ItemName.TractorBeamUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is Drone -> UpgradeTractorBeam.Drone(host)
       is Robot -> UpgradeTractorBeam.Player(host, host.player())

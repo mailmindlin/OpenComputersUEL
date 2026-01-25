@@ -18,7 +18,7 @@ object DriverUpgradeBattery : Item(), HostAware {
     ApiItems.get(Constants.ItemName.BatteryUpgradeTier3))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else ComponentUpgradeBattery(tier(stack))
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

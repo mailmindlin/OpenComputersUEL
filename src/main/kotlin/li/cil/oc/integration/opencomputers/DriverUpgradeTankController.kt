@@ -18,7 +18,7 @@ object DriverUpgradeTankController : Item(), HostAware {
     ApiItems.get(Constants.ItemName.TankControllerUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is Adapter -> UpgradeTankController.Adapter(host)
       is Drone -> UpgradeTankController.Drone(host)

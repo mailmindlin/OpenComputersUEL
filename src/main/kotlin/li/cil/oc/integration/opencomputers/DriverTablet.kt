@@ -18,7 +18,7 @@ object DriverTablet : Item() {
     ApiItems.get(Constants.ItemName.Tablet))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else {
       Tablet.Server.cache.invalidate(Tablet.getOrCreateId(stack))
       val data = TabletData(stack)
@@ -45,7 +45,7 @@ object DriverTablet : Item() {
     val index = data.items.indexOfFirst { fs ->
       !fs.isEmpty && DriverFileSystem.worksWith(fs)
     }
-    return if (index >= 0 && stack.hasTagCompound && stack.tagCompound.hasKey(Settings.namespace + "items")) {
+    return if (index >= 0 && stack.hasTagCompound() && stack.tagCompound.hasKey(Settings.namespace + "items")) {
       val baseTag = stack.tagCompound.getTagList(Settings.namespace + "items", NBT.TAG_COMPOUND).getCompoundTagAt(index)
       if (!baseTag.hasKey("item")) {
         baseTag.setTag("item", NBTTagCompound())

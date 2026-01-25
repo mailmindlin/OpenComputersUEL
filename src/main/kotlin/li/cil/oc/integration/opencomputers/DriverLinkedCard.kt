@@ -14,7 +14,7 @@ object DriverLinkedCard : Item() {
     ApiItems.get(Constants.ItemName.LinkedCard))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else LinkedCard()
 
   override fun slot(stack: ItemStack) = Slot.Card

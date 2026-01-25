@@ -16,7 +16,7 @@ object DriverUpgradeLeash : Item(), HostAware {
     ApiItems.get(Constants.ItemName.LeashUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is Entity -> UpgradeLeash(host)
       else -> null

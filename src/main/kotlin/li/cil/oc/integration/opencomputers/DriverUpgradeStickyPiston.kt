@@ -18,7 +18,7 @@ object DriverUpgradeStickyPiston : Item(), HostAware {
     ApiItems.get(Constants.ItemName.StickyPistonUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is ApiDrone -> UpgradeStickyPiston.Drone(host)
       is ApiTablet -> UpgradeStickyPiston.Tablet(host)

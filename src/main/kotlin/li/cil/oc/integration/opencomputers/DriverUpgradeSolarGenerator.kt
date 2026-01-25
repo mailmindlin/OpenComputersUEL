@@ -14,7 +14,7 @@ object DriverUpgradeSolarGenerator : Item(), HostAware {
     ApiItems.get(Constants.ItemName.SolarGeneratorUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else UpgradeSolarGenerator(host)
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

@@ -5,6 +5,7 @@ import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.common.Slot
 import li.cil.oc.server.component.NetworkCard
 import net.minecraft.item.ItemStack
@@ -13,8 +14,8 @@ object DriverNetworkCard : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
     ApiItems.get(Constants.ItemName.NetworkCard))
 
-  override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+  override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? =
+    if (host.world()?.isRemote != false) null
     else NetworkCard(host)
 
   override fun slot(stack: ItemStack) = Slot.Card

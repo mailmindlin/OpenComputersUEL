@@ -13,7 +13,7 @@ object DriverUpgradeTank : Item(), HostAware {
     ApiItems.get(Constants.ItemName.TankUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else UpgradeTank(host, 16000)
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

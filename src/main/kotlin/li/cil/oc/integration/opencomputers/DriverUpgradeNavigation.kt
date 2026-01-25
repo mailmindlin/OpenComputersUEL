@@ -16,7 +16,7 @@ object DriverUpgradeNavigation : Item(), HostAware {
     ApiItems.get(Constants.ItemName.NavigationUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is Rotatable -> UpgradeNavigation(host)
       else -> null

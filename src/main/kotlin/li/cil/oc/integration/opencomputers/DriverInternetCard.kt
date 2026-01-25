@@ -14,7 +14,7 @@ object DriverInternetCard : Item() {
     ApiItems.get(Constants.ItemName.InternetCard))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else InternetCard()
 
   override fun slot(stack: ItemStack) = Slot.Card

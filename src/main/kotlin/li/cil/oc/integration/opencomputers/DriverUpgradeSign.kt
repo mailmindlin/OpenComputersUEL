@@ -18,7 +18,7 @@ object DriverUpgradeSign : Item(), HostAware {
     ApiItems.get(Constants.ItemName.SignUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is Rotatable -> UpgradeSignInRotatable(host)
       is Adapter -> UpgradeSignInAdapter(host)

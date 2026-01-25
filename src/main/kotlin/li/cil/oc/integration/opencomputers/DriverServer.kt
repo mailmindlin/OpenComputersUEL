@@ -27,7 +27,7 @@ object DriverServer : Item(), HostAware {
   override fun slot(stack: ItemStack): String = Slot.RackMountable
 
   override fun dataTag(stack: ItemStack): NBTTagCompound {
-    if (!stack.hasTagCompound) {
+    if (!stack.hasTagCompound()) {
       stack.tagCompound = NBTTagCompound()
     }
     return stack.tagCompound

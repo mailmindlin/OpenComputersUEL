@@ -13,7 +13,7 @@ object DriverDebugCard : Item() {
     ApiItems.get(Constants.ItemName.DebugCard))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else DebugCard(host)
 
   override fun slot(stack: ItemStack) = Slot.Card

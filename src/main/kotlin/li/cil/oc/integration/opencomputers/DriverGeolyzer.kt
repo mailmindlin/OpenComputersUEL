@@ -14,7 +14,7 @@ object DriverGeolyzer : Item(), HostAware {
     ApiItems.get(Constants.BlockName.Geolyzer))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else Geolyzer(host)
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

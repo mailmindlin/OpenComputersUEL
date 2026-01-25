@@ -19,7 +19,7 @@ object DriverGraphicsCard : Item(), HostAware {
     ApiItems.get(Constants.ItemName.GraphicsCardTier3))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (tier(stack)) {
       Tier.One -> ComponentGraphicsCard(Tier.One)
       Tier.Two -> ComponentGraphicsCard(Tier.Two)

@@ -16,7 +16,7 @@ object DriverUpgradeCrafting : Item(), HostAware {
     ApiItems.get(Constants.ItemName.CraftingUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (host) {
       is Robot -> UpgradeCrafting(host)
       else -> null

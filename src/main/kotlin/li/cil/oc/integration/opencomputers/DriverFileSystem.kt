@@ -32,7 +32,7 @@ object DriverFileSystem : Item() {
     (!stack.hasTagCompound() || !stack.tagCompound!!.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world != null && host.world.isRemote) null
+    if (host.world() != null && host.world().isRemote) null
     else when (val item = Delegator.subItem(stack)) {
       is HardDiskDrive -> createEnvironment(stack, item.kiloBytes * 1024, item.platterCount, host, item.tier + 2)
       is FloppyDisk -> createEnvironment(stack, Settings.get.floppySize * 1024, 1, host, 1)
