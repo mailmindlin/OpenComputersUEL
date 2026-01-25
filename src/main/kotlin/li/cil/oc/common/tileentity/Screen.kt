@@ -9,7 +9,6 @@ import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.Colored
 import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.common.tileentity.traits.delegates.RotatableDelegate
 import li.cil.oc.util.Color
 import li.cil.oc.common.tileentity.traits.TextBuffer as TraitTextBuffer
 import li.cil.oc.util.blockExists
@@ -200,10 +199,10 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
 
     // ----------------------------------------------------------------------- //
 
-    private val buffer get() = textBufferDelegate.buffer
+    internal val buffer get() = textBufferDelegate.buffer
 
     override fun updateEntity() {
-        super.updateEntity()
+        super<TEEnvironmentBase>.updateEntity()
         if (shouldCheckForMultiBlock && ((isClient && isClientReadyForMultiBlockCheck()) || (isServer && isConnected))) {
             // Make sure we merge in a deterministic order, to avoid getting
             // different results on server and client due to the update order
@@ -218,7 +217,7 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
                     val npos = unproject(lpos.x + dx, lpos.y + dy, lpos.z)
                     if (world.blockExists(npos)) {
                         val te = world.getTileEntity(npos)
-                        if (te is Screen && te.pitch() == pitch() && te.yaw() == yaw() && pending.add(te)) {
+                        if (te is Screen && te.pitch == pitch && te.yaw == yaw && pending.add(te)) {
                             queue.add(te)
                         }
                     }
@@ -253,11 +252,11 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
                     if (isServer) {
                         (buffer.node() as Component).setVisibility(Visibility.Network)
                         buffer.energyCostPerTick = Settings.get.screenCost * screen.width * screen.height
-                        buffer.setAspectRatio(screen.width, screen.height)
+                        buffer.setAspectRatio(screen.width.toDouble(), screen.height.toDouble())
                     }
                 } else {
                     if (isServer) {
-                        (buffer.node() as Component).visibility() = Visibility.None
+                        (buffer.node() as Component).setVisibility(Visibility.None)
                         buffer.energyCostPerTick = Settings.get.screenCost
                     }
                     buffer.setAspectRatio(1.0, 1.0)
@@ -296,7 +295,7 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
     }
 
     override fun dispose() {
-        super.dispose()
+        super<TEEnvironmentBase>.dispose()
         screens.toList().forEach { it.checkMultiBlock() }
         if (isClient) {
             val currentScreen = Minecraft.getMinecraft().currentScreen
@@ -380,7 +379,7 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
 
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
-        val hasRedstoneInput = screens.maxOfOrNull { it.maxInput() } ?: 0 > 0
+        val hasRedstoneInput = screens.maxOfOrNull { it.maxInput } ?: 0 > 0
         if (hasRedstoneInput != hadRedstoneInput) {
             hadRedstoneInput = hasRedstoneInput
             if (hasRedstoneInput) {
