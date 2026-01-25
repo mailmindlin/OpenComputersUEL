@@ -19,7 +19,7 @@ class Waypoint(val waypoint: TileEntityWaypoint) : GuiScreen() {
   var xSize = 0
   var ySize = 0
 
-  var textField: GuiTextField? = null
+  private var textField: GuiTextField? = null
 
   override fun updateScreen() {
     super.updateScreen()
