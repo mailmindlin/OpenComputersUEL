@@ -40,10 +40,11 @@ import li.cil.oc.common.tileentity.traits.Hub as TraitHub
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
-class Relay : TileEntityBase(), TraitHub(), TraitComponentInventory, TraitPowerAcceptor, Analyzable, WirelessEndpoint, QuantumNetwork.QuantumNode {
+class Relay : TileEntityBase(), TraitHub, TraitComponentInventory, TraitPowerAcceptor, Analyzable, WirelessEndpoint, QuantumNetwork.QuantumNode {
     val WirelessNetworkCardTier1: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier1) }
     val WirelessNetworkCardTier2: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier2) }
     val LinkedCard: ItemInfo by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }
+
 
     @JvmField
     var strength: Double = maxWirelessRange
@@ -57,10 +58,10 @@ class Relay : TileEntityBase(), TraitHub(), TraitComponentInventory, TraitPowerA
     val isWirelessEnabled: Boolean get() = wirelessTier >= Tier.One
 
     val maxWirelessRange: Double get() = if (wirelessTier == Tier.One || wirelessTier == Tier.Two)
-        Settings.get.maxWirelessRange(wirelessTier) else 0.0
+        Settings.get.maxWirelessRange[wirelessTier] else 0.0
 
     val wirelessCostPerRange: Double get() = if (wirelessTier == Tier.One || wirelessTier == Tier.Two)
-        Settings.get.wirelessCostPerRange(wirelessTier) else 0.0
+        Settings.get.wirelessCostPerRange[wirelessTier] else 0.0
 
     @JvmField
     var isLinkedEnabled = false
