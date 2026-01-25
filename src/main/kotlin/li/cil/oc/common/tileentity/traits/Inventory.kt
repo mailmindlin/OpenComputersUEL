@@ -1,5 +1,9 @@
 package li.cil.oc.common.tileentity.traits
 
+import li.cil.oc.common.inventory.Inventory.Companion.load
+import li.cil.oc.common.inventory.Inventory.Companion.save
+import li.cil.oc.common.tileentity.behaviors.Behavior
+import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.common.inventory.Inventory as InventoryInterface
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
@@ -10,22 +14,23 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.text.ITextComponent
 
 interface Inventory : TileEntityTrait, InventoryInterface {
-    // Implementing classes must provide the inventory storage
-    fun inventoryItems(): Array<ItemStack>
+    override val items: Array<ItemStack>
 
-    override fun items(): Array<ItemStack> = inventoryItems()
+    val inventoryDelegate: Delegate
 
     // ----------------------------------------------------------------------- //
 
+    class Delegate(val tile: Inventory): NbtSeriailzable {
+        override fun readFromNBTForServer(nbt: NBTTagCompound) {
+            tile.load(nbt)
+        }
+
+        override fun writeToNBTForServer(nbt: NBTTagCompound) {
+            tile.save(nbt)
+        }
+    }
+
     override fun getDisplayName(): ITextComponent = super<InventoryInterface>.getDisplayName()
-
-    fun readFromNBTForServer(nbt: NBTTagCompound) {
-        load(nbt)
-    }
-
-    fun writeToNBTForServer(nbt: NBTTagCompound) {
-        save(nbt)
-    }
 
     // ----------------------------------------------------------------------- //
 
