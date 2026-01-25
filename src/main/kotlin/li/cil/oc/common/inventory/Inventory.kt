@@ -1,8 +1,8 @@
 package li.cil.oc.common.inventory
 
 import li.cil.oc.Settings
-import li.cil.oc.util.ExtendedNBT.extendNBTTagCompound
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.setNewTagList
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.util.Constants.NBT
@@ -59,42 +59,44 @@ interface Inventory : SimpleInventory {
 
     // ----------------------------------------------------------------------- //
 
-    private val ItemsTag = Settings.namespace + "items"
-    private val SlotTag = "slot"
-    private val ItemTag = "item"
+    companion object {
+        private val ItemsTag = Settings.namespace + "items"
+        private val SlotTag = "slot"
+        private val ItemTag = "item"
 
-    open fun load(nbt: NBTTagCompound) {
-        val tagList = nbt.getTagList(ItemsTag, NBT.TAG_COMPOUND)
-        for (i in 0 until tagList.tagCount()) {
-            val tag = tagList.getCompoundTagAt(i)
-            if (tag.hasKey(SlotTag)) {
-                val slot = tag.getByte(SlotTag).toInt()
-                if (slot >= 0 && slot < items.size) {
-                    updateItems(slot, ItemStack(tag.getCompoundTag(ItemTag)))
+        fun Inventory.load(nbt: NBTTagCompound) {
+            val tagList = nbt.getTagList(ItemsTag, NBT.TAG_COMPOUND)
+            for (i in 0 until tagList.tagCount()) {
+                val tag = tagList.getCompoundTagAt(i)
+                if (tag.hasKey(SlotTag)) {
+                    val slot = tag.getByte(SlotTag).toInt()
+                    if (slot >= 0 && slot < items.size) {
+                        updateItems(slot, ItemStack(tag.getCompoundTag(ItemTag)))
+                    }
                 }
             }
         }
+
+        fun Inventory.save(nbt: NBTTagCompound) {
+            val itemsList = items.mapIndexedNotNull { slot, stack ->
+                if (!stack.isEmpty) {
+                    val slotNbt = NBTTagCompound()
+                    slotNbt.setByte(SlotTag, slot.toByte())
+                    val itemNbt = NBTTagCompound()
+                    stack.writeToNBT(itemNbt)
+                    slotNbt.setTag(ItemTag, itemNbt)
+                    slotNbt
+                } else {
+                    null
+                }
+            }
+            nbt.setNewTagList(ItemsTag, itemsList)
+        }
     }
 
-    open fun save(nbt: NBTTagCompound) {
-        val itemsList = items.mapIndexedNotNull { slot, stack ->
-            if (!stack.isEmpty) {
-                val slotNbt = NBTTagCompound()
-                slotNbt.setByte(SlotTag, slot.toByte())
-                val itemNbt = NBTTagCompound()
-                stack.writeToNBT(itemNbt)
-                slotNbt.setTag(ItemTag, itemNbt)
-                slotNbt
-            } else {
-                null
-            }
-        }
-        extendNBTTagCompound(nbt).setNewTagList(ItemsTag, itemsList)
-    }
 
     // ----------------------------------------------------------------------- //
 
-    protected open fun onItemAdded(slot: Int, stack: ItemStack) {}
-
-    protected open fun onItemRemoved(slot: Int, stack: ItemStack) {}
+    fun onItemAdded(slot: Int, stack: ItemStack) {}
+    fun onItemRemoved(slot: Int, stack: ItemStack) {}
 }

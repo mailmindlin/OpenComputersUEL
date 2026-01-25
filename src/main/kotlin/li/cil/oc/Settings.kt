@@ -469,7 +469,7 @@ class Settings(val config: Config) {
 
     companion object {
         const val resourceDomain: String = "opencomputers"
-        @Deprecated(message = "Use ResourceLocation", replaceWith = ReplaceWith("namespace()"))
+//        @Deprecated(message = "Use ResourceLocation", replaceWith = ReplaceWith("namespace()"))
         const val namespace: String = "oc:"
         const val savePath: String = "opencomputers/"
         const val scriptPath: String = "/assets/$resourceDomain/lua/"

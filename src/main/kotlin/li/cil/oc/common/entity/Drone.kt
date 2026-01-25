@@ -8,13 +8,15 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.*
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Machine
+import li.cil.oc.api.Machine as MachineFactory
 import li.cil.oc.api.driver.item.*
 import li.cil.oc.api.internal.*
 import li.cil.oc.api.internal.MultiTank
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Analyzable
+import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import li.cil.oc.common.EventHandler
@@ -22,11 +24,14 @@ import li.cil.oc.common.GuiType
 import li.cil.oc.common.inventory.ComponentInventory
 import li.cil.oc.common.inventory.Inventory
 import li.cil.oc.common.item.data.DroneData
+import li.cil.oc.server.agent.Player as AgentPlayer
+import li.cil.oc.server.component.Drone as ComponentDrone
 import li.cil.oc.integration.util.Wrench
+import li.cil.oc.server.agent.Player
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedNBT.extendedNBT
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.entity.Entity
@@ -44,11 +49,14 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.World
 import net.minecraftforge.fluids.IFluidTank
+import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.round
 
 // internal.Rotatable is also in internal.Drone, but it wasn't since the start
 // so this is to ensure it is implemented here, in the very unlikely case that
 // someone decides to ship that specific version of the API.
-class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal.Rotatable, Analyzable, Context {
+class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.Drone, Rotatable, Analyzable, Context {
     override fun world(): World = entityWorld
 
     // Some basic constants.
@@ -75,18 +83,17 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
 
     // Logic stuff, components, machine and such.
     val info = DroneData()
-    val machine: api.machine.Machine? = if (!world.isRemote) {
-        val m = Machine.create(this)
-        (m.node() as api.network.Connector).setLocalBufferSize(0.0)
+    val machine: Machine? = if (!world.isRemote) {
+        val m = MachineFactory.create(this)
+        (m.node() as Connector).setLocalBufferSize(0.0)
         m
     } else null
 
-    val control: component.Drone? = if (!world.isRemote) component.Drone(this) else null
+    val control: ComponentDrone? = if (!world.isRemote) ComponentDrone(this) else null
 
-    val components = object : ComponentInventory() {
-        override fun host(): Drone = this@Drone
-
-        override fun items(): Array<ItemStack> = info.components
+    val components = object : ComponentInventory {
+        override val host: Drone get() = this@Drone
+        override val items: Array<ItemStack> get() = info.components
 
         override fun getSizeInventory(): Int = info.components.size
 
@@ -105,7 +112,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
         override fun onMessage(message: Message) {}
     }
 
-    val equipmentInventory = object : Inventory() {
+    object EquiptmentInventory: Inventory {
         override val items = emptyArray<ItemStack>()
 
         override fun getSizeInventory() = 0
@@ -119,7 +126,9 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
         override fun isUsableByPlayer(player: EntityPlayer) = false
     }
 
-    val mainInventory = object : Inventory() {
+    val equipmentInventory = EquiptmentInventory
+
+    inner class MainInventory: Inventory {
         override val items: Array<ItemStack> = Array(8) { ItemStack.EMPTY }
 
         override fun getSizeInventory(): Int = inventorySize
@@ -133,10 +142,12 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
         override fun isUsableByPlayer(player: EntityPlayer): Boolean = player.getDistanceSq(this@Drone) < 64
     }
 
-    val tank = object : MultiTank {
-        override fun tankCount(): Int = components.components().count { it is IFluidTank }
+    val mainInventory = MainInventory()
 
-        override fun getFluidTank(index: Int): IFluidTank = components.components()
+    val tank = object : MultiTank {
+        override fun tankCount(): Int = components.components.count { it is IFluidTank }
+
+        override fun getFluidTank(index: Int): IFluidTank = components.components
             .filterIsInstance<IFluidTank>()
             .elementAt(index)
     }
@@ -150,8 +161,8 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
     override fun tier(): Int = info.tier
 
     override fun player(): EntityPlayer {
-        agent.Player.updatePositionAndRotation(player_, facing(), facing())
-        agent.Player.setInventoryPlayerItems(player_)
+        Player.updatePositionAndRotation(player_, facing(), facing())
+        Player.setInventoryPlayerItems(player_)
         return player_
     }
 
@@ -165,7 +176,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
 
     var ownerUUID: UUID = Settings.get.fakePlayerProfile.id
 
-    private val player_ by lazy { agent.Player(this) }
+    private val player_ by lazy { AgentPlayer(this) }
 
     // ----------------------------------------------------------------------- //
     // Forward context stuff to our machine. Interface needed for some components
@@ -182,7 +193,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
             return false
         }
         preparePowerUp()
-        return machine!!.start()
+        return machine.start()
     }
 
     override fun pause(seconds: Double): Boolean = machine!!.pause(seconds)
@@ -223,11 +234,9 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
 
     // ----------------------------------------------------------------------- //
 
-    override fun facing(): EnumFacing = EnumFacing.SOUTH
-
-    override fun toLocal(value: EnumFacing): EnumFacing = value
-
-    override fun toGlobal(value: EnumFacing): EnumFacing = value
+//    override fun facing(): EnumFacing = EnumFacing.SOUTH
+//    override fun toLocal(value: EnumFacing): EnumFacing = value
+//    override fun toGlobal(value: EnumFacing): EnumFacing = value
 
     // ----------------------------------------------------------------------- //
 
@@ -237,7 +246,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
 
     override fun internalComponents(): Iterable<ItemStack> = info.components.asIterable()
 
-    override fun componentSlot(address: String): Int = components.components().indexOfFirst { env ->
+    override fun componentSlot(address: String): Int = components.components.indexOfFirst { env ->
         env?.node() != null && env.node().address() == address
     }
 
@@ -248,7 +257,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
     fun computeInventorySize(): Int = minOf(maxInventorySize, info.components.fold(0) { acc, component ->
         acc + if (component != null && !component.isEmpty) {
             val driver = Driver.driverFor(component, javaClass)
-            if (driver is item.Inventory) {
+            if (driver is li.cil.oc.api.driver.item.Inventory) {
                 maxOf(1, driver.inventoryCapacity(component) / 4)
             } else 0
         } else 0
@@ -279,9 +288,9 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
     }
 
     fun preparePowerUp() {
-        targetX = Math.floor(posX).toFloat() + 0.5f
-        targetY = Math.round(posY).toFloat() + 0.5f
-        targetZ = Math.floor(posZ).toFloat() + 0.5f
+        targetX = floor(posX).toFloat() + 0.5f
+        targetY = round(posY).toFloat() + 0.5f
+        targetZ = floor(posZ).toFloat() + 0.5f
         targetAcceleration = maxAcceleration
 
         wireThingsTogether()
@@ -318,10 +327,6 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
     var selectedSlot: Int
         get() = dataManager.get(DataSelectedSlot) and 0xFF
         set(value) = dataManager.set(DataSelectedSlot, Integer.valueOf(value.toByte().toInt()))
-
-    override fun setSelectedSlot(value: Int) {
-        selectedSlot = value
-    }
 
     var globalBuffer: Int
         get() = dataManager.get(DataCurrentEnergy)
@@ -368,11 +373,11 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
             components.updateComponents()
             isRunning = machine.isRunning
 
-            val buffer = Math.round((machine.node() as api.network.Connector).globalBuffer()).toInt()
-            if (Math.abs(lastEnergyUpdate - buffer) > 1 || world.totalWorldTime % 200 == 0L) {
+            val buffer = Math.round((machine.node() as Connector).globalBuffer()).toInt()
+            if (abs(lastEnergyUpdate - buffer) > 1 || world.totalWorldTime % 200 == 0L) {
                 lastEnergyUpdate = buffer
                 globalBuffer = buffer
-                globalBufferSize = (machine.node() as api.network.Connector).globalBufferSize().toInt()
+                globalBufferSize = (machine.node() as Connector).globalBufferSize().toInt()
             }
         } else {
             if (isRunning) {
@@ -450,7 +455,7 @@ class Drone(world: World) : Entity(world), MachineHost, internal.Drone, internal
             motionY *= drag
             motionZ *= drag
         } else {
-            val groundDrag = world.extendedWorld().getBlock(BlockPosition(this as Entity).offset(EnumFacing.DOWN)).slipperiness * drag
+            val groundDrag = world.extendedWorld().getBlock(BlockPosition(this as Entity).offset(EnumFacing.DOWN))!!.slipperiness * drag
             motionX *= groundDrag
             motionY *= drag
             motionZ *= groundDrag

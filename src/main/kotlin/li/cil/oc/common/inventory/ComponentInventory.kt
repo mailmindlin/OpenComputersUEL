@@ -13,19 +13,28 @@ import li.cil.oc.integration.opencomputers.Item
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
-abstract class ComponentInventory : Inventory, Environment {
-    private var _components: Array<ManagedEnvironment?>? = null
-    protected var isSizeInventoryReady: Boolean = true
+interface ComponentInventory : Inventory, Environment {
+    open class State internal constructor() {
+        internal var components: Array<ManagedEnvironment?>? = null
+        internal var isSizeInventoryReady: Boolean = true
+        internal val updatingComponents: MutableList<ManagedEnvironment> = mutableListOf()
+
+        fun components(sizeInventory: Int): Array<ManagedEnvironment?> {
+            if (components == null && isSizeInventoryReady) {
+                components = arrayOfNulls(sizeInventory)
+            }
+            return components ?: emptyArray()
+        }
+        internal fun addUpdating(component: ManagedEnvironment) {
+            assert(!updatingComponents.contains(component))
+            updatingComponents.add(component)
+        }
+    }
+
+    val componentInventoryDelegate: State
 
     val components: Array<ManagedEnvironment?>
-        get() {
-            if (_components == null && isSizeInventoryReady) {
-                _components = arrayOfNulls(sizeInventory)
-            }
-            return _components ?: emptyArray()
-        }
-
-    protected val updatingComponents: MutableList<ManagedEnvironment> = mutableListOf()
+        get() = this.componentInventoryDelegate.components(sizeInventory)
 
     // ----------------------------------------------------------------------- //
 
@@ -34,6 +43,7 @@ abstract class ComponentInventory : Inventory, Environment {
     // ----------------------------------------------------------------------- //
 
     fun updateComponents() {
+        val updatingComponents = this.componentInventoryDelegate.updatingComponents
         if (updatingComponents.isNotEmpty()) {
             var i = 0
             // ArrayBuffer.foreach caches the size for performance reasons, but that
@@ -51,6 +61,7 @@ abstract class ComponentInventory : Inventory, Environment {
     // ----------------------------------------------------------------------- //
 
     fun connectComponents() {
+        val state = this.componentInventoryDelegate
         for (slot in 0 until sizeInventory) {
             if (slot >= 0 && slot < components.size) {
                 val stack = getStackInSlot(slot)
@@ -66,8 +77,7 @@ abstract class ComponentInventory : Inventory, Environment {
                                 OpenComputers.log.warn("An item component of type '${component.javaClass.name}' (provided by driver '${driver.javaClass.name}') threw an error while loading.", e)
                             }
                             if (component.canUpdate()) {
-                                assert(!updatingComponents.contains(component))
-                                updatingComponents.add(component)
+                                state.addUpdating(component)
                             }
                             components[slot] = component
                         }
@@ -132,6 +142,7 @@ abstract class ComponentInventory : Inventory, Environment {
     override fun getInventoryStackLimit(): Int = 1
 
     override fun onItemAdded(slot: Int, stack: ItemStack) {
+        val state = this.componentInventoryDelegate
         if (slot >= 0 && slot < components.size && isComponentSlot(slot, stack)) {
             val driver = Driver.driverFor(stack)
             if (driver != null) {
@@ -146,8 +157,7 @@ abstract class ComponentInventory : Inventory, Environment {
                             OpenComputers.log.warn("An item component of type '${component.javaClass.name}' (provided by driver '${driver.javaClass.name}') threw an error while loading.", e)
                         }
                         if (component.canUpdate()) {
-                            assert(!updatingComponents.contains(component))
-                            updatingComponents.add(component)
+                            state.addUpdating(component)
                         }
                         applyLifecycleState(component, Lifecycle.LifecycleState.Initializing)
                         connectItemNode(component.node())
@@ -170,7 +180,7 @@ abstract class ComponentInventory : Inventory, Environment {
                     // are saved (otherwise hard drives would restore all handles after
                     // being installed into a different computer, even!)
                     components[slot] = null
-                    updatingComponents.remove(component)
+                    this.componentInventoryDelegate.updatingComponents.remove(component)
                     applyLifecycleState(component, Lifecycle.LifecycleState.Disposing)
                     component.node()?.remove()
                     val driver = Driver.driverFor(stack)
@@ -190,16 +200,26 @@ abstract class ComponentInventory : Inventory, Environment {
 
     open fun isComponentSlot(slot: Int, stack: ItemStack): Boolean = true
 
-    protected open fun connectItemNode(node: Node?) {
+    fun connectItemNode(node: Node?) {
         if (node() != null && node != null) {
             node().connect(node)
         }
     }
 
-    protected open fun dataTag(driver: DriverItem, stack: ItemStack): NBTTagCompound =
-        driver.dataTag(stack) ?: Item.dataTag(stack)
+    companion object {
+        @JvmStatic
+        fun dataTag(driver: DriverItem, stack: ItemStack): NBTTagCompound =
+            driver.dataTag(stack) ?: Item.dataTag(stack)
 
-    protected open fun save(component: ManagedEnvironment, driver: DriverItem, stack: ItemStack) {
+        @JvmStatic
+        fun applyLifecycleState(component: Any, state: Lifecycle.LifecycleState) {
+            if (component is Lifecycle) {
+                component.onLifecycleStateChange(state)
+            }
+        }
+    }
+
+    fun save(component: ManagedEnvironment, driver: DriverItem, stack: ItemStack) {
         try {
             val tag = dataTag(driver, stack)
             // Clear the tag compound before saving to get the same behavior as
@@ -210,12 +230,6 @@ abstract class ComponentInventory : Inventory, Environment {
             component.save(tag)
         } catch (e: Throwable) {
             OpenComputers.log.warn("An item component of type '${component.javaClass.name}' (provided by driver '${driver.javaClass.name}') threw an error while saving.", e)
-        }
-    }
-
-    protected fun applyLifecycleState(component: Any, state: Lifecycle.LifecycleState) {
-        if (component is Lifecycle) {
-            component.onLifecycleStateChange(state)
         }
     }
 }

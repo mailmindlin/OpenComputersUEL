@@ -2,8 +2,6 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -15,32 +13,38 @@ import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.item.data.PrintData
-import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.common.tileentity.traits.Inventory
+import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.common.tileentity.traits.isClient
 import li.cil.oc.server.component.DeviceInfoKt
-import li.cil.oc.util.ExtendedNBT._
-import li.cil.oc.util.StackOption
-import li.cil.oc.util.StackOption._
+import li.cil.oc.server.component.result
+import li.cil.oc.util.notEmpty
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import java.util.EnumSet
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import java.util.*
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
+import li.cil.oc.server.PacketSender as ServerPacketSender
 
-class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfoKt {
+class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfoKt {
     @JvmField
     val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("printer3d")
         .withConnector(Settings.get.bufferConverter)
         .create()
+    override fun node(): Node = node
 
-    override fun getNode(): Node = node
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
 
     @JvmField
     val maxAmountMaterial = 256000
@@ -58,7 +62,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
     @JvmField
     var limit = 0
     @JvmField
-    var output: StackOption = EmptyStack
+    var output: ItemStack? = null
     @JvmField
     var totalRequiredEnergy = 0.0
     @JvmField
@@ -96,7 +100,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
 
     val canPrint: Boolean get() = data.stateOff.isNotEmpty() && data.stateOff.size <= Settings.get.maxPrintComplexity && data.stateOn.size <= Settings.get.maxPrintComplexity
 
-    val isPrinting: Boolean get() = output.isDefined
+    val isPrinting: Boolean get() = output != null
 
     val progress: Double get() = (1 - requiredEnergy / totalRequiredEnergy) * 100
 
@@ -104,6 +108,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function() -- Resets the configuration of the printer and stop printing (current job will finish).""")
     fun reset(context: Context, args: Arguments): Array<Any?>? {
         data = PrintData()
@@ -111,6 +116,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:string) -- Set a label for the block being printed.""")
     fun setLabel(context: Context, args: Arguments): Array<Any?>? {
         data.label = args.optString(0, null)?.take(24)?.let { if (it.isEmpty()) null else it }
@@ -118,9 +124,11 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():string -- Get the current label for the block being printed.""")
     fun getLabel(context: Context, args: Arguments): Array<Any?> = result(data.label)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:string) -- Set a tooltip for the block being printed.""")
     fun setTooltip(context: Context, args: Arguments): Array<Any?>? {
         data.tooltip = args.optString(0, null)?.take(128)?.let { if (it.isEmpty()) null else it }
@@ -128,9 +136,11 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():string -- Get the current tooltip for the block being printed.""")
     fun getTooltip(context: Context, args: Arguments): Array<Any?> = result(data.tooltip)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:number) -- Set what light level the printed block should have.""")
     fun setLightLevel(context: Context, args: Arguments): Array<Any?>? {
         data.lightLevel = args.checkInteger(0).coerceIn(0, Settings.get.maxPrintLightLevel)
@@ -138,9 +148,11 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():number -- Get which light level the printed block should have.""")
     fun getLightLevel(context: Context, args: Arguments): Array<Any?> = result(data.lightLevel)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:boolean or number) -- Set whether the printed block should emit redstone when in its active state.""")
     fun setRedstoneEmitter(context: Context, args: Arguments): Array<Any?>? {
         data.redstoneLevel = if (args.isBoolean(0)) {
@@ -152,9 +164,11 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean, number -- Get whether the printed block should emit redstone when in its active state.""")
     fun isRedstoneEmitter(context: Context, args: Arguments): Array<Any?> = result(data.emitRedstone, data.redstoneLevel)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:boolean) -- Set whether the printed block should automatically return to its off state.""")
     fun setButtonMode(context: Context, args: Arguments): Array<Any?>? {
         data.isButtonMode = args.checkBoolean(0)
@@ -162,9 +176,11 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean -- Get whether the printed block should automatically return to its off state.""")
     fun isButtonMode(context: Context, args: Arguments): Array<Any?> = result(data.isButtonMode)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(collideOff:boolean, collideOn:boolean) -- Set whether the printed block should be collidable or not.""")
     fun setCollidable(context: Context, args: Arguments): Array<Any?>? {
         val collideOff = args.checkBoolean(0)
@@ -174,9 +190,11 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean, boolean -- Get whether the printed block should be collidable or not.""")
     fun isCollidable(context: Context, args: Arguments): Array<Any?> = result(!data.noclipOff, !data.noclipOn)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(minX:number, minY:number, minZ:number, maxX:number, maxY:number, maxZ:number, texture:string[, state:boolean=false][,tint:number]) -- Adds a shape to the printers configuration, optionally specifying whether it is for the off or on state.""")
     fun addShape(context: Context, args: Arguments): Array<Any?> {
         if (data.stateOff.size > Settings.get.maxPrintComplexity || data.stateOn.size > Settings.get.maxPrintComplexity) {
@@ -219,12 +237,15 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return result(true)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():number -- Get the number of shapes in the current configuration.""")
     fun getShapeCount(context: Context, args: Arguments): Array<Any?> = result(data.stateOff.size, data.stateOn.size)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():number -- Get the maximum allowed number of shapes.""")
     fun getMaxShapeCount(context: Context, args: Arguments): Array<Any?> = result(Settings.get.maxPrintComplexity)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function([count:number]):boolean -- Commit and begin printing the current configuration.""")
     fun commit(context: Context, args: Arguments): Array<Any?> {
         if (!canPrint) {
@@ -235,6 +256,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         return result(true)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(): string, number or boolean -- The current state of the printer, `busy' or `idle', followed by the progress or model validity, respectively.""")
     fun status(context: Context, args: Arguments): Array<Any?> {
         return when {
@@ -259,7 +281,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
             return presentStack.isEmpty || (presentStack.isItemEqual(outputStack) && ItemStack.areItemStackTagsEqual(presentStack, outputStack))
         }
 
-        if (isActive && output.isEmpty && canMergeOutput()) {
+        if (isActive && output != null && canMergeOutput()) {
             val costs = PrintData.computeCosts(data)
             if (costs != null) {
                 val (materialRequired, inkRequired) = costs
@@ -270,7 +292,7 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
                     amountMaterial -= materialRequired
                     amountInk -= inkRequired
                     limit -= 1
-                    output = StackOption(data.createItemStack())
+                    output = data.createItemStack().notEmpty()
                     if (limit < 1) isActive = false
                     ServerPacketSender.sendPrinting(this, true)
                 }
@@ -280,14 +302,14 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
             }
         }
 
-        if (output.isDefined) {
-            val want = Math.max(1.0, Math.min(requiredEnergy, Settings.get.printerTickAmount))
+        if (output != null) {
+            val want = requiredEnergy.coerceIn(1.0 .. Settings.get.printerTickAmount)
             val have = want + (if (Settings.get.ignorePower) 0.0 else node.changeBuffer(-want))
             requiredEnergy -= have
             if (requiredEnergy <= 0) {
                 val result = getStackInSlot(slotOutput)
                 if (result.isEmpty) {
-                    setInventorySlotContents(slotOutput, output.get())
+                    setInventorySlotContents(slotOutput, output!!)
                 } else if (result.count < result.maxStackSize && canMergeOutput()) {
                     result.grow(1)
                     markDirty()
@@ -295,9 +317,9 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
                     return
                 }
                 requiredEnergy = 0.0
-                output = EmptyStack
+                output = null
             }
-            ServerPacketSender.sendPrinting(this, have > 0.5 && output.isDefined)
+            ServerPacketSender.sendPrinting(this, have > 0.5 && output != null)
         }
 
         val inputValue = PrintData.materialValue(getStackInSlot(slotMaterial))
@@ -341,9 +363,9 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         isActive = nbt.getBoolean(IsActiveTag)
         limit = nbt.getInteger(LimitTag)
         output = if (nbt.hasKey(OutputTag)) {
-            StackOption(ItemStack(nbt.getCompoundTag(OutputTag)))
+            ItemStack(nbt.getCompoundTag(OutputTag))
         } else {
-            EmptyStack
+            null
         }
         totalRequiredEnergy = nbt.getDouble(TotalTag)
         requiredEnergy = nbt.getDouble(RemainingTag)
@@ -353,10 +375,10 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
         super.writeToNBTForServer(nbt)
         nbt.setInteger(AmountMaterialTag, amountMaterial)
         nbt.setInteger(AmountInkTag, amountInk)
-        nbt.setNewCompoundTag(DataTag) { data.save(it) }
+        nbt.setNewCompoundTag(DataTag, data::save)
         nbt.setBoolean(IsActiveTag, isActive)
         nbt.setInteger(LimitTag, limit)
-        output.foreach { stack -> nbt.setNewCompoundTag(OutputTag) { stack.writeToNBT(it) } }
+        output?.let { stack -> nbt.setNewCompoundTag(OutputTag, stack::writeToNBT) }
         nbt.setDouble(TotalTag, totalRequiredEnergy)
         nbt.setDouble(RemainingTag, requiredEnergy)
     }
@@ -377,6 +399,8 @@ class Printer : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatab
     // ----------------------------------------------------------------------- //
 
     override fun getSizeInventory(): Int = 3
+
+    override fun getDisplayName(): ITextComponent = super<Inventory>.getDisplayName()
 
     override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean = when (slot) {
         slotMaterial -> PrintData.materialValue(stack) > 0
