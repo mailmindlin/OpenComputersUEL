@@ -1,5 +1,6 @@
 package li.cil.oc.server.network
 
+import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Component as NetComponent
 import li.cil.oc.api.network.ManagedPeripheral
@@ -16,7 +17,7 @@ import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.SideTracker
 import net.minecraft.nbt.NBTTagCompound
 
-interface Component : NetComponent, Node {
+internal interface Component : NetComponent, Node {
   val name: String
   override fun name(): String = name
 
@@ -84,25 +85,17 @@ interface Component : NetComponent, Node {
 
   // ----------------------------------------------------------------------- //
 
-  override fun methods(): java.util.Set<String> = getCallbacks().keys.toMutableSet()
+  override fun methods(): Set<String> = getCallbacks().keys.toMutableSet()
 
-  override fun annotation(method: String): li.cil.oc.api.machine.Callback {
+  override fun annotation(method: String): Callback {
     val callback = getCallbacks()[method]
     return callback?.annotation ?: throw NoSuchMethodException()
   }
 
-  override fun invoke(method: String, context: Context, vararg arguments: Any?): Array<Any?> {
-    val callback = getCallbacks()[method]
-    if (callback != null) {
-      val hostEnv = getHosts()[method]
-      if (hostEnv != null) {
-        return Registry.convert(callback.apply(hostEnv, context, ArgumentsImpl(arguments.toList())))
-      } else {
-        throw NoSuchMethodException()
-      }
-    } else {
-      throw NoSuchMethodException()
-    }
+  override fun invoke(method: String, context: Context, vararg arguments: Any?): Array<out Any?> {
+    val callback = getCallbacks()[method] ?: throw NoSuchMethodException()
+    val hostEnv = getHosts()[method] ?: throw NoSuchMethodException()
+    return Registry.run { callback(hostEnv, context, ArgumentsImpl(arguments.toList())).convert() }
   }
 
   // ----------------------------------------------------------------------- //
@@ -120,7 +113,7 @@ interface Component : NetComponent, Node {
   }
 
   companion object {
-    fun createCallbacks(host: Any): Map<String, Callbacks.Callback> = Callbacks.apply(host)
+    fun createCallbacks(host: Any): Map<String, Callbacks.Callback> = Callbacks(host)
 
     fun createHosts(host: Any, callbacks: Map<String, Callbacks.Callback>): Map<String, Any?> {
       return when (host) {
@@ -134,7 +127,7 @@ interface Component : NetComponent, Node {
               }
               is PeripheralCallback -> {
                 host.environments.find { (_, environment) ->
-                  environment is ManagedPeripheral && environment.methods().contains(callback.annotation.value())
+                  environment is ManagedPeripheral && environment.methods().contains(callback.annotation.value)
                 }?.second
               }
               else -> null

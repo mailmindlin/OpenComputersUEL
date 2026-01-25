@@ -13,10 +13,10 @@ import li.cil.oc.api.network.FilteredEnvironment
 import li.cil.oc.api.network.ManagedPeripheral
 import li.cil.oc.server.driver.CompoundBlockEnvironment
 
-object Callbacks {
+internal object Callbacks {
   private val cache = mutableMapOf<Class<*>, Map<String, Callback>>()
 
-  fun apply(host: Any) = when (host) {
+  operator fun invoke(host: Any) = when (host) {
     is CompoundBlockEnvironment -> dynamicAnalyze(host)
     is ManagedPeripheral -> dynamicAnalyze(host)
     is FilteredEnvironment -> dynamicAnalyze(host)
@@ -121,18 +121,18 @@ object Callbacks {
 
   // ----------------------------------------------------------------------- //
 
-  abstract class Callback(val annotation: MachineCallback) {
-    abstract fun apply(instance: Any, context: Context, args: Arguments): Array<*>
+  internal sealed class Callback(val annotation: MachineCallback) {
+    abstract operator fun invoke(instance: Any, context: Context, args: Arguments): Array<*>
   }
 
   class ComponentCallback(val method: Method, annotation: MachineCallback): Callback(annotation) {
     val callWrapper = CallbackWrapper.createCallbackWrapper(method)
 
-    override fun apply(instance: Any, context: Context, args: Arguments) = callWrapper.call(instance, context, args)
+    override fun invoke(instance: Any, context: Context, args: Arguments) = callWrapper.call(instance, context, args)
   }
 
   class PeripheralCallback(private val name: String): Callback(PeripheralAnnotation(name)) {
-    override fun apply(instance: Any, context: Context, args: Arguments): Array<*> {
+    override fun invoke(instance: Any, context: Context, args: Arguments): Array<*> {
       return when (instance) {
         is ManagedPeripheral -> instance.invoke(name, context, args)
         else -> throw NoSuchMethodException()

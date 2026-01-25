@@ -1,20 +1,14 @@
 package li.cil.oc.server.driver
 
 import li.cil.oc.OpenComputers
-import li.cil.oc.api.API.driver
 import li.cil.oc.api.detail.DriverAPI
-import li.cil.oc.api.driver.Converter
-import li.cil.oc.api.driver.DriverBlock
-import li.cil.oc.api.driver.DriverItem
-import li.cil.oc.api.driver.EnvironmentProvider
-import li.cil.oc.api.driver.InventoryProvider
+import li.cil.oc.api.driver.*
 import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.machine.Value
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.mapArray
 import net.minecraft.entity.player.EntityPlayer
-import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
@@ -100,42 +94,40 @@ internal object Registry: DriverAPI {
     }
   }
 
-  override fun driverFor(world: World, pos: BlockPos, side: EnumFacing): DriverBlock =
-    sidedBlocks.filter(_.worksWith(world, pos, side)) match {
-      case sidedDrivers if sidedDrivers.nonEmpty => new CompoundBlockDriver(sidedDrivers.toArray)
-      case _ => null
-    }
+  override fun driverFor(world: World, pos: BlockPos, side: EnumFacing): DriverBlock? {
+    val drivers = sidedBlocks.filter { it.worksWith(world, pos, side) }
+    if (drivers.isEmpty()) return null
+    return CompoundBlockDriver(drivers.toTypedArray())
+  }
 
   override fun driverFor(stack: ItemStack, host: Class<out EnvironmentHost>): DriverItem? {
     if (stack.isEmpty())
       return null
 
-    val hostAware = items.collect {
-      case driver : HostAware if driver.worksWith(stack) => driver
-    }
-    if (hostAware.nonEmpty) {
-      hostAware.find(_.worksWith(stack, host)).orNull
-    } else driverFor(stack)
+    return items
+      .firstOrNull {
+        it is HostAware && it.worksWith(stack) && it.worksWith(stack, host)
+      }
+      ?: driverFor(stack)
   }
 
   override fun driverFor(stack: ItemStack): DriverItem? =
-    if (!stack.isEmpty) items.find{ it.worksWith(stack) }.orNull
+    if (!stack.isEmpty) items.firstOrNull { it.worksWith(stack) }
     else null
 
-  @Deprecated
-  override fun environmentFor(stack: ItemStack): Class<*> {
-    environmentProviders.map(provider => provider.getEnvironment(stack)).collectFirst {
-      case clazz: Class[_] => clazz
-    }.orNull
-  }
+  @Deprecated("use environmentsFor", replaceWith = ReplaceWith("environmentsFor(stack)"))
+  override fun environmentFor(stack: ItemStack): Class<*>?
+    = environmentProviders
+      .firstNotNullOfOrNull { provider -> provider.getEnvironment(stack) }
 
   override fun environmentsFor(stack: ItemStack): Set<Class<*>>
     = environmentProviders.mapNotNullTo(mutableSetOf()) { it.getEnvironment(stack) }
 
-  override fun itemHandlerFor(stack: ItemStack, player: EntityPlayer): IItemHandler = {
-    inventoryProviders.find(provider => provider.worksWith(stack, player)).
-      map(provider => InventoryUtils.asItemHandler(provider.getInventory(stack, player))).
-      getOrElse {
+  override fun itemHandlerFor(stack: ItemStack, player: EntityPlayer): IItemHandler? {
+    return inventoryProviders
+      .find { provider -> provider.worksWith(stack, player) }
+      ?.let { provider -> InventoryUtils.asItemHandler(provider.getInventory(stack, player)) }
+      ?: run {
         if(stack.hasCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null))
           stack.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, null)
         else null
@@ -145,16 +137,18 @@ internal object Registry: DriverAPI {
   override fun itemDrivers(): List<DriverItem> = items.toList()
 
   fun blacklistHost(stack: ItemStack, host: Class<*>) {
-    blacklist.find(_._1.isItemEqual(stack)) match {
-      case Some((_, hosts)) => hosts += host
-      case _ => blacklist.append((stack, mutable.Set(host)))
+    val list = blacklistInner.find { it.first.isItemEqual(stack) }
+    if (list == null) {
+      blacklistInner.add(Pair(stack, mutableSetOf(host)))
+    } else {
+      list.second.add(host)
     }
   }
 
   fun Array<out Any?>.convert(): Array<out Any?>
     = this.mapArray { convertRecursively(it, IdentityHashMap()) }
 
-  @Deprecated("use value.convert()")
+  @Deprecated("use value.convert()", replaceWith = ReplaceWith("this.run { value.convert() }"))
   fun convert(value: Array<*>?): Array<Any?>?
     = value?.mapArray { convertRecursively(it, IdentityHashMap()) }
 
@@ -234,7 +228,7 @@ internal object Registry: DriverAPI {
   }
 
   private fun convertMap(obj: Any, map: Map<*, *>, memo: IdentityHashMap<Any, Any>): Any {
-    val converted = memo.getOrPut(obj) { mutableMapOf<Any?, Any?>() } as MutableMap<Any?, Any?>
+    val converted = (memo.getOrPut(obj) { mutableMapOf<Any?, Any?>() } as? MutableMap<Any?, Any?>)!!
     for ((key, value) in map) {
       converted[convertRecursively(key, memo)] = convertRecursively(value, memo)
     }

@@ -18,6 +18,7 @@ import li.cil.oc.common.tileentity.traits.Computer
 import li.cil.oc.server.PacketSender
 import li.cil.oc.server.component.world
 import li.cil.oc.server.driver.Registry
+import li.cil.oc.server.driver.Registry.convert
 import li.cil.oc.server.fs.FileSystem
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.oc.util.ThreadPoolFactory
@@ -350,7 +351,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
                                 when (arg) {
                                     null, Unit -> null
                                     is Map<*, *> -> if (arg.isEmpty() || (arg.keys.first() is String && arg.values.first() is String)) arg else null
-                                    is MutableMap<*, *> -> if (arg.isEmpty() || (arg.keys.first() is String && arg.values.first() is String)) arg.toMap() else null
+                                    /*is MutableMap<*, *> -> if (arg.isEmpty() || (arg.keys.first() is String && arg.values.first() is String)) arg.toMap() else null
                                     is java.util.Map<*, *> -> {
                                         val convertedMap = mutableMapOf<Any?, Any?>()
                                         for ((key, value) in arg) {
@@ -363,7 +364,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
                                             }
                                         }
                                         convertedMap
-                                    }
+                                    }*/
                                     else -> convertArg(arg)
                                 }
                             }.toTypedArray()))
@@ -390,8 +391,8 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
             val component = node.network().node(address)
             if (component is li.cil.oc.server.network.Component && (component.canBeSeenFrom(node) || component == node)) {
                 val annotation = component.annotation(method)
-                if (annotation.direct()) {
-                    consumeCallBudget(1.0 / annotation.limit())
+                if (annotation.direct) {
+                    consumeCallBudget(1.0 / annotation.limit)
                 }
                 return component.invoke(method, this, *args)
             } else {
@@ -404,18 +405,14 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
         }
     }
 
-    override fun invoke(value: Value, method: String, args: Array<Any?>): Array<Any?> {
-        val callback = Callbacks(value)[method]
-        if (callback != null) {
-            val annotation = callback.annotation
-            if (annotation.direct()) {
-                consumeCallBudget(1.0 / annotation.limit())
-            }
-            val arguments = ArgumentsImpl(args.toList())
-            return Registry.convert(callback(value, this, arguments))
-        } else {
-            throw NoSuchMethodException()
+    override fun invoke(value: Value, method: String, args: Array<Any?>): Array<out Any?> {
+        val callback = Callbacks(value)[method] ?: throw NoSuchMethodException()
+        val annotation = callback.annotation
+        if (annotation.direct) {
+            consumeCallBudget(1.0 / annotation.limit)
         }
+        val arguments = ArgumentsImpl(args.toList())
+        return Registry.run { callback(value, this@Machine, arguments).convert() }
     }
 
     override fun addUser(name: String) {

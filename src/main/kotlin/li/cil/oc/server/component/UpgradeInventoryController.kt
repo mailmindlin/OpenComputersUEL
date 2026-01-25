@@ -23,13 +23,16 @@ import li.cil.oc.common.tileentity.Robot as RobotTileEntity
 
 object UpgradeInventoryController {
 
-    interface Common : DeviceInfo {
-        override fun getDeviceInfo(): MutableMap<String, String> = mapOf(
-            DeviceAttribute.Class to DeviceClass.Generic,
-            DeviceAttribute.Description to "Inventory controller",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "Item Cataloguer R1"
-        ).toMutableMap()
+    interface Common : DeviceInfoKt {
+        override val deviceInfo get() = Companion.deviceInfo
+        companion object {
+            private val deviceInfo = mapOf(
+                DeviceAttribute.Class to DeviceClass.Generic,
+                DeviceAttribute.Description to "Inventory controller",
+                DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+                DeviceAttribute.Product to "Item Cataloguer R1"
+            )
+        }
     }
 
     class Adapter(val host: EnvironmentHost) : AbstractManagedEnvironment(), WorldInventoryAnalytics, Common {
@@ -48,7 +51,7 @@ object UpgradeInventoryController {
         private val agent: Agent
             get() = host as Agent
 
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node: Node = Network.newNode(this, Visibility.Network)
             .withComponent("inventory_controller", Visibility.Neighbors)
             .create()
 
@@ -82,7 +85,7 @@ object UpgradeInventoryController {
                 host.selectedSlot = value
             }
 
-        override fun checkSideForAction(args: Arguments, n: Int) = host.toGlobal(args.checkSideForAction(n))
+        override fun checkSideForAction(args: Arguments, n: Int) = host.toGlobal(args.checkSideForAction(n))!!
 
         @Callback(doc = "function():boolean -- Swaps the equipped tool with the content of the currently selected inventory slot.")
         fun equip(context: Context, args: Arguments): Array<Any?> {

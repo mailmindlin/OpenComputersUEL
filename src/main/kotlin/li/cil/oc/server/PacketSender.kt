@@ -4,7 +4,6 @@ import com.google.common.cache.Cache
 import com.google.common.cache.CacheBuilder
 import li.cil.oc.Settings
 import li.cil.oc.api.*
-import li.cil.oc.api.Nanomachines as ApiNanomachines
 import li.cil.oc.api.event.FileSystemAccessEvent
 import li.cil.oc.api.event.NetworkActivityEvent
 import li.cil.oc.api.internal.TextBuffer
@@ -14,21 +13,6 @@ import li.cil.oc.common.*
 import li.cil.oc.common.nanomachines.ControllerImpl
 import li.cil.oc.common.tileentity.Waypoint
 import li.cil.oc.common.tileentity.traits.*
-import li.cil.oc.common.tileentity.traits.Computer as TEComputer
-import li.cil.oc.common.tileentity.Disassembler as TEDisassembler
-import li.cil.oc.common.tileentity.Hologram as TEHologram
-import li.cil.oc.common.tileentity.Adapter as TEAdapter
-import li.cil.oc.common.tileentity.DiskDrive as TEDiskDrive
-import li.cil.oc.common.tileentity.Charger as TECharger
-import li.cil.oc.common.tileentity.Transposer as TETransposer
-import li.cil.oc.common.tileentity.Screen as TEScreen
-import li.cil.oc.common.tileentity.Relay as TERelay
-import li.cil.oc.common.tileentity.Robot as TERobot
-import li.cil.oc.common.tileentity.Raid as TERaid
-import li.cil.oc.common.tileentity.Rack as TERack
-import li.cil.oc.common.tileentity.Printer as TEPrinter
-import li.cil.oc.common.tileentity.NetSplitter as TENetSplitter
-import li.cil.oc.common.tileentity.Assembler as TEAssembler
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.PackedColor
 import net.minecraft.entity.player.EntityPlayer
@@ -44,12 +28,25 @@ import net.minecraft.util.SoundCategory
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import net.minecraftforge.common.MinecraftForge
-import scala.util.control.TailCalls.Cont
 import java.util.*
-
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 import kotlin.math.round
+import li.cil.oc.api.Nanomachines as ApiNanomachines
+import li.cil.oc.common.tileentity.Adapter as TEAdapter
+import li.cil.oc.common.tileentity.Assembler as TEAssembler
+import li.cil.oc.common.tileentity.Charger as TECharger
+import li.cil.oc.common.tileentity.Disassembler as TEDisassembler
+import li.cil.oc.common.tileentity.DiskDrive as TEDiskDrive
+import li.cil.oc.common.tileentity.Hologram as TEHologram
+import li.cil.oc.common.tileentity.NetSplitter as TENetSplitter
+import li.cil.oc.common.tileentity.Printer as TEPrinter
+import li.cil.oc.common.tileentity.Rack as TERack
+import li.cil.oc.common.tileentity.Raid as TERaid
+import li.cil.oc.common.tileentity.Relay as TERelay
+import li.cil.oc.common.tileentity.Robot as TERobot
+import li.cil.oc.common.tileentity.Screen as TEScreen
+import li.cil.oc.common.tileentity.Transposer as TETransposer
+import li.cil.oc.common.tileentity.traits.Computer as TEComputer
 
 private fun SimplePacketBuilder.writeTileEntity(t: TileEntityTrait) = this.writeTileEntity(t.asTileEntity())
 private fun SimplePacketBuilder.sendToPlayersNearTileEntity(t: TileEntityTrait) = this.sendToPlayersNearTileEntity(t.asTileEntity())
@@ -102,7 +99,7 @@ object PacketSender {
     val pb = SimplePacketBuilder(PacketType.ColorChange)
 
     pb.writeTileEntity(t)
-    pb.writeInt(t.color)
+    pb.writeInt(t.color.toInt())
 
     pb.sendToPlayersNearTileEntity(t)
   }
@@ -452,24 +449,22 @@ object PacketSender {
   fun sendPetVisibility(name: String? = null, player: EntityPlayerMP? = null) {
     val pb = SimplePacketBuilder(PacketType.PetVisibility)
 
-    /*name match {
-      case Some(n) =>
-        pb.writeInt(1)
+    if (name != null) {
+      pb.writeInt(1)
+      pb.writeUTF(name)
+      pb.writeBoolean(name !in PetVisibility.hidden)
+    } else {
+      pb.writeInt(PetVisibility.hidden.size)
+      for (n in PetVisibility.hidden) {
         pb.writeUTF(n)
-        pb.writeBoolean(!PetVisibility.hidden.contains(n))
-      case _ =>
-        pb.writeInt(PetVisibility.hidden.size)
-        for (n in PetVisibility.hidden) {
-          pb.writeUTF(n)
-          pb.writeBoolean(false)
-        }
+        pb.writeBoolean(false)
+      }
     }
 
-    player match {
-      case Some(p) => pb.sendToPlayer(p)
-      case _ => pb.sendToAllPlayers()
-    }*/
-    TODO()
+    if (player == null)
+      pb.sendToAllPlayers()
+    else
+      pb.sendToPlayer(player)
   }
 
   fun sendPowerState(t: PowerInformation) {
@@ -540,7 +535,7 @@ object PacketSender {
     val pb = SimplePacketBuilder(PacketType.RedstoneState)
 
     pb.writeTileEntity(t)
-    pb.writeBoolean(t.isOutputEnabled)
+    pb.writeBoolean(t.outputEnabled)
     for (d in EnumFacing.values()) {
       pb.writeByte(t.getOutput(d))
     }
@@ -592,7 +587,7 @@ object PacketSender {
   fun sendRobotInventory(t: TERobot, slot: Int, stack: ItemStack) {
     val pb = SimplePacketBuilder(PacketType.RobotInventoryChange)
 
-    pb.writeTileEntity(t.proxy!!)
+    pb.writeTileEntity(t.proxy)
     pb.writeInt(slot)
     pb.writeItemStack(stack)
 
@@ -602,7 +597,7 @@ object PacketSender {
   fun sendRobotLightChange(t: TERobot) {
     val pb = SimplePacketBuilder(PacketType.RobotLightChange)
 
-    pb.writeTileEntity(t.proxy!!)
+    pb.writeTileEntity(t.proxy)
     pb.writeInt(t.info.lightColor)
 
     pb.sendToPlayersNearTileEntity(t)
@@ -611,7 +606,7 @@ object PacketSender {
   fun sendRobotNameChange(t: TERobot) {
     val pb = SimplePacketBuilder(PacketType.RobotNameChange)
 
-    pb.writeTileEntity(t.proxy!!)
+    pb.writeTileEntity(t.proxy)
     val name = t.name()
     val len = name.length
     pb.writeShort(len)
@@ -755,8 +750,7 @@ object PacketSender {
     pb.writeInt(col)
     pb.writeInt(row)
     pb.writeShort(text.size)
-    for (element in text) {
-      val line = element
+    for (line in text) {
       pb.writeShort(line.size)
       for (element in line) {
         pb.writeMedium(element)
@@ -770,12 +764,9 @@ object PacketSender {
     pb.writeInt(col)
     pb.writeInt(row)
     pb.writeShort(color.size)
-    for (element in color) {
-      val line = element
+    for (line in color) {
       pb.writeShort(line.size)
-      for (element in line) {
-        pb.writeInt(element)
-      }
+      line.forEach(pb::writeInt)
     }
   }
 
@@ -785,12 +776,9 @@ object PacketSender {
     pb.writeInt(col)
     pb.writeInt(row)
     pb.writeShort(color.size)
-    for (y in 0 until color.size) {
-      val line = color[y]
+    for (line in color) {
       pb.writeShort(line.size)
-      for (x in 0 until line.size) {
-        pb.writeInt(line[x])
-      }
+      line.forEach(pb::writeInt)
     }
   }
 
