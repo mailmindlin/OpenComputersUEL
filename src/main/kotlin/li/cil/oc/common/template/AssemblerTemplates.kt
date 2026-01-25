@@ -59,7 +59,7 @@ object AssemblerTemplates {
 
     @JvmStatic
     fun select(stack: ItemStack): Template? {
-        if (!stack.isEmpty && templateFilters.all { IMC.tryInvokeStatic(it, stack, true) as Boolean }) {
+        if (!stack.isEmpty && templateFilters.all { IMC.tryInvokeStatic(it, stack, default = true) }) {
             return templates.find { it.select(stack) }
         }
         return null
@@ -73,10 +73,10 @@ object AssemblerTemplates {
         val upgradeSlots: Array<Slot>,
         val componentSlots: Array<Slot>
     ) {
-        fun select(stack: ItemStack): Boolean = IMC.tryInvokeStatic(selector, stack, false) as Boolean
+        fun select(stack: ItemStack): Boolean = IMC.tryInvokeStatic(selector, stack, default = false)
 
         fun validate(inventory: IInventory): Triple<Boolean, ITextComponent?, Array<ITextComponent>> {
-            return when (val result = IMC.tryInvokeStatic(validator, inventory, null as Array<Any>?)) {
+            return when (val result = IMC.tryInvokeStatic(validator, inventory, default = null as Array<Any>?)) {
                 is Array<*> -> when {
                     result.size >= 3 && result[0] is Boolean && result[1] is ITextComponent && result[2] is Array<*> ->
                         @Suppress("UNCHECKED_CAST")
