@@ -13,6 +13,5 @@ private val ROTATION_MATRIX = arrayOf(
     intArrayOf(0, 1, 2, 3, 4, 5, 6)
 )
 
-fun EnumFacing.getRotation(axis: EnumFacing): EnumFacing {
-    return EnumFacing.byIndex(ROTATION_MATRIX[axis.ordinal][this.ordinal])
-}
+fun EnumFacing.getRotation(axis: EnumFacing): EnumFacing
+    = EnumFacing.byIndex(ROTATION_MATRIX[axis.ordinal][this.ordinal])
