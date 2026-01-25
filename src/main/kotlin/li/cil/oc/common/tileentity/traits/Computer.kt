@@ -32,7 +32,6 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
     private val _machine: Machine? by lazy { if (isServer) ApiMachine.create(this) else null }
 
     override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
-    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
 
     open val machine: Machine? get() = _machine
 

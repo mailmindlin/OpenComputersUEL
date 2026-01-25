@@ -10,8 +10,9 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.*
 import li.cil.oc.common.inventory.InventoryProxy
+import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.PowerInformation
-import li.cil.oc.common.tileentity.traits.RedstoneAware
+import li.cil.oc.common.tileentity.traits.RotatableTile
 import li.cil.oc.server.agent.Player
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.server.component.result
@@ -37,6 +38,7 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
 class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInformation, TraitRotatableTile, ISidedInventory, IFluidHandler, InternalRobot {
     override val powerDelegate: PowerInformation.Delegate = register(PowerInformation::Delegate)
+    override val rotatableDelegate: RotatableTile.Delegate = register(RotatableTile::Delegate)
 
     // ----------------------------------------------------------------------- //
 
@@ -195,7 +197,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     // ----------------------------------------------------------------------- //
 
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> =
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node>? =
         robot.onAnalyze(player, side, hitX, hitY, hitZ)
 
     // ----------------------------------------------------------------------- //

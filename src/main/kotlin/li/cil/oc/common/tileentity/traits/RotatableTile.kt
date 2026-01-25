@@ -18,7 +18,7 @@ interface RotatableTile : Rotatable {
     // ----------------------------------------------------------------------- //
     override val rotatableDelegate: Delegate
 
-    class Delegate(tile: RotatableTile): RotatableDelegate(tile), NbtSeriailzable {
+    class Delegate(tile: RotatableTile): Rotatable.RotatableDelegate(tile), NbtSeriailzable {
         /** One of Up, Down and North (where north means forward/no pitch). */
         private var _pitch: EnumFacing = EnumFacing.NORTH
 

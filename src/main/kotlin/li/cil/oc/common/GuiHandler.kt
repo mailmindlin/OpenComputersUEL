@@ -100,11 +100,8 @@ abstract class GuiHandler : IGuiHandler {
                             override fun isUsableByPlayer(p: EntityPlayer): Boolean = p == player
                         })
                     } else null
-                    is ItemTablet -> if (id == GuiType.TabletInner.id) {
-                        val stack = itemStackInUse
-                        if (stack.hasTagCompound()) {
-                            ContainerTablet(player.inventory, ItemTablet.get(stack, player))
-                        } else null
+                    is ItemTablet -> if (id == GuiType.TabletInner.id && itemStackInUse.hasTagCompound()) {
+                        ContainerTablet(player.inventory, ItemTablet.get(itemStackInUse, player))
                     } else null
                     is ItemDiskDriveMountable -> if (id == GuiType.DiskDriveMountable.id) {
                         ContainerDiskDrive(player.inventory, object : DiskDriveMountableInventory() {

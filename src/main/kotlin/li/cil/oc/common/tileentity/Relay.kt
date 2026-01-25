@@ -23,6 +23,7 @@ import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
+import li.cil.oc.common.item.Memory
 import li.cil.oc.common.tileentity.traits.ComponentInventory
 import li.cil.oc.common.tileentity.traits.Hub
 import li.cil.oc.common.tileentity.traits.Inventory
@@ -78,8 +79,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
     @JvmField
     var isLinkedEnabled = false
 
-    @JvmField
-    var tunnel = "creative"
+    override var tunnel: String = "creative"
 
     @JvmField
     val componentNodes: Array<Component> = Array(6) {
@@ -96,7 +96,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
 
     fun onSwitchActivity() {
         val now = System.currentTimeMillis()
-        if (now - lastMessage >= (relayDelay - 1) * 50) {
+        if (now - lastMessage >= (hubDelegate.relayDelay - 1) * 50) {
             lastMessage = now
             PacketSender.sendSwitchActivity(this)
         }
@@ -197,9 +197,9 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
         super.relayPacket(sourceSide, packet)
 
         val tryChangeBuffer: (Double) -> Boolean = if (sourceSide != null) {
-            { amount: Double -> (plugs[sourceSide.ordinal].node as Connector).tryChangeBuffer(amount) }
+            { amount: Double -> (hubDelegate.plugs[sourceSide.ordinal].node as Connector).tryChangeBuffer(amount) }
         } else {
-            { amount: Double -> plugs.any { (it.node as Connector).tryChangeBuffer(amount) } }
+            { amount: Double -> hubDelegate.plugs.any { (it.node as Connector).tryChangeBuffer(amount) } }
         }
 
         if (isWirelessEnabled && strength > 0 && (sourceSide != null || isRepeater)) {
@@ -239,7 +239,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
             componentNodes[plug.side.ordinal].remove()
     }
 
-    override fun onPlugDisconnect(plug: Plug, node: Node) {
+    override fun onPlugDisconnect(plug: Hub.Plug, node: Node) {
         super.onPlugDisconnect(plug, node)
         if (node == plug.node) {
             ApiNetwork.leaveWirelessNetwork(this)
@@ -261,16 +261,16 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
         val driver = Driver.driverFor(stack, javaClass)
         when {
             driver != null && driver.slot(stack) == Slot.CPU -> {
-                relayDelay = Math.max(1, relayBaseDelay - ((driver.tier(stack) + 1) * relayDelayPerUpgrade).toInt())
+                hubDelegate.relayDelay = Math.max(1, relayBaseDelay - ((driver.tier(stack) + 1) * relayDelayPerUpgrade).toInt())
             }
             driver != null && driver.slot(stack) == Slot.Memory -> {
-                relayAmount = Math.max(1, relayBaseAmount + (Delegator.subItem(stack)?.let { subItem ->
+                hubDelegate.relayAmount = Math.max(1, relayBaseAmount + (Delegator.subItem(stack)?.let { subItem ->
                     if (subItem is Memory) (subItem.tier + 1) * relayAmountPerUpgrade
                     else (driver.tier(stack) + 1) * (relayAmountPerUpgrade * 2)
                 } ?: (driver.tier(stack) + 1) * (relayAmountPerUpgrade * 2)))
             }
             driver != null && driver.slot(stack) == Slot.HDD -> {
-                maxQueueSize = Math.max(1, queueBaseSize + (driver.tier(stack) + 1) * queueSizePerUpgrade)
+                hubDelegate.maxQueueSize = Math.max(1, queueBaseSize + (driver.tier(stack) + 1) * queueSizePerUpgrade)
             }
             driver != null && driver.slot(stack) == Slot.Card -> {
                 val descriptor = ApiItems.get(stack)
@@ -293,9 +293,9 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
         super.onItemRemoved(slot, stack)
         val driver = Driver.driverFor(stack, javaClass)
         when {
-            driver != null && driver.slot(stack) == Slot.CPU -> relayDelay = relayBaseDelay
-            driver != null && driver.slot(stack) == Slot.Memory -> relayAmount = relayBaseAmount
-            driver != null && driver.slot(stack) == Slot.HDD -> maxQueueSize = queueBaseSize
+            driver != null && driver.slot(stack) == Slot.CPU -> hubDelegate.relayDelay = relayBaseDelay
+            driver != null && driver.slot(stack) == Slot.Memory -> hubDelegate.relayAmount = relayBaseAmount
+            driver != null && driver.slot(stack) == Slot.HDD -> hubDelegate.maxQueueSize = queueBaseSize
             driver != null && driver.slot(stack) == Slot.Card -> {
                 wirelessTier = -1
                 isLinkedEnabled = false
@@ -327,7 +327,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
         for (slot in items.indices) {
             if (!items[slot].isEmpty) {
                 updateLimits(slot, items[slot])
@@ -348,7 +348,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
         nbt.setDouble(StrengthTag, strength)
         nbt.setBoolean(IsRepeaterTag, isRepeater)
         nbt.setNewTagList(ComponentNodesTag, componentNodes.map { node ->

@@ -132,7 +132,7 @@ abstract class SimpleBlock(material: Material = Material.IRON) : BlockContainer(
 
     override fun canCreatureSpawn(state: IBlockState, world: IBlockAccess, pos: BlockPos, type: SpawnPlacementType): Boolean = false
 
-    override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing> = validRotations_
+    override fun getValidRotations(world: World, pos: BlockPos): Array<EnumFacing>? = validRotations_
 
     override fun breakBlock(world: World, pos: BlockPos, state: IBlockState) {
         if (!world.isRemote) {

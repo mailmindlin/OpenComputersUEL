@@ -61,7 +61,7 @@ interface TextBufferProxy: TextBuffer {
     override fun setBackgroundColor(color: Int) = setBackgroundColor(color, false)
 
     override fun setBackgroundColor(color: Int, isFromPalette: Boolean) {
-        val value = PackedColor.Color(color, isFromPalette)
+        val value = PackedColor.Color(color.toUInt(), isFromPalette)
         if (data.background != value) {
             data.background = value
             onBufferColorChange()
@@ -161,7 +161,7 @@ interface TextBufferProxy: TextBuffer {
             val line = color[y - row]
             for (x in col until minOf(col + line.size, data.width)) {
                 val packedBackground = data.color[y][x].toInt() and 0x00FF
-                val packedForeground = (data.format.deflate(PackedColor.Color(line[x - col])) shl PackedColor.ForegroundShift) and 0xFF00
+                val packedForeground = (data.format.deflate(PackedColor.Color(line[x - col].toUInt())).toInt() shl PackedColor.ForegroundShift) and 0xFF00
                 data.color[y][x] = (packedForeground or packedBackground).toShort()
             }
         }
@@ -178,9 +178,9 @@ interface TextBufferProxy: TextBuffer {
         }
     }
 
-    private fun color(column: Int, row: Int): Short {
+    private fun color(column: Int, row: Int): UShort {
         if (column < 0 || column >= width || row < 0 || row >= height)
             throw IndexOutOfBoundsException()
-        return data.color[row][column]
+        return data.color[row][column].toUShort()
     }
 }

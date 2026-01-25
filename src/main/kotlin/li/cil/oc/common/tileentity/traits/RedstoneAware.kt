@@ -127,11 +127,12 @@ interface RedstoneAware : Environment, RotationAware {
             val value = if (side.ordinal < values.size) values[side.ordinal] else 0
             setInput(side, value)
         }
-    }
+    }*/
 
-    fun maxInput(): Int = _input.map { maxOf(it, 0) }.maxOrNull() ?: 0
+    val maxInput: Int
+        get() = this.redstoneDelegate.input.values.max()
 
-    fun getOutput(): IntArray = EnumFacing.values().map { side -> _output[toLocal(side)!!.ordinal] }.toIntArray()
+    /*fun getOutput(): IntArray = EnumFacing.values().map { side -> _output[toLocal(side)!!.ordinal] }.toIntArray()
 
     fun getOutput(side: EnumFacing): Int {
         val localSide = toLocal(side)!!

@@ -1,10 +1,12 @@
 package li.cil.oc.common.block
 
 import li.cil.oc.Constants
+import li.cil.oc.api.Items
 import li.cil.oc.api.Network
 import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.getRotation
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.block.state.BlockStateContainer
@@ -29,6 +31,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
 
     // For Immibis Microblock support.
     @JvmField
+    @Suppress("unused", "PropertyName", "SpellCheckingInspection")
     val ImmibisMicroblocks_TransformableBlockMarker: Any? = null
 
     override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Pitch, PropertyRotatable.Yaw)
@@ -51,10 +54,10 @@ class Keyboard : SimpleBlock(Material.ROCK) {
             val pitch = tileEntity.pitch
             val yaw = tileEntity.yaw
             val (forward, up) = when (pitch) {
-                EnumFacing.DOWN, EnumFacing.UP -> Pair(pitch, yaw)
-                else -> Pair(yaw, EnumFacing.UP)
+                EnumFacing.DOWN, EnumFacing.UP -> Pair(pitch, yaw!!)
+                else -> Pair(yaw!!, EnumFacing.UP)
             }
-            val side = ExtendedEnumFacing.getRotation(forward, up)
+            val side = forward.getRotation(up)
             val sizes = floatArrayOf(7f / 16f, 4f / 16f, 7f / 16f)
             val x0 = -up!!.xOffset * sizes[1] - side!!.xOffset * sizes[2] - forward!!.xOffset * sizes[0]
             val x1 = up.xOffset * sizes[1] + side.xOffset * sizes[2] - forward.xOffset * 0.5f
@@ -100,7 +103,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
             val facing = tileEntity.facing() ?: return
             if (!canPlaceBlockOnSide(world, pos, facing)) {
                 world.setBlockToAir(pos)
-                InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), api.Items.get(Constants.BlockName.Keyboard).createItemStack(1))
+                InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), Items.get(Constants.BlockName.Keyboard).createItemStack(1))
             }
         }
     }
