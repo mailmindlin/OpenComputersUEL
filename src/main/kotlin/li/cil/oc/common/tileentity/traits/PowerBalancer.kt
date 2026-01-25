@@ -3,19 +3,40 @@ package li.cil.oc.common.tileentity.traits
 import li.cil.oc.Settings
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.SidedEnvironment
+import li.cil.oc.util.mapArray
 import net.minecraft.util.EnumFacing
 
-interface PowerBalancer : PowerInformation(), SidedEnvironment, Tickable {
-    override var globalBuffer: Double = 0.0
-    override var globalBufferSize: Double = 0.0
+interface PowerBalancer : PowerInformation, SidedEnvironment, Tickable {
+    val isConnected: Boolean
+    override val powerDelegate: Delegate
 
-    protected abstract val isConnected: Boolean
+    class Delegate(tile: PowerBalancer) : PowerInformation.Delegate(tile) {
+        protected open fun distribute(): Pair<Double, Double> {
+            var sumBuffer = 0.0
+            var sumSize = 0.0
+            for (node in connectors) {
+                if (node != null && isPrimary(node)) {
+                    sumBuffer += node.globalBuffer()
+                    sumSize += node.globalBufferSize()
+                }
+            }
+            return Pair(sumBuffer, sumSize)
+        }
 
-    override fun updateEntity() {
-        super.updateEntity()
-        if (isServer && isConnected && Settings.get.isTickMultiple(world!!)) {
+        private val connectors: Array<Connector?> get() {
+            val tile = tile as PowerBalancer
+            return EnumFacing.values().mapArray { side -> tile.sidedNode(side) as? Connector }
+        }
+
+        private fun isPrimary(connector: Connector): Boolean {
             val nodes = connectors
-            fun network(connector: Connector?) = if (connector?.network() != null) connector.network() else this
+            val index = nodes.indexOfFirst { it != null && it.network() == connector.network() }
+            return index >= 0 && nodes[index] == connector
+        }
+
+        internal fun update() {
+            val nodes = connectors
+            fun network(connector: Connector?) = connector?.network() ?: this
             // Yeeeeah, so that just happened... it's not a beauty, but it works. This
             // is necessary because power in networks can be updated asynchronously,
             // i.e. in separate threads (e.g. to allow screens to consume energy when
@@ -37,38 +58,22 @@ interface PowerBalancer : PowerInformation(), SidedEnvironment, Tickable {
                                             }
                                         }
                                     }
-                                    globalBuffer = sumBuffer
-                                    globalBufferSize = sumSize
+                                    this.tile.globalBuffer = sumBuffer
+                                    this.tile.globalBufferSize = sumSize
                                 }
                             }
                         }
                     }
                 }
             }
-            updatePowerInformation()
+            this.updatePowerInformation()
         }
     }
 
-    protected open fun distribute(): Pair<Double, Double> {
-        var sumBuffer = 0.0
-        var sumSize = 0.0
-        for (node in connectors) {
-            if (node != null && isPrimary(node)) {
-                sumBuffer += node.globalBuffer()
-                sumSize += node.globalBufferSize()
-            }
+    override fun updateEntity() {
+//        super.updateEntity()
+        if (isServer && isConnected && Settings.get.isTickMultiple(world!!)) {
+            this.powerDelegate.update()
         }
-        return Pair(sumBuffer, sumSize)
-    }
-
-    private val connectors: Array<Connector?>
-        get() = EnumFacing.values().map { side ->
-            sidedNode(side) as? Connector
-        }.toTypedArray()
-
-    private fun isPrimary(connector: Connector): Boolean {
-        val nodes = connectors
-        val index = nodes.indexOfFirst { it != null && it.network() == connector.network() }
-        return index >= 0 && nodes[index] == connector
     }
 }

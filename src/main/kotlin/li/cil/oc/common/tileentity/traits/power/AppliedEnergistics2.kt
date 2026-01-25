@@ -16,6 +16,12 @@ import appeng.api.util.AEPartLocation
 import appeng.api.util.DimensionalCoord
 import li.cil.oc.Settings
 import li.cil.oc.common.EventHandler
+import li.cil.oc.common.tileentity.behaviors.Behavior
+import li.cil.oc.common.tileentity.behaviors.BehaviorLifecycle
+import li.cil.oc.common.tileentity.behaviors.BehaviorUpdate
+import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
+import li.cil.oc.common.tileentity.traits.isServer
+import li.cil.oc.common.tileentity.traits.world
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.util.Power
 import net.minecraft.item.ItemStack
@@ -26,117 +32,120 @@ import net.minecraftforge.fml.common.Optional
 import java.util.EnumSet
 
 interface AppliedEnergistics2 : Common, IGridHost {
-    val world: World?
-
-    fun getPos(): net.minecraft.util.math.BlockPos
-
-    fun isInvalid(): Boolean
-
-    fun readFromNBTForServer(nbt: NBTTagCompound)
-
-    fun writeToNBTForServer(nbt: NBTTagCompound)
-
-    fun updateEntity()
-
-    // Mixin-like property for the grid node - implementations need to provide storage
-    var ae2GridNode: IGridNode?
-    var ae2GridNodeStateUpdateRequested: Boolean
-
     private fun useAppliedEnergistics2Power(): Boolean = isServer && Mods.AppliedEnergistics2.isModAvailable
 
-    fun requestGridNodeStateUpdate() {
-        if (!ae2GridNodeStateUpdateRequested) {
-            EventHandler.scheduleAE2Add(this as net.minecraft.tileentity.TileEntity)
-            ae2GridNodeStateUpdateRequested = true
-        }
-    }
+    val ae2Delegate: Delegate
 
-    fun updateGridNodeState() {
-        if (!isInvalid()) {
+    @Optional.InterfaceList(
+        Optional.Interface(iface = "li.cil.oc.common.tileentity.behaviors.NbtSeriailzable", modid = Mods.IDs.AppliedEnergistics2),
+        Optional.Interface(iface = "li.cil.oc.common.tileentity.behaviors.BehaviorUpdate", modid = Mods.IDs.AppliedEnergistics2),
+        Optional.Interface(iface = "li.cil.oc.common.tileentity.behaviors.BehaviorLifecycle", modid = Mods.IDs.AppliedEnergistics2),
+    )
+    class Delegate(private val tile: AppliedEnergistics2): Behavior, NbtSeriailzable, BehaviorUpdate, BehaviorLifecycle {
+        private var node: IGridNode? = null
+        private var gridNodeStateUpdateRequested: Boolean = false
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        private fun requestGridNodeStateUpdate() {
+            if (!gridNodeStateUpdateRequested) {
+                EventHandler.scheduleAE2Add(tile)
+                gridNodeStateUpdateRequested = true
+            }
+        }
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        private fun updateGridNodeState() {
+            if (tile.asTileEntity().isInvalid)
+                return
             val gridNode = getGridNode(AEPartLocation.INTERNAL)
             if (gridNode != null) {
                 gridNode.updateState()
-                ae2GridNodeStateUpdateRequested = false
+                gridNodeStateUpdateRequested = false
             }
         }
-    }
 
-    fun updateAE2Entity() {
-        if (useAppliedEnergistics2Power() && world != null && Settings.get.isTickMultiple(world!!)) {
-            updateAE2Energy()
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        private fun updateEnergy() {
+            tile.tryAllSides(Power::fromAE, Power::toAE) { demand, _ ->
+                val grid = getGridNode(AEPartLocation.INTERNAL)?.grid ?: return@tryAllSides 0.0
+                val cache = grid.getCache<IEnergyGrid>(IEnergyGrid::class.java) ?: return@tryAllSides 0.0
+                return@tryAllSides cache.extractAEPower(demand, Actionable.MODULATE, PowerMultiplier.CONFIG)
+            }
         }
-    }
 
-    @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-    private fun updateAE2Energy() {
-        tryAllSides({ demand, _ ->
-            val grid = getGridNode(AEPartLocation.INTERNAL)?.grid
-            if (grid != null) {
-                val cache = grid.getCache<IEnergyGrid>(IEnergyGrid::class.java)
-                if (cache != null) {
-                    cache.extractAEPower(demand, Actionable.MODULATE, PowerMultiplier.CONFIG)
-                } else 0.0
-            } else 0.0
-        }, Power::fromAE, Power::toAE)
-    }
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        override fun update() {
+            if (tile.useAppliedEnergistics2Power() && Settings.get.isTickMultiple(tile.world))
+                updateEnergy()
+        }
 
-    fun validateAE2() {
-        if (useAppliedEnergistics2Power()) requestGridNodeStateUpdate()
-    }
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        override fun initialize() {
+            if (tile.useAppliedEnergistics2Power())
+                requestGridNodeStateUpdate()
+        }
 
-    fun invalidateAE2() {
-        if (useAppliedEnergistics2Power()) securityBreak()
-    }
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        override fun dispose() {
+            if (tile.useAppliedEnergistics2Power())
+                securityBreak()
+        }
 
-    fun onChunkUnloadAE2() {
-        if (useAppliedEnergistics2Power()) securityBreak()
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        override fun readFromNBTForServer(nbt: NBTTagCompound) {
+            if (tile.useAppliedEnergistics2Power())
+                loadNode(nbt)
+        }
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        private fun loadNode(nbt: NBTTagCompound): Unit {
+            getGridNode(AEPartLocation.INTERNAL)?.loadFromNBT(Settings.namespace + "ae2power", nbt)
+        }
+
+        private fun setWorld(worldIn: World?) {
+            if (tile.world == worldIn)
+                return
+            if (worldIn != null && tile.isServer && tile.useAppliedEnergistics2Power())
+                requestGridNodeStateUpdate()
+        }
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        override fun writeToNBTForServer(nbt: NBTTagCompound) {
+            if (tile.useAppliedEnergistics2Power())
+                saveNode(nbt)
+        }
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        private fun saveNode(nbt: NBTTagCompound): Unit {
+            getGridNode(AEPartLocation.INTERNAL)?.saveToNBT(Settings.namespace + "ae2power", nbt)
+        }
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        internal fun getGridNode(side: AEPartLocation): IGridNode? {
+            if (node != null) return node
+            if (tile.isServer) {
+                node = AEApi.instance().grid().createGridNode(AppliedEnergistics2GridBlock(this))
+                return node
+            }
+            return null
+        }
+
+        @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
+        fun securityBreak() {
+            getGridNode(AEPartLocation.INTERNAL)?.destroy()
+        }
     }
 
     // ----------------------------------------------------------------------- //
 
-    fun readAE2FromNBTForServer(nbt: NBTTagCompound) {
-        if (useAppliedEnergistics2Power()) loadAE2Node(nbt)
-    }
-
     @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-    private fun loadAE2Node(nbt: NBTTagCompound) {
-        getGridNode(AEPartLocation.INTERNAL)?.loadFromNBT(Settings.namespace + "ae2power", nbt)
-    }
-
-    fun setWorldAE2(worldIn: World?) {
-        if (worldIn != null && isServer && useAppliedEnergistics2Power()) {
-            requestGridNodeStateUpdate()
-        }
-    }
-
-    fun writeAE2ToNBTForServer(nbt: NBTTagCompound) {
-        if (useAppliedEnergistics2Power()) saveAE2Node(nbt)
-    }
-
-    @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-    private fun saveAE2Node(nbt: NBTTagCompound) {
-        getGridNode(AEPartLocation.INTERNAL)?.saveToNBT(Settings.namespace + "ae2power", nbt)
-    }
-
-    // ----------------------------------------------------------------------- //
-
-    @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-    override fun getGridNode(side: AEPartLocation): IGridNode? {
-        if (ae2GridNode != null) return ae2GridNode
-        if (isServer) {
-            ae2GridNode = AEApi.instance().grid().createGridNode(AppliedEnergistics2GridBlock(this))
-            return ae2GridNode
-        }
-        return null
-    }
+    override fun getGridNode(side: AEPartLocation): IGridNode? = ae2Delegate.getGridNode(side)
 
     @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
     override fun getCableConnectionType(side: AEPartLocation): AECableType = AECableType.SMART
 
     @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-    override fun securityBreak() {
-        getGridNode(AEPartLocation.INTERNAL)?.destroy()
-    }
+    override fun securityBreak() = ae2Delegate.securityBreak()
 }
 
 class AppliedEnergistics2GridBlock(private val tileEntity: AppliedEnergistics2) : IGridBlock {

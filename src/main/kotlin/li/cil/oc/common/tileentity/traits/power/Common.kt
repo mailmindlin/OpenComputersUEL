@@ -2,25 +2,23 @@ package li.cil.oc.common.tileentity.traits.power
 
 import li.cil.oc.Settings
 import li.cil.oc.api.network.Connector
-import li.cil.oc.common.tileentity.traits.TileEntity
+import li.cil.oc.common.tileentity.traits.TileEntityTrait
+import li.cil.oc.common.tileentity.traits.isClient
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-interface Common {
-    val isClient: Boolean
-    val isServer: Boolean
-
+interface Common: TileEntityTrait {
     @SideOnly(Side.CLIENT)
-    fun hasConnector(side: EnumFacing): Boolean = false
+    fun hasConnector(side: EnumFacing?): Boolean = false
 
-    fun connector(side: EnumFacing): Connector? = null
+    fun connector(side: EnumFacing?): Connector? = null
 
     // ----------------------------------------------------------------------- //
 
     val energyThroughput: Double
 
-    fun tryAllSides(provider: (Double, EnumFacing) -> Double, fromOther: (Double) -> Double, toOther: (Double) -> Double) {
+    fun tryAllSides(fromOther: (Double) -> Double, toOther: (Double) -> Double, provider: (Double, EnumFacing) -> Double) {
         // We make sure to only call this every `Settings.get.tickFrequency` ticks,
         // but our throughput is per tick, so multiply this up for actual budget.
         var budget = energyThroughput * Settings.get.tickFrequency
@@ -37,7 +35,7 @@ interface Common {
 
     // ----------------------------------------------------------------------- //
 
-    fun canConnectPower(side: EnumFacing): Boolean =
+    fun canConnectPower(side: EnumFacing?): Boolean =
         !Settings.get.ignorePower && (if (isClient) hasConnector(side) else connector(side) != null)
 
     /**
@@ -48,7 +46,7 @@ interface Common {
      * @param doReceive whether to actually inject energy or only simulate it.
      * @return the amount of energy that was actually injected.
      */
-    fun tryChangeBuffer(side: EnumFacing, amount: Double, doReceive: Boolean = true): Double {
+    fun tryChangeBuffer(side: EnumFacing?, amount: Double, doReceive: Boolean = true): Double {
         if (isClient || Settings.get.ignorePower) return 0.0
         val node = connector(side)
         return if (node != null) {
@@ -58,17 +56,17 @@ interface Common {
         } else 0.0
     }
 
-    fun globalBuffer(side: EnumFacing): Double {
+    fun globalBuffer(side: EnumFacing?): Double {
         if (isClient) return 0.0
         val node = connector(side)
         return node?.globalBuffer() ?: 0.0
     }
 
-    fun globalBufferSize(side: EnumFacing): Double {
+    fun globalBufferSize(side: EnumFacing?): Double {
         if (isClient) return 0.0
         val node = connector(side)
         return node?.globalBufferSize() ?: 0.0
     }
 
-    fun globalDemand(side: EnumFacing): Double = maxOf(0.0, minOf(energyThroughput, globalBufferSize(side) - globalBuffer(side)))
+    fun globalDemand(side: EnumFacing?): Double = maxOf(0.0, minOf(energyThroughput, globalBufferSize(side) - globalBuffer(side)))
 }
