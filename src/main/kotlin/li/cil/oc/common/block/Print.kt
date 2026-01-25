@@ -5,6 +5,7 @@ import li.cil.oc.Settings
 import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.block.traits.CustomDrops
 import li.cil.oc.common.item.data.PrintData
+import li.cil.oc.common.tileentity.traits.position
 import li.cil.oc.common.tileentity.Print as TEPrint
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.util.InventoryUtils

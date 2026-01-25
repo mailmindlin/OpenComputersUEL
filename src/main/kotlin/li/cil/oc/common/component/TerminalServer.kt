@@ -29,6 +29,9 @@ import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.Terminal
 import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.util.setNewCompoundTag
+import li.cil.oc.util.setNewStringList
+import li.cil.oc.util.setNewTagList
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -38,8 +41,8 @@ import net.minecraft.util.EnumHand
 import net.minecraftforge.common.util.Constants.NBT
 
 class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfoKt {
-
-    override val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
+    val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
+    override fun node(): Node = node
 
     val buffer: InternalTextBuffer by lazy {
         val screenItem = ApiItems.get(Constants.BlockName.ScreenTier1).createItemStack(1)
@@ -144,7 +147,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
         if (node.address() == null) ApiNetwork.joinNewNetwork(node)
 
         val nbt = NBTTagCompound()
-        nbt.extendedNBT().setNewTagList("keys", keys)
+        nbt.setNewStringList("keys", keys)
         nbt.setString("terminalAddress", node.address())
         return nbt
     }
@@ -199,9 +202,9 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
 
     override fun save(nbt: NBTTagCompound) {
         node.save(nbt)
-        nbt.extendedNBT().setNewCompoundTag(BufferTag) { buffer.save(it) }
-        nbt.extendedNBT().setNewCompoundTag(KeyboardTag) { keyboard.save(it) }
-        nbt.extendedNBT().setNewTagList(KeysTag, keys)
+        nbt.setNewCompoundTag(BufferTag) { buffer.save(it) }
+        nbt.setNewCompoundTag(KeyboardTag) { keyboard.save(it) }
+        nbt.setNewStringList(KeysTag, keys)
     }
 
     // ----------------------------------------------------------------------- //

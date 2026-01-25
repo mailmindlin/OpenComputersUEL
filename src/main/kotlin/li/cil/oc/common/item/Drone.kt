@@ -7,6 +7,7 @@ import li.cil.oc.client.renderer.block.DroneModel
 import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.common.item.data.DroneData
 import li.cil.oc.integration.util.ItemBlacklist
+import li.cil.oc.server.agent.Player
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.Rarity
 import net.minecraft.client.renderer.block.model.ModelResourceLocation
@@ -50,7 +51,7 @@ class Drone(parent: Delegator) : AbstractDelegate(parent), CustomModel {
         if (!world.isRemote) {
             val drone = EntityDrone(world)
             when (player) {
-                is agent.Player -> {
+                is Player -> {
                     drone.ownerName = player.agent.ownerName()
                     drone.ownerUUID = player.agent.ownerUUID()
                 }
@@ -59,7 +60,11 @@ class Drone(parent: Delegator) : AbstractDelegate(parent), CustomModel {
                     drone.ownerUUID = player.gameProfile.id
                 }
             }
-            drone.initializeAfterPlacement(stack, player, position.offset(hitX * 1.1f, hitY * 1.1f, hitZ * 1.1f))
+            drone.initializeAfterPlacement(
+                stack,
+                player,
+                position.offset((hitX * 1.1f).toDouble(), (hitY * 1.1f).toDouble(), (hitZ * 1.1f).toDouble())
+            )
             world.spawnEntity(drone)
         }
         stack.shrink(1)

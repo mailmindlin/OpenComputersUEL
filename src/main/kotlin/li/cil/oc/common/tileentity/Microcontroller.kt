@@ -82,14 +82,14 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         DeviceAttribute.Capacity to sizeInventory.toString()
     )
 
-    private inline val facing: EnumFacing get() = facing()
+    private inline val facing: EnumFacing get() = facing()!!
 
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
     override fun canConnect(side: EnumFacing): Boolean = side != facing
 
-    override fun sidedNode(side: EnumFacing): Node? = if (side != facing) super.sidedNode(side) else null
+    override fun sidedNode(side: EnumFacing?): Node? = if (side != facing) super.sidedNode(side) else null
 
     @SideOnly(Side.CLIENT)
     override fun hasConnector(side: EnumFacing?): Boolean = side != facing
@@ -105,7 +105,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         return if (side != facing)
             arrayOf(componentNodes[side.index])
         else
-            arrayOf(machine.node())
+            arrayOf(machine!!.node())
     }
 
     // ----------------------------------------------------------------------- //
@@ -119,22 +119,22 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     @Suppress("unused_parameter")
     @Callback(doc = """function():boolean -- Starts the microcontroller. Returns true if the state changed.""")
     fun start(context: Context, args: Arguments): Array<Any?> =
-        result(!machine.isPaused && machine.start())
+        result(!machine!!.isPaused && machine!!.start())
 
     @Suppress("unused_parameter")
     @Callback(doc = """function():boolean -- Stops the microcontroller. Returns true if the state changed.""")
     fun stop(context: Context, args: Arguments): Array<Any?> =
-        result(machine.stop())
+        result(machine!!.stop())
 
     @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function():boolean -- Returns whether the microcontroller is running.""")
     fun isRunning(context: Context, args: Arguments): Array<Any?> =
-        result(machine.isRunning)
+        result(machine!!.isRunning)
 
-    @Suppress("unused_parameter")
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():string -- Returns the reason the microcontroller crashed, if applicable.""")
     fun lastError(context: Context, args: Arguments): Array<Any?> =
-        result(machine.lastError())
+        result(machine!!.lastError())
 
     @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function(side:number):boolean -- Get whether network messages are sent via the specified side.""")
@@ -175,7 +175,8 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     // ----------------------------------------------------------------------- //
 
     override fun connectItemNode(node: Node) {
-        if (machine != null && machine.node() != null && node != null) {
+        val machine = machine
+        if (machine?.node() != null && node != null) {
             ApiNetwork.joinNewNetwork(machine.node())
             machine.node().connect(node)
         }
@@ -203,7 +204,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     override fun onPlugDisconnect(plug: Hub.Plug, node: Node) {
         super.onPlugDisconnect(plug, node)
         if (plug.isPrimary && node != plug.node)
-            plug.node.connect(componentNodes[plug.side.ordinal])
+            plug.node!!.connect(componentNodes[plug.side.ordinal])
         else
             componentNodes[plug.side.ordinal].remove()
         if (node == plug.node)
@@ -247,7 +248,8 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         }
         snooperNode.load(nbt.getCompoundTag(SnooperTag))
         super.readFromNBTForServer(nbt)
-        ApiNetwork.joinNewNetwork(machine.node())
+        val machine = machine
+        ApiNetwork.joinNewNetwork(machine!!.node())
         machine.node().connect(snooperNode)
     }
 
@@ -303,16 +305,16 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     override fun getSlotsForFace(side: EnumFacing): IntArray = intArrayOf()
 
     // For hotswapping EEPROMs.
-    fun changeEEPROM(newEeprom: ItemStack): StackOption {
+    fun changeEEPROM(newEeprom: ItemStack): ItemStack? {
         val oldEepromIndex = info.components.indexOfFirst { ApiItems.get(it) == ApiItems.get(Constants.ItemName.EEPROM) }
         return if (oldEepromIndex >= 0) {
             val oldEeprom = info.components[oldEepromIndex]
             super.setInventorySlotContents(oldEepromIndex, newEeprom)
-            SomeStack(oldEeprom)
+            oldEeprom
         } else {
             assert(info.components[sizeInventory - 1].isEmpty)
             super.setInventorySlotContents(sizeInventory - 1, newEeprom)
-            EmptyStack
+            null
         }
     }
 }

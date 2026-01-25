@@ -57,13 +57,13 @@ class LuaClosure(val f: (Varargs) -> Varargs) : VarArgFunction() {
 
         @JvmStatic
         fun toLuaList(value: Iterable<*>): LuaValue {
-            return LuaValue.listOf(value.map { toLuaValue(it) }.toTypedArray())
+            return LuaValue.listOf(value.map { it.toLuaValue() }.toTypedArray())
         }
 
         @JvmStatic
         fun toLuaTable(value: Map<*, *>): LuaValue {
             return LuaValue.tableOf(value.flatMap { (k, v) ->
-                listOf(toLuaValue(k), toLuaValue(v))
+                listOf(k.toLuaValue(), v.toLuaValue())
             }.toTypedArray())
         }
 

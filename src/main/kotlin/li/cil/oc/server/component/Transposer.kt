@@ -56,7 +56,7 @@ object Transposer {
         }
     }
 
-    sealed class Upgrade(val host: EnvironmentHost) : Common() {
+    class Upgrade(val host: EnvironmentHost) : Common() {
         init {
             node.setVisibility(Visibility.Neighbors)
         }

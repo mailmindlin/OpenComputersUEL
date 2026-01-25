@@ -11,18 +11,10 @@ import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
-import li.cil.oc.common.inventory.ComponentInventory
-import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
-import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.OpenSides
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
-import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
-import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
-import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
-import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.server.component.DeviceInfoKt
-import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.internal.Adapter as InternalAdapter
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.SoundEvents
 import net.minecraft.item.ItemStack
@@ -31,6 +23,13 @@ import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
 import net.minecraft.util.text.ITextComponent
+import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.api.internal.Adapter as InternalAdapter
+import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
+import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
+import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
+import li.cil.oc.server.PacketSender as ServerPacketSender
 import net.minecraftforge.common.util.Constants as NBTConstants
 
 class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfoKt {
@@ -94,7 +93,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
     }
 
     fun neighborChanged(d: EnumFacing) {
-        if (node != null && node.network() != null) {
+        if (node?.network() != null) {
             val blockPos = pos.offset(d)
             when (world.getTileEntity(blockPos)) {
                 is TraitEnvironment -> {
@@ -165,7 +164,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
     }
 
     fun neighborChanged() {
-        if (node != null && node.network() != null) {
+        if (node?.network() != null) {
             for (d in EnumFacing.values()) {
                 neighborChanged(d)
             }
@@ -209,7 +208,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
+        super.readFromNBTForServer(nbt)
 
         val blocksNbt = nbt.getTagList(BlocksTag, NBTConstants.NBT.TAG_COMPOUND)
         for (i in 0 until minOf(blocksNbt.tagCount(), blocksData.size)) {
@@ -221,7 +220,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
+        super.writeToNBTForServer(nbt)
 
         val blocksNbt = NBTTagList()
         for (i in blocks.indices) {

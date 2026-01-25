@@ -9,8 +9,7 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.block.SimpleBlock
 import li.cil.oc.common.tileentity.*
 import li.cil.oc.common.tileentity.traits.NotAnalyzable
-import li.cil.oc.util.ExtendedNBT.setNewTagList
-import li.cil.oc.util.StackOption.SomeStack
+import li.cil.oc.util.setNewTagList
 import mcp.mobius.waila.api.*
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
@@ -105,9 +104,7 @@ object BlockDataProvider : IWailaDataProvider {
                 if (tileEntity.isAssembling) {
                     tag.setDouble("progress", tileEntity.progress)
                     tag.setInteger("timeRemaining", tileEntity.timeRemaining)
-                    when (val output = tileEntity.output) {
-                        is SomeStack -> tag.setString("output", output.stack.translationKey)
-                    }
+                    tileEntity.output?.let { tag.setString("output", it.translationKey) }
                 }
             }
             is Charger -> {

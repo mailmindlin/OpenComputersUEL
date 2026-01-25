@@ -233,6 +233,9 @@ fun NBTTagCompound.setNewTagList(name: String, values: Iterable<NBTBase>): NBTTa
 fun NBTTagCompound.setNewTagList(name: String, vararg values: NBTBase): NBTTagCompound =
     setNewTagList(name, values.toList())
 
+fun NBTTagCompound.setNewStringList(name: String, values: Iterable<String>): NBTTagCompound
+     = setNewTagList(name, values.map { it.toNbt() })
+
 fun NBTTagCompound.getDirection(name: String): EnumFacing? {
     val id = getByte(name).toInt()
     return if (id < 0 || id > EnumFacing.values().size) null

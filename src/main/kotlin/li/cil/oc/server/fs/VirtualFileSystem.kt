@@ -104,7 +104,7 @@ interface VirtualFileSystem : OutputStreamFileSystem {
         val obj = root.get(segments(path))
         return if (obj is VirtualFile) {
             val stream = obj.openInputStream()
-            if (stream != null) InputStreamChannel(stream) else null
+            if (stream != null) InputStreamFileSystem.InputStreamChannel(stream) else null
         } else {
             null
         }

@@ -5,22 +5,22 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
-import li.cil.oc.util.ExtendedArguments.optFluidCount
 import li.cil.oc.util.FluidUtils
+import li.cil.oc.util.optFluidCount
 import net.minecraft.item.ItemStack
 import net.minecraftforge.fluids.FluidStack
 
 interface TankInventoryControl : WorldAware, InventoryAware, TankAware {
     @Callback(doc = """function([slot:number]):number -- Get the amount of fluid in the tank item in the specified slot or the selected slot.""")
     fun getTankLevelInSlot(context: Context, args: Arguments): Array<Any?> {
-        return withFluidInfo(optSlot(args, 0)) { fluid, _ ->
+        return withFluidInfo(args.optSlot(0)) { fluid, _ ->
             result(fluid?.amount ?: 0)
         }
     }
 
     @Callback(doc = """function([slot:number]):number -- Get the capacity of the tank item in the specified slot of the robot or the selected slot.""")
     fun getTankCapacityInSlot(context: Context, args: Arguments): Array<Any?> {
-        return withFluidInfo(optSlot(args, 0)) { _, capacity ->
+        return withFluidInfo(args.optSlot(0)) { _, capacity ->
             result(capacity)
         }
     }
@@ -28,7 +28,7 @@ interface TankInventoryControl : WorldAware, InventoryAware, TankAware {
     @Callback(doc = """function([slot:number]):table -- Get a description of the fluid in the tank item in the specified slot or the selected slot.""")
     fun getFluidInTankInSlot(context: Context, args: Arguments): Array<Any?> {
         return if (Settings.get.allowItemStackInspection) {
-            withFluidInfo(optSlot(args, 0)) { fluid, _ ->
+            withFluidInfo(args.optSlot(0)) { fluid, _ ->
                 result(fluid)
             }
         } else {

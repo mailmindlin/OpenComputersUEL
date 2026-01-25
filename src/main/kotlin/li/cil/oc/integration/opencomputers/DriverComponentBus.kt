@@ -31,7 +31,7 @@ object DriverComponentBus : Item(), Processor {
 
   override fun supportedComponents(stack: ItemStack): Int =
     when (val item = Delegator.subItem(stack)) {
-      is ItemComponentBus -> Settings.get.cpuComponentSupport(item.tier)
+      is ItemComponentBus -> Settings.get.cpuComponentSupport[item.tier]
       else -> Tier.One
     }
 

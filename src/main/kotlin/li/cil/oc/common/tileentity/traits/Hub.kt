@@ -9,6 +9,7 @@ import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.network.Environment
 import li.cil.oc.common.tileentity.behaviors.Behavior
+import li.cil.oc.common.tileentity.behaviors.BehaviorUpdate
 import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.util.*
 import net.minecraft.nbt.NBTTagCompound
@@ -29,7 +30,13 @@ interface Hub : Environment, SidedEnvironment, Tickable {
             plug.node.network() != null
         }
 
-    class Delegate(val tile: Hub): Behavior, NbtSeriailzable {
+    val relayDelay: Int get() = hubDelegate.relayDelay
+    val relayAmount: Int get() = hubDelegate.relayAmount
+    val maxQueueSize: Int get() = hubDelegate.maxQueueSize
+    val packetsPerCycleAvg: Int get() = hubDelegate.packetsPerCycleAvg()
+    val queueSize: Int get() = hubDelegate.queue.size
+
+    class Delegate(val tile: Hub): Behavior, NbtSeriailzable, BehaviorUpdate {
         val queue: ArrayDeque<Pair<EnumFacing?, Packet>> = ArrayDeque()
         var maxQueueSize = tile.queueBaseSize
         var relayDelay = tile.relayBaseDelay
@@ -42,7 +49,30 @@ interface Hub : Environment, SidedEnvironment, Tickable {
 
         internal val plugs: SidedArray<Plug> = SidedArray { side -> createPlug(side) }
 
-        protected open fun createPlug(side: EnumFacing): Plug = Plug(side)
+        private fun createPlug(side: EnumFacing) = Plug(tile, side)
+
+        override fun update() {
+            if (relayCooldown > 0) {
+                relayCooldown -= 1
+            } else {
+                relayCooldown = -1
+                if (queue.isNotEmpty()) {
+                    synchronized(queue) {
+                        val packetsToRelay = minOf(queue.size, relayAmount)
+                        packetsPerCycleAvg.add(packetsToRelay)
+                        for (i in 0 until packetsToRelay) {
+                            val (sourceSide, packet) = queue.poll()
+                            tile.relayPacket(sourceSide, packet)
+                        }
+                        if (queue.isNotEmpty()) {
+                            relayCooldown = relayDelay - 1
+                        }
+                    }
+                } else if (tile.world != null && tile.world!!.totalWorldTime % relayDelay == 0L) {
+                    packetsPerCycleAvg.add(0)
+                }
+            }
+        }
 
         override fun readFromNBTForServer(nbt: NBTTagCompound) {
             super.readFromNBTForServer(nbt)
@@ -106,36 +136,13 @@ interface Hub : Environment, SidedEnvironment, Tickable {
 
     // ----------------------------------------------------------------------- //
 
-    override fun updateEntity() {
-        super.updateEntity()
-        if (relayCooldown > 0) {
-            relayCooldown -= 1
-        } else {
-            relayCooldown = -1
-            if (queue.isNotEmpty()) {
-                synchronized(queue) {
-                    val packetsToRelay = minOf(queue.size, relayAmount)
-                    packetsPerCycleAvg.add(packetsToRelay.toDouble())
-                    for (i in 0 until packetsToRelay) {
-                        val (sourceSide, packet) = queue.poll()
-                        relayPacket(sourceSide, packet)
-                    }
-                    if (queue.isNotEmpty()) {
-                        relayCooldown = relayDelay - 1
-                    }
-                }
-            } else if (getWorld().totalWorldTime % relayDelay == 0L) {
-                packetsPerCycleAvg.add(0.0)
-            }
-        }
-    }
-
     fun tryEnqueuePacket(sourceSide: EnumFacing?, packet: Packet): Boolean {
-        synchronized(queue) {
-            if (packet.ttl() > 0 && queue.size < maxQueueSize) {
-                queue.add(Pair(sourceSide, packet.hop()))
-                if (relayCooldown < 0) {
-                    relayCooldown = relayDelay - 1
+        val delegate = hubDelegate
+        synchronized(delegate.queue) {
+            if (packet.ttl() > 0 && delegate.queue.size < delegate.maxQueueSize) {
+                delegate.queue.add(Pair(sourceSide, packet.hop()))
+                if (delegate.relayCooldown < 0) {
+                    delegate.relayCooldown = delegate.relayDelay - 1
                 }
                 return true
             }
@@ -143,7 +150,7 @@ interface Hub : Environment, SidedEnvironment, Tickable {
         }
     }
 
-    protected open fun relayPacket(sourceSide: EnumFacing?, packet: Packet) {
+    fun relayPacket(sourceSide: EnumFacing?, packet: Packet) {
         for (side in EnumFacing.values()) {
             if (sourceSide == null || sourceSide != side) {
                 val node = sidedNode(side)
@@ -165,37 +172,38 @@ interface Hub : Environment, SidedEnvironment, Tickable {
 
     // ----------------------------------------------------------------------- //
 
-    open inner class Plug(val side: EnumFacing) : Environment {
-        val node: Node? = createNode(this)
+    open class Plug(val hub: Hub, val side: EnumFacing) : Environment {
+        val node: Node? = hub.createNode(this)
 
         override fun node(): Node? = node
 
         override fun onMessage(message: Message) {
             if (isPrimary) {
-                onPlugMessage(this, message)
+                hub.onPlugMessage(this, message)
             }
         }
 
-        override fun onConnect(node: Node) = onPlugConnect(this, node)
+        override fun onConnect(node: Node) = hub.onPlugConnect(this, node)
 
-        override fun onDisconnect(node: Node) = onPlugDisconnect(this, node)
+        override fun onDisconnect(node: Node) = hub.onPlugDisconnect(this, node)
 
         val isPrimary: Boolean
             get() {
+                val plugs = hub.hubDelegate.plugs
                 val index = plugs.indexOfFirst { it.node?.network() == node?.network() }
                 return index >= 0 && plugs[index] == this
             }
 
         val plugsInOtherNetworks: List<Plug>
-            get() = plugs.filter { it.node?.network() != node?.network() }
+            get() = hub.hubDelegate.plugs.filter { it.node?.network() != node?.network() }
     }
 
-    protected open fun onPlugConnect(plug: Plug, node: Node) {}
+    fun onPlugConnect(plug: Plug, node: Node) {}
 
-    protected open fun onPlugDisconnect(plug: Plug, node: Node) {}
+    fun onPlugDisconnect(plug: Plug, node: Node) {}
 
-    protected open fun onPlugMessage(plug: Plug, message: Message) {
-        if (message.name() == "network.message" && plugs.none { it.node == message.source() }) {
+    fun onPlugMessage(plug: Plug, message: Message) {
+        if (message.name() == "network.message" && hubDelegate.plugs.none { it.node == message.source() }) {
             val data = message.data()
             if (data.isNotEmpty() && data[0] is Packet) {
                 tryEnqueuePacket(plug.side, data[0] as Packet)
@@ -203,5 +211,5 @@ interface Hub : Environment, SidedEnvironment, Tickable {
         }
     }
 
-    protected open fun createNode(plug: Plug): Node? = ApiNetwork.newNode(plug, Visibility.Network).create()
+    fun createNode(plug: Plug): Node? = ApiNetwork.newNode(plug, Visibility.Network).create()
 }

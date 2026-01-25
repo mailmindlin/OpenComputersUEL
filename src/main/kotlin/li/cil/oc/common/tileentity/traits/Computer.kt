@@ -12,6 +12,7 @@ import li.cil.oc.common.tileentity.RobotProxy
 import li.cil.oc.common.tileentity.TileEntityBase
 import li.cil.oc.common.tileentity.register
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
+import li.cil.oc.server.agent.Player
 import li.cil.oc.util.setNewCompoundTag
 import li.cil.oc.util.setNewTagList
 import li.cil.oc.server.PacketSender as ServerPacketSender
@@ -30,10 +31,10 @@ import java.util.EnumSet
  */
 abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, BundledRedstoneAware, Analyzable, MachineHost, StateAware, Tickable {
     private val _machine: Machine? by lazy { if (isServer) ApiMachine.create(this) else null }
+    open val machine: Machine? get() = _machine
 
     override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
 
-    open val machine: Machine? get() = _machine
 
     override fun node(): Node? = if (isServer) machine?.node() else null
 
@@ -151,12 +152,12 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
         // God, this is so ugly... will need to rework the robot architecture.
         // This is required for loading auxiliary data (kernel state), because the
         // coordinates in the actual robot won't be set properly, otherwise.
         if (this is RobotProxy) {
-            (this as RobotProxy).robot.setPos(pos)
+            this.robot.setPos(pos)
         }
         machine?.load(nbt.getCompoundTag(ComputerTag))
 
@@ -208,7 +209,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
 
     override fun isUsableByPlayer(player: EntityPlayer): Boolean =
         super.isUsableByPlayer(player) && when (player) {
-            is agent.Player -> canInteract(player.agent.ownerName())
+            is Player -> canInteract(player.agent.ownerName())
             else -> canInteract(player.name)
         }
 

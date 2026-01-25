@@ -8,6 +8,8 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.network.ComponentConnector
+import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.checkSideAny
@@ -23,6 +25,7 @@ class Drone(override val agent: EntityDrone): Agent(), DeviceInfoKt {
     withComponent("drone").
     withConnector(Settings.get.bufferDrone).
     create()
+  override fun node(): ComponentConnector = node
 
   override val deviceInfo = mapOf(
     DeviceAttribute.Class to DeviceClass.System,

@@ -41,15 +41,14 @@ class Inventory(playerEntity: EntityPlayer, val agent: Agent) : InventoryPlayer(
     }
 
     override fun addItemStackToInventory(stack: ItemStack): Boolean {
-        val slots = this.indices().drop(agent.selectedSlot()) + this.indices().take(agent.selectedSlot())
-        return InventoryUtils.insertIntoInventory(stack, InventoryUtils.asItemHandler(this), slots)
+        return InventoryUtils.insertIntoInventory(stack, InventoryUtils.asItemHandler(this), slots = inventorySlots)
     }
 
     override fun canHarvestBlock(state: IBlockState): Boolean =
-        state.material.isToolNotRequired || (!currentItem.isEmpty() && currentItem.canHarvestBlock(state))
+        state.material.isToolNotRequired || (!getCurrentItem().isEmpty() && getCurrentItem().canHarvestBlock(state))
 
     override fun getDestroySpeed(state: IBlockState): Float =
-        if (currentItem.isEmpty()) 1f else currentItem.getDestroySpeed(state)
+        if (getCurrentItem().isEmpty) 1f else getCurrentItem().getDestroySpeed(state)
 
     override fun writeToNBT(nbt: NBTTagList): NBTTagList = nbt
 

@@ -4,8 +4,8 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
-import li.cil.oc.util.ExtendedArguments.checkTank
-import li.cil.oc.util.ExtendedArguments.optFluidCount
+import li.cil.oc.util.checkTank
+import li.cil.oc.util.optFluidCount
 
 interface TankControl : TankAware {
     @Callback(doc = "function():number -- The number of tanks installed in the device.")

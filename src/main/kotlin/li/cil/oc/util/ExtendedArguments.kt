@@ -54,8 +54,8 @@ fun Arguments.checkTankProperties(handler: IFluidHandler, n: Int): IFluidTankPro
     return tankInfo[tank]
 }
 
-fun Arguments.optTankProperties(handler: IFluidHandler, n: Int, default: IFluidTankProperties): IFluidTankProperties =
-    if (!isDefined(n)) default
+fun Arguments.optTankProperties(handler: IFluidHandler, n: Int): IFluidTankProperties? =
+    if (!isDefined(n)) null
     else checkTankProperties(handler, n)
 
 /** Get the argument at `index` as a side */

@@ -28,8 +28,8 @@ class Relay(playerInventory: InventoryPlayer, val relay: TERelay) : Player<TERel
         synchronizedData.setInteger("relayDelay", relay.relayDelay)
         synchronizedData.setInteger("relayAmount", relay.relayAmount)
         synchronizedData.setInteger("maxQueueSize", relay.maxQueueSize)
-        synchronizedData.setInteger("packetsPerCycleAvg", relay.packetsPerCycleAvg())
-        synchronizedData.setInteger("queueSize", relay.queue.size)
+        synchronizedData.setInteger("packetsPerCycleAvg", relay.packetsPerCycleAvg)
+        synchronizedData.setInteger("queueSize", relay.queueSize)
         super.detectCustomDataChanges(nbt)
     }
 }

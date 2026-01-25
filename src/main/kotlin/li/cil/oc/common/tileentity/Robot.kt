@@ -26,6 +26,7 @@ import li.cil.oc.common.inventory.TankSelection
 import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.traits.Computer
 import li.cil.oc.common.tileentity.traits.PowerInformation
+import li.cil.oc.common.tileentity.traits.isClient
 import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.integration.opencomputers.DriverKeyboard
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
@@ -37,6 +38,7 @@ import li.cil.oc.server.component.Robot as RobotComponent
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.block.Block
 import net.minecraft.block.BlockLiquid
 import net.minecraft.client.Minecraft
@@ -375,12 +377,12 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         if (isServer) {
             if (Settings.get.isTickMultiple(world)) {
                 if (info.tier == 3) {
-                    bot!!.node().changeBuffer(Double.POSITIVE_INFINITY)
+                    bot!!.node.changeBuffer(Double.POSITIVE_INFINITY)
                 }
-                globalBuffer = bot!!.node().globalBuffer()
-                globalBufferSize = bot.node().globalBufferSize()
+                globalBuffer = bot!!.node.globalBuffer()
+                globalBufferSize = bot.node.globalBufferSize()
                 info.totalEnergy = globalBuffer.toInt()
-                info.robotEnergy = bot.node().localBuffer().toInt()
+                info.robotEnergy = bot.node.localBuffer().toInt()
                 powerDelegate.updatePowerInformation()
             }
             if (!appliedToolEnchantments) {
@@ -391,7 +393,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
                 }
             }
         } else if (isRunning && isAnimatingMove) {
-            client.Sound.updatePosition(this)
+            li.cil.oc.client.Sound.updatePosition(this)
         }
 
         for (slot in 0 until equipmentInventory.sizeInventory + mainInventory.sizeInventory) {

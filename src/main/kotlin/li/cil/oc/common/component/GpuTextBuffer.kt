@@ -1,12 +1,13 @@
 package li.cil.oc.common.component
 
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 import java.io.InvalidObjectException
 
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
-import li.cil.oc.api.internal.TextBuffer
+import li.cil.oc.common.component.TextBuffer as ComponentTextBuffer
 import li.cil.oc.api.internal.TextBuffer.ColorDepth
 import li.cil.oc.common.component.traits.TextBufferProxy
 import li.cil.oc.common.component.traits.VideoRamRasterizer
@@ -76,7 +77,7 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
         fun wrap(owner: String, id: Int, data: UtilTextBuffer): GpuTextBuffer = GpuTextBuffer(owner, id, data)
 
         @JvmStatic
-        fun bitblt(dst: TextBuffer, col: Int, row: Int, w: Int, h: Int, src: TextBuffer, fromCol: Int, fromRow: Int) {
+        fun bitblt(dst: InternalTextBuffer, col: Int, row: Int, w: Int, h: Int, src: InternalTextBuffer, fromCol: Int, fromRow: Int) {
             val x = col - 1
             val y = row - 1
             val fx = fromCol - 1
@@ -124,7 +125,7 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
             }
 
             when (dst) {
-                is TextBuffer -> when (src) {
+                is ComponentTextBuffer -> when (src) {
                     is GpuTextBuffer -> writeVramToScreen(dst, adjustedDstX, adjustedDstY, adjustedWidth, adjustedHeight, src, adjustedSourceX, adjustedSourceY)
                     else -> throw UnsupportedOperationException("Source buffer does not support bitblt operations to a screen")
                 }
@@ -137,7 +138,7 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
         }
 
         @JvmStatic
-        fun writeVramToScreen(dstScreen: TextBuffer, x: Int, y: Int, w: Int, h: Int, srcRam: GpuTextBuffer, fx: Int, fy: Int): Boolean {
+        fun writeVramToScreen(dstScreen: ComponentTextBuffer, x: Int, y: Int, w: Int, h: Int, srcRam: GpuTextBuffer, fx: Int, fy: Int): Boolean {
             if (dstScreen.data.rawcopy(x + 1, y + 1, w, h, srcRam.data, fx + 1, fy + 1)) {
                 // rawcopy returns true only if data was modified
                 dstScreen.addBuffer(srcRam)
@@ -160,7 +161,7 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
 
 object ClientGpuTextBufferHandler {
     @JvmStatic
-    fun bitblt(dst: TextBuffer, col: Int, row: Int, w: Int, h: Int, owner: String, srcId: Int, fromCol: Int, fromRow: Int) {
+    fun bitblt(dst: InternalTextBuffer, col: Int, row: Int, w: Int, h: Int, owner: String, srcId: Int, fromCol: Int, fromRow: Int) {
         if (dst is VideoRamRasterizer) {
             val buffer = dst.getBuffer(owner, srcId)
             if (buffer != null) {
@@ -172,7 +173,7 @@ object ClientGpuTextBufferHandler {
     }
 
     @JvmStatic
-    fun removeBuffer(buffer: TextBuffer, owner: String, id: Int): Boolean {
+    fun removeBuffer(buffer: InternalTextBuffer, owner: String, id: Int): Boolean {
         return if (buffer is VideoRamRasterizer) {
             buffer.removeBuffer(owner, id)
         } else {
@@ -181,7 +182,7 @@ object ClientGpuTextBufferHandler {
     }
 
     @JvmStatic
-    fun loadBuffer(buffer: TextBuffer, owner: String, id: Int, nbt: NBTTagCompound): Boolean {
+    fun loadBuffer(buffer: InternalTextBuffer, owner: String, id: Int, nbt: NBTTagCompound): Boolean {
         return if (buffer is VideoRamRasterizer) {
             buffer.loadBuffer(owner, id, nbt)
         } else {

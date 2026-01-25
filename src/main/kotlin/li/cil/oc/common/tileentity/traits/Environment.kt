@@ -3,6 +3,10 @@ package li.cil.oc.common.tileentity.traits
 import li.cil.oc.Settings
 import li.cil.oc.api.network.*
 import li.cil.oc.common.EventHandler
+import li.cil.oc.common.tileentity.behaviors.Behavior
+import li.cil.oc.common.tileentity.behaviors.BehaviorLifecycle
+import li.cil.oc.common.tileentity.behaviors.BehaviorUpdate
+import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -13,13 +17,13 @@ import li.cil.oc.api.network.Environment as ApiEnvironment
  * Provides network node lifecycle management and NBT serialization.
  */
 interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
-    var isChangeScheduled: Boolean
-
     /**
      * Returns the network node for this environment.
      * Subclasses must implement this to provide their node.
      */
-    abstract override fun node(): Node?
+    override fun node(): Node?
+
+    val environmentDelegate: Delegate
 
     // ----------------------------------------------------------------------- //
     // EnvironmentHost implementation
@@ -35,7 +39,7 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
 
     override fun markChanged() {
         if (this is Tickable) {
-            isChangeScheduled = true
+            environmentDelegate.isChangeScheduled = true
         } else {
             world?.markChunkDirty(pos, this.asTileEntity())
         }
@@ -55,49 +59,52 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
     // Lifecycle
     // ----------------------------------------------------------------------- //
 
-    fun initialize() {
-//        super.initialize()
-        if (isServer) {
-            EventHandler.scheduleServer(this.asTileEntity())
+    class Delegate(val tile: Environment): Behavior, BehaviorUpdate, BehaviorLifecycle, NbtSeriailzable {
+        var isChangeScheduled: Boolean = false
+        override fun initialize() {
+            super.initialize()
+            if (tile.isServer) {
+                EventHandler.scheduleServer(tile.asTileEntity())
+            }
         }
-    }
 
-    fun updateEntity() {
-//        super.updateEntity()
-        if (isChangeScheduled) {
-            world?.markChunkDirty(pos, this.asTileEntity())
-            isChangeScheduled = false
-        }
-    }
-
-    fun dispose() {
-        if (isServer) {
-            node()?.remove()
-            if (this is SidedEnvironment) {
-                for (side in EnumFacing.values()) {
-                    sidedNode(side)?.remove()
+        override fun dispose() {
+            if (tile.isServer) {
+                tile.node()?.remove()
+                if (tile is SidedEnvironment) {
+                    for (side in EnumFacing.values()) {
+                        tile.sidedNode(side)?.remove()
+                    }
                 }
             }
         }
-    }
 
-    // ----------------------------------------------------------------------- //
-    // NBT Serialization
-    // ----------------------------------------------------------------------- //
-
-    fun readFromNBTForServer(nbt: NBTTagCompound) {
-//        super.readFromNBTForServer(nbt)
-        val n = node()
-        if (n != null && n.host() == this) {
-            n.load(nbt.getCompoundTag(NodeTag))
+        override fun update() {
+            //        super.updateEntity()
+            if (isChangeScheduled) {
+                tile.world?.markChunkDirty(tile.pos, tile.asTileEntity())
+                isChangeScheduled = false
+            }
         }
-    }
 
-    fun writeToNBTForServer(nbt: NBTTagCompound) {
+        // ----------------------------------------------------------------------- //
+        // NBT Serialization
+        // ----------------------------------------------------------------------- //
+
+        override fun readFromNBTForServer(nbt: NBTTagCompound) {
+//        super.readFromNBTForServer(nbt)
+            val n = tile.node()
+            if (n != null && n.host() == tile) {
+                n.load(nbt.getCompoundTag(NodeTag))
+            }
+        }
+
+        override fun writeToNBTForServer(nbt: NBTTagCompound) {
 //        super.writeToNBTForServer(nbt)
-        val n = node()
-        if (n != null && n.host() == this) {
-            nbt.setNewCompoundTag(NodeTag) { n.save(it) }
+            val n = tile.node()
+            if (n != null && n.host() == tile) {
+                nbt.setNewCompoundTag(NodeTag) { n.save(it) }
+            }
         }
     }
 
@@ -106,7 +113,6 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
     // ----------------------------------------------------------------------- //
 
     override fun onMessage(message: Message) {}
-
     override fun onConnect(node: Node) {}
 
     override fun onDisconnect(node: Node) {
@@ -128,6 +134,6 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
 //    protected fun result(vararg args: Any?): Array<Any?> = ResultWrapper.result(*args)
 
     companion object {
-        private val NodeTag = Settings.namespace + "node"
+        private const val NodeTag = Settings.namespace + "node"
     }
 }

@@ -31,7 +31,7 @@ object UpgradeTankController {
         }
     }
 
-    sealed class Adapter(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldTankAnalytics, Common {
+    class Adapter(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldTankAnalytics, Common {
         override val node = Network.newNode(this, Visibility.Network)
             .withComponent("tank_controller", Visibility.Network)
             .create()
@@ -43,7 +43,7 @@ object UpgradeTankController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    sealed class Drone(val host: EnvironmentHost) : ManagedEnvironmentKt(), TankInventoryControl, WorldTankAnalytics, Common {
+    class Drone(val host: EnvironmentHost) : ManagedEnvironmentKt(), TankInventoryControl, WorldTankAnalytics, Common {
         private val agent: Agent
             get() = host as Agent
 
@@ -68,7 +68,7 @@ object UpgradeTankController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    sealed class Robot(val host: TERobot) : ManagedEnvironmentKt(), TankInventoryControl, WorldTankAnalytics, Common {
+    class Robot(val host: TERobot) : ManagedEnvironmentKt(), TankInventoryControl, WorldTankAnalytics, Common {
         override val node = Network.newNode(this, Visibility.Network)
             .withComponent("tank_controller", Visibility.Neighbors)
             .create()

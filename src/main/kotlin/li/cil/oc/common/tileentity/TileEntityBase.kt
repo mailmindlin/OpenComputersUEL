@@ -168,30 +168,6 @@ abstract class TileEntityBase : TileEntity(), TileEntityTrait {
     }
 
     abstract class TEEnvironmentBase: TileEntityBase(), Environment {
-        override var isChangeScheduled: Boolean = false
-        override fun initialize() {
-            super<TileEntityBase>.initialize()
-            super<Environment>.initialize()
-        }
-
-        override fun dispose() {
-            super<TileEntityBase>.dispose()
-            super<Environment>.dispose()
-        }
-
-        override fun updateEntity() {
-            super<TileEntityBase>.updateEntity()
-            super<Environment>.updateEntity()
-        }
-
-        override fun readFromNBTForServer(nbt: NBTTagCompound) {
-            super<TileEntityBase>.readFromNBTForServer(nbt)
-            super<Environment>.readFromNBTForServer(nbt)
-        }
-
-        override fun writeToNBTForServer(nbt: NBTTagCompound) {
-            super<TileEntityBase>.writeToNBTForServer(nbt)
-            super<Environment>.writeToNBTForServer(nbt)
-        }
+        override val environmentDelegate: Environment.Delegate = register(Environment::Delegate)
     }
 }

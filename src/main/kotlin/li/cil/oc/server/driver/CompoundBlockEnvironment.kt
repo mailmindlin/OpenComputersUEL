@@ -9,6 +9,7 @@ import li.cil.oc.api.network._
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Component
 import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.nbt.NBTTagCompound
 
 class CompoundBlockEnvironment(val name: String, val environments: List<Pair<String, ManagedEnvironment>>): ManagedEnvironment {
@@ -31,7 +32,7 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
   override fun canUpdate: Boolean = environments.exists(_._2.canUpdate)
 
   override fun update() {
-    for (environment <- updatingEnvironments) {
+    for (environment in updatingEnvironments) {
       environment.update()
     }
   }
@@ -76,7 +77,7 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
     node.save(nbt)
     for ((driver, environment) in environments) {
       try {
-        nbt.setNewCompoundTag(driver, environment.save())
+        nbt.setNewCompoundTag(driver, environment::save)
       } catch (e: Exception) {
         OpenComputers.log.warn("A block component of type '${environment.javaClass.name}' (provided by driver '$driver') threw an error while saving.", e)
       }

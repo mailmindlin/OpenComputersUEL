@@ -14,6 +14,9 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 
 class Acid(override val parent: Delegator) : Delegate {
+    override var showInItemList: Boolean = false
+    override val itemId: Int = 0
+
     override fun onItemRightClick(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         player.setActiveHand(if (player.heldItemMainhand == stack) EnumHand.MAIN_HAND else EnumHand.OFF_HAND)
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)

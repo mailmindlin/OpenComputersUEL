@@ -192,12 +192,12 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     // Environment
 
     override fun dispose() {
-        super.dispose()
+        super<TileEntityBase>.dispose()
         disconnectComponents()
     }
 
     override fun onMessage(message: Message) {
-        super.onMessage(message)
+        super<BundledRedstoneAware>.onMessage(message)
         if (message.name() == "network.message") {
             val data = message.data()
             if (data.isNotEmpty() && data[0] is Packet) {
@@ -257,11 +257,12 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     // power.Common
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing()
+    override fun hasConnector(side: EnumFacing?): Boolean = side != facing()
 
-    override fun connector(side: EnumFacing): Connector? = if (side != facing()) sidedNode(side) as? Connector else null
+    override fun connector(side: EnumFacing?): Connector? = if (side != facing()) sidedNode(side) as? Connector else null
 
-    override fun energyThroughput(): Double = Settings.get.serverRackRate
+    override val energyThroughput: Double
+        get() = Settings.get.serverRackRate
 
     // ----------------------------------------------------------------------- //
     // Analyzable
@@ -424,7 +425,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TileEntityBase>.readFromNBTForServer(nbt)
 
         isRelayEnabled = nbt.getBoolean(IsRelayEnabledTag)
         nbt.getTagList(NodeMappingTag, NBT.TAG_INT_ARRAY).forEachIndexed { slotIndex, tag ->
@@ -440,7 +441,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+        super<TileEntityBase>.writeToNBTForServer(nbt)
 
         nbt.setBoolean(IsRelayEnabledTag, isRelayEnabled)
         nbt.setNewTagList(NodeMappingTag, nodeMapping.map { buses ->

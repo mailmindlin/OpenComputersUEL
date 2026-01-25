@@ -19,7 +19,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
 abstract class Item : DriverItem {
-  fun worksWith(stack: ItemStack, host: Class<out EnvironmentHost>): Boolean =
+  open fun worksWith(stack: ItemStack, host: Class<out EnvironmentHost>): Boolean =
     worksWith(stack) && !Registry.blacklist.any { (blacklistedStack, blacklistedHost) ->
       stack.isItemEqual(blacklistedStack) &&
         blacklistedHost.any { it.isAssignableFrom(host) }

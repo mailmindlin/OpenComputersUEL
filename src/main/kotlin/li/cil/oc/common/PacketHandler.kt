@@ -66,11 +66,11 @@ abstract class PacketHandler {
      * dimension; None otherwise. For the server it returns the world for the
      * specified dimension, if such a dimension exists; None otherwise.
      */
-    protected abstract fun world(player: EntityPlayer, dimension: Int): World?
+    abstract fun world(player: EntityPlayer, dimension: Int): World?
 
     protected abstract fun dispatch(p: PacketParser)
 
-    protected inner class PacketParser(stream: InputStream, val player: EntityPlayer) : DataInputStream(stream) {
+    inner class PacketParser(stream: InputStream, val player: EntityPlayer) : DataInputStream(stream) {
         val packetType: PacketType = PacketType(readByte())
 
         inline fun <reified T> getTileEntity(dimension: Int, x: Int, y: Int, z: Int): T? {

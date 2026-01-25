@@ -6,7 +6,7 @@ import li.cil.oc.api.fs.FileSystem
 import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 
-private class ReadOnlyWrapper(private val fileSystem: FileSystem): FileSystem {
+internal class ReadOnlyWrapper(private val fileSystem: FileSystem): FileSystem {
   override fun isReadOnly() = true
 
   override fun spaceTotal() = fileSystem.spaceUsed()

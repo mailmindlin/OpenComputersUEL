@@ -9,6 +9,7 @@ import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.common.Slot
 import li.cil.oc.common.component.TerminalServer
 import li.cil.oc.util.ExtendedInventory.extendedInventory
+import li.cil.oc.util.asExtended
 import net.minecraft.item.ItemStack
 
 object DriverTerminalServer : Item(), HostAware {
@@ -16,7 +17,7 @@ object DriverTerminalServer : Item(), HostAware {
     ApiItems.get(Constants.ItemName.TerminalServer))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? = when (host) {
-    is Rack -> TerminalServer(host, host.indexOf(stack))
+    is Rack -> TerminalServer(host, host.asExtended().indexOf(stack))
     else -> null
   }
 

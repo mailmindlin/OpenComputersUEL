@@ -8,7 +8,7 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.common.Slot
 import li.cil.oc.server.component.DiskDriveMountable
-import li.cil.oc.util.ExtendedInventory.extendedInventory
+import li.cil.oc.util.asExtended
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
@@ -17,16 +17,15 @@ object DriverDiskDriveMountable : Item(), HostAware {
     ApiItems.get(Constants.ItemName.DiskDriveMountable))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? = when (host) {
-    is Rack -> DiskDriveMountable(host, host.indexOf(stack))
+    is Rack -> DiskDriveMountable(host, host.asExtended().indexOf(stack))
     else -> null // Welp.
   }
 
   override fun slot(stack: ItemStack): String = Slot.RackMountable
 
   override fun dataTag(stack: ItemStack): NBTTagCompound {
-    if (!stack.hasTagCompound()) {
+    if (!stack.hasTagCompound())
       stack.tagCompound = NBTTagCompound()
-    }
-    return stack.tagCompound
+    return stack.tagCompound!!
   }
 }

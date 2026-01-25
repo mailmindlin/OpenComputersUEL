@@ -3,6 +3,8 @@ package li.cil.oc.common.tileentity.traits
 import li.cil.oc.Settings
 import li.cil.oc.common.tileentity.behaviors.Behavior
 import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
+import li.cil.oc.integration.util.BundledRedstone
+import li.cil.oc.server.PacketSender
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
@@ -21,6 +23,9 @@ value class RedstoneValues private constructor(val values: IntArray) {
     operator fun set(side: EnumFacing, value: Int) {
         this.values[side.ordinal] = value
     }
+    fun fill(value: Int) {
+        this.values.fill(value)
+    }
 }
 
 /**
@@ -30,11 +35,12 @@ value class RedstoneValues private constructor(val values: IntArray) {
 interface RedstoneAware : Environment, RotationAware {
     val redstoneDelegate: Delegate
 
-    open class Delegate: Behavior, NbtSeriailzable {
+    open class Delegate(): Behavior, NbtSeriailzable {
         constructor(te: RedstoneAware): this()
+
         internal var input: RedstoneValues = RedstoneValues()
         internal var output: RedstoneValues = RedstoneValues()
-        internal var isOutputEnabled: Boolean = false
+        internal var _isOutputEnabled: Boolean = false
         internal var shouldUpdateInput = true
 
         override fun readFromNBTForServer(nbt: NBTTagCompound) {
@@ -56,20 +62,28 @@ interface RedstoneAware : Environment, RotationAware {
         @SideOnly(Side.CLIENT)
         override fun readFromNBTForClient(nbt: NBTTagCompound) {
             super.readFromNBTForClient(nbt)
-            isOutputEnabled = nbt.getBoolean("isOutputEnabled")
+            _isOutputEnabled = nbt.getBoolean("isOutputEnabled")
             nbt.getIntArray("output").copyInto(output.values)
         }
 
         override fun writeToNBTForClient(nbt: NBTTagCompound) {
             super.writeToNBTForClient(nbt)
-            nbt.setBoolean("isOutputEnabled", isOutputEnabled)
+            nbt.setBoolean("isOutputEnabled", _isOutputEnabled)
             nbt.setIntArray("output", output.values)
         }
     }
 
     var outputEnabled: Boolean
-        get() = redstoneDelegate.isOutputEnabled
-        set(value) { redstoneDelegate.isOutputEnabled = value }
+        get() = redstoneDelegate._isOutputEnabled
+        set(value) {
+            val delegate = redstoneDelegate
+            if (value != delegate._isOutputEnabled) {
+                delegate._isOutputEnabled = value
+                if (!value)
+                    delegate.output.fill(0)
+                onRedstoneOutputEnabledChanged()
+            }
+        }
 
     fun setOutput(side: EnumFacing, value: Byte) {
         redstoneDelegate.output[side] = value.toInt()
@@ -79,20 +93,7 @@ interface RedstoneAware : Environment, RotationAware {
     }
     fun getOutput(side: EnumFacing): Int
         = redstoneDelegate.output[side]
-    /*open val isOutputEnabled: Boolean get() = _isOutputEnabled
-
-    open fun setOutputEnabled(value: Boolean): RedstoneAware {
-        if (value != _isOutputEnabled) {
-            _isOutputEnabled = value
-            if (!value) {
-                for (i in _output.indices) {
-                    _output[i] = 0
-                }
-            }
-            onRedstoneOutputEnabledChanged()
-        }
-        return this
-    }
+    /*
 
     protected fun getObjectFuzzy(map: Map<*, *>, key: Int): Any? {
         return when {
@@ -156,11 +157,11 @@ interface RedstoneAware : Environment, RotationAware {
             }
         }
         return changed
-    }
+    }*/
 
     fun checkRedstoneInputChanged() {
         if (this is Tickable) {
-            shouldUpdateInput = isServer
+            redstoneDelegate.shouldUpdateInput = isServer
         } else {
             for (side in EnumFacing.values()) {
                 updateRedstoneInput(side)
@@ -170,7 +171,7 @@ interface RedstoneAware : Environment, RotationAware {
 
     // ----------------------------------------------------------------------- //
 
-    override fun updateEntity() {
+    /*override fun updateEntity() {
         super.updateEntity()
         if (isServer) {
             if (shouldUpdateInput) {
@@ -191,35 +192,34 @@ interface RedstoneAware : Environment, RotationAware {
                 }
             }
         }
-    }
+    }*/
 
-    open fun updateRedstoneInput(side: EnumFacing) {
-        setInput(side, BundledRedstone.computeInput(position, side))
+    fun updateRedstoneInput(side: EnumFacing) {
+//        setInput(side, BundledRedstone.computeInput(position, side))
+        TODO()
     }
 
     // ----------------------------------------------------------------------- //
 
 
     // ----------------------------------------------------------------------- //
-
-     */
 
     fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {}
 
-    /*protected open fun onRedstoneOutputEnabledChanged() {
+    fun onRedstoneOutputEnabledChanged() {
         val w = world ?: return
         w.notifyNeighborsOfStateChange(pos, blockType, true)
-        if (isServer) ServerPacketSender.sendRedstoneState(this)
+        if (isServer) PacketSender.sendRedstoneState(this)
         else w.notifyBlockUpdate(pos, w.getBlockState(pos), w.getBlockState(pos), 3)
     }
 
-    protected open fun onRedstoneOutputChanged(side: EnumFacing) {
+    fun onRedstoneOutputChanged(side: EnumFacing) {
         val w = world ?: return
         val blockPos = pos.offset(side)
         w.neighborChanged(blockPos, blockType, blockPos)
         w.notifyNeighborsOfStateExcept(blockPos, w.getBlockState(blockPos).block, side.opposite)
 
-        if (isServer) ServerPacketSender.sendRedstoneState(this)
+        if (isServer) PacketSender.sendRedstoneState(this)
         else w.notifyBlockUpdate(pos, w.getBlockState(pos), w.getBlockState(pos), 3)
-    }*/
+    }
 }

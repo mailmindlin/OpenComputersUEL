@@ -2,7 +2,7 @@ package li.cil.oc.server.component.traits
 
 import li.cil.oc.api.internal.MultiTank
 import li.cil.oc.api.machine.Arguments
-import li.cil.oc.util.ExtendedArguments.checkTank
+import li.cil.oc.util.checkTank
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.IFluidTank
 

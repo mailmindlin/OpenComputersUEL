@@ -27,7 +27,7 @@ import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent
 import paulscode.sound.SoundSystemConfig
 
 object Sound {
-  private val sources = mutableMapOf<TileEntity, PseudoLoopingStream>()
+  private val sources = mutableMapOf<TileEntity?, PseudoLoopingStream>()
 
   private val commandQueue = PriorityQueue<Command>()
 
@@ -92,7 +92,7 @@ object Sound {
     }
   }
 
-  fun startLoop(tileEntity: TileEntity, name: String, volume: Float = 1f, delay: Long = 0) {
+  fun startLoop(tileEntity: TileEntity?, name: String, volume: Float = 1f, delay: Long = 0) {
     if (Settings.get.soundVolume > 0) {
       synchronized(commandQueue) {
         commandQueue += StartCommand(System.currentTimeMillis() + delay, tileEntity, name, volume)
@@ -100,7 +100,7 @@ object Sound {
     }
   }
 
-  fun stopLoop(tileEntity: TileEntity) {
+  fun stopLoop(tileEntity: TileEntity?) {
     if (Settings.get.soundVolume > 0) {
       synchronized(commandQueue) {
         commandQueue += StopCommand(tileEntity)
@@ -174,7 +174,7 @@ object Sound {
     sources.clear()
   }
 
-  private abstract class Command(val `when`: Long, val tileEntity: TileEntity) : Comparable<Command> {
+  private abstract class Command(val `when`: Long, val tileEntity: TileEntity?) : Comparable<Command> {
     abstract operator fun invoke()
 
     override fun compareTo(other: Command): Int = (other.`when` - `when`).toInt()
@@ -182,7 +182,7 @@ object Sound {
 
   private class StartCommand(
     `when`: Long,
-    tileEntity: TileEntity,
+    tileEntity: TileEntity?,
     val name: String,
     val volume: Float
   ) : Command(`when`, tileEntity) {
@@ -193,7 +193,7 @@ object Sound {
     }
   }
 
-  private class StopCommand(tileEntity: TileEntity) : Command(System.currentTimeMillis() + 1, tileEntity) {
+  private class StopCommand(tileEntity: TileEntity?) : Command(System.currentTimeMillis() + 1, tileEntity) {
     override fun invoke() {
       synchronized(sources) {
         sources.remove(tileEntity)?.stop()
@@ -218,7 +218,7 @@ object Sound {
   }
 
   private class PseudoLoopingStream(
-    val tileEntity: TileEntity,
+    val tileEntity: TileEntity?,
     val volume: Float,
     val source: String = UUID.randomUUID().toString()
   ) {

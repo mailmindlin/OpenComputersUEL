@@ -8,7 +8,7 @@ import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.item.ItemStack
 import net.minecraft.world.World
 
-class HardDiskDrive(parent: Delegator, private val tier: Int) : AbstractDelegate(parent), ItemTier, FileSystemLike {
+class HardDiskDrive(parent: Delegator, internal val tier: Int) : AbstractDelegate(parent), ItemTier, FileSystemLike {
     override fun tooltipLines(stack: ItemStack, world: World?, tooltip: MutableList<String>, flag: ITooltipFlag) {
         super<ItemTier>.tooltipLines(stack, world, tooltip, flag)
         super<FileSystemLike>.tooltipLines(stack, world, tooltip, flag)

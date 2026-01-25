@@ -17,7 +17,7 @@ object DriverMemory : Item(), MemoryDriver, CallBudget {
   override fun amount(stack: ItemStack): Double = when (val item = Delegator.subItem(stack)) {
     is ItemMemory -> {
       val sizes = Settings.get.ramSizes
-      Settings.get.ramSizes[item.tier.coerceIn(0, sizes.size - 1)]
+      Settings.get.ramSizes[item.tier.coerceIn(0, sizes.size - 1)].toDouble()
     }
     else -> 0.0
   }
@@ -40,5 +40,5 @@ object DriverMemory : Item(), MemoryDriver, CallBudget {
       else -> Tier.One
     }
 
-  override fun getCallBudget(stack: ItemStack): Double = Settings.get.callBudgets(tier(stack).coerceIn(Tier.One, Tier.Three))
+  override fun getCallBudget(stack: ItemStack): Double = Settings.get.callBudgets[tier(stack).coerceIn(Tier.One, Tier.Three)]
 }

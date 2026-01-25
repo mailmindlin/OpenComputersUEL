@@ -144,40 +144,34 @@ object FileSystem : FileSystemAPI {
         return false
     }
 
-    @JvmStatic
-    fun fromMemory(capacity: Long): ApiFileSystem = RamFileSystem(capacity)
+    override fun fromMemory(capacity: Long): ApiFileSystem = RamFileSystem(capacity)
 
     override fun asReadOnly(fileSystem: ApiFileSystem): ApiFileSystem =
         if (fileSystem.isReadOnly) fileSystem
         else ReadOnlyWrapper(fileSystem)
 
-    @JvmStatic
-    @JvmOverloads
-    fun asManagedEnvironment(
+    override fun asManagedEnvironment(
         fileSystem: ApiFileSystem?,
         label: Label?,
-        host: EnvironmentHost? = null,
-        accessSound: String? = null,
-        speed: Int = 1
+        host: EnvironmentHost?,
+        accessSound: String?,
+        speed: Int
     ): FileSystemComponent? {
         return fileSystem?.let { fs ->
             FileSystemComponent(fs, label, host, accessSound, (speed - 1).coerceIn(0, 5))
         }
     }
 
-    @JvmStatic
-    @JvmOverloads
-    fun asManagedEnvironment(
+    override fun asManagedEnvironment(
         fileSystem: ApiFileSystem?,
         label: String?,
-        host: EnvironmentHost? = null,
-        accessSound: String? = null,
-        speed: Int = 1
+        host: EnvironmentHost?,
+        accessSound: String?,
+        speed: Int
     ): FileSystemComponent? =
         asManagedEnvironment(fileSystem, label?.let { ReadOnlyLabel(it) }, host, accessSound, speed)
 
-    @JvmStatic
-    fun asManagedEnvironment(fileSystem: ApiFileSystem?): FileSystemComponent? =
+    override fun asManagedEnvironment(fileSystem: ApiFileSystem?): FileSystemComponent? =
         asManagedEnvironment(fileSystem, null as Label?, null, null, 1)
 
     abstract class ItemLabel(val stack: ItemStack) : Label

@@ -17,7 +17,7 @@ import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.SideTracker
 import net.minecraft.nbt.NBTTagCompound
 
-internal interface Component : NetComponent, Node {
+interface Component : NetComponent, Node {
   val name: String
   override fun name(): String = name
 

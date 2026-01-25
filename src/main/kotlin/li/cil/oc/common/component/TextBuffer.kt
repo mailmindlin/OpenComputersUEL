@@ -23,7 +23,7 @@ import li.cil.oc.client.ComponentTracker as ClientComponentTracker
 import li.cil.oc.client.PacketSender as ClientPacketSender
 import li.cil.oc.common.Tier
 import li.cil.oc.common.tileentity.Screen as TEScreen
-import li.cil.oc.common.tileentity.Computer as TEComputer
+import li.cil.oc.common.tileentity.traits.Computer as TEComputer
 import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.common.component.traits.TextBufferProxy
 import li.cil.oc.common.component.traits.VideoRamRasterizer
@@ -121,18 +121,18 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
 
     override val deviceInfo: Map<String, String> by lazy {
         mapOf(
-            DeviceAttribute.Class.toString() to DeviceClass.Display,
-            DeviceAttribute.Description.toString() to "Text buffer",
-            DeviceAttribute.Vendor.toString() to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product.toString() to "Text Screen V0",
-            DeviceAttribute.Capacity.toString() to maxResolution.pixels.toString(),
-            DeviceAttribute.Width.toString() to arrayOf("1", "4", "8")[maxDepth.ordinal]
+            DeviceAttribute.Class to DeviceClass.Display,
+            DeviceAttribute.Description to "Text buffer",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Text Screen V0",
+            DeviceAttribute.Capacity to maxResolution.pixels.toString(),
+            DeviceAttribute.Width to arrayOf("1", "4", "8")[maxDepth.ordinal]
         )
     }
 
     // ----------------------------------------------------------------------- //
 
-    override val canUpdate = true
+    override fun canUpdate(): Boolean = true
 
     override fun update() {
         super.update()
@@ -150,7 +150,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
                     val colors = data.color[y]
                     for (x in 0 until w) {
                         val char = line[x]
-                        val color = colors[x]
+                        val color = colors[x].toUShort()
                         val bg = PackedColor.unpackBackground(color, data.format)
                         val fg = PackedColor.unpackForeground(color, data.format)
                         acc += when {

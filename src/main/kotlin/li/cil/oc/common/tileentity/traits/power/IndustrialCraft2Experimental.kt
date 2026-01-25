@@ -55,11 +55,11 @@ interface IndustrialCraft2Experimental : Common, IndustrialCraft2Common, Tickabl
         }
 
         private fun updateEnergy() {
-            tile.tryAllSides({ demand, _ ->
+            tile.tryAllSides(Power::fromEU, Power::toEU) { demand, _ ->
                 val result = demand.coerceAtMost(conversionBuffer)
                 conversionBuffer -= result
                 result
-            }, Power::fromEU, Power::toEU)
+            }
         }
 
         @Optional.Method(modid = Mods.IDs.IndustrialCraft2)
@@ -86,7 +86,7 @@ interface IndustrialCraft2Experimental : Common, IndustrialCraft2Common, Tickabl
         @Optional.Method(modid = Mods.IDs.IndustrialCraft2)
         override fun initialize() {
             if (tile.useIndustrialCraft2Power && !addedToIC2PowerGrid)
-                EventHandler.scheduleIC2Add(this)
+                EventHandler.scheduleIC2Add(tile)
         }
 
         @Optional.Method(modid = Mods.IDs.IndustrialCraft2)

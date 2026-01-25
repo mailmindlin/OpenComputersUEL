@@ -16,7 +16,7 @@ object PlayerInteractionManagerHelper {
 
     private fun isDestroyingBlock(player: Player): Boolean {
         return try {
-            OCObfuscationReflectionHelper.getPrivateValue(
+            OCObfuscationReflectionHelper.getPrivateValue<Boolean, PlayerInteractionManager>(
                 PlayerInteractionManager::class.java,
                 player.interactionManager,
                 "field_73088_d"
@@ -55,7 +55,7 @@ object PlayerInteractionManagerHelper {
                 val machineNode = player.agent.machine().node()
                 machineNode.reachableNodes().any { node ->
                     if (node is Node && node.canBeReachedFrom(machineNode)) {
-                        node.host() is li.cil.oc.common.item.UpgradeExperience ||
+                        (node.host() as Any) is li.cil.oc.common.item.UpgradeExperience ||
                             node.host() is li.cil.oc.server.component.UpgradeExperience
                     } else {
                         false

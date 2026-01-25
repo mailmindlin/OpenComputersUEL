@@ -15,7 +15,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.*
 import net.minecraft.item.crafting.CraftingManager
 
-sealed class UpgradeCrafting(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeCrafting(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
     private val robot: Robot
         get() = host as Robot
 

@@ -119,7 +119,7 @@ abstract class Player<out I: IInventory>(val playerInventory: InventoryPlayer, v
         }
     }
 
-    fun addSlotToContainer(x: Int, y: Int, slot: String = common.Slot.Any, tier: Int = common.Tier.Any) {
+    fun addSlotToContainer(x: Int, y: Int, slot: String = li.cil.oc.common.Slot.Any, tier: Int = Tier.Any) {
         val index = inventorySlots.size
         addSlotToContainer(StaticComponentSlot(this, otherInventory, index, x, y, slot, tier))
     }

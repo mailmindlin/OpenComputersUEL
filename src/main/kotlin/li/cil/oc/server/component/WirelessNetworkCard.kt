@@ -133,7 +133,7 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
         nbt.setDouble(StrengthTag, strength)
     }
 
-    sealed class Tier1(host: EnvironmentHost) : WirelessNetworkCard(host) {
+    open class Tier1(host: EnvironmentHost) : WirelessNetworkCard(host) {
         override val wirelessCostPerRange: Double
             get() = Settings.get.wirelessCostPerRange[Tier.One]
 

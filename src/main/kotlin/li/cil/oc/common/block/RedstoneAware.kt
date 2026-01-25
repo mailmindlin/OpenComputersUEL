@@ -1,6 +1,6 @@
 package li.cil.oc.common.block
 
-import li.cil.oc.common.tileentity.RedstoneAware as TERedstoneAware
+import li.cil.oc.common.tileentity.traits.RedstoneAware as TERedstoneAware
 import net.minecraft.block.Block
 import net.minecraft.block.state.IBlockState
 import net.minecraft.util.EnumFacing
@@ -13,7 +13,7 @@ abstract class RedstoneAware : SimpleBlock() {
 
     override fun canConnectRedstone(state: IBlockState, world: IBlockAccess, pos: BlockPos, side: EnumFacing?): Boolean {
         val tileEntity = world.getTileEntity(pos)
-        return tileEntity is TERedstoneAware && tileEntity.isOutputEnabled
+        return tileEntity is TERedstoneAware && tileEntity.outputEnabled
     }
 
     override fun getStrongPower(state: IBlockState, world: IBlockAccess, pos: BlockPos, side: EnumFacing): Int =

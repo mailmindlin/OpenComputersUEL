@@ -88,7 +88,7 @@ class SafeThreadPool(val name: String, val threads: Int) {
     }
 
     fun waitForCompletion() {
-        withPool({ threadPool ->
+        withPool(false) { threadPool ->
             try {
                 threadPool.shutdown()
                 var terminated = threadPool.awaitTermination(15, TimeUnit.SECONDS)
@@ -104,6 +104,6 @@ class SafeThreadPool(val name: String, val threads: Int) {
                 e.printStackTrace()
             }
             null
-        }, requiresPool = false)
+        }
     }
 }

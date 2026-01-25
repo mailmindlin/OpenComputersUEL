@@ -101,7 +101,7 @@ interface OutputStreamFileSystem : InputStreamFileSystem {
     ) : Handle {
         protected var _isClosed = false
 
-        val isClosed: Boolean
+        open val isClosed: Boolean
             get() = _isClosed
 
         override fun close() {

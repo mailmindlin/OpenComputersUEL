@@ -6,6 +6,7 @@ import li.cil.oc.api.FileSystem as ApiFileSystem
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.fs.Label
 import li.cil.oc.api.network.Analyzable
+import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
@@ -21,6 +22,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.UUID
@@ -28,9 +30,10 @@ import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
-class Raid : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, Analyzable {
+class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventory, TraitRotatable, Analyzable {
     override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
     override val inventoryDelegate: TraitInventory.Delegate = register(TraitInventory::Delegate)
+
 
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
@@ -57,6 +60,9 @@ class Raid : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable,
         arrayOf(filesystem?.node())
 
     // ----------------------------------------------------------------------- //
+
+    override fun getDisplayName(): ITextComponent
+         = super<Inventory>.getDisplayName()
 
     override fun getSizeInventory(): Int = 3
 
@@ -109,7 +115,7 @@ class Raid : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable,
             val nbtToSetAddress = NBTTagCompound()
             nbtToSetAddress.setString(NodeData.AddressTag, id)
             fs.node().load(nbtToSetAddress)
-            fs.node().setVisibility(Visibility.Network)
+            (fs.node() as Component).setVisibility(Visibility.Network)
             // Ensure we're in a network before connecting the raid fs.
             ApiNetwork.joinNewNetwork(node)
             node.connect(fs.node())

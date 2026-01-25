@@ -2,7 +2,7 @@ package li.cil.oc.common.block
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.ApiItems as ApiItems
+import li.cil.oc.api.Items
 import li.cil.oc.client.KeyBindings
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.property.PropertyRotatable
@@ -83,19 +83,20 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
                 if (!world.isRemote) {
                     val tileEntity = world.getTileEntity(pos)
                     if (tileEntity is TEMicrocontroller) {
-                        if (tileEntity.machine.isRunning) tileEntity.machine.stop()
-                        else tileEntity.machine.start()
+                        val machine = tileEntity.machine!!
+                        if (machine.isRunning) machine.stop()
+                        else machine.start()
                     }
                 }
                 return true
-            } else if (ApiItems.get(heldItem) == ApiItems.get(Constants.ItemName.EEPROM)) {
+            } else if (Items.get(heldItem) == Items.get(Constants.ItemName.EEPROM)) {
                 if (!world.isRemote) {
                     val tileEntity = world.getTileEntity(pos)
                     if (tileEntity is TEMicrocontroller) {
                         val newEeprom = player.inventory.decrStackSize(player.inventory.currentItem, 1)
                         val result = tileEntity.changeEEPROM(newEeprom)
-                        if (result is StackOption.SomeStack) {
-                            InventoryUtils.addToPlayerInventory(result.stack, player)
+                        if (result != null) {
+                            InventoryUtils.addToPlayerInventory(result, player)
                         }
                     }
                 }
@@ -120,5 +121,5 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
         Block.spawnAsEntity(tileEntity.world, tileEntity.pos, tileEntity.info.createItemStack())
     }
 
-    override val tileEntityClass: Class<TEMicrocontroller> get() = TEMicrocontroller::class.java
+    override val tileClass: Class<TEMicrocontroller> get() = TEMicrocontroller::class.java
 }

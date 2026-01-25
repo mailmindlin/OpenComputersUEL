@@ -14,6 +14,7 @@ import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.data.NavigationUpgradeData
+import li.cil.oc.common.tileentity.traits.position
 import li.cil.oc.server.network.Waypoints
 import li.cil.oc.util.BlockPosition
 import net.minecraft.nbt.NBTTagCompound
@@ -81,7 +82,7 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
             val delta = waypoint.position.offset(waypoint.facing()!!).toVec3().subtract(positionVec)
             mapOf(
                 "position" to arrayOf(delta.x, delta.y, delta.z),
-                "redstone" to waypoint.maxInput(),
+                "redstone" to waypoint.maxInput,
                 "label" to waypoint.label,
                 "address" to waypoint.node.address()
             )

@@ -408,7 +408,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
                         Minecraft.getMinecraft().itemRenderer.renderItem(Minecraft.getMinecraft().player, stack, TransformType.THIRD_PERSON_RIGHT_HAND)
                     } catch (e: Throwable) {
                         OpenComputers.log.warn("Failed rendering equipped item.", e)
-                        robot.proxy().renderingErrored = true
+                        robot.renderingErrored = true
                     }
                     GlStateManager.enableCull()
                     GlStateManager.disableRescaleNormal()

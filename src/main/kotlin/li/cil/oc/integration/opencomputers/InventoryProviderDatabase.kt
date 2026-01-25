@@ -9,8 +9,9 @@ import net.minecraft.item.ItemStack
 object InventoryProviderDatabase : InventoryProvider {
   override fun worksWith(stack: ItemStack, player: EntityPlayer): Boolean = DriverUpgradeDatabase.worksWith(stack)
 
-  override fun getInventory(stack: ItemStack, player: EntityPlayer): IInventory = object : DatabaseInventory {
-    override fun container(): ItemStack = stack
+  override fun getInventory(stack: ItemStack, player: EntityPlayer): IInventory = object : DatabaseInventory() {
+    override val container: ItemStack
+      get() = stack
 
     override fun isUsableByPlayer(player: EntityPlayer): Boolean = true
   }

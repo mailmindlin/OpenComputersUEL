@@ -2,9 +2,11 @@ package li.cil.oc.common.block
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.Items
 import li.cil.oc.ApiItems as ApiItems
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.item.data.RobotData
+import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.Keyboard as TEKeyboard
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.common.tileentity.Rotatable as TERotatable
@@ -40,7 +42,7 @@ class Item(value: Block) : ItemBlock(value) {
     override fun getMetadata(itemDamage: Int): Int = itemDamage
 
     override fun getItemStackDisplayName(stack: ItemStack): String {
-        if (ApiItems.get(stack) == ApiItems.get(Constants.BlockName.Print)) {
+        if (Items.get(stack) == Items.get(Constants.BlockName.Print)) {
             val data = PrintData(stack)
             return data.label ?: super.getItemStackDisplayName(stack)
         }
@@ -58,7 +60,7 @@ class Item(value: Block) : ItemBlock(value) {
         // When placing robots in creative mode, we have to copy the stack
         // manually before it's placed to ensure different component addresses
         // in the different robots, to avoid interference of screens e.g.
-        val needsCopying = player.capabilities.isCreativeMode && ApiItems.get(stack) == ApiItems.get(Constants.BlockName.Robot)
+        val needsCopying = player.capabilities.isCreativeMode && Items.get(stack) == Items.get(Constants.BlockName.Robot)
         val stackToUse = if (needsCopying) RobotData(stack).copyItemStack() else stack
         if (super.placeBlockAt(stackToUse, player, world, pos, side, hitX, hitY, hitZ, newState)) {
             // If it's a rotatable block try to make it face the player.
@@ -68,7 +70,7 @@ class Item(value: Block) : ItemBlock(value) {
                     tileEntity.setFromEntityPitchAndYaw(player)
                     tileEntity.setFromFacing(side)
                 }
-                is TERotatable -> {
+                is Rotatable -> {
                     tileEntity.setFromEntityPitchAndYaw(player)
                     if (!tileEntity.validFacings.contains(tileEntity.pitch)) {
                         tileEntity.pitch = tileEntity.validFacings.firstOrNull() ?: EnumFacing.NORTH

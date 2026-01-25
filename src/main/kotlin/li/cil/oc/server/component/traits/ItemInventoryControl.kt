@@ -5,9 +5,9 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
-import li.cil.oc.util.ExtendedArguments.checkSlot
-import li.cil.oc.util.ExtendedArguments.optItemCount
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.checkSlot
+import li.cil.oc.util.optItemCount
 import net.minecraft.item.ItemStack
 import net.minecraftforge.items.IItemHandler
 

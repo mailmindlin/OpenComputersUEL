@@ -63,7 +63,7 @@ import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModAPIManager
 
-class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), DebugNode {
+class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     override val node: ComponentConnector = Network.newNode(this, Visibility.Neighbors)
         .withComponent("debug")
         .withConnector()
@@ -287,9 +287,9 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
         checkAccess()
         val destination = args.checkString(0)
         DebugNetwork.getEndpoint(destination)
-            ?.takeIf { it != this@DebugCard }
+            ?.firstOrNull { it != this@DebugCard }
             ?.let { endpoint ->
-                val packet = Network.newPacket(node.address(), destination, 0, args.drop(1).toTypedArray())
+                val packet = Network.newPacket(node.address(), destination, 0, args.drop(1))
                 endpoint.receivePacket(packet)
             }
         return result()
@@ -307,7 +307,8 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
         )
     }
 
-    override fun address(): String = node?.address() ?: "debug"
+    override val address: String
+        get() = node?.address() ?: "debug"
 
     // ----------------------------------------------------------------------- //
 
@@ -426,7 +427,7 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
             withPlayer { player -> result(player.interactionManager.gameType.name) }
 
         @Callback(doc = """function(gametype:string) -- Set the player's game type (survival, creative, adventure).""")
-        fun setGameType(context: Context, args: Arguments): Array<Any?> =
+        fun setGameType(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 val gametype = args.checkString(0)
                 player.setGameType(GameType.values().find { it.name == gametype } ?: GameType.SURVIVAL)
@@ -438,7 +439,7 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
             withPlayer { player -> result(player.posX, player.posY, player.posZ) }
 
         @Callback(doc = """function(x:number, y:number, z:number) -- Set the player's position.""")
-        fun setPosition(context: Context, args: Arguments): Array<Any?> =
+        fun setPosition(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 player.setPositionAndUpdate(args.checkDouble(0), args.checkDouble(1), args.checkDouble(2))
                 null
@@ -453,7 +454,7 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
             withPlayer { player -> result(player.maxHealth) }
 
         @Callback(doc = """function(health:number) -- Set the player's health.""")
-        fun setHealth(context: Context, args: Arguments): Array<Any?> =
+        fun setHealth(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 player.health = args.checkDouble(0).toFloat()
                 null
@@ -468,28 +469,28 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
             withPlayer { player -> result(player.experienceTotal) }
 
         @Callback(doc = """function(level:number) -- Add a level to the player's experience level""")
-        fun addExperienceLevel(context: Context, args: Arguments): Array<Any?> =
+        fun addExperienceLevel(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 player.addExperienceLevel(args.checkInteger(0))
                 null
             }
 
         @Callback(doc = """function(level:number) -- Remove a level from the player's experience level""")
-        fun removeExperienceLevel(context: Context, args: Arguments): Array<Any?> =
+        fun removeExperienceLevel(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 player.addExperienceLevel(-args.checkInteger(0))
                 null
             }
 
         @Callback(doc = """function() -- Clear the players inventory""")
-        fun clearInventory(context: Context, args: Arguments): Array<Any?> =
+        fun clearInventory(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 player.inventory.clear()
                 null
             }
 
         @Callback(doc = """function(id:string, amount:number, meta:number[, nbt:string]):number -- Adds the item stack to the players inventory""")
-        fun insertItem(context: Context, args: Arguments): Array<Any?> =
+        fun insertItem(context: Context, args: Arguments): Array<Any?>? =
             withPlayer { player ->
                 val item = Item.REGISTRY.getObject(ResourceLocation(args.checkString(0)))
                     ?: throw IllegalArgumentException("invalid item id")
@@ -771,7 +772,7 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
             val (x, y, z) = Triple(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val sound = args.checkString(3)
             val range = args.checkInteger(4)
-            world?.let { PacketSender.sendSound(it, x, y, z, ResourceLocation(sound), SoundCategory.MASTER, range) }
+            world?.let { PacketSender.sendSound(it, x.toDouble(), y.toDouble(), z.toDouble(), ResourceLocation(sound), SoundCategory.MASTER, range.toDouble()) }
             return result()
         }
 
@@ -873,7 +874,11 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
         @Callback(doc = """function(x:number, y:number, z:number, id:number or string, meta:number):number -- Set the block at the specified coordinates.""")
         fun setBlock(context: Context, args: Arguments): Array<Any?> {
             checkAccess()
-            val block = if (args.isInteger(3)) Block.getBlockById(args.checkInteger(3)) else Block.getBlockFromName(args.checkString(3))
+            val block = if (args.isInteger(3))
+                Block.getBlockById(args.checkInteger(3))
+            else
+                Block.getBlockFromName(args.checkString(3)) ?: return result(false)
+
             val metadata = args.checkInteger(4)
             val pos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             return result(world?.setBlockState(pos, block.getStateFromMeta(metadata)) ?: false)
@@ -884,7 +889,8 @@ class DebugCard(val host: EnvironmentHost) : AbstractManagedEnvironment(), Debug
             checkAccess()
             val (xMin, yMin, zMin) = Triple(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val (xMax, yMax, zMax) = Triple(args.checkInteger(3), args.checkInteger(4), args.checkInteger(5))
-            val block = if (args.isInteger(6)) Block.getBlockById(args.checkInteger(6)) else Block.getBlockFromName(args.checkString(6))
+            val block = if (args.isInteger(6)) Block.getBlockById(args.checkInteger(6))
+            else Block.getBlockFromName(args.checkString(6)) ?: return result(false)
             val metadata = args.checkInteger(7)
             for (x in minOf(xMin, xMax)..maxOf(xMin, xMax)) {
                 for (y in minOf(yMin, yMax)..maxOf(yMin, yMax)) {

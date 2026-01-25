@@ -12,6 +12,7 @@ import li.cil.oc.common.tileentity.Robot as TERobot
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.server.PacketSender
+import li.cil.oc.server.agent.Player
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.Rarity
@@ -221,13 +222,13 @@ class RobotProxy : RedstoneAware(), StateAware {
         if (!world.isRemote) {
             val tileEntity = world.getTileEntity(pos)
             val info = when {
-                entity is agent.Player && tileEntity is TERobotProxy -> Triple(tileEntity.robot, entity.agent.ownerName, entity.agent.ownerUUID)
+                entity is Player && tileEntity is TERobotProxy -> Triple(tileEntity.robot, entity.agent.ownerName(), entity.agent.ownerUUID())
                 entity is EntityPlayer && tileEntity is TERobotProxy -> Triple(tileEntity.robot, entity.name, entity.gameProfile.id)
                 else -> null
             }
             info?.let { (robot, owner, uuid) ->
                 robot.ownerName = owner
-                robot.ownerUUID = agent.Player.determineUUID(uuid)
+                robot.ownerUUID = Player.determineUUID(uuid)
                 robot.info.load(stack)
                 robot.bot.node.changeBuffer(robot.info.robotEnergy - robot.bot.node.localBuffer())
                 robot.updateInventorySize()

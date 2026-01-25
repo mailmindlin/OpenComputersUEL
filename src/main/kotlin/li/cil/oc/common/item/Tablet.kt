@@ -416,7 +416,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
     }
 }
 
-class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentInventory(), MachineHost, internal.Tablet {
+class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentInventory, MachineHost, li.cil.oc.api.internal.Tablet {
     // Remember our *original* world, so we know which tablets to clear on dimension
     // changes of players holding tablets - since the player entity instance may be
     // kept the same and components are not required to properly handle world changes.

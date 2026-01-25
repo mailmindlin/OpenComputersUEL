@@ -131,7 +131,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
         if (message.name() == "network.message" && message.source() != this.node) {
             when (val data = message.data()) {
                 is Array<*> -> if (data.isNotEmpty() && data[0] is Packet) {
-                    robot.node().sendToReachable(message.name(), data[0])
+                    robot.node.sendToReachable(message.name(), data[0])
                 }
             }
         }
@@ -242,14 +242,14 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     override fun pitch(): EnumFacing = robot.pitch()
 
-    override fun pitch_=(value: EnumFacing) {
-        robot.pitch_=(value)
+    override fun setPitch(value: EnumFacing) {
+        robot.setPitch(value)
     }
 
     override fun yaw(): EnumFacing = robot.yaw()
 
-    override fun yaw_=(value: EnumFacing) {
-        robot.yaw_=(value)
+    override fun setYaw(value: EnumFacing) {
+        robot.setYaw(value)
     }
 
     override fun setFromEntityPitchAndYaw(entity: Entity): Boolean = robot.setFromEntityPitchAndYaw(entity)
@@ -316,14 +316,14 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     override fun globalBuffer(): Double = robot.globalBuffer()
 
-    override fun globalBuffer_=(value: Double) {
-        robot.globalBuffer_=(value)
+    override fun setGlobalBuffer(value: Double) {
+        robot.setGlobalBuffer(value)
     }
 
     override fun globalBufferSize(): Double = robot.globalBufferSize()
 
-    override fun globalBufferSize_=(value: Double) {
-        robot.globalBufferSize_=(value)
+    override fun setGlobalBufferSize(value: Double) {
+        robot.setGlobalBufferSize(value)
     }
 
     // ----------------------------------------------------------------------- //

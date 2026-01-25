@@ -15,7 +15,7 @@ object DriverUpgradeTrading : Item(), HostAware {
     ApiItems.get(Constants.ItemName.TradingUpgrade))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
-    if (host.world.isRemote) null
+    if (host.world().isRemote) null
     else UpgradeTrading(host)
 
   override fun slot(stack: ItemStack) = Slot.Upgrade

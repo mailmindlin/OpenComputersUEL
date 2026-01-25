@@ -115,9 +115,8 @@ abstract class LuaStateFactory {
   // load them directly from a JAR. Lastly, we need to handle library overrides in
   // case the user wants to use custom libraries, or are not on a supported platform.
   fun init() {
-    if (libraryName == null) {
+    if (libraryName == null)
       return
-    }
 
     if (SystemUtils.IS_OS_WINDOWS && !Settings.get.alwaysTryNative) {
       if (SystemUtils.IS_OS_WINDOWS_XP) {
@@ -134,9 +133,9 @@ abstract class LuaStateFactory {
     var tmpLibFile: File? = null
     if (!Strings.isNullOrEmpty(Settings.get.forceNativeLibPathFirst)) {
       val libraryTest = File(Settings.get.forceNativeLibPathFirst, libraryName);
-      if (libraryTest.canRead) {
+      if (libraryTest.canRead()) {
         tmpLibFile = libraryTest
-        currentLib = libraryTest.getAbsolutePath
+        currentLib = libraryTest.absolutePath
         OpenComputers.log.info("Found forced-path filesystem library $currentLib.")
       }
       else

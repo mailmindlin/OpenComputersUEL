@@ -74,7 +74,7 @@ interface Node : ImmutableNode {
 
   // ----------------------------------------------------------------------- //
 
-  fun load(nbt: NBTTagCompound) {
+  override fun load(nbt: NBTTagCompound) {
     if (nbt.hasKey("address")) {
       val newAddress = nbt.getString("address")
       if (!Strings.isNullOrEmpty(newAddress) && newAddress != address) {
@@ -88,7 +88,7 @@ interface Node : ImmutableNode {
     }
   }
 
-  fun save(nbt: NBTTagCompound) {
+  override fun save(nbt: NBTTagCompound) {
     if (address != null) {
       nbt.setString("address", address)
     }

@@ -62,6 +62,8 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
         fun getSizeInventory() = tile.sizeInventory
 
         private fun applyInventoryChanges() {
+
+            fun onItemRemoved(slot: Int, removed: ItemStack) = if (tile.isServer) tile.onItemRemoved()
             updateScheduled = false
             for (slot in 0 until getSizeInventory()) {
                 val removed = pendingRemovals[slot]
@@ -69,18 +71,18 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
                 when {
                     removed != null && added != null -> {
                         if (!removed.isItemEqual(added) || !ItemStack.areItemStackTagsEqual(removed, added)) {
-                            super.onItemRemoved(slot, removed)
-                            super.onItemAdded(slot, added)
+                            tile._onItemRemoved(slot, removed)
+                            tile._onItemAdded(slot, added)
                             tile.markDirty()
                         }
                         // else: No change, ignore.
                     }
                     removed != null && added == null -> {
-                        super.onItemRemoved(slot, removed)
+                        tile._onItemRemoved(slot, removed)
                         tile.markDirty()
                     }
                     removed == null && added != null -> {
-                        super.onItemAdded(slot, added)
+                        tile._onItemAdded(slot, added)
                         tile.markDirty()
                     }
                     // No change.
@@ -128,10 +130,10 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
         fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
             val localFacing = when {
                 facing == null -> null
-                this is Rotatable -> (this as Rotatable).toLocal(facing)
+                tile is Rotatable -> (tile as Rotatable).toLocal(facing)
                 else -> facing
             }
-            return super.hasCapability(capability, facing) || components().any { component ->
+            return super.hasCapability(capability, facing) || tile.components.any { component ->
                 component != null && component is ICapabilityProvider && component.hasCapability(capability, localFacing)
             }
         }
@@ -145,56 +147,65 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
             val superResult = if (super.hasCapability(capability, facing)) super.getCapability(capability, facing) else null
             if (superResult != null) return superResult
 
-            for (component in components()) {
+            for (component in tile.components) {
                 if (component != null && component is ICapabilityProvider && component.hasCapability(capability, localFacing)) {
                     return component.getCapability(capability, localFacing)
                 }
             }
             return null
         }
-    }
 
-    override fun onItemAdded(slot: Int, stack: ItemStack) {
-        if (isServer) {
-            super.onItemAdded(slot, stack)
-        } else {
+        @SideOnly(Side.CLIENT)
+        internal fun onItemAdded(slot: Int, stack: ItemStack) {
             val removed = pendingRemovals[slot]
-            if (removed is StackOption.SomeStack && removed.stack.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(removed.stack, stack)) {
+            if (removed != null && removed.isItemEqual(stack) && ItemStack.areItemStackTagsEqual(removed, stack)) {
                 // Reverted to original state.
-                pendingAdds[slot] = StackOption.Empty
-                pendingRemovals[slot] = StackOption.Empty
+                pendingAdds[slot] = null
+                pendingRemovals[slot] = null
             } else {
                 // Got a removal and an add of *something else* in the same tick.
-                pendingAdds[slot] = StackOption.SomeStack(stack)
+                pendingAdds[slot] = stack
                 scheduleInventoryChange()
             }
         }
-    }
-
-    override fun onItemRemoved(slot: Int, stack: ItemStack) {
-        if (isServer) {
-            super.onItemRemoved(slot, stack)
-        } else {
+        @SideOnly(Side.CLIENT)
+        internal fun onItemRemoved(slot: Int, stack: ItemStack) {
             val added = pendingAdds[slot]
-            if (added is StackOption.SomeStack) {
+            if (added != null) {
                 // If we have a pending add and get a remove on a slot it is
                 // now either empty, or the previous remove is valid again.
-                pendingAdds[slot] = StackOption.Empty
+                pendingAdds[slot] = null
             } else {
                 // If we have no pending add, only the first removal can be
                 // relevant (further ones should in fact be impossible).
-                if (pendingRemovals[slot] is StackOption.Empty) {
-                    pendingRemovals[slot] = StackOption.SomeStack(stack)
+                if (pendingRemovals[slot] == null) {
+                    pendingRemovals[slot] = stack
                     scheduleInventoryChange()
                 }
             }
         }
     }
 
+    fun _onItemAdded(slot: Int, stack: ItemStack) = super<InventoryComponentInventory>.onItemAdded(slot, stack)
+    fun _onItemRemoved(slot: Int, stack: ItemStack) = super<InventoryComponentInventory>.onItemRemoved(slot, stack)
+
+    override fun onItemAdded(slot: Int, stack: ItemStack) {
+        if (isServer)
+            super<InventoryComponentInventory>.onItemAdded(slot, stack)
+        else
+            componentInventoryDelegate.onItemAdded(slot, stack)
+    }
+
+    override fun onItemRemoved(slot: Int, stack: ItemStack) {
+        if (isServer)
+            super<InventoryComponentInventory>.onItemRemoved(slot, stack)
+        else
+            componentInventoryDelegate.onItemRemoved(slot, stack)
+    }
+
     override fun save(component: ManagedEnvironment, driver: DriverItem, stack: ItemStack) {
-        if (isServer) {
+        if (isServer)
             super.save(component, driver, stack)
-        }
     }
 
     override val host: EnvironmentHost

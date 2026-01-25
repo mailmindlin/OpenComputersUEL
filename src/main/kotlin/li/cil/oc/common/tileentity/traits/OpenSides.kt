@@ -85,4 +85,6 @@ interface OpenSides : TileEntityTrait {
     fun setSideOpen(side: EnumFacing?, value: Boolean) {
         sidesDelegate[side] = value
     }
+
+    val openSides: BooleanArray get() = sidesDelegate.openSides
 }

@@ -3,6 +3,7 @@ package li.cil.oc.common.block
 import li.cil.oc.Settings
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.block.property.PropertyRotatable
+import li.cil.oc.common.block.property.PropertyRunning
 import li.cil.oc.common.tileentity.Case as TECase
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.Tooltip
@@ -20,11 +21,11 @@ import li.cil.oc.common.block.traits.StateAware as TraitStateAware
 import li.cil.oc.common.block.traits.GUI as TraitGUI
 
 class Case(val tier: Int) : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
-    override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing, property.PropertyRunning.Running)
+    override fun createBlockState(): BlockStateContainer = BlockStateContainer(this, PropertyRotatable.Facing, PropertyRunning.Running)
 
     override fun getStateFromMeta(meta: Int): IBlockState = defaultState.withProperty(PropertyRotatable.Facing, EnumFacing.byHorizontalIndex(meta shr 1))
 
-    override fun getMetaFromState(state: IBlockState): Int = (state.getValue(PropertyRotatable.Facing).horizontalIndex shl 1) or (if (state.getValue(property.PropertyRunning.Running)) 1 else 0)
+    override fun getMetaFromState(state: IBlockState): Int = (state.getValue(PropertyRotatable.Facing).horizontalIndex shl 1) or (if (state.getValue(PropertyRunning.Running)) 1 else 0)
 
     // ----------------------------------------------------------------------- //
 
@@ -44,7 +45,7 @@ class Case(val tier: Int) : RedstoneAware(), TraitPowerAcceptor, TraitStateAware
 
     // ----------------------------------------------------------------------- //
 
-    override val energyThroughput: Double get() = Settings.get.caseRate(tier)
+    override val energyThroughput: Double get() = Settings.get.caseRate[tier]
 
     override val guiType = GuiType.Case
 
@@ -56,8 +57,8 @@ class Case(val tier: Int) : RedstoneAware(), TraitPowerAcceptor, TraitStateAware
         if (player.isSneaking) {
             if (!world.isRemote) {
                 val tileEntity = world.getTileEntity(pos)
-                if (tileEntity is TECase && !tileEntity.machine.isRunning && tileEntity.isUsableByPlayer(player)) {
-                    tileEntity.machine.start()
+                if (tileEntity is TECase && !tileEntity.machine!!.isRunning && tileEntity.isUsableByPlayer(player)) {
+                    tileEntity.machine!!.start()
                 }
             }
             return true

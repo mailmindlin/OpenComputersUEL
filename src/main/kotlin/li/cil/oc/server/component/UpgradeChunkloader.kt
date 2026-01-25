@@ -20,7 +20,7 @@ import net.minecraft.entity.Entity
 import net.minecraftforge.common.ForgeChunkManager
 import net.minecraftforge.common.ForgeChunkManager.Ticket
 
-sealed class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("chunkloader")
         .withConnector()

@@ -15,6 +15,7 @@ import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.SidedComponent
 import li.cil.oc.api.network.SidedEnvironment
+import li.cil.oc.client.Sound
 import li.cil.oc.client.renderer.PetRenderer
 import li.cil.oc.common.asm.ClassTransformer
 import li.cil.oc.common.capabilities.CapabilityColored
@@ -28,7 +29,9 @@ import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.item.data.TabletData
 import li.cil.oc.common.item.traits.Chargeable
 import li.cil.oc.common.recipe.Recipes
+import li.cil.oc.common.tileentity.Case
 import li.cil.oc.common.tileentity.Robot
+import li.cil.oc.common.tileentity.RobotProxy
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.Mods
@@ -340,20 +343,20 @@ object EventHandler {
         Loot.disksForClient.clear()
         Loot.disksForCyclingClient.clear()
 
-        client.Sound.startLoop(null, "computer_running", 0f, 0)
-        scheduleServer { client.Sound.stopLoop(null) }
+        Sound.startLoop(null, "computer_running", 0f, 0)
+        scheduleServer { Sound.stopLoop(null) }
     }
 
     @SubscribeEvent
     @Suppress("unused")
     fun onBlockBreak(e: BlockEvent.BreakEvent) {
         when (val te = e.world.getTileEntity(e.pos)) {
-            is tileentity.Case -> {
+            is Case -> {
                 if (te.isCreative && (!e.player.capabilities.isCreativeMode || !te.canInteract(e.player.name))) {
                     e.isCanceled = true
                 }
             }
-            is tileentity.RobotProxy -> {
+            is RobotProxy -> {
                 val robot = te.robot
                 if (robot.isCreative && (!e.player.capabilities.isCreativeMode || !robot.canInteract(e.player.name))) {
                     e.isCanceled = true

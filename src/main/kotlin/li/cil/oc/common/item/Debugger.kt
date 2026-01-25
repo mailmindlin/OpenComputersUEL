@@ -1,6 +1,7 @@
 package li.cil.oc.common.item
 
 import li.cil.oc.OpenComputers
+import li.cil.oc.api.Network
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.ComponentConnector
 import li.cil.oc.api.network.Connector
@@ -53,7 +54,7 @@ class Debugger(override val parent: Delegator) : Delegate {
 
 object DebuggerObject : Environment {
     @JvmField
-    var node: Node? = api.Network.newNode(this, Visibility.Network).create()
+    var node: Node? = Network.newNode(this, Visibility.Network).create()
 
     override fun node(): Node? = node
 
@@ -72,7 +73,7 @@ object DebuggerObject : Environment {
     @JvmStatic
     fun reconnect(nodes: Array<Node?>) {
         node?.remove()
-        api.Network.joinNewNetwork(node)
+        Network.joinNewNetwork(node)
         for (node in nodes) {
             if (node != null) {
                 this.node?.connect(node)

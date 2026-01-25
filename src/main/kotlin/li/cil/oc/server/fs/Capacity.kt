@@ -88,7 +88,7 @@ interface Capacity : OutputStreamFileSystem {
     fun capacityOpenOutputHandle(id: Int, path: String, mode: Mode, superOpenOutputHandle: (Int, String, Mode) -> OutputStreamFileSystem.OutputHandle?): OutputStreamFileSystem.OutputHandle? {
         val delta = when {
             exists(path) -> if (mode == Mode.Write) -size(path) else 0 // Overwrite clears, append no change
-            else -> Settings.get.fileCost // File creation.
+            else -> Settings.get.fileCost.toLong() // File creation.
         }
         if (capacity - used < delta && !ignoreCapacity) {
             throw IOException("not enough space")

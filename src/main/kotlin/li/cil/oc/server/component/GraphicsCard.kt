@@ -43,7 +43,7 @@ import kotlin.math.pow
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-sealed class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
+class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
   override val node = Network.newNode(this, Visibility.Neighbors).
     withComponent("gpu").
     withConnector().

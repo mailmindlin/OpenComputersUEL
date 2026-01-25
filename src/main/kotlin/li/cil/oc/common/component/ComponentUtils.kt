@@ -7,5 +7,4 @@ import li.cil.oc.util.ResultWrapper
  * Utility function for creating result arrays from callbacks.
  * This replaces the Scala package object's implicit conversion.
  */
-@JvmStatic
-fun result(vararg args: Any?): Array<Any?> = ResultWrapper.result(*args)
+internal fun result(vararg args: Any?): Array<Any?> = ResultWrapper.result(*args)

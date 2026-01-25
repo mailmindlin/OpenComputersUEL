@@ -6,9 +6,9 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
 import li.cil.oc.util.DatabaseAccess
-import li.cil.oc.util.ExtendedArguments.checkSlot
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.checkSlot
 import net.minecraft.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
@@ -16,7 +16,7 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
     @Callback(doc = """function([slot:number]):table -- Get a description of the stack in the specified slot or the selected slot.""")
     fun getStackInInternalSlot(context: Context, args: Arguments): Array<Any?> {
         return if (Settings.get.allowItemStackInspection) {
-            val slot = optSlot(args, 0)
+            val slot = args.optSlot(0)
             result(inventory.getStackInSlot(slot))
         } else {
             result(null, "not enabled in config")
@@ -27,15 +27,11 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
     fun isEquivalentTo(context: Context, args: Arguments): Array<Any?> {
         val slot = args.checkSlot(inventory, 0)
 
+        val stackA = stackInSlot(selectedSlot)
+        val stackB = stackInSlot(slot)
         val equivalent = when {
-            stackInSlot(selectedSlot) is StackOption.SomeStack && stackInSlot(slot) is StackOption.SomeStack -> {
-                val stackA = (stackInSlot(selectedSlot) as StackOption.SomeStack).stack
-                val stackB = (stackInSlot(slot) as StackOption.SomeStack).stack
-                OreDictionary.getOreIDs(stackA).intersect(OreDictionary.getOreIDs(stackB).toSet()).isNotEmpty()
-            }
-            stackInSlot(selectedSlot) is StackOption.EmptyStack && stackInSlot(slot) is StackOption.EmptyStack -> {
-                true
-            }
+            stackA != null && stackB != null -> OreDictionary.getOreIDs(stackA).intersect(OreDictionary.getOreIDs(stackB).toSet()).isNotEmpty()
+            stackA == null && stackB == null -> true
             else -> false
         }
 

@@ -4,9 +4,9 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
-import li.cil.oc.util.ExtendedArguments.optFluidCount
-import li.cil.oc.util.ExtendedArguments.optTankProperties
 import li.cil.oc.util.FluidUtils
+import li.cil.oc.util.optFluidCount
+import li.cil.oc.util.optTankProperties
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.capability.IFluidTankProperties
 
@@ -19,7 +19,7 @@ interface TankWorldControl : TankAware, WorldAware, SideRestricted {
         if (stack != null) {
             val handler = FluidUtils.fluidHandlerAt(position.offset(side), side.opposite)
             if (handler != null) {
-                val properties = args.optTankProperties(handler, 1, null)
+                val properties = args.optTankProperties(handler, 1)
                 return if (properties is IFluidTankProperties) {
                     result(stack.isFluidEqual(properties.contents))
                 } else {

@@ -1133,10 +1133,10 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
     }
 
     /** Signals are messages sent to the Lua state from Java asynchronously. */
-    class Signal(val name: String, val args: Array<Any?>) : li.cil.oc.api.machine.Signal {
+    class Signal(val name: String, val args: Array<out Any?>) : li.cil.oc.api.machine.Signal {
         override fun name() = name
         override fun args() = args
-        fun convert() = Signal(name, Registry.convert(args))
+        fun convert() = Signal(name, Registry.run { args.convert() })
     }
 
     companion object {

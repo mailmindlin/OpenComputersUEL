@@ -8,7 +8,7 @@ abstract class DatabaseInventory : ItemStackInventory() {
     open val tier: Int
         get() = DriverUpgradeDatabase.tier(container)
 
-    override fun getSizeInventory(): Int = Settings.get.databaseEntriesPerTier(tier)
+    override fun getSizeInventory(): Int = Settings.get.databaseEntriesPerTier[tier]
 
     override val inventoryName: String
         get() = "database"

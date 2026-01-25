@@ -13,7 +13,7 @@ import li.cil.oc.api.network.FilteredEnvironment
 import li.cil.oc.api.network.ManagedPeripheral
 import li.cil.oc.server.driver.CompoundBlockEnvironment
 
-internal object Callbacks {
+object Callbacks {
   private val cache = mutableMapOf<Class<*>, Map<String, Callback>>()
 
   operator fun invoke(host: Any) = when (host) {
@@ -121,7 +121,7 @@ internal object Callbacks {
 
   // ----------------------------------------------------------------------- //
 
-  internal sealed class Callback(val annotation: MachineCallback) {
+  sealed class Callback(val annotation: MachineCallback) {
     abstract operator fun invoke(instance: Any, context: Context, args: Arguments): Array<*>
   }
 

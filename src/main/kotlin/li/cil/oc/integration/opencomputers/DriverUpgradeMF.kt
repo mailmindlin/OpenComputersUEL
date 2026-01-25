@@ -32,7 +32,7 @@ object DriverUpgradeMF : Item(), HostAware {
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? {
     if (host.world() != null && !host.world().isRemote) {
       if (stack.hasTagCompound()) {
-        val coord = stack.tagCompound.getIntArray(Settings.namespace + "coord")
+        val coord = stack.tagCompound!!.getIntArray(Settings.namespace + "coord")
         if (coord.size == 5) {
           val (x, y, z, dim, side) = coord
           val world = DimensionManager.getWorld(dim)

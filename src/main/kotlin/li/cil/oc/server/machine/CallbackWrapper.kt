@@ -9,8 +9,6 @@ import org.objectweb.asm.ClassWriter
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
-import scala.collection.mutable
-
 interface CallbackCall {
   fun call(instance: Any, context: Context, args: Arguments): Array<Any>
 }
@@ -23,7 +21,7 @@ internal object CallbackWrapper {
   private final val CallbackWrapperCache = mutableMapOf<Method, CallbackCall>()
 
   fun createCallbackWrapper(method: Method): CallbackCall {
-    synchronized(this) {
+    return synchronized(this) {
       CallbackWrapperCache.getOrPut(method) { createWrapper(method, CallbackCallInterface, this::emitCallbackCall) as CallbackCall }
     }
   }
@@ -39,7 +37,7 @@ internal object CallbackWrapper {
       GeneratedClassLoader.addClass(className, cw.toByteArray())
     }
 
-    GeneratedClassLoader.findClass(className).newInstance() as Any
+    return GeneratedClassLoader.findClass(className).newInstance() as Any
   }
 
   private fun emitConstructor(cw: ClassWriter) {
@@ -77,11 +75,7 @@ internal object CallbackWrapper {
       GeneratedClasses[name] = defineClass(name, bytes, 0, bytes.size)
     }
 
-    override fun findClass(name: String): Class<*> {
-      GeneratedClasses.get(name) match {
-        case Some(clazz) => clazz
-        case _ => super.findClass(name)
-      }
-    }
+    public override fun findClass(name: String): Class<*>
+      = GeneratedClasses[name] ?: super.findClass(name)
   }
 }

@@ -4,7 +4,7 @@ import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 
-abstract class ManagedEnvironmentKt: AbstractManagedEnvironment(), DeviceInfo {
+abstract class ManagedEnvironmentKt: AbstractManagedEnvironment() {
     internal abstract val node: Node
     override fun node(): Node = this.node
 }

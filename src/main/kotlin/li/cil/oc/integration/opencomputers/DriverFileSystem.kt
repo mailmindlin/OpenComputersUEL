@@ -53,9 +53,9 @@ object DriverFileSystem : Item() {
     }
 
   private fun createEnvironment(stack: ItemStack, capacity: Int, platterCount: Int, host: EnvironmentHost, speed: Int) = if (DimensionManager.getWorld(0) != null) {
-    if (stack.hasTagCompound() && stack.tagCompound.hasKey(Settings.namespace + "lootFactory")) {
+    if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "lootFactory")) {
       // Loot disk, create file system using factory callback.
-      Loot.factories[stack.tagCompound.getString(Settings.namespace + "lootFactory")]?.let { factory ->
+      Loot.factories[stack.tagCompound!!.getString(Settings.namespace + "lootFactory")]?.let { factory ->
         val label =
           if (dataTag(stack).hasKey(Settings.namespace + "fs.label"))
             dataTag(stack).getString(Settings.namespace + "fs.label")
@@ -76,7 +76,7 @@ object DriverFileSystem : Item() {
         Drive(capacity.coerceAtLeast(0), platterCount, label, host, sound, speed, drive.isLocked)
       }
       else {
-        var fs = ApiFileSystem.fromSaveDirectory(address, capacity.coerceAtLeast(0), Settings.get.bufferChanges)
+        var fs = ApiFileSystem.fromSaveDirectory(address, capacity.coerceAtLeast(0).toLong(), Settings.get.bufferChanges)
         if (drive.isLocked) {
           fs = ApiFileSystem.asReadOnly(fs)
           label = ReadOnlyLabel(label.label)

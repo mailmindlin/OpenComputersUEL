@@ -5,8 +5,8 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
-import li.cil.oc.util.ExtendedArguments.optTankProperties
 import li.cil.oc.util.FluidUtils
+import li.cil.oc.util.optTankProperties
 import net.minecraftforge.fluids.capability.IFluidTankProperties
 
 interface WorldTankAnalytics : WorldAware, SideRestricted {
@@ -16,11 +16,11 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
         return if (handler != null) {
-            val properties = args.optTankProperties(handler, 1, null)
+            val properties = args.optTankProperties(handler, 1)
             if (properties is IFluidTankProperties) {
                 result(properties.contents?.amount ?: 0)
             } else {
-                val total = handler.tankProperties.sumBy { it.contents?.amount ?: 0 }
+                val total = handler.tankProperties.sumOf { it.contents?.amount ?: 0 }
                 result(total)
             }
         } else {
@@ -34,7 +34,7 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
         return if (handler != null) {
-            val properties = args.optTankProperties(handler, 1, null)
+            val properties = args.optTankProperties(handler, 1)
             if (properties is IFluidTankProperties) {
                 result(properties.capacity)
             } else {
@@ -53,7 +53,7 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
 
             val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
             if (handler != null) {
-                val properties = args.optTankProperties(handler, 1, null)
+                val properties = args.optTankProperties(handler, 1)
                 if (properties is IFluidTankProperties) {
                     result(properties)
                 } else {

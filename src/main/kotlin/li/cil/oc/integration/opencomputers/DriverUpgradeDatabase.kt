@@ -22,8 +22,9 @@ object DriverUpgradeDatabase : Item(), HostAware {
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null
-    else ComponentUpgradeDatabase(object : DatabaseInventory {
-      override fun container() = stack
+    else ComponentUpgradeDatabase(object : DatabaseInventory() {
+      override val container: ItemStack
+        get() = stack
 
       override fun isUsableByPlayer(player: EntityPlayer) = false
     })

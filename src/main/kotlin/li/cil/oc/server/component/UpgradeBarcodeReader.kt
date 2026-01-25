@@ -9,7 +9,7 @@ import li.cil.oc.util.getTileEntity
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 
-sealed class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("barcode_reader")
         .withConnector()
