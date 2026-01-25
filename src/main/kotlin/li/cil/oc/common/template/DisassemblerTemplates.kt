@@ -12,7 +12,7 @@ object DisassemblerTemplates {
     @JvmStatic
     fun add(template: NBTTagCompound) {
         try {
-            val selector = IMC.getStaticMethod(template.getString("select"), ItemStack::class.java)
+            val selector = IMC.getStaticMethod(template.getString("select"), ItemStack::class.java, returnType = Boolean::class.javaPrimitiveType)
             val disassembler = IMC.getStaticMethod(template.getString("disassemble"), ItemStack::class.java, Array<ItemStack>::class.java)
 
             templates.add(Template(selector, disassembler))
