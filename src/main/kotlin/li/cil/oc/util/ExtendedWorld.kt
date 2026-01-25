@@ -88,6 +88,8 @@ fun IBlockAccess.getLightBrightnessForSkyBlocks(position: BlockPosition, minBrig
     getCombinedLight(position.toBlockPos(), minBrightness)
 
 // World extensions
+fun World.blockExists(position: BlockPos): Boolean =
+    isBlockLoaded(position)
 fun World.blockExists(position: BlockPosition): Boolean =
     isBlockLoaded(position.toBlockPos())
 
