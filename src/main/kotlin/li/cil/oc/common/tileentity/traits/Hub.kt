@@ -40,7 +40,7 @@ interface Hub : Environment, SidedEnvironment, Tickable {
         // 20 cycles
         val packetsPerCycleAvg = MovingAverage(20)
 
-        internal val plugs: Array<Plug> = EnumFacing.values().map { side -> createPlug(side) }.toTypedArray()
+        internal val plugs: SidedArray<Plug> = SidedArray { side -> createPlug(side) }
 
         protected open fun createPlug(side: EnumFacing): Plug = Plug(side)
 
@@ -69,12 +69,12 @@ interface Hub : Environment, SidedEnvironment, Tickable {
                 super.writeToNBTForServer(nbt)
                 // Side check for Waila (and other mods that may call this client side).
                 if (tile.isServer) {
-                    nbt.extendedNBT().setNewTagList(PlugsTag, plugs.map { plug ->
+                    nbt.setNewTagList(PlugsTag, plugs.map { plug ->
                         val plugNbt = NBTTagCompound()
                         plug.node?.save(plugNbt)
                         plugNbt
                     })
-                    nbt.extendedNBT().setNewTagList(QueueTag, queue.map { (sourceSide, packet) ->
+                    nbt.setNewTagList(QueueTag, queue.map { (sourceSide, packet) ->
                         val tag = NBTTagCompound()
                         tag.setDirection(SideTag, sourceSide)
                         packet.save(tag)
@@ -102,7 +102,7 @@ interface Hub : Environment, SidedEnvironment, Tickable {
     @SideOnly(Side.CLIENT)
     override fun canConnect(side: EnumFacing): Boolean = side != null
 
-    override fun sidedNode(side: EnumFacing): Node? = if (side != null) plugs[side.ordinal].node else null
+    override fun sidedNode(side: EnumFacing?): Node? = if (side != null) hubDelegate.plugs[side.ordinal].node else null
 
     // ----------------------------------------------------------------------- //
 
