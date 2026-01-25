@@ -7,18 +7,21 @@ import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.SidedEnvironment
-import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.common.tileentity.traits.isServer
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 import li.cil.oc.common.tileentity.traits.ImmibisMicroblock as TraitImmibisMicroblock
 
-class Keyboard : TileEntityBase(), TraitEnvironment, TraitRotatable, TraitImmibisMicroblock, SidedEnvironment, Analyzable {
+class Keyboard : TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitImmibisMicroblock, SidedEnvironment, Analyzable {
     override val validFacings: Array<EnumFacing> = EnumFacing.values()
+
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
 
     @JvmField
     val keyboard = run {
@@ -65,5 +68,5 @@ class Keyboard : TileEntityBase(), TraitEnvironment, TraitRotatable, TraitImmibi
 
     private val isOnWall: Boolean get() = facing() != EnumFacing.UP && facing() != EnumFacing.DOWN
 
-    private val forward: EnumFacing get() = if (isOnWall) EnumFacing.UP else yaw
+    private val forward: EnumFacing? get() = if (isOnWall) EnumFacing.UP else yaw
 }

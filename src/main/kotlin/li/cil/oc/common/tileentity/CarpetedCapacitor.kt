@@ -1,6 +1,7 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.Settings
+import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class CarpetedCapacitor : Capacitor(), TraitTickable {

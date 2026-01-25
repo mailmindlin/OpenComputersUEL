@@ -1,14 +1,13 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.api.network.Node
-import li.cil.oc.common.tileentity.traits.Environment
 import li.cil.oc.server.component.Transposer as ComponentTransposer
 import net.minecraft.nbt.NBTTagCompound
 
-sealed class Transposer : TileEntityBase(), Environment {
+class Transposer : TileEntityBase.TEEnvironmentBase() {
     private val transposer = ComponentTransposer.Block(this)
 
-    override fun getNode(): Node = transposer.node
+    override fun node(): Node = transposer.node
 
     // Used on client side to check whether to render activity indicators.
     @JvmField

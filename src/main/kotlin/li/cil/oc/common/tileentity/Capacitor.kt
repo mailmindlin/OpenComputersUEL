@@ -3,20 +3,21 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
+import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.tileentity.traits.Environment
+import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.util.EnumFacing
 
-open class Capacitor : TileEntityBase(), Environment, DeviceInfoKt {
+open class Capacitor : TileEntityBase.TEEnvironmentBase(), Environment, DeviceInfoKt {
     // Start with maximum theoretical capacity, gets reduced after validation.
     // This is done so that we don't lose energy while loading.
     @JvmField
-    val node: Node = Network.newNode(this, Visibility.Network)
+    val node: Connector = Network.newNode(this, Visibility.Network)
         .withConnector(maxCapacity)
         .create()
 
@@ -33,7 +34,7 @@ open class Capacitor : TileEntityBase(), Environment, DeviceInfoKt {
     // ----------------------------------------------------------------------- //
 
     override fun dispose() {
-        super.dispose()
+        super<TEEnvironmentBase>.dispose()
         if (isServer) {
             indirectNeighbors.mapNotNull { coordinate ->
                 if (world.isBlockLoaded(coordinate)) world.getTileEntity(coordinate) else null
@@ -44,7 +45,7 @@ open class Capacitor : TileEntityBase(), Environment, DeviceInfoKt {
     }
 
     override fun onConnect(node: Node) {
-        super.onConnect(node)
+        super<TEEnvironmentBase>.onConnect(node)
         if (node == this.node) {
             recomputeCapacity(updateSecondGradeNeighbors = true)
         }

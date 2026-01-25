@@ -12,6 +12,10 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.template.DisassemblerTemplates
+import li.cil.oc.common.tileentity.traits.Inventory
+import li.cil.oc.common.tileentity.traits.isServer
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.BlockPosition
@@ -22,6 +26,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.common.util.Constants as NBTConstants
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -33,13 +38,22 @@ import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.PlayerInputAware as TraitPlayerInputAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfoKt {
+class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfoKt {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
         .create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
+
+    override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
+    override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+
+    override val items: Array<ItemStack>
+        get() = TODO("Not yet implemented")
+
+    override fun getDisplayName(): ITextComponent = super<Inventory>.getDisplayName()
 
     @JvmField
     var isActive = false
@@ -81,11 +95,11 @@ class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, Tra
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != EnumFacing.UP
+    override fun hasConnector(side: EnumFacing?): Boolean = side != EnumFacing.UP
+    override fun connector(side: EnumFacing?): Connector? = if (side != EnumFacing.UP) node else null
 
-    override fun connector(side: EnumFacing): Connector? = if (side != EnumFacing.UP) node else null
-
-    override fun energyThroughput(): Double = Settings.get.disassemblerRate
+    override val energyThroughput: Double
+        get() = Settings.get.disassemblerRate
 
     override fun getCurrentState(): EnumSet<StateAware.State> {
         return when {
@@ -133,10 +147,8 @@ class Disassembler : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, Tra
             val template = DisassemblerTemplates.select(stack)
             if (template != null) {
                 val result = template.disassemble(stack, ingredients)
-                val stacks = result._1()
-                val drops = result._2()
-                stacks?.let { queue.addAll(it) }
-                drops?.forEach { it?.forEach { item -> drop(item) } }
+                result?.stacks?.let { queue.addAll(it) }
+                result?.drops?.forEach { item -> drop(item) }
             } else {
                 queue.addAll(ingredients)
             }

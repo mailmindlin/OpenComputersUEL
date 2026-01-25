@@ -5,30 +5,31 @@ import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.common.tileentity.traits.Colored
-import li.cil.oc.common.tileentity.traits.Environment
-import li.cil.oc.common.tileentity.traits.ImmibisMicroblock
-import li.cil.oc.common.tileentity.traits.NotAnalyzable
+import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.block.Cable as BlockCable
 import li.cil.oc.util.Color
 import li.cil.oc.util.ItemColorizer
+import li.cil.oc.util.rgbValue
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
+import net.minecraft.util.math.AxisAlignedBB
 
-class Cable : TileEntityBase(), Environment, NotAnalyzable, ImmibisMicroblock, Colored {
+class Cable : TileEntityBase.TEEnvironmentBase(), Environment, NotAnalyzable, ImmibisMicroblock, Colored {
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
+    override fun node(): Node = node
 
-    override fun getNode(): Node = node
+    override val colorDelegate: Colored.Delegate = Colored.Delegate(this)
 
     init {
+        behaviors.register(colorDelegate)
         setColor(Color.rgbValues(EnumDyeColor.SILVER).toInt())
     }
 
     fun createItemStack(): ItemStack {
         val stack = ApiItems.get(Constants.BlockName.Cable).createItemStack(1)
-        if (color != Color.rgbValues(EnumDyeColor.SILVER).toInt()) {
-            ItemColorizer.setColor(stack, color)
+        if (color != EnumDyeColor.SILVER.rgbValue) {
+            ItemColorizer.setColor(stack, color.toInt())
         }
         return stack
     }
@@ -41,7 +42,8 @@ class Cable : TileEntityBase(), Environment, NotAnalyzable, ImmibisMicroblock, C
 
     override fun controlsConnectivity(): Boolean = true
 
-    override fun consumesDye(): Boolean = true
+    override val consumesDye: Boolean
+        get() = true
 
     override fun onColorChanged() {
         super.onColorChanged()
@@ -50,5 +52,5 @@ class Cable : TileEntityBase(), Environment, NotAnalyzable, ImmibisMicroblock, C
         }
     }
 
-    override fun getRenderBoundingBox() = BlockCable.bounds(world, pos).offset(x.toDouble(), y.toDouble(), z.toDouble())
+    override fun getRenderBoundingBox(): AxisAlignedBB = BlockCable.bounds(world, pos).offset(x.toDouble(), y.toDouble(), z.toDouble())
 }

@@ -2,31 +2,31 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.Node
-import li.cil.oc.SidedEnvironment
+import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
-import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
-import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.server.component.result
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.SoundCategory
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
 import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
+import li.cil.oc.server.PacketSender as ServerPacketSender
 
-class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfoKt {
+class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfoKt {
     override val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
@@ -37,38 +37,38 @@ class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRed
             DeviceAttribute.Width to "6"
         )
     }
+    override val redstoneDelegate: TraitRedstoneAware.Delegate = register(TraitRedstoneAware::Delegate)
+    override val sidesDelegate: TraitOpenSides.Delegate = register(TraitOpenSides::Delegate)
 
     init {
-        _isOutputEnabled = true
+        redstoneDelegate.isOutputEnabled = true
     }
 
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Component = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("net_splitter", Visibility.Network)
         .create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
 
     @JvmField
     var isInverted = false
 
-    override var openSides: Array<Boolean> = Array(EnumFacing.VALUES.size) { false }
+    override fun isSideOpen(side: EnumFacing?): Boolean = isInverted xor super.isSideOpen(side)
 
-    override fun isSideOpen(side: EnumFacing): Boolean = if (isInverted) !super.isSideOpen(side) else super.isSideOpen(side)
-
-    override fun setSideOpen(side: EnumFacing, value: Boolean) {
+    override fun setSideOpen(side: EnumFacing?, value: Boolean) {
         val previous = isSideOpen(side)
         super.setSideOpen(side, value)
-        if (previous != isSideOpen(side)) {
-            if (isServer) {
-                node.remove()
-                ApiNetwork.joinOrCreateNetwork(this)
-                ServerPacketSender.sendNetSplitterState(this)
-                world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
-                world.notifyNeighborsOfStateChange(pos, blockType, false)
-            } else {
-                world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
-            }
+        if (previous == isSideOpen(side))
+            return
+        if (isServer) {
+            node.remove()
+            ApiNetwork.joinOrCreateNetwork(this)
+            ServerPacketSender.sendNetSplitterState(this)
+            world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
+            world.notifyNeighborsOfStateChange(pos, blockType, false)
+        } else {
+            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
         }
     }
 
@@ -82,7 +82,7 @@ class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRed
     // ----------------------------------------------------------------------- //
 
     override fun initialize() {
-        super.initialize()
+        super<TEEnvironmentBase>.initialize()
         EventHandler.scheduleServer(this)
     }
 
@@ -112,12 +112,12 @@ class NetSplitter : TileEntityBase(), TraitEnvironment, TraitOpenSides, TraitRed
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
         isInverted = nbt.getBoolean(IsInvertedTag)
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
         nbt.setBoolean(IsInvertedTag, isInverted)
     }
 

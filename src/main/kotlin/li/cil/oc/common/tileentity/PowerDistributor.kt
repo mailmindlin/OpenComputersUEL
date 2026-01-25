@@ -5,18 +5,25 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
+import li.cil.oc.common.tileentity.traits.PowerBalancer
+import li.cil.oc.common.tileentity.traits.isServer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.common.util.Constants as NBTConstants
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
-import li.cil.oc.common.tileentity.traits.PowerBalancer as TraitPowerBalancer
 import li.cil.oc.common.tileentity.traits.NotAnalyzable as TraitNotAnalyzable
+import li.cil.oc.common.tileentity.traits.PowerBalancer as TraitPowerBalancer
+import net.minecraftforge.common.util.Constants as NBTConstants
 
-class PowerDistributor: TileEntityBase(), TraitEnvironment, TraitPowerBalancer, TraitNotAnalyzable {
-    override fun getNode(): Node? = null
+class PowerDistributor: TileEntityBase.TEEnvironmentBase(), TraitPowerBalancer, TraitNotAnalyzable {
+    override fun node(): Node? = null
+
+    override var globalBuffer: Double = 0.0
+    override var globalBufferSize: Double = 0.0
+
+    override val powerDelegate: PowerBalancer.Delegate = PowerBalancer.Delegate(this)
 
     private val nodes: Array<Connector> = Array(6) {
         Network.newNode(this, Visibility.None)
@@ -25,7 +32,7 @@ class PowerDistributor: TileEntityBase(), TraitEnvironment, TraitPowerBalancer, 
     }
 
     override val isConnected: Boolean
-        get() = nodes.any { node -> node.address != null && node.network != null }
+        get() = nodes.any { node -> node.address() != null && node.network() != null }
 
     // ----------------------------------------------------------------------- //
 
@@ -37,11 +44,17 @@ class PowerDistributor: TileEntityBase(), TraitEnvironment, TraitPowerBalancer, 
     // ----------------------------------------------------------------------- //
 
     companion object {
-        private val ConnectorTag = Settings.namespace + "connector"
+        private const val ConnectorTag = Settings.namespace + "connector"
+    }
+
+    override fun updateEntity() {
+        super<PowerBalancer>.updateEntity()
+        super<TEEnvironmentBase>.updateEntity()
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         super.readFromNBTForServer(nbt)
+        this.powerDelegate.readFromNBTForServer(nbt)
         val tagList = nbt.getTagList(ConnectorTag, NBTConstants.NBT.TAG_COMPOUND)
         for (i in 0 until minOf(tagList.tagCount(), nodes.size)) {
             nodes[i].load(tagList.getCompoundTagAt(i))

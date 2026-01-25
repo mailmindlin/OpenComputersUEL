@@ -5,11 +5,11 @@ import li.cil.oc.server.component.Geolyzer as ComponentGeolyzer
 import net.minecraft.nbt.NBTTagCompound
 import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 
-class Geolyzer: TileEntityBase(), TraitEnvironment {
+class Geolyzer: TileEntityBase.TEEnvironmentBase() {
     @JvmField
     val geolyzer = ComponentGeolyzer(this)
 
-    override fun getNode(): Node = geolyzer.node
+    override fun node(): Node = geolyzer.node
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         super.readFromNBTForServer(nbt)
