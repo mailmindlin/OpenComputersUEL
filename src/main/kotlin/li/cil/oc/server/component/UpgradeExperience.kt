@@ -20,11 +20,16 @@ import net.minecraft.entity.item.EntityXPOrb
 import net.minecraft.init.Items
 import net.minecraft.nbt.NBTTagCompound
 
-sealed class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+    companion object {
+        const val MaxLevel = 30
+    }
+
+    var experience = 0.0
+    var level = 0
+
     private val agent: Agent
         get() = host as Agent
-
-    val MaxLevel = 30
 
     override val node = Network.newNode(this, Visibility.Network)
         .withComponent("experience")
@@ -39,14 +44,10 @@ sealed class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt
         DeviceAttribute.Capacity to "30"
     )
 
-    var experience = 0.0
-
-    var level = 0
-
     private val xpForNextLevel: Double
         get() = UpgradeExperience.xpForLevel(level + 1)
 
-    private fun addExperience(value: Double) {
+    internal fun addExperience(value: Double) {
         if (level < MaxLevel) {
             experience += value
             if (experience >= xpForNextLevel) {
@@ -74,11 +75,11 @@ sealed class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt
     }
 
     @Callback(direct = true, doc = "function():number -- The current level of experience stored in this experience upgrade.")
-    fun level(context: Context, args: Arguments): Array<Any?> =
+    fun level(context: Context, args: Arguments): Result =
         result(UpgradeExperience.calculateExperienceLevel(level, experience))
 
     @Callback(doc = "function():boolean -- Tries to consume an enchanted item to add experience to the upgrade.")
-    fun consume(context: Context, args: Arguments): Array<Any?> {
+    fun consume(context: Context, args: Arguments): Result {
         if (level >= MaxLevel) {
             return result(Unit, "max level")
         }

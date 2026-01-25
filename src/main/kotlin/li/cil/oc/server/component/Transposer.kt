@@ -43,7 +43,7 @@ object Transposer {
         }
     }
 
-    sealed internal class Block(val host: TETransposer) : Common() {
+    internal class Block(val host: TETransposer) : Common() {
         override val position: BlockPosition
             get() = BlockPosition(host)
 

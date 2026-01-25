@@ -20,7 +20,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntityFurnace
 
-sealed class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
     private val agent: Agent
         get() = host as Agent
 
