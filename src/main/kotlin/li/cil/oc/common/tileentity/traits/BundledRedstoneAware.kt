@@ -1,13 +1,23 @@
 package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.Settings
-import li.cil.oc.util.setNewTagList
-import li.cil.oc.util.toNbt
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagIntArray
 import net.minecraft.util.EnumFacing
-import net.minecraftforge.common.capabilities.Capability
-import net.minecraftforge.common.util.Constants.NBT
+
+class SidedArray<T> internal constructor(private val value: Array<T>) {
+    init {
+        assert(value.size == 6)
+    }
+
+    operator fun get(side: EnumFacing): T = this.value[side.index]
+    operator fun set(side: EnumFacing, value: T) {
+        this.value[side.index] = value
+    }
+    companion object {
+        internal inline operator fun <reified T> invoke(value: T): SidedArray<T> = SidedArray(arrayOf(value, value, value, value, value, value, ))
+        internal inline operator fun <reified T> invoke(crossinline f: () -> T): SidedArray<T> = SidedArray(Array(6) { f() })
+    }
+}
 
 /**
  * Abstract base class for tile entities that interact with bundled redstone.
@@ -15,17 +25,64 @@ import net.minecraftforge.common.util.Constants.NBT
  *
  * Note: ProjectRed and Charset integration is handled via Scala integration modules.
  */
-abstract class BundledRedstoneAware : RedstoneAware() {
+interface BundledRedstoneAware : RedstoneAware {
+    override val redstoneDelegate: Delegate
 
-    protected val _bundledInput: Array<IntArray> = Array(6) { IntArray(16) { -1 } }
+    class Delegate(te: BundledRedstoneAware): RedstoneAware.Delegate(te) {
+        protected val bundledInput: SidedArray<IntArray> = SidedArray { IntArray(16) { -1 } }
+        protected val rednetInput: SidedArray<IntArray> = SidedArray { IntArray(16) { -1 } }
+        protected val bundledOutput: SidedArray<IntArray> =SidedArray { IntArray(16) { 0 } }
 
-    protected val _rednetInput: Array<IntArray> = Array(6) { IntArray(16) { -1 } }
+        companion object {
+            private const val BundledInputTag = Settings.namespace + "rs.bundledInput"
+            private const val BundledOutputTag = Settings.namespace + "rs.bundledOutput"
+            private const val RednetInputTag = Settings.namespace + "rs.rednetInput"
+        }
 
-    protected val _bundledOutput: Array<IntArray> = Array(6) { IntArray(16) { 0 } }
+        override fun readFromNBTForServer(nbt: NBTTagCompound) {
+            super.readFromNBTForServer(nbt)
+            /*val bundledInputList = nbt.getTagList(BundledInputTag, NBT.TAG_INT_ARRAY)
+            for (index in 0 until bundledInputList.tagCount()) {
+                if (index < bundledInput.size) {
+                    val input = (bundledInputList.get(index) as NBTTagIntArray).intArray
+                    val safeLength = minOf(input.size, _bundledInput[index].size)
+                    input.copyInto(_bundledInput[index], 0, 0, safeLength)
+                }
+            }
+
+            val bundledOutputList = nbt.getTagList(BundledOutputTag, NBT.TAG_INT_ARRAY)
+            for (index in 0 until bundledOutputList.tagCount()) {
+                if (index < _bundledOutput.size) {
+                    val output = (bundledOutputList.get(index) as NBTTagIntArray).intArray
+                    val safeLength = minOf(output.size, _bundledOutput[index].size)
+                    output.copyInto(_bundledOutput[index], 0, 0, safeLength)
+                }
+            }
+
+            val rednetInputList = nbt.getTagList(RednetInputTag, NBT.TAG_INT_ARRAY)
+            for (index in 0 until rednetInputList.tagCount()) {
+                if (index < _rednetInput.size) {
+                    val input = (rednetInputList.get(index) as NBTTagIntArray).intArray
+                    val safeLength = minOf(input.size, _rednetInput[index].size)
+                    input.copyInto(_rednetInput[index], 0, 0, safeLength)
+                }
+            }*/
+            TODO()
+        }
+
+        override fun writeToNBTForServer(nbt: NBTTagCompound) {
+            super.writeToNBTForServer(nbt)
+
+            /*nbt.setNewTagList(BundledInputTag, bundledInput.map { it.toNbt() })
+            nbt.setNewTagList(BundledOutputTag, bundledOutput.map { it.toNbt() })
+            nbt.setNewTagList(RednetInputTag, rednetInput.map { it.toNbt() })*/
+            TODO()
+        }
+    }
 
     // ----------------------------------------------------------------------- //
 
-    override fun setOutputEnabled(value: Boolean): RedstoneAware {
+    /*override fun setOutputEnabled(value: Boolean): RedstoneAware {
         if (value != _isOutputEnabled) {
             if (!value) {
                 for (i in _bundledOutput.indices) {
@@ -193,5 +250,5 @@ abstract class BundledRedstoneAware : RedstoneAware() {
         nbt.setNewTagList(RednetInputTag, _rednetInput.map { it.toNbt() })
     }
 
-    // Note: Capability handling for Charset integration is done via Scala mixin
+    // Note: Capability handling for Charset integration is done via Scala mixin*/
 }

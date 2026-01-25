@@ -5,12 +5,15 @@ import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.*
 import li.cil.oc.client.gui.Screen as ScreenGui
 import li.cil.oc.common.component.TextBuffer
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.Colored
+import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
-import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.common.tileentity.traits.delegates.RotatableDelegate
 import li.cil.oc.util.Color
 import li.cil.oc.common.tileentity.traits.TextBuffer as TraitTextBuffer
-import li.cil.oc.util.ExtendedWorld.blockExists
+import li.cil.oc.util.blockExists
+import li.cil.oc.util.getTileEntity
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.EntityPlayer
@@ -18,6 +21,7 @@ import net.minecraft.entity.projectile.EntityArrow
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.AxisAlignedBB
+import net.minecraft.util.math.BlockPos
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.*
@@ -27,15 +31,17 @@ import kotlin.math.min
 import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 import li.cil.oc.common.tileentity.traits.Colored as TraitColored
 
-class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnvironment, Rotatable, TraitRedstoneAware, TraitColored, Analyzable, Comparable<Screen> {
-
+class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextBuffer, SidedEnvironment, Rotatable, TraitRedstoneAware, TraitColored, Analyzable, Comparable<Screen> {
+    override val colorDelegate: Colored.Delegate = register(Colored::Delegate)
+    override val textBufferDelegate: TraitTextBuffer.Delegate = register { TraitTextBuffer.Delegate(this, tier) }
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
+    override val redstoneDelegate: RedstoneAware.Delegate = register(RedstoneAware::Delegate)
     init {
         // Enable redstone functionality.
-        _isOutputEnabled = true
-        setColor(Color.rgbValues(Color.byTier(tier)))
+        redstoneDelegate.isOutputEnabled = true
+        color = Color.rgbValues(Color.byTier[tier])
     }
 
-    override fun validFacings(): Array<EnumFacing> = EnumFacing.values()
 
     // ----------------------------------------------------------------------- //
 
@@ -75,7 +81,7 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
     // Allow connections from front for keyboards, and keyboards only...
     override fun sidedNode(side: EnumFacing): Node? =
         if (side != facing() || (world.isBlockLoaded(pos.offset(side)) && world.getTileEntity(pos.offset(side)) is Keyboard))
-            node
+            node()
         else
             null
 
@@ -92,8 +98,9 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
     fun hasKeyboard(): Boolean = screens.any { screen ->
         EnumFacing.values().any { side ->
             val blockPos = BlockPosition(screen).offset(side)
-            val te = if (world.blockExists(blockPos)) world.getTileEntity(blockPos) else null
-            te is Keyboard && te.hasNodeOnSide(side.opposite)
+            if (!world.blockExists(blockPos)) return@any false
+            val te = world.getTileEntity(pos.offset(side)) as? Keyboard ?: return@any false
+            te.hasNodeOnSide(side.opposite)
         }
     }
 
@@ -108,7 +115,7 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
         invertTouchMode = false
     }
 
-    fun toScreenCoordinates(hitX: Double, hitY: Double, hitZ: Double): Pair<Boolean, Pair<Double, Double>?> {
+    private fun toScreenCoordinates(hitX: Double, hitY: Double, hitZ: Double): Pair<Boolean, Pair<Double, Double>?> {
         // Compute absolute position of the click on the face, measured in blocks.
         fun dot(f: EnumFacing) = f.xOffset * hitX + f.yOffset * hitY + f.zOffset * hitZ
         val hx = dot(toGlobal(EnumFacing.EAST))
@@ -134,8 +141,8 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
         // Make it a relative position in the displayed buffer.
         val bw = origin.buffer.viewportWidth
         val bh = origin.buffer.viewportHeight
-        val bpw = origin.buffer.renderWidth / iw
-        val bph = origin.buffer.renderHeight / ih
+        val bpw = origin.buffer.renderWidth() / iw
+        val bph = origin.buffer.renderHeight() / ih
         val (brx, bry) = when {
             bpw > bph -> {
                 val rh = bph / bpw
@@ -154,17 +161,15 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
         return Pair(inBounds, Pair(brx * bw, bry * bh))
     }
 
-    fun copyToAnalyzer(hitX: Double, hitY: Double, hitZ: Double): Boolean {
-        val (inBounds, coordinates) = toScreenCoordinates(hitX, hitY, hitZ)
-        return coordinates?.let { (x, y) ->
-            when (val buffer = origin.buffer) {
-                is TextBuffer -> {
-                    buffer.copyToAnalyzer(y.toInt(), null)
-                    true
-                }
-                else -> false
-            }
-        } ?: inBounds
+    /**
+     * Copy the character at the given coordinates to the analyzer
+     */
+    fun copyToAnalyzer(player: EntityPlayer, hitX: Float, hitY: Float, hitZ: Float): Boolean {
+        val (inBounds, coordinates) = toScreenCoordinates(hitX.toDouble(), hitY.toDouble(), hitZ.toDouble())
+        val (x, y) = coordinates ?: return inBounds
+        val buffer = origin.buffer as? TextBuffer ?: return false
+        buffer.copyToAnalyzer(y.toInt(), player)
+        return true
     }
 
     fun click(hitX: Double, hitY: Double, hitZ: Double): Boolean {
@@ -182,9 +187,9 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
         if (lastPos == null || lastPos.first != x || lastPos.second != y) {
             when {
                 entity is EntityPlayer && Settings.get.inputUsername ->
-                    origin.node.sendToReachable("computer.signal", "walk", x + 1, height - y, entity.name)
+                    origin.node().sendToReachable("computer.signal", "walk", x + 1, height - y, entity.name)
                 else ->
-                    origin.node.sendToReachable("computer.signal", "walk", x + 1, height - y)
+                    origin.node().sendToReachable("computer.signal", "walk", x + 1, height - y)
             }
         }
     }
@@ -194,6 +199,8 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
     }
 
     // ----------------------------------------------------------------------- //
+
+    private val buffer get() = textBufferDelegate.buffer
 
     override fun updateEntity() {
         super.updateEntity()
@@ -244,16 +251,16 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
                 val buffer = screen.buffer
                 if (screen.isOrigin()) {
                     if (isServer) {
-                        (buffer.node as Component).visibility = Visibility.Network
+                        (buffer.node() as Component).setVisibility(Visibility.Network)
                         buffer.energyCostPerTick = Settings.get.screenCost * screen.width * screen.height
                         buffer.setAspectRatio(screen.width, screen.height)
                     }
                 } else {
                     if (isServer) {
-                        (buffer.node as Component).visibility = Visibility.None
+                        (buffer.node() as Component).visibility() = Visibility.None
                         buffer.energyCostPerTick = Settings.get.screenCost
                     }
-                    buffer.setAspectRatio(1, 1)
+                    buffer.setAspectRatio(1.0, 1.0)
                     val w = buffer.width
                     val h = buffer.height
                     buffer.setForegroundColor(0xFFFFFF, false)
@@ -312,15 +319,15 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         tier = max(0, min(2, nbt.getByte(TierTag).toInt()))
-        setColor(Color.rgbValues(Color.byTier(tier)))
-        super.readFromNBTForServer(nbt)
+        color = Color.rgbValues(Color.byTier[tier])
+        super<RedstoneAware>.readFromNBTForServer(nbt)
         hadRedstoneInput = nbt.getBoolean(HadRedstoneInputTag)
         invertTouchMode = nbt.getBoolean(InvertTouchModeTag)
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
         nbt.setByte(TierTag, tier.toByte())
-        super.writeToNBTForServer(nbt)
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
         nbt.setBoolean(HadRedstoneInputTag, hadRedstoneInput)
         nbt.setBoolean(InvertTouchModeTag, invertTouchMode)
     }
@@ -369,7 +376,7 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
     // ----------------------------------------------------------------------- //
 
     override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> =
-        arrayOf(origin.node)
+        arrayOf(origin.node())
 
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
@@ -405,8 +412,8 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
             if (!world.blockExists(npos)) return false
 
             val te = world.getTileEntity(npos)
-            if (te !is Screen || te.tier != tier || te.pitch() != pitch() ||
-                te.getColor() != getColor() || te.yaw() != yaw() || screens.contains(te)) {
+            if (te !is Screen || te.tier != tier || te.pitch != pitch ||
+                te.getColor() != getColor() || te.yaw != yaw || screens.contains(te)) {
                 return false
             }
 
@@ -445,18 +452,18 @@ class Screen(var tier: Int = 0) : TileEntityBase(), TraitTextBuffer, SidedEnviro
                tryMergeTowards(width, 0) || tryMergeTowards(-1, 0)
     }
 
-    private fun project(t: Screen): BlockPosition {
+    private fun project(t: Screen): BlockPos {
         fun dot(f: EnumFacing, s: Screen) = f.xOffset * s.pos.x + f.yOffset * s.pos.y + f.zOffset * s.pos.z
-        return BlockPosition(
+        return BlockPos(
             dot(toGlobal(EnumFacing.EAST), t),
             dot(toGlobal(EnumFacing.UP), t),
             dot(toGlobal(EnumFacing.SOUTH), t)
         )
     }
 
-    private fun unproject(x: Int, y: Int, z: Int): BlockPosition {
+    private fun unproject(x: Int, y: Int, z: Int): BlockPos {
         fun dot(f: EnumFacing) = f.xOffset * x + f.yOffset * y + f.zOffset * z
-        return BlockPosition(
+        return BlockPos(
             dot(toLocal(EnumFacing.EAST)),
             dot(toLocal(EnumFacing.UP)),
             dot(toLocal(EnumFacing.SOUTH))

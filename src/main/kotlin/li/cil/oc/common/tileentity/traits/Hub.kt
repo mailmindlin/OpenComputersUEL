@@ -8,7 +8,9 @@ import li.cil.oc.api.network.Packet
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.network.Environment
-import li.cil.oc.util.MovingAverage
+import li.cil.oc.common.tileentity.behaviors.Behavior
+import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
+import li.cil.oc.util.*
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.util.Constants.NBT
@@ -16,43 +18,84 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.ArrayDeque
 
-abstract class Hub : Environment, SidedEnvironment, Tickable {
+interface Hub : Environment, SidedEnvironment, Tickable {
     override fun node(): Node? = null
 
-    override val isConnected: Boolean
-        get() = plugs.any { plug ->
+    val hubDelegate: Delegate
+
+    val isConnected: Boolean
+        get() = hubDelegate.plugs.any { plug ->
             plug.node?.address() != null &&
             plug.node.network() != null
         }
 
-    protected val plugs: Array<Plug> = EnumFacing.values().map { side -> createPlug(side) }.toTypedArray()
+    class Delegate(val tile: Hub): Behavior, NbtSeriailzable {
+        val queue: ArrayDeque<Pair<EnumFacing?, Packet>> = ArrayDeque()
+        var maxQueueSize = tile.queueBaseSize
+        var relayDelay = tile.relayBaseDelay
+        var relayAmount = tile.relayBaseAmount
 
-    val queue: ArrayDeque<Pair<EnumFacing?, Packet>> = ArrayDeque()
+        var relayCooldown = -1
 
-    var maxQueueSize = queueBaseSize
+        // 20 cycles
+        val packetsPerCycleAvg = MovingAverage(20)
 
-    var relayDelay = relayBaseDelay
+        internal val plugs: Array<Plug> = EnumFacing.values().map { side -> createPlug(side) }.toTypedArray()
 
-    var relayAmount = relayBaseAmount
+        protected open fun createPlug(side: EnumFacing): Plug = Plug(side)
 
-    var relayCooldown = -1
+        override fun readFromNBTForServer(nbt: NBTTagCompound) {
+            super.readFromNBTForServer(nbt)
+            val plugsList = nbt.getTagList(PlugsTag, NBT.TAG_COMPOUND)
+            for (index in 0 until plugsList.tagCount()) {
+                if (index < plugs.size) {
+                    plugs[index].node?.load(plugsList.getCompoundTagAt(index))
+                }
+            }
+            val queueList = nbt.getTagList(QueueTag, NBT.TAG_COMPOUND)
+            for (i in 0 until queueList.tagCount()) {
+                val tag = queueList.getCompoundTagAt(i)
+                val side = tag.getDirection(SideTag)
+                val packet = ApiNetwork.newPacket(tag)
+                queue.add(Pair(side, packet))
+            }
+            if (nbt.hasKey(RelayCooldownTag)) {
+                relayCooldown = nbt.getInteger(RelayCooldownTag)
+            }
+        }
 
-    // 20 cycles
-    val packetsPerCycleAvg = MovingAverage(20)
+        override fun writeToNBTForServer(nbt: NBTTagCompound) {
+            synchronized(queue) {
+                super.writeToNBTForServer(nbt)
+                // Side check for Waila (and other mods that may call this client side).
+                if (tile.isServer) {
+                    nbt.extendedNBT().setNewTagList(PlugsTag, plugs.map { plug ->
+                        val plugNbt = NBTTagCompound()
+                        plug.node?.save(plugNbt)
+                        plugNbt
+                    })
+                    nbt.extendedNBT().setNewTagList(QueueTag, queue.map { (sourceSide, packet) ->
+                        val tag = NBTTagCompound()
+                        tag.setDirection(SideTag, sourceSide)
+                        packet.save(tag)
+                        tag
+                    })
+                    if (relayCooldown > 0) {
+                        nbt.setInteger(RelayCooldownTag, relayCooldown)
+                    }
+                }
+            }
+        }
+    }
 
     // ----------------------------------------------------------------------- //
 
-    protected open val queueBaseSize: Int get() = Settings.get.switchDefaultMaxQueueSize
-
-    protected open val queueSizePerUpgrade: Int get() = Settings.get.switchQueueSizeUpgrade
-
-    protected open val relayBaseDelay: Int get() = Settings.get.switchDefaultRelayDelay
-
-    protected open val relayDelayPerUpgrade: Int get() = Settings.get.switchRelayDelayUpgrade.toInt()
-
-    protected open val relayBaseAmount: Int get() = Settings.get.switchDefaultRelayAmount
-
-    protected open val relayAmountPerUpgrade: Int get() = Settings.get.switchRelayAmountUpgrade
+    val queueBaseSize: Int get() = Settings.get.switchDefaultMaxQueueSize
+    val queueSizePerUpgrade: Int get() = Settings.get.switchQueueSizeUpgrade
+    val relayBaseDelay: Int get() = Settings.get.switchDefaultRelayDelay
+    val relayDelayPerUpgrade: Int get() = Settings.get.switchRelayDelayUpgrade.toInt()
+    val relayBaseAmount: Int get() = Settings.get.switchDefaultRelayAmount
+    val relayAmountPerUpgrade: Int get() = Settings.get.switchRelayAmountUpgrade
 
     // ----------------------------------------------------------------------- //
 
@@ -120,52 +163,7 @@ abstract class Hub : Environment, SidedEnvironment, Tickable {
         private val RelayCooldownTag = Settings.namespace + "relayCooldown"
     }
 
-    override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
-        val plugsList = nbt.getTagList(PlugsTag, NBT.TAG_COMPOUND)
-        for (index in 0 until plugsList.tagCount()) {
-            if (index < plugs.size) {
-                plugs[index].node?.load(plugsList.getCompoundTagAt(index))
-            }
-        }
-        val queueList = nbt.getTagList(QueueTag, NBT.TAG_COMPOUND)
-        for (i in 0 until queueList.tagCount()) {
-            val tag = queueList.getCompoundTagAt(i)
-            val side = tag.extendedNBT().getDirection(SideTag)
-            val packet = ApiNetwork.newPacket(tag)
-            queue.add(Pair(side, packet))
-        }
-        if (nbt.hasKey(RelayCooldownTag)) {
-            relayCooldown = nbt.getInteger(RelayCooldownTag)
-        }
-    }
-
-    override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        synchronized(queue) {
-            super.writeToNBTForServer(nbt)
-            // Side check for Waila (and other mods that may call this client side).
-            if (isServer) {
-                nbt.extendedNBT().setNewTagList(PlugsTag, plugs.map { plug ->
-                    val plugNbt = NBTTagCompound()
-                    plug.node?.save(plugNbt)
-                    plugNbt
-                })
-                nbt.extendedNBT().setNewTagList(QueueTag, queue.map { (sourceSide, packet) ->
-                    val tag = NBTTagCompound()
-                    tag.extendedNBT().setDirection(SideTag, sourceSide)
-                    packet.save(tag)
-                    tag
-                })
-                if (relayCooldown > 0) {
-                    nbt.setInteger(RelayCooldownTag, relayCooldown)
-                }
-            }
-        }
-    }
-
     // ----------------------------------------------------------------------- //
-
-    protected open fun createPlug(side: EnumFacing): Plug = Plug(side)
 
     open inner class Plug(val side: EnumFacing) : Environment {
         val node: Node? = createNode(this)

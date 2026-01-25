@@ -1,25 +1,19 @@
 package li.cil.oc.common.tileentity.traits
 
 import li.cil.oc.Settings
-import li.cil.oc.api.network.Connector
-import li.cil.oc.api.network.Message
-import li.cil.oc.api.network.Node
-import li.cil.oc.api.network.SidedEnvironment
-import li.cil.oc.api.network.Environment as ApiEnvironment
-import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.api.network.*
 import li.cil.oc.common.EventHandler
-import li.cil.oc.util.ResultWrapper
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
+import li.cil.oc.api.network.Environment as ApiEnvironment
 
 /**
  * Abstract base class for tile entities that participate in the OC network.
  * Provides network node lifecycle management and NBT serialization.
  */
 interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
-    protected var isChangeScheduled = false
+    var isChangeScheduled: Boolean
 
     /**
      * Returns the network node for this environment.
@@ -43,7 +37,7 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
         if (this is Tickable) {
             isChangeScheduled = true
         } else {
-            world?.markChunkDirty(pos, this)
+            world?.markChunkDirty(pos, this.asTileEntity())
         }
     }
 
@@ -61,23 +55,22 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
     // Lifecycle
     // ----------------------------------------------------------------------- //
 
-    override fun initialize() {
-        super.initialize()
+    fun initialize() {
+//        super.initialize()
         if (isServer) {
-            EventHandler.scheduleServer(this)
+            EventHandler.scheduleServer(this.asTileEntity())
         }
     }
 
-    override fun updateEntity() {
-        super.updateEntity()
+    fun updateEntity() {
+//        super.updateEntity()
         if (isChangeScheduled) {
-            world?.markChunkDirty(pos, this)
+            world?.markChunkDirty(pos, this.asTileEntity())
             isChangeScheduled = false
         }
     }
 
-    override fun dispose() {
-        super.dispose()
+    fun dispose() {
         if (isServer) {
             node()?.remove()
             if (this is SidedEnvironment) {
@@ -92,16 +85,16 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
     // NBT Serialization
     // ----------------------------------------------------------------------- //
 
-    override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+    fun readFromNBTForServer(nbt: NBTTagCompound) {
+//        super.readFromNBTForServer(nbt)
         val n = node()
         if (n != null && n.host() == this) {
             n.load(nbt.getCompoundTag(NodeTag))
         }
     }
 
-    override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+    fun writeToNBTForServer(nbt: NBTTagCompound) {
+//        super.writeToNBTForServer(nbt)
         val n = node()
         if (n != null && n.host() == this) {
             nbt.setNewCompoundTag(NodeTag) { n.save(it) }
@@ -132,7 +125,7 @@ interface Environment : TileEntityTrait, ApiEnvironment, EnvironmentHost {
     // Utility
     // ----------------------------------------------------------------------- //
 
-    protected fun result(vararg args: Any?): Array<Any?> = ResultWrapper.result(*args)
+//    protected fun result(vararg args: Any?): Array<Any?> = ResultWrapper.result(*args)
 
     companion object {
         private val NodeTag = Settings.namespace + "node"

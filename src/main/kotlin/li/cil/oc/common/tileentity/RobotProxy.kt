@@ -10,6 +10,7 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.*
 import li.cil.oc.common.inventory.InventoryProxy
+import li.cil.oc.common.tileentity.traits.PowerInformation
 import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.server.agent.Player
 import li.cil.oc.server.PacketSender as ServerPacketSender
@@ -34,6 +35,8 @@ import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
 import li.cil.oc.common.tileentity.traits.PowerInformation as TraitPowerInformation
 import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
+class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInformation, TraitRotatableTile, ISidedInventory, IFluidHandler, InternalRobot {
+    override val powerDelegate: PowerInformation.Delegate = register(PowerInformation::Delegate)
 
     // ----------------------------------------------------------------------- //
 
@@ -43,17 +46,18 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
         return super.getCapability(capability, facing)
     }
 
-    override val node: Component = ApiNetwork.newNode(this, Visibility.Network)
+    private val node: Component = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("robot", Visibility.Neighbors)
         .create()
+    override fun node(): Node? = node
 
     override fun machine(): Machine = robot.machine()
 
     override fun tier(): Int = robot.tier()
 
-    override fun equipmentInventory(): InventoryProxy = robot.equipmentInventory()
+    override fun equipmentInventory(): InventoryProxy = robot.equipmentInventory
 
-    override fun mainInventory(): InventoryProxy = robot.mainInventory()
+    override fun mainInventory(): InventoryProxy = robot.mainInventory
 
     override fun tank(): MultiTank = robot.tank()
 
@@ -78,10 +82,8 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
     // ----------------------------------------------------------------------- //
 
     override fun connectComponents() {}
-
     override fun disconnectComponents() {}
-
-    override fun isRunning(): Boolean = robot.isRunning()
+    override fun isRunning(): Boolean = robot.isRunning
 
     override fun setRunning(value: Boolean) = robot.setRunning(value)
 
@@ -124,10 +126,10 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
     override fun onMessage(message: Message) {
         super.onMessage(message)
-        if (message.name == "network.message" && message.source != this.node) {
-            when (val data = message.data) {
+        if (message.name() == "network.message" && message.source() != this.node) {
+            when (val data = message.data()) {
                 is Array<*> -> if (data.isNotEmpty() && data[0] is Packet) {
-                    robot.node.sendToReachable(message.name, data[0])
+                    robot.node().sendToReachable(message.name(), data[0])
                 }
             }
         }
@@ -141,8 +143,8 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
     override fun validate() {
         super.validate()
-        val firstProxy = robot.proxy == null
-        robot.proxy = this
+        val firstProxy = robot.proxyRaw == null
+        robot.proxyRaw = this
         robot.setWorld(world)
         robot.setPos(pos)
         if (firstProxy) {
@@ -151,7 +153,7 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
         if (isServer) {
             // Use the same address we use internally on the outside.
             val nbt = NBTTagCompound()
-            nbt.setString("address", robot.node.address)
+            nbt.setString("address", robot.node().address())
             node.load(nbt)
         }
     }

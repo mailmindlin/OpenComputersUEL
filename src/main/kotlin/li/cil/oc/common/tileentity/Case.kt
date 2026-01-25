@@ -6,13 +6,22 @@ import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
+import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.internal.Case as InternalCase
 import li.cil.oc.api.network.Connector
 import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.block.Case as BlockCase
 import li.cil.oc.common.Slot
+import li.cil.oc.common.Sound
 import li.cil.oc.common.Tier
 import li.cil.oc.common.block.property.PropertyRunning
+import li.cil.oc.common.tileentity.traits.Colored
+import li.cil.oc.common.tileentity.traits.Computer
+import li.cil.oc.common.tileentity.traits.RedstoneAware
+import li.cil.oc.common.tileentity.traits.delegates.RotatableDelegate
+import li.cil.oc.common.tileentity.traits.isServer
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.util.Color
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -27,7 +36,11 @@ import li.cil.oc.server.component.DeviceInfoKt
 
 class Case @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-) : TileEntityBase(), TraitPowerAcceptor, TraitComputer, TraitColored, InternalCase, DeviceInfoKt {
+) : Computer(), TraitPowerAcceptor, TraitColored, InternalCase, DeviceInfoKt {
+
+    override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
+    override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+    override val colorDelegate: Colored.Delegate = register(Colored::Delegate)
 
     init {
         // If no tier was defined when constructing this case, then we don't yet know the inventory size
@@ -36,6 +49,79 @@ class Case @JvmOverloads constructor(
             isSizeInventoryReady = false
         }
         setColor(Color.rgbValues(Color.byTier[tier]).toInt())
+    }
+
+    override fun isEmpty(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun decrStackSize(index: Int, count: Int): ItemStack {
+        TODO("Not yet implemented")
+    }
+
+    override fun removeStackFromSlot(index: Int): ItemStack {
+        TODO("Not yet implemented")
+    }
+
+    override fun setInventorySlotContents(index: Int, stack: ItemStack) {
+        TODO("Not yet implemented")
+    }
+
+    override fun openInventory(player: EntityPlayer) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getField(id: Int): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun setField(id: Int, value: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun getFieldCount(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun clear() {
+        TODO("Not yet implemented")
+    }
+    override fun closeInventory(player: EntityPlayer) {
+        TODO("Not yet implemented")
+    }
+    override fun getInventoryStackLimit(): Int {
+        TODO("Not yet implemented")
+    }
+    override fun getStackInSlot(slot: Int): ItemStack {
+        TODO("Not yet implemented")
+    }
+
+    override fun isComponentSlot(slot: Int, stack: ItemStack): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun items(): Array<ItemStack> {
+        TODO("Not yet implemented")
+    }
+
+    override fun updateComponents() {
+        TODO("Not yet implemented")
+    }
+
+    override fun machine(): Machine {
+        TODO("Not yet implemented")
+    }
+
+    override fun tier(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun getName(): String {
+        TODO("Not yet implemented")
+    }
+
+    override fun hasCustomName(): Boolean {
+        TODO("Not yet implemented")
     }
 
     // Used on client side to check whether to render disk activity/network indicators.
@@ -58,12 +144,13 @@ class Case @JvmOverloads constructor(
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing()
+    override fun hasConnector(side: EnumFacing?): Boolean = side != facing()
 
-    override fun connector(side: EnumFacing): Connector? =
+    override fun connector(side: EnumFacing?): Connector? =
         if (side != facing()) machine?.node() as? Connector else null
 
-    override fun energyThroughput(): Double = Settings.get.caseRate(tier)
+    override val energyThroughput: Double
+        get() = Settings.get.caseRate[tier]
 
     val isCreative: Boolean
         get() = tier == Tier.Four
@@ -108,7 +195,7 @@ class Case @JvmOverloads constructor(
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         tier = maxOf(0, minOf(3, nbt.getByte(TierTag).toInt()))
-        setColor(Color.rgbValues(Color.byTier(tier)))
+        color = Color.rgbValues(Color.byTier[tier])
         super.readFromNBTForServer(nbt)
         isSizeInventoryReady = true
     }
@@ -123,7 +210,7 @@ class Case @JvmOverloads constructor(
     override fun onItemAdded(slot: Int, stack: ItemStack) {
         super.onItemAdded(slot, stack)
         if (isServer) {
-            if (InventorySlots.computer(tier)[slot].slot == Slot.Floppy) {
+            if (InventorySlots.computer[tier][slot].slot == Slot.Floppy) {
                 Sound.playDiskInsert(this)
             }
         }
@@ -132,7 +219,7 @@ class Case @JvmOverloads constructor(
     override fun onItemRemoved(slot: Int, stack: ItemStack) {
         super.onItemRemoved(slot, stack)
         if (isServer) {
-            val slotType = InventorySlots.computer(tier)[slot].slot
+            val slotType = InventorySlots.computer[tier][slot].slot
             if (slotType == Slot.Floppy) {
                 Sound.playDiskEject(this)
             }
@@ -143,7 +230,7 @@ class Case @JvmOverloads constructor(
     }
 
     override fun getSizeInventory(): Int =
-        if (tier < 0 || tier >= InventorySlots.computer.size) 0 else InventorySlots.computer(tier).size
+        if (tier < 0 || tier >= InventorySlots.computer.size) 0 else InventorySlots.computer[tier].size
 
     override fun isUsableByPlayer(player: EntityPlayer): Boolean =
         super.isUsableByPlayer(player) && (!isCreative || player.capabilities.isCreativeMode)
@@ -151,7 +238,7 @@ class Case @JvmOverloads constructor(
     override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean {
         val driver = Driver.driverFor(stack, javaClass)
         return if (driver != null) {
-            val provided = InventorySlots.computer(tier)[slot]
+            val provided = InventorySlots.computer[tier][slot]
             driver.slot(stack) == provided.slot && driver.tier(stack) <= provided.tier
         } else {
             false

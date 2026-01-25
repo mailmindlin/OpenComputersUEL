@@ -16,6 +16,7 @@ import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound

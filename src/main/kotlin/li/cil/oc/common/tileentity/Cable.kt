@@ -19,6 +19,10 @@ class Cable : TileEntityBase.TEEnvironmentBase(), Environment, NotAnalyzable, Im
     val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
     override fun node(): Node = node
 
+    @JvmField
+    @Suppress("unused", "PropertyName", "SpellCheckingInspection")
+    val ImmibisMicroblocks_TransformableBlockMarker: Any? = null
+
     override val colorDelegate: Colored.Delegate = Colored.Delegate(this)
 
     init {

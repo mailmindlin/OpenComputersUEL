@@ -2,8 +2,6 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.Connector
@@ -11,13 +9,13 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
+import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.common.tileentity.traits.NotAnalyzable as TraitNotAnalyzable
-import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
 class PowerConverter : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitNotAnalyzable, DeviceInfoKt {
     @JvmField

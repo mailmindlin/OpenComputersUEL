@@ -4,7 +4,6 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Microcontroller as InternalMicrocontroller
@@ -19,11 +18,14 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.data.MicrocontrollerData
+import li.cil.oc.common.tileentity.traits.Computer
+import li.cil.oc.common.tileentity.traits.Hub
+import li.cil.oc.common.tileentity.traits.isServer
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.server.component.DeviceInfoKt
-import li.cil.oc.util.ExtendedArguments._
-import li.cil.oc.util.ExtendedNBT._
-import li.cil.oc.util.StackOption
-import li.cil.oc.util.StackOption._
+import li.cil.oc.server.component.result
+import li.cil.oc.util.*
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ISidedInventory
 import net.minecraft.item.ItemStack
@@ -36,11 +38,14 @@ import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.Hub as TraitHub
 import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
 
-class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitComputer, ISidedInventory, InternalMicrocontroller, DeviceInfoKt {
+class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventory, InternalMicrocontroller, DeviceInfoKt {
     @JvmField
     val info = MicrocontrollerData()
 
-    override fun getNode(): Node? = null
+    override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
+    override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+
+    override fun node(): Node? = null
 
     @JvmField
     val outputSides: Array<Boolean> = Array(6) { true }
@@ -87,11 +92,11 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
     override fun sidedNode(side: EnumFacing): Node? = if (side != facing) super.sidedNode(side) else null
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing
+    override fun hasConnector(side: EnumFacing?): Boolean = side != facing
+    override fun connector(side: EnumFacing?): Connector? = if (side != facing) snooperNode else null
 
-    override fun connector(side: EnumFacing): Connector? = if (side != facing) snooperNode else null
-
-    override fun energyThroughput(): Double = Settings.get.caseRate[Tier.One]
+    override val energyThroughput: Double
+        get() = Settings.get.caseRate[Tier.One]
 
     // ----------------------------------------------------------------------- //
 
@@ -111,28 +116,34 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused_parameter")
     @Callback(doc = """function():boolean -- Starts the microcontroller. Returns true if the state changed.""")
     fun start(context: Context, args: Arguments): Array<Any?> =
         result(!machine.isPaused && machine.start())
 
+    @Suppress("unused_parameter")
     @Callback(doc = """function():boolean -- Stops the microcontroller. Returns true if the state changed.""")
     fun stop(context: Context, args: Arguments): Array<Any?> =
         result(machine.stop())
 
+    @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function():boolean -- Returns whether the microcontroller is running.""")
     fun isRunning(context: Context, args: Arguments): Array<Any?> =
         result(machine.isRunning)
 
+    @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function():string -- Returns the reason the microcontroller crashed, if applicable.""")
     fun lastError(context: Context, args: Arguments): Array<Any?> =
         result(machine.lastError())
 
+    @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function(side:number):boolean -- Get whether network messages are sent via the specified side.""")
     fun isSideOpen(context: Context, args: Arguments): Array<Any?> {
         val side = args.checkSideExcept(0, facing)
         return result(outputSides[side.ordinal])
     }
 
+    @Suppress("unused_parameter")
     @Callback(doc = """function(side:number, open:boolean):boolean -- Set whether network messages are sent via the specified side.""")
     fun setSideOpen(context: Context, args: Arguments): Array<Any?> {
         val side = args.checkSideExcept(0, facing)
@@ -144,7 +155,7 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
     // ----------------------------------------------------------------------- //
 
     override fun updateEntity() {
-        super.updateEntity()
+        super<Computer>.updateEntity()
 
         // Pump energy into the internal network.
         if (isServer && Settings.get.isTickMultiple(world)) {
@@ -172,11 +183,11 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
         .withConnector()
         .create()
 
-    override fun onPlugConnect(plug: Plug, node: Node) {
+    override fun onPlugConnect(plug: Hub.Plug, node: Node) {
         super.onPlugConnect(plug, node)
         if (node == plug.node) {
             ApiNetwork.joinNewNetwork(machine.node())
@@ -189,7 +200,7 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
             componentNodes[plug.side.ordinal].remove()
     }
 
-    override fun onPlugDisconnect(plug: Plug, node: Node) {
+    override fun onPlugDisconnect(plug: Hub.Plug, node: Node) {
         super.onPlugDisconnect(plug, node)
         if (plug.isPrimary && node != plug.node)
             plug.node.connect(componentNodes[plug.side.ordinal])
@@ -199,7 +210,7 @@ class Microcontroller : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitCom
             disconnectComponents()
     }
 
-    override fun onPlugMessage(plug: Plug, message: Message) {
+    override fun onPlugMessage(plug: Hub.Plug, message: Message) {
         if (message.name() == "network.message" && message.source().network() != snooperNode.network()) {
             snooperNode.sendToReachable(message.name(), *message.data())
         }

@@ -24,6 +24,10 @@ class Keyboard : TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitImmibi
     override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
 
     @JvmField
+    @Suppress("unused", "PropertyName", "SpellCheckingInspection")
+    val ImmibisMicroblocks_TransformableTileEntityMarker: Any? = null
+
+    @JvmField
     val keyboard = run {
         val keyboardItem = ApiItems.get(Constants.BlockName.Keyboard).createItemStack(1)
         Driver.driverFor(keyboardItem, javaClass).createEnvironment(keyboardItem, this)

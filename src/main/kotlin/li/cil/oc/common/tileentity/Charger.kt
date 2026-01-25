@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
+import li.cil.oc.api.Nanomachines
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
@@ -16,6 +17,12 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.Slot
 import li.cil.oc.common.entity.Drone
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.ComponentInventory
+import li.cil.oc.common.tileentity.traits.RedstoneAware
+import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.util.ItemCharge
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.server.component.DeviceInfoKt
@@ -37,13 +44,20 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentIn
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfoKt {
+class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfoKt {
     @JvmField
     val node: Connector = ApiNetwork.newNode(this, Visibility.None)
         .withConnector(Settings.get.bufferConverter)
         .create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
+
+    override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+    override val componentInventoryDelegate: ComponentInventory.Delegate = register(ComponentInventory::Delegate)
+    override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+    override val redstoneDelegate: RedstoneAware.Delegate = register(RedstoneAware::Delegate)
 
     @JvmField
     val connectors: MutableSet<Chargeable> = mutableSetOf()
@@ -72,11 +86,11 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing()
+    override fun hasConnector(side: EnumFacing?): Boolean = side != facing()
+    override fun connector(side: EnumFacing?): Connector? = if (side != facing()) node else null
 
-    override fun connector(side: EnumFacing): Connector? = if (side != facing()) node else null
-
-    override fun energyThroughput(): Double = Settings.get.chargerRate
+    override val energyThroughput: Double
+        get() = Settings.get.chargerRate
 
     override fun getCurrentState(): EnumSet<StateAware.State> {
         // TODO Refine to only report working if present robots/drones actually *need* power.
@@ -105,7 +119,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
     }
 
     override fun updateEntity() {
-        super.updateEntity()
+        super<TEEnvironmentBase>.updateEntity()
 
         // Offset by hashcode to avoid all chargers ticking at the same time.
         if ((world.worldInfo.worldTotalTime + kotlin.math.abs(hashCode())) % 20 == 0L) {
@@ -174,7 +188,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
     }
 
     override fun onConnect(node: Node) {
-        super.onConnect(node)
+        super<TEEnvironmentBase>.onConnect(node)
         if (node == this.node) {
             onNeighborChanged()
         }
@@ -192,7 +206,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
         chargeSpeed = if (nbt.hasKey(ChargeSpeedTagCompat)) {
             maxOf(0.0, minOf(1.0, nbt.getDouble(ChargeSpeedTagCompat)))
         } else {
@@ -211,7 +225,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
         nbt.setDouble(ChargeSpeedTag, chargeSpeed)
         nbt.setBoolean(HasPowerTag, hasPower)
         nbt.setBoolean(InvertSignalTag, invertSignal)
@@ -323,7 +337,7 @@ class Charger : TileEntityBase(), TraitEnvironment, TraitPowerAcceptor, TraitRed
         override fun hashCode(): Int = robot.hashCode()
     }
 
-    class DroneChargeable(val drone: Drone) : ConnectorChargeable(drone.components().node as Connector) {
+    class DroneChargeable(val drone: Drone) : ConnectorChargeable(drone.components.node() as Connector) {
         override val pos: Vec3d
             get() = Vec3d(drone.posX, drone.posY, drone.posZ)
 

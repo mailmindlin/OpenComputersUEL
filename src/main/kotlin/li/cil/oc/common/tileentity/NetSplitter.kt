@@ -108,7 +108,6 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
 
     companion object {
         private val IsInvertedTag = Settings.namespace + "isInverted"
-        private val OpenSidesTag = Settings.namespace + "openSides"
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
@@ -133,7 +132,7 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
     }
 
     // component api
-    fun currentStatus(): MutableMap<Int, Boolean> {
+    private fun currentStatus(): MutableMap<Int, Boolean> {
         val openStatus = mutableMapOf<Int, Boolean>()
         for (side in EnumFacing.VALUES) {
             openStatus[side.ordinal] = isSideOpen(side)
@@ -141,12 +140,13 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
         return openStatus
     }
 
-    fun setSide(side: EnumFacing, state: Boolean): Boolean {
+    private fun setSide(side: EnumFacing, state: Boolean): Boolean {
         val previous = isSideOpen(side) // isSideOpen uses inverter
         setSideOpen(side, if (isInverted) !state else state) // but setSideOpen does not
         return previous != state
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(settings:table):table -- set open state (true/false) of all sides in an array; index by direction. Returns previous states")
     fun setSides(context: Context, args: Arguments): Array<Any?> {
         val settings = args.checkTable(0)
@@ -164,10 +164,11 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
         return result(previous)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = "function():table -- Returns current open/close state of all sides in an array, indexed by direction.")
     fun getSides(context: Context, args: Arguments): Array<Any?> = result(currentStatus())
 
-    fun setSideHelper(args: Arguments, value: Boolean): Array<Any?> {
+    private fun setSideHelper(args: Arguments, value: Boolean): Array<Any?> {
         val sideIndex = args.checkInteger(0)
         if (sideIndex < 0 || sideIndex > 5)
             return result(Unit, "invalid direction")
@@ -175,9 +176,11 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
         return result(setSide(side, value))
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(side: number):boolean -- Open the side, returns true if it changed to open.")
     fun open(context: Context, args: Arguments): Array<Any?> = setSideHelper(args, value = true)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(side: number):boolean -- Close the side, returns true if it changed to close.")
     fun close(context: Context, args: Arguments): Array<Any?> = setSideHelper(args, value = false)
 }

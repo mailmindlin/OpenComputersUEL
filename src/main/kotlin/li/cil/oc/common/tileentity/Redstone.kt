@@ -5,18 +5,21 @@ import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.integration.util.BundledRedstone
 import li.cil.oc.server.component.Redstone as RedstoneComponent
 import li.cil.oc.server.RedstoneComponentVanilla
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.nbt.NBTTagCompound
 import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.BundledRedstoneAware as TraitBundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Redstone : TileEntityBase(), TraitEnvironment, TraitBundledRedstoneAware, TraitTickable {
+class Redstone : TileEntityBase.TEEnvironmentBase(), TraitBundledRedstoneAware, TraitTickable {
+//    override val redstoneDelegate: BundledRedstoneAware.Delegate
     @JvmField
-    val instance: RedstoneVanilla = if (BundledRedstone.isAvailable()) {
+    val instance: RedstoneVanilla = if (BundledRedstone.isAvailable) {
         RedstoneComponent.Bundled(this)
     } else {
         RedstoneComponent.Vanilla(this)
@@ -32,13 +35,13 @@ class Redstone : TileEntityBase(), TraitEnvironment, TraitBundledRedstoneAware, 
     @JvmField
     val dummyNode: Node? = if (node != null) {
         node.setVisibility(Visibility.Network)
-        _isOutputEnabled = true
+        this.redstoneDelegate.isOutputEnabled = true
         ApiNetwork.newNode(this, Visibility.None).create()
     } else {
         null
     }
 
-    override fun getNode(): Node? = node
+    override fun node(): Node? = node
 
     // ----------------------------------------------------------------------- //
 
@@ -47,12 +50,12 @@ class Redstone : TileEntityBase(), TraitEnvironment, TraitBundledRedstoneAware, 
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super.readFromNBTForServer(nbt)
+        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
         instance.load(nbt.getCompoundTag(RedstoneTag))
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
         nbt.setNewCompoundTag(RedstoneTag) { instance.save(it) }
     }
 
@@ -60,7 +63,7 @@ class Redstone : TileEntityBase(), TraitEnvironment, TraitBundledRedstoneAware, 
 
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
-        if (node != null && node.network != null && dummyNode != null) {
+        if (node != null && node.network() != null && dummyNode != null) {
             node.connect(dummyNode)
             dummyNode.sendToNeighbors("redstone.changed", args)
         }

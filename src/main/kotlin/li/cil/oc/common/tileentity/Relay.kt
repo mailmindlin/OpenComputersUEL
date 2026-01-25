@@ -23,12 +23,18 @@ import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
-import li.cil.oc.common.Memory
+import li.cil.oc.common.tileentity.traits.ComponentInventory
+import li.cil.oc.common.tileentity.traits.Hub
+import li.cil.oc.common.tileentity.traits.Inventory
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.opencomputers.DriverLinkedCard
 import li.cil.oc.server.PacketSender
+import li.cil.oc.server.component.result
 import li.cil.oc.server.network.QuantumNetwork
-import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.server.network.QuantumNode
+import li.cil.oc.util.setNewTagList
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -40,10 +46,16 @@ import li.cil.oc.common.tileentity.traits.Hub as TraitHub
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
-class Relay : TileEntityBase(), TraitHub, TraitComponentInventory, TraitPowerAcceptor, Analyzable, WirelessEndpoint, QuantumNetwork.QuantumNode {
+class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInventory, TraitPowerAcceptor, Analyzable, WirelessEndpoint, QuantumNode {
     val WirelessNetworkCardTier1: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier1) }
     val WirelessNetworkCardTier2: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier2) }
     val LinkedCard: ItemInfo by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }
+
+    override val componentInventoryDelegate: ComponentInventory.Delegate = register(ComponentInventory::Delegate)
+    override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
+    override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+    override val hubDelegate: Hub.Delegate = register(Hub::Delegate)
 
 
     @JvmField
@@ -93,14 +105,14 @@ class Relay : TileEntityBase(), TraitHub, TraitComponentInventory, TraitPowerAcc
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = true
-
-    override fun connector(side: EnumFacing): Connector? = when (val node = sidedNode(side)) {
+    override fun hasConnector(side: EnumFacing?): Boolean = true
+    override fun connector(side: EnumFacing?): Connector? = when (val node = sidedNode(side)) {
         is Connector -> node
         else -> null
     }
 
-    override fun energyThroughput(): Double = Settings.get.accessPointRate
+    override val energyThroughput: Double
+        get() = Settings.get.accessPointRate
 
     // ----------------------------------------------------------------------- //
 
@@ -113,18 +125,22 @@ class Relay : TileEntityBase(), TraitHub, TraitComponentInventory, TraitPowerAcc
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- Get the signal strength (range) used when relaying messages.""")
     fun getStrength(context: Context, args: Arguments): Array<Any?> = synchronized(this) { result(strength) }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(strength:number):number -- Set the signal strength (range) used when relaying messages.""")
     fun setStrength(context: Context, args: Arguments): Array<Any?> = synchronized(this) {
         strength = Math.max(0.0, Math.min(args.checkDouble(0), maxWirelessRange))
         result(strength)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():boolean -- Get whether the access point currently acts as a repeater (resend received wireless packets wirelessly).""")
     fun isRepeater(context: Context, args: Arguments): Array<Any?> = synchronized(this) { result(isRepeater) }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(enabled:boolean):boolean -- Set whether the access point should act as a repeater.""")
     fun setRepeater(context: Context, args: Arguments): Array<Any?> = synchronized(this) {
         isRepeater = args.checkBoolean(0)
@@ -208,11 +224,11 @@ class Relay : TileEntityBase(), TraitHub, TraitComponentInventory, TraitPowerAcc
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Plug): Connector = ApiNetwork.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Hub.Plug): Connector = ApiNetwork.newNode(plug, Visibility.Network)
         .withConnector(Math.round(Settings.get.bufferAccessPoint).toDouble())
         .create()
 
-    override fun onPlugConnect(plug: Plug, node: Node) {
+    override fun onPlugConnect(plug: Hub.Plug, node: Node) {
         super.onPlugConnect(plug, node)
         if (node == plug.node) {
             ApiNetwork.joinWirelessNetwork(this)

@@ -1,9 +1,8 @@
 package li.cil.oc.common.tileentity
 
 import li.cil.oc.api.network.Node
-import li.cil.oc.server.component.Geolyzer as ComponentGeolyzer
 import net.minecraft.nbt.NBTTagCompound
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
+import li.cil.oc.server.component.Geolyzer as ComponentGeolyzer
 
 class Geolyzer: TileEntityBase.TEEnvironmentBase() {
     @JvmField

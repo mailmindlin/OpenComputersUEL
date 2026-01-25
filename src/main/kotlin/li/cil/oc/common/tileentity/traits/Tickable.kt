@@ -2,10 +2,8 @@ package li.cil.oc.common.tileentity.traits
 
 import net.minecraft.util.ITickable
 
-interface Tickable : ITickable {
-    fun updateEntity()
-
+interface Tickable: TileEntityTrait, ITickable {
     override fun update() {
-        updateEntity()
+//        asTileEntity().updateEntity()
     }
 }

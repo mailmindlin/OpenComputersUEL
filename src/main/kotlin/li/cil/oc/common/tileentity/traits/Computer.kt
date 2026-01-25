@@ -3,11 +3,14 @@ package li.cil.oc.common.tileentity.traits
 import li.cil.oc.Settings
 import li.cil.oc.api.Machine as ApiMachine
 import li.cil.oc.api.machine.Machine
+import li.cil.oc.api.machine.MachineHost
+import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.api.network.Node
 import li.cil.oc.client.Sound
 import li.cil.oc.common.tileentity.RobotProxy
 import li.cil.oc.common.tileentity.TileEntityBase
+import li.cil.oc.common.tileentity.register
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.util.setNewCompoundTag
 import li.cil.oc.util.setNewTagList
@@ -27,6 +30,9 @@ import java.util.EnumSet
  */
 abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, BundledRedstoneAware, Analyzable, MachineHost, StateAware, Tickable {
     private val _machine: Machine? by lazy { if (isServer) ApiMachine.create(this) else null }
+
+    override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
 
     open val machine: Machine? get() = _machine
 
@@ -60,7 +66,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
                 if (getWorld().isRemote) {
                     val sound = runSound
                     if (sound != null) {
-                        if (_isRunning) Sound.startLoop(this, sound, 0.5f, 50 + getWorld().rand.nextInt(50))
+                        if (_isRunning) Sound.startLoop(this, sound, 0.5f, (50 + getWorld().rand.nextInt(50)).toLong())
                         else Sound.stopLoop(this)
                     }
                 }
@@ -87,9 +93,9 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
             .map { slot -> getStackInSlot(slot) }
     }
 
-    override fun onMachineConnect(node: api.network.Node) = this.onConnect(node)
+    override fun onMachineConnect(node: Node) = this.onConnect(node)
 
-    override fun onMachineDisconnect(node: api.network.Node) = this.onDisconnect(node)
+    override fun onMachineDisconnect(node: Node) = this.onDisconnect(node)
 
     open fun hasRedstoneCard(): Boolean = items().any { item ->
         !item.isEmpty && machine?.isRunning == true && DriverRedstoneCard.worksWith(item, javaClass)
@@ -117,7 +123,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
             updateComponents()
         }
 
-        super.updateEntity()
+        super<TEEnvironmentBase>.updateEntity()
     }
 
     protected open fun updateComputer() {
@@ -130,7 +136,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
     }
 
     override fun dispose() {
-        super.dispose()
+        super<TEEnvironmentBase>.dispose()
         if (machine != null && this !is RobotProxy) {
             machine?.stop()
         }
@@ -151,7 +157,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
         // This is required for loading auxiliary data (kernel state), because the
         // coordinates in the actual robot won't be set properly, otherwise.
         if (this is RobotProxy) {
-            (this as RobotProxy).robot().setPos(pos)
+            (this as RobotProxy).robot.setPos(pos)
         }
         machine?.load(nbt.getCompoundTag(ComputerTag))
 
@@ -159,13 +165,13 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
         // readFromNBTForClient if that packet is handled after a manual
         // initialization / state change packet.
         setRunning(machine?.isRunning ?: false)
-        _isOutputEnabled = hasRedstoneCard()
+        redstoneDelegate.isOutputEnabled = hasRedstoneCard()
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super.writeToNBTForServer(nbt)
-        if (machine != null) {
-            nbt.extendedNBT().setNewCompoundTag(ComputerTag) { machine!!.save(it) }
+        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
+        machine?.let { machine ->
+            nbt.setNewCompoundTag(ComputerTag) { machine.save(it) }
         }
     }
 
@@ -180,7 +186,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
             _users.add(usersList.getStringTagAt(i))
         }
         if (_isRunning) {
-            runSound?.let { sound -> Sound.startLoop(this, sound, 0.5f, 1000 + getWorld().rand.nextInt(2000)) }
+            runSound?.let { sound -> Sound.startLoop(this, sound, 0.5f, (1000 + getWorld().rand.nextInt(2000)).toLong()) }
         }
     }
 
@@ -188,7 +194,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
         super.writeToNBTForClient(nbt)
         nbt.setBoolean(HasErroredTag, machine != null && machine?.lastError() != null)
         nbt.setBoolean(IsRunningTag, isRunning)
-        nbt.extendedNBT().setNewTagList(UsersTag, machine?.users()?.map { user -> NBTTagString(user) } ?: emptyList())
+        nbt.setNewTagList(UsersTag, machine?.users()?.map { user -> NBTTagString(user) } ?: emptyList())
     }
 
     // ----------------------------------------------------------------------- //

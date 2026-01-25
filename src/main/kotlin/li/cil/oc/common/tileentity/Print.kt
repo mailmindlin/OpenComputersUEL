@@ -5,10 +5,12 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.PrintData
-import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.util.ExtendedAABB
-import li.cil.oc.util.ExtendedAABB._
-import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.util.rotateTowards
+import li.cil.oc.util.setNewCompoundTag
+import li.cil.oc.util.volume
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -23,13 +25,20 @@ import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 
 class Print @JvmOverloads constructor(
-    val canToggle: (() -> Boolean)? = null,
-    val scheduleUpdate: ((Int) -> Unit)? = null,
-    val onStateChange: (() -> Unit)? = null
-) : TileEntityBase(), TraitRedstoneAware, TraitRotatableTile {
+    internal val canToggle: (() -> Boolean)? = null,
+    internal val scheduleUpdate: ((Int) -> Unit)? = null,
+    internal val onStateChange: (() -> Unit)? = null
+) : TileEntityBase.TEEnvironmentBase(), TraitRedstoneAware, TraitRotatableTile {
+    override val rotatableDelegate: TraitRotatableTile.Delegate = register(TraitRotatableTile::Delegate)
+    override val redstoneDelegate: RedstoneAware.Delegate = register(RedstoneAware::Delegate)
+
+    override fun initialize() {
+        super<TEEnvironmentBase>.initialize()
+        super<RedstoneAware>.initialize()
+    }
 
     init {
-        _isOutputEnabled = true
+        redstoneDelegate.isOutputEnabled = true
     }
 
     @JvmField
@@ -46,12 +55,12 @@ class Print @JvmOverloads constructor(
 
     val bounds: AxisAlignedBB get() = if (state) boundsOn else boundsOff
     val noclip: Boolean get() = if (state) data.noclipOn else data.noclipOff
-    val shapes: MutableList<PrintData.Shape> get() = if (state) data.stateOn else data.stateOff
+    val shapes: MutableSet<PrintData.Shape> get() = if (state) data.stateOn else data.stateOff
 
     fun isSideSolid(side: EnumFacing): Boolean {
         for (shape in shapes) {
             if (!Strings.isNullOrEmpty(shape.texture)) {
-                val bounds = shape.bounds.rotateTowards(facing)
+                val bounds = shape.bounds.rotateTowards(facing())
                 val fullX = bounds.minX == 0.0 && bounds.maxX == 1.0
                 val fullY = bounds.minY == 0.0 && bounds.maxY == 1.0
                 val fullZ = bounds.minZ == 0.0 && bounds.maxZ == 1.0
@@ -79,7 +88,7 @@ class Print @JvmOverloads constructor(
                 }
             } else {
                 for (shape in shapes) {
-                    val bounds = shape.bounds.rotateTowards(facing).offset(pos)
+                    val bounds = shape.bounds.rotateTowards(facing()).offset(pos)
                     if (mask == null || bounds.intersects(mask)) {
                         list.add(bounds)
                     }
@@ -103,7 +112,7 @@ class Print @JvmOverloads constructor(
             }
         } else {
             for (shape in shapes) {
-                val bounds = shape.bounds.rotateTowards(facing).offset(pos)
+                val bounds = shape.bounds.rotateTowards(facing()!!).offset(pos)
                 val hit = bounds.calculateIntercept(start, end)
                 if (hit != null) {
                     val distance = hit.hitVec.distanceTo(start)
@@ -125,14 +134,6 @@ class Print @JvmOverloads constructor(
             }
         }
         return false
-    }
-
-    private fun buildValueSet(value: Int): Map<Any, Any> {
-        val map: Map<Any, Any> = java.util.HashMap()
-        EnumFacing.values().forEach { side ->
-            map.put(Integer.valueOf(side.ordinal), Integer.valueOf(value))
-        }
-        return map
     }
 
     fun toggleState() {
@@ -158,19 +159,19 @@ class Print @JvmOverloads constructor(
         boundsOff = data.stateOff.drop(1).fold(
             data.stateOff.firstOrNull()?.bounds ?: ExtendedAABB.unitBounds
         ) { a, b -> a.union(b.bounds) }
-        if (boundsOff.volume == 0.0) boundsOff = ExtendedAABB.unitBounds
-        else boundsOff = boundsOff.rotateTowards(facing)
+        if (boundsOff.volume == 0) boundsOff = ExtendedAABB.unitBounds
+        else boundsOff = boundsOff.rotateTowards(facing()!!)
 
         boundsOn = data.stateOn.drop(1).fold(
             data.stateOn.firstOrNull()?.bounds ?: ExtendedAABB.unitBounds
         ) { a, b -> a.union(b.bounds) }
-        if (boundsOn.volume == 0.0) boundsOn = ExtendedAABB.unitBounds
-        else boundsOn = boundsOn.rotateTowards(facing)
+        boundsOn = if (boundsOn.volume == 0) ExtendedAABB.unitBounds
+        else boundsOn.rotateTowards(facing()!!)
     }
 
     fun updateRedstone() {
         if (data.emitRedstone) {
-            setOutput(buildValueSet(if (data.emitRedstone(state)) data.redstoneLevel else 0))
+            setOutput(RedstoneValues(if (data.emitRedstone(state)) data.redstoneLevel else 0))
         }
     }
 
