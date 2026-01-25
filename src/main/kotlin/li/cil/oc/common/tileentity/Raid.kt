@@ -11,6 +11,9 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
 import li.cil.oc.common.item.data.DriveData
 import li.cil.oc.common.item.data.NodeData
+import li.cil.oc.common.tileentity.traits.Inventory
+import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.server.component.FileSystem
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import net.minecraft.entity.player.EntityPlayer
@@ -25,10 +28,13 @@ import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
 class Raid : TileEntityBase(), TraitEnvironment, TraitInventory, TraitRotatable, Analyzable {
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
+    override val inventoryDelegate: TraitInventory.Delegate = register(TraitInventory::Delegate)
+
     @JvmField
     val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
 
     @JvmField
     var filesystem: FileSystem? = null
