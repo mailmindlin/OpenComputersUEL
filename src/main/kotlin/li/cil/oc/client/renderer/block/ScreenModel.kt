@@ -65,7 +65,7 @@ object ScreenModel : SmartBlockModelBase() {
                             Textures.Block.Screen.Multi[pitch()][py][px][facing.ordinal]
                     }
 
-                return listOf(bakeQuad(safeSide, Textures.getSprite(texture), tile.color, rotation))
+                return listOf(bakeQuad(safeSide, Textures.getSprite(texture), tile.color.toInt(), rotation))
             }
         }
         return super.getQuads(state, safeSide, rand)

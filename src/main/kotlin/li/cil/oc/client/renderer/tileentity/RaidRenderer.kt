@@ -77,9 +77,9 @@ object RaidRenderer : TileEntitySpecialRenderer<Raid>() {
     private fun renderSlot(r: BufferBuilder, slot: Int, icon: TextureAtlasSprite) {
         val l = u1 + slot * fs
         val h = u1 + (slot + 1) * fs
-        r.pos(l.toDouble(), 1.0, 0.0).tex(icon.getInterpolatedU((l * 16).toDouble()), icon.maxV.toDouble()).endVertex()
-        r.pos(h.toDouble(), 1.0, 0.0).tex(icon.getInterpolatedU((h * 16).toDouble()), icon.maxV.toDouble()).endVertex()
-        r.pos(h.toDouble(), 0.0, 0.0).tex(icon.getInterpolatedU((h * 16).toDouble()), icon.minV.toDouble()).endVertex()
-        r.pos(l.toDouble(), 0.0, 0.0).tex(icon.getInterpolatedU((l * 16).toDouble()), icon.minV.toDouble()).endVertex()
+        r.pos(l.toDouble(), 1.0, 0.0).tex(icon.getInterpolatedU((l * 16).toDouble()).toDouble(), icon.maxV.toDouble()).endVertex()
+        r.pos(h.toDouble(), 1.0, 0.0).tex(icon.getInterpolatedU((h * 16).toDouble()).toDouble(), icon.maxV.toDouble()).endVertex()
+        r.pos(h.toDouble(), 0.0, 0.0).tex(icon.getInterpolatedU((h * 16).toDouble()).toDouble(), icon.minV.toDouble()).endVertex()
+        r.pos(l.toDouble(), 0.0, 0.0).tex(icon.getInterpolatedU((l * 16).toDouble()).toDouble(), icon.minV.toDouble()).endVertex()
     }
 }

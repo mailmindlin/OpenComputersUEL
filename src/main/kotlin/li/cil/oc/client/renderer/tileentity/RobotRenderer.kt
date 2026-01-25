@@ -10,6 +10,9 @@ import li.cil.oc.client.Textures
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.Robot
 import li.cil.oc.common.tileentity.RobotProxy
+import li.cil.oc.common.tileentity.x
+import li.cil.oc.common.tileentity.y
+import li.cil.oc.common.tileentity.z
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.StackOption
 import li.cil.oc.util.SomeStack
@@ -315,7 +318,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
 
         if (robot.isAnimatingMove) {
             val remaining = (robot.animationTicksLeft - f) / robot.animationTicksTotal.toDouble()
-            val delta = robot.moveFrom.get().subtract(robot.pos)
+            val delta = robot.moveFrom!!.subtract(robot.pos)
             GlStateManager.translate(delta.x * remaining, delta.y * remaining, delta.z * remaining)
         }
 
@@ -334,7 +337,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
             GlStateManager.rotate(90 * remaining, 0f, robot.turnAxis.toFloat(), 0f)
         }
 
-        when (robot.yaw()) {
+        when (robot.yaw) {
             EnumFacing.WEST -> GlStateManager.rotate(-90f, 0f, 1f, 0f)
             EnumFacing.NORTH -> GlStateManager.rotate(180f, 0f, 1f, 0f)
             EnumFacing.EAST -> GlStateManager.rotate(90f, 0f, 1f, 0f)
@@ -349,7 +352,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
         if (MinecraftForgeClient.getRenderPass() == 0 && !robot.renderingErrored && x * x + y * y + z * z < 24 * 24) {
             when (val stackOpt = StackOption(robot.getStackInSlot(0))) {
                 is SomeStack -> {
-                    val stack = stackOpt.value
+                    val stack = stackOpt.stack
 
                     RenderState.pushAttrib()
                     GlStateManager.pushMatrix()
@@ -420,7 +423,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
                 val wildcardRenderers = mutableListOf<Pair<ItemStack, UpgradeRenderer>>()
                 val slotMapping = arrayOfNulls<Pair<ItemStack, UpgradeRenderer>>(mountPoints.size)
 
-                val renderers = (robot.componentSlots() + robot.containerSlots()).map { robot.getStackInSlot(it) }
+                val renderers = (robot.componentSlots + robot.containerSlots).map { robot.getStackInSlot(it) }
                     .filter { !it.isEmpty() && it.item is UpgradeRenderer }
                     .map { Pair(it, it.item as UpgradeRenderer) }
 
@@ -450,7 +453,7 @@ object RobotRenderer : TileEntitySpecialRenderer<RobotProxy>() {
                             GlStateManager.popMatrix()
                         } catch (e: Throwable) {
                             OpenComputers.log.warn("Failed rendering equipped upgrade.", e)
-                            robot.proxy().renderingErrored = true
+                            robot.renderingErrored = true
                         }
                     }
                 }
