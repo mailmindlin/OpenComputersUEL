@@ -14,12 +14,16 @@ import li.cil.oc.api.network.Packet
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.Slot
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
+import li.cil.oc.common.tileentity.traits.Hub
+import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
-import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
+import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.ExtendedInventory._
-import li.cil.oc.util.ExtendedNBT._
+import li.cil.oc.util.setNewCompoundTag
+import li.cil.oc.util.setNewTagList
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
@@ -37,7 +41,10 @@ import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 import li.cil.oc.common.tileentity.traits.BundledRedstoneAware as TraitBundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Rack : TileEntityBase(), TraitPowerAcceptor(), TraitHub, TraitPowerBalancer, TraitComponentInventory, TraitRotatable, TraitBundledRedstoneAware, Analyzable, InternalRack, TraitStateAware {
+class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer, TraitComponentInventory, TraitRotatable, TraitBundledRedstoneAware, Analyzable, InternalRack, TraitStateAware {
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
+    override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
+    override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     @JvmField
     var isRelayEnabled = false
 
@@ -171,13 +178,13 @@ class Rack : TileEntityBase(), TraitPowerAcceptor(), TraitHub, TraitPowerBalance
         if (isRelayEnabled) super.relayPacket(sourceSide, packet)
     }
 
-    override fun onPlugConnect(plug: Plug, node: Node) {
+    override fun onPlugConnect(plug: Hub.Plug, node: Node) {
         super.onPlugConnect(plug, node)
         connectComponents()
         reconnect(plug.side)
     }
 
-    override fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
         .withConnector(Settings.get.bufferDistributor)
         .create()
 
@@ -242,17 +249,17 @@ class Rack : TileEntityBase(), TraitPowerAcceptor(), TraitHub, TraitPowerBalance
     // ----------------------------------------------------------------------- //
     // SidedEnvironment
 
-    override fun canConnect(side: EnumFacing): Boolean = side != facing
+    override fun canConnect(side: EnumFacing): Boolean = side != facing()
 
-    override fun sidedNode(side: EnumFacing): Node? = if (side != facing) super.sidedNode(side) else null
+    override fun sidedNode(side: EnumFacing): Node? = if (side != facing()) super.sidedNode(side) else null
 
     // ----------------------------------------------------------------------- //
     // power.Common
 
     @SideOnly(Side.CLIENT)
-    override fun hasConnector(side: EnumFacing): Boolean = side != facing
+    override fun hasConnector(side: EnumFacing): Boolean = side != facing()
 
-    override fun connector(side: EnumFacing): Connector? = if (side != facing) sidedNode(side) as? Connector else null
+    override fun connector(side: EnumFacing): Connector? = if (side != facing()) sidedNode(side) as? Connector else null
 
     override fun energyThroughput(): Double = Settings.get.serverRackRate
 
@@ -464,7 +471,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor(), TraitHub, TraitPowerBalance
     // ----------------------------------------------------------------------- //
 
     fun slotAt(side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Int? {
-        return if (side == facing) {
+        return if (side == facing()) {
             val globalY = (hitY * 16).toInt() // [0, 15]
             val l = 2
             val h = 14
