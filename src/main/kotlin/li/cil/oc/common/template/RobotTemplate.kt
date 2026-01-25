@@ -3,6 +3,7 @@ package li.cil.oc.common.template
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.IMC
+import li.cil.oc.api.Items
 import li.cil.oc.api.internal.Robot
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
@@ -15,16 +16,16 @@ object RobotTemplate : Template() {
     override val hostClass: Class<Robot> = Robot::class.java
 
     @JvmStatic
-    fun selectTier1(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.BlockName.CaseTier1)
+    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseTier1)
 
     @JvmStatic
-    fun selectTier2(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.BlockName.CaseTier2)
+    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseTier2)
 
     @JvmStatic
-    fun selectTier3(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.BlockName.CaseTier3)
+    fun selectTier3(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseTier3)
 
     @JvmStatic
-    fun selectCreative(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.BlockName.CaseCreative)
+    fun selectCreative(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseCreative)
 
     @JvmStatic
     fun validate(inventory: IInventory): Array<Any> = validateComputer(inventory)
@@ -46,14 +47,15 @@ object RobotTemplate : Template() {
     }
 
     @JvmStatic
-    fun selectDisassembler(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.BlockName.Robot)
+    @Suppress("unused")
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.Robot)
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = RobotData(stack)
         val itemName = Constants.BlockName.Case(info.tier)
 
-        return arrayOf(api.Items.get(itemName).createItemStack(1)) + info.containers + info.components
+        return arrayOf(Items.get(itemName).createItemStack(1)) + info.containers + info.components
     }
 
     @JvmStatic

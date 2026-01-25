@@ -3,6 +3,7 @@ package li.cil.oc.common.template
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.IMC
+import li.cil.oc.api.Items
 import li.cil.oc.api.internal.Tablet
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
@@ -31,13 +32,13 @@ object TabletTemplate : Template() {
     override val hostClass: Class<Tablet> = Tablet::class.java
 
     @JvmStatic
-    fun selectTier1(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.TabletCaseTier1)
+    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.TabletCaseTier1)
 
     @JvmStatic
-    fun selectTier2(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.TabletCaseTier2)
+    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.TabletCaseTier2)
 
     @JvmStatic
-    fun selectCreative(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.TabletCaseCreative)
+    fun selectCreative(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.TabletCaseCreative)
 
     @JvmStatic
     fun validate(inventory: IInventory): Array<Any> = validateComputer(inventory)
@@ -48,11 +49,11 @@ object TabletTemplate : Template() {
         val data = TabletData()
         data.tier = ItemUtils.caseTier(inventory.getStackInSlot(0))
         data.container = items.firstOrNull() ?: ItemStack.EMPTY
-        data.items = arrayOf(api.Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)) +
+        data.items = arrayOf(Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)) +
                 items.drop(if (data.tier == Tier.One) 0 else 1).filter { !it.isEmpty }
         data.energy = Settings.get.bufferTablet
         data.maxEnergy = data.energy
-        val stack = api.Items.get(Constants.ItemName.Tablet).createItemStack(1)
+        val stack = Items.get(Constants.ItemName.Tablet).createItemStack(1)
         data.save(stack)
         val energy = Settings.get.tabletBaseCost + complexity(inventory) * Settings.get.tabletComplexityCost
 
@@ -60,13 +61,14 @@ object TabletTemplate : Template() {
     }
 
     @JvmStatic
-    fun selectDisassembler(stack: ItemStack): Boolean = api.Items.get(stack) == api.Items.get(Constants.ItemName.Tablet)
+    @Suppress("unused")
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.Tablet)
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = TabletData(stack)
         val itemName = Constants.ItemName.TabletCase(info.tier)
-        return (arrayOf(api.Items.get(itemName).createItemStack(1), info.container) +
+        return (arrayOf(Items.get(itemName).createItemStack(1), info.container) +
                 info.items.filter { !it.isEmpty }.drop(1) /* Screen */).filter { !it.isEmpty }.toTypedArray()
     }
 

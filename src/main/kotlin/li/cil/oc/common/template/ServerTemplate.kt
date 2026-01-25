@@ -2,24 +2,26 @@ package li.cil.oc.common.template
 
 import li.cil.oc.Constants
 import li.cil.oc.api.IMC
+import li.cil.oc.api.Items
 import li.cil.oc.common.inventory.ServerInventory
 import net.minecraft.item.ItemStack
 
 object ServerTemplate {
     @JvmStatic
     fun selectDisassembler(stack: ItemStack): Boolean =
-        api.Items.get(stack) == api.Items.get(Constants.ItemName.ServerTier1) ||
-                api.Items.get(stack) == api.Items.get(Constants.ItemName.ServerTier2) ||
-                api.Items.get(stack) == api.Items.get(Constants.ItemName.ServerTier3)
+        Items.get(stack) == Items.get(Constants.ItemName.ServerTier1) ||
+                Items.get(stack) == Items.get(Constants.ItemName.ServerTier2) ||
+                Items.get(stack) == Items.get(Constants.ItemName.ServerTier3)
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<Array<ItemStack>> {
         val info = object : ServerInventory() {
-            override fun getContainer(): ItemStack = stack
+            override val container: ItemStack
+                get() = stack
         }
         return arrayOf(
             ingredients,
-            (0 until info.sizeInventory).map { info.getStackInSlot(it) }.filter { it != null }.toTypedArray()
+            (0 until info.sizeInventory).mapNotNull { info.getStackInSlot(it) }.toTypedArray()
         )
     }
 
