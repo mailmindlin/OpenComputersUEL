@@ -96,3 +96,5 @@ object Color {
 
     fun rgbValues(silver: EnumDyeColor): UInt = this.rgbValues[silver]!!
 }
+
+val EnumDyeColor.rgbValue: UInt get() = Color.rgbValues(this)
