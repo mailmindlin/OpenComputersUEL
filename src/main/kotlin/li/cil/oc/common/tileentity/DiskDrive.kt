@@ -4,7 +4,6 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Network as ApiNetwork
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -16,26 +15,38 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Sound
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.ComponentInventory
+import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.server.component.result
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
-class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfoKt {
+class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfoKt {
     // Used on client side to check whether to render disk activity indicators.
     @JvmField
     var lastAccess = 0L
 
     val filesystemNode: Node?
         get() = components.getOrNull(0)?.node()
+
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+    override val componentInventoryDelegate: ComponentInventory.Delegate = register(ComponentInventory::Delegate)
+    override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
+
+    override val items: Array<ItemStack>
+        get() = TODO("Not yet implemented")
 
     override val deviceInfo: Map<String, String> by lazy {
         mapOf(
@@ -54,7 +65,7 @@ class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, T
         .withComponent("disk_drive")
         .create()
 
-    override fun getNode(): Node = node
+    override fun node(): Node = node
 
     @Callback(doc = "function():boolean -- Checks whether some medium is currently in the drive.")
     fun isEmpty(context: Context, args: Arguments): Array<Any?> {
@@ -68,9 +79,10 @@ class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, T
         return if (!ejected.isEmpty) {
             val entity = InventoryUtils.spawnStackInWorld(position, ejected, facing())
             if (entity != null) {
-                val vx = facing().xOffset * velocity
-                val vy = facing().yOffset * velocity
-                val vz = facing().zOffset * velocity
+                val facing = facing()!!
+                val vx = facing.xOffset * velocity
+                val vy = facing.yOffset * velocity
+                val vz = facing.zOffset * velocity
                 entity.addVelocity(vx, vy, vz)
             }
             result(true)
@@ -99,6 +111,9 @@ class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, T
 
     // ----------------------------------------------------------------------- //
     // IInventory
+
+    override fun getDisplayName(): ITextComponent
+            = super<ComponentInventory>.getDisplayName()
 
     override fun getSizeInventory(): Int = 1
 
@@ -136,7 +151,7 @@ class DiskDrive : TileEntityBase(), TraitEnvironment, TraitComponentInventory, T
     // TileEntity
 
     companion object {
-        private val DiskTag = Settings.namespace + "disk"
+        private const val DiskTag = Settings.namespace + "disk"
     }
 
     @SideOnly(Side.CLIENT)
