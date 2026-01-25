@@ -10,12 +10,16 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Analyzable
+import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.SaveHandler
+import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.RotatableTile
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.server.component.result
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -29,13 +33,14 @@ import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Hologram @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-): TileEntityBase(), TraitEnvironment, SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfoKt {
-
+): TileEntityBase.TEEnvironmentBase(), SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfoKt {
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)
         .withComponent("hologram")
         .withConnector()
         .create()
+
+    override val rotatableDelegate: RotatableTile.Delegate = register(RotatableTile::Delegate)
 
     override fun node(): Node = node
 
@@ -171,6 +176,7 @@ class Hologram @JvmOverloads constructor(
 
     // ----------------------------------------------------------------------- //
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function() -- Clears the hologram.""")
     @Synchronized
     fun clear(context: Context, args: Arguments): Array<Any?>? {
@@ -181,6 +187,7 @@ class Hologram @JvmOverloads constructor(
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function(x:number, y:number, z:number):number -- Returns the value for the specified voxel.""")
     @Synchronized
     fun get(context: Context, args: Arguments): Array<Any?> {
@@ -188,6 +195,7 @@ class Hologram @JvmOverloads constructor(
         return result(getColor(x, y, z))
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, limit = 256, doc = """function(x:number, y:number, z:number, value:number or boolean) -- Set the value for the specified voxel.""")
     @Synchronized
     fun set(context: Context, args: Arguments): Array<Any?>? {
@@ -197,6 +205,7 @@ class Hologram @JvmOverloads constructor(
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, limit = 128, doc = """function(x:number, z:number[, minY:number], maxY:number, value:number or boolean) -- Fills an interval of a column with the specified value.""")
     @Synchronized
     fun fill(context: Context, args: Arguments): Array<Any?>? {
@@ -224,6 +233,7 @@ class Hologram @JvmOverloads constructor(
         return null
     }
 
+    @Suppress("unused")
     @Callback(doc = """function(data:string) -- Set the raw buffer to the specified byte array, where each byte represents a voxel color. Nesting is x,z,y.""")
     @Synchronized
     fun setRaw(context: Context, args: Arguments): Array<Any?>? {
@@ -300,23 +310,27 @@ class Hologram @JvmOverloads constructor(
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- Returns the render scale of the hologram.""")
     fun getScale(context: Context, args: Arguments): Array<Any?> = result(scale)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:number) -- Set the render scale. A larger scale consumes more energy.""")
     fun setScale(context: Context, args: Arguments): Array<Any?>? {
-        scale = maxOf(0.333333, minOf(Settings.get.hologramMaxScaleByTier(tier), args.checkDouble(0)))
+        scale = maxOf(0.333333, minOf(Settings.get.hologramMaxScaleByTier[tier], args.checkDouble(0)))
         ServerPacketSender.sendHologramScale(this)
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number, number, number -- Returns the relative render projection offsets of the hologram.""")
     fun getTranslation(context: Context, args: Arguments): Array<Any?> =
         result(translation.x, translation.y, translation.z)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(tx:number, ty:number, tz:number) -- Sets the relative render projection offsets of the hologram.""")
     fun setTranslation(context: Context, args: Arguments): Array<Any?>? {
-        val maxTranslation = Settings.get.hologramMaxTranslationByTier(tier)
+        val maxTranslation = Settings.get.hologramMaxTranslationByTier[tier]
         val tx = maxOf(-maxTranslation, minOf(maxTranslation, args.checkDouble(0)))
         val ty = maxOf(0.0, minOf(maxTranslation * 2, args.checkDouble(1)))
         val tz = maxOf(-maxTranslation, minOf(maxTranslation, args.checkDouble(2)))
@@ -327,9 +341,11 @@ class Hologram @JvmOverloads constructor(
         return null
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- The color depth supported by the hologram.""")
     fun maxDepth(context: Context, args: Arguments): Array<Any?> = result(tier + 1)
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(index:number):number -- Get the color defined for the specified value.""")
     fun getPaletteColor(context: Context, args: Arguments): Array<Any?> {
         val index = args.checkInteger(0)
@@ -337,6 +353,7 @@ class Hologram @JvmOverloads constructor(
         return result(convertColor(colors[index - 1]))
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(index:number, value:number):number -- Set the color defined for the specified value.""")
     fun setPaletteColor(context: Context, args: Arguments): Array<Any?> {
         val index = args.checkInteger(0)
@@ -348,6 +365,7 @@ class Hologram @JvmOverloads constructor(
         return result(oldValue)
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(angle:number, x:number, y:number, z:number):boolean -- Set the base rotation of the displayed hologram.""")
     fun setRotation(context: Context, args: Arguments): Array<Any?> {
         return if (tier > 0) {
@@ -368,6 +386,7 @@ class Hologram @JvmOverloads constructor(
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(speed:number, x:number, y:number, z:number):boolean -- Set the rotation speed of the displayed hologram.""")
     fun setRotationSpeed(context: Context, args: Arguments): Array<Any?> {
         return if (tier > 0) {
@@ -388,6 +407,7 @@ class Hologram @JvmOverloads constructor(
         }
     }
 
+    @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = "function():number, number, number -- Get the dimension of the x,y,z axes.")
     fun getDimensions(context: Context, args: Arguments): Array<Any?> = result(width, height, width)
 
@@ -458,10 +478,10 @@ class Hologram @JvmOverloads constructor(
     override fun shouldRenderInPass(pass: Int): Boolean = pass == 1
 
     override fun getMaxRenderDistanceSquared(): Double =
-        scale / Settings.get.hologramMaxScaleByTier.max()!! * Settings.get.hologramRenderDistance * Settings.get.hologramRenderDistance
+        scale / Settings.get.hologramMaxScaleByTier.max() * Settings.get.hologramRenderDistance * Settings.get.hologramRenderDistance
 
     fun getFadeStartDistanceSquared(): Double =
-        scale / Settings.get.hologramMaxScaleByTier.max()!! * Settings.get.hologramFadeStartDistance * Settings.get.hologramFadeStartDistance
+        scale / Settings.get.hologramMaxScaleByTier.max() * Settings.get.hologramFadeStartDistance * Settings.get.hologramFadeStartDistance
 
     companion object {
         private val Sqrt2 = Math.sqrt(2.0)
@@ -530,7 +550,7 @@ class Hologram @JvmOverloads constructor(
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
         nbt.setByte(TierTag, tier.toByte())
         super.writeToNBTForServer(nbt)
-        SaveHandler.scheduleSave(world, x, z, nbt, dataPath) { tag ->
+        SaveHandler.scheduleSave(world, x.toDouble(), z.toDouble(), nbt, dataPath) { tag ->
             tag.setIntArray(VolumeTag, volume)
             tag.setIntArray(ColorsTag, colors.map { convertColor(it) }.toIntArray())
         }
