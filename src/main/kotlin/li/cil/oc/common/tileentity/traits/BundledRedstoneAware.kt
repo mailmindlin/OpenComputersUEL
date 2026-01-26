@@ -40,7 +40,7 @@ class SidedArray<T> internal constructor(private val value: Array<T>): Iterable<
 interface BundledRedstoneAware : RedstoneAware {
     override val redstoneDelegate: Delegate
 
-    class Delegate(te: BundledRedstoneAware): RedstoneAware.Delegate(te) {
+    open class Delegate(te: BundledRedstoneAware): RedstoneAware.Delegate(te) {
         internal val bundledInput: SidedArray<IntArray> = SidedArray { IntArray(16) { -1 } }
         internal val rednetInput: SidedArray<IntArray> = SidedArray { IntArray(16) { -1 } }
         internal val bundledOutput: SidedArray<IntArray> = SidedArray { IntArray(16) { 0 } }
@@ -105,15 +105,16 @@ interface BundledRedstoneAware : RedstoneAware {
             super.outputEnabled = value
         }
 
-    /*fun getBundledInput(): Array<IntArray> {
+    fun getBundledInput(): Array<IntArray> {
+        val delegate = redstoneDelegate
         return Array(6) { side ->
             IntArray(16) { color ->
-                maxOf(_bundledInput[side][color], _rednetInput[side][color], 0)
+                maxOf(delegate.bundledInput[side][color], delegate.rednetInput[side][color], 0)
             }
         }
     }
 
-    private fun checkSide(side: EnumFacing): Int {
+    private fun checkBundledSide(side: EnumFacing): Int {
         val index = side.ordinal
         if (index >= 6) throw IndexOutOfBoundsException("Bad side $side")
         return index
@@ -125,22 +126,24 @@ interface BundledRedstoneAware : RedstoneAware {
     }
 
     fun getBundledInput(side: EnumFacing): IntArray {
-        val sideIndex = checkSide(side)
-        val bundled = _bundledInput[sideIndex]
-        val rednet = _rednetInput[sideIndex]
+        val delegate = redstoneDelegate
+        val sideIndex = checkBundledSide(side)
+        val bundled = delegate.bundledInput[sideIndex]
+        val rednet = delegate.rednetInput[sideIndex]
         return IntArray(16) { i -> maxOf(bundled[i], rednet[i], 0) }
     }
 
     fun getBundledInput(side: EnumFacing, color: Int): Int {
-        val sideIndex = checkSide(side)
+        val delegate = redstoneDelegate
+        val sideIndex = checkBundledSide(side)
         val colorIndex = checkColor(color)
-        val bundled = _bundledInput[sideIndex][colorIndex]
-        val rednet = _rednetInput[sideIndex][colorIndex]
+        val bundled = delegate.bundledInput[sideIndex][colorIndex]
+        val rednet = delegate.rednetInput[sideIndex][colorIndex]
         return maxOf(bundled, rednet, 0)
     }
 
     fun setBundledInput(side: EnumFacing, color: Int, newValue: Int) {
-        updateInput(_bundledInput, side, color, newValue)
+        updateBundledInput(redstoneDelegate.bundledInput, side, color, newValue)
     }
 
     fun setBundledInput(side: EnumFacing, newBundledInput: IntArray?) {
@@ -151,11 +154,11 @@ interface BundledRedstoneAware : RedstoneAware {
     }
 
     fun setRednetInput(side: EnumFacing, color: Int, value: Int) {
-        updateInput(_rednetInput, side, color, value)
+        updateBundledInput(redstoneDelegate.rednetInput, side, color, value)
     }
 
-    fun updateInput(inputs: Array<IntArray>, side: EnumFacing, color: Int, newValue: Int) {
-        val sideIndex = checkSide(side)
+    fun updateBundledInput(inputs: SidedArray<IntArray>, side: EnumFacing, color: Int, newValue: Int) {
+        val sideIndex = checkBundledSide(side)
         val colorIndex = checkColor(color)
         val oldValue = inputs[sideIndex][colorIndex]
         if (oldValue != newValue) {
@@ -166,15 +169,15 @@ interface BundledRedstoneAware : RedstoneAware {
         }
     }
 
-    fun getBundledOutput(): Array<IntArray> = _bundledInput
+    fun getBundledOutput(): Array<IntArray> = Array(6) { redstoneDelegate.bundledOutput[it].copyOf() }
 
-    fun getBundledOutput(side: EnumFacing): IntArray = _bundledOutput[checkSide(toLocal(side))]
+    fun getBundledOutput(side: EnumFacing): IntArray = redstoneDelegate.bundledOutput[checkBundledSide(toLocal(side))].copyOf()
 
-    fun getBundledOutput(side: EnumFacing, color: Int): Int = getBundledOutput(side)[checkColor(color)]
+    fun getBundledOutput(side: EnumFacing, color: Int): Int = redstoneDelegate.bundledOutput[checkBundledSide(toLocal(side))][checkColor(color)]
 
     fun setBundledOutput(side: EnumFacing, color: Int, value: Int): Boolean {
         if (value != getBundledOutput(side, color)) {
-            _bundledOutput[checkSide(toLocal(side))][checkColor(color)] = value
+            redstoneDelegate.bundledOutput[checkBundledSide(toLocal(side))][checkColor(color)] = value
             onRedstoneOutputChanged(side)
             return true
         }
@@ -187,7 +190,7 @@ interface BundledRedstoneAware : RedstoneAware {
         for (color in 0 until 16) {
             val newValue = valueToInt(getObjectFuzzy(values, color))
             if (newValue != null && newValue != getBundledOutput(side, color)) {
-                _bundledOutput[sideIndex][color] = newValue
+                redstoneDelegate.bundledOutput[sideIndex][color] = newValue
                 changed = true
             }
         }
@@ -209,11 +212,20 @@ interface BundledRedstoneAware : RedstoneAware {
         return changed
     }
 
-    // ----------------------------------------------------------------------- //
+    private fun getObjectFuzzy(map: Map<*, *>, key: Int): Any? {
+        val keyAsAny: Any = key
+        return when {
+            map.containsKey(key) -> map[key]
+            map.containsKey(keyAsAny) -> map[keyAsAny]
+            map.containsKey(key.toDouble()) -> map[key.toDouble()]
+            else -> null
+        }
+    }
 
-    // Note: updateRedstoneInput override for bundled input is handled by Scala integration
-
-    // ----------------------------------------------------------------------- //
-
-    // Note: Capability handling for Charset integration is done via Scala mixin*/
+    private fun valueToInt(value: Any?): Int? {
+        return when (value) {
+            is Number -> value.toInt()
+            else -> null
+        }
+    }
 }

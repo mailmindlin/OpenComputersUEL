@@ -17,13 +17,18 @@ import net.minecraft.world.World
 object DriverController : DriverSidedTileEntity() {
   override fun getTileEntityClass(): Class<*>? = AEUtil.controllerClass()
 
-  override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment =
-    Environment(world.getTileEntity(pos) as TileController)
+  override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment {
+    val te = world.getTileEntity(pos)
+    if (te !is TileEntity || te !is IActionHost || te !is IGridHost)
+      throw AssertionError()
+    return Environment(te)
+  }
 
-  class Environment(override val tile: TileController) :
-    ManagedTileEntityEnvironment<TileController>(tile, "me_controller"),
+  class Environment<TE>(override val tile: TE) :
+    ManagedTileEntityEnvironment<TE>(tile, "me_controller"),
     NamedBlock,
-    NetworkControl<TileController> {
+    NetworkControl<TE>
+    where TE: TileEntity, TE: IActionHost, TE: IGridHost {
 
     override fun preferredName() = "me_controller"
 
@@ -39,7 +44,3 @@ object DriverController : DriverSidedTileEntity() {
       else null
   }
 }
-
-// Kotlin doesn't support intersection types, so we use TileEntity as base
-// and cast to required interfaces when needed
-private typealias TileController = TileEntity

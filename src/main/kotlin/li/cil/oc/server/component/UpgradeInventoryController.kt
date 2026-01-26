@@ -1,7 +1,6 @@
 package li.cil.oc.server.component
 
 import li.cil.oc.Constants
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Agent
@@ -11,7 +10,6 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.server.component.traits.InventoryAnalytics
 import li.cil.oc.server.component.traits.InventoryWorldControlMk2
 import li.cil.oc.server.component.traits.ItemInventoryControl
@@ -35,8 +33,8 @@ object UpgradeInventoryController {
         }
     }
 
-    class Adapter(val host: EnvironmentHost) : AbstractManagedEnvironment(), WorldInventoryAnalytics, Common {
-        override val node = Network.newNode(this, Visibility.Network)
+    class Adapter(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldInventoryAnalytics, Common {
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("inventory_controller", Visibility.Network)
             .create()
 
@@ -47,11 +45,11 @@ object UpgradeInventoryController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    class Drone(val host: EnvironmentHost) : AbstractManagedEnvironment(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
+    class Drone(val host: EnvironmentHost) : ManagedEnvironmentKt(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
         private val agent: Agent
             get() = host as Agent
 
-        override val node: Node = Network.newNode(this, Visibility.Network)
+        override val node: Node = nodeFactory(Visibility.Network)
             .withComponent("inventory_controller", Visibility.Neighbors)
             .create()
 
@@ -68,8 +66,8 @@ object UpgradeInventoryController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    class Robot(val host: RobotTileEntity) : AbstractManagedEnvironment(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
-        override val node = Network.newNode(this, Visibility.Network)
+    class Robot(val host: RobotTileEntity) : ManagedEnvironmentKt(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("inventory_controller", Visibility.Neighbors)
             .create()
 

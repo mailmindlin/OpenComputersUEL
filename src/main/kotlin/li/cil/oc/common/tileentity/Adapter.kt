@@ -3,6 +3,7 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.driver.DriverBlock
@@ -14,7 +15,6 @@ import li.cil.oc.common.Slot
 import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.OpenSides
 import li.cil.oc.common.tileentity.traits.isServer
-import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.SoundEvents
 import net.minecraft.item.ItemStack
@@ -32,9 +32,9 @@ import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import net.minecraftforge.common.util.Constants as NBTConstants
 
-class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfoKt {
+class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfo {
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.Network).create()
+    val node: Node = ApiNetwork.newNode(this, Visibility.Network)!!.create()
     override fun node(): Node = node
 
     override val sidesDelegate: OpenSides.Delegate = register(OpenSides::Delegate)
@@ -45,14 +45,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
     private val updatingBlocks: MutableList<ManagedEnvironment> = mutableListOf()
     private val blocksData: Array<BlockData?> = arrayOfNulls(6)
 
-    override val deviceInfo: Map<String, String> by lazy {
-        mapOf(
-            DeviceAttribute.Class to DeviceClass.Bus,
-            DeviceAttribute.Description to "Adapter",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "Multiplug Ext.1"
-        )
-    }
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     override fun getDisplayName(): ITextComponent = super<TraitComponentInventory>.getDisplayName()
 
@@ -205,6 +198,12 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
         private val BlocksTag = Settings.namespace + "adapter.blocks"
         private const val BlockNameTag = "name"
         private const val BlockDataTag = "data"
+        private val deviceInfo = mapOf(
+            DeviceAttribute.Class to DeviceClass.Bus,
+            DeviceAttribute.Description to "Adapter",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Multiplug Ext.1"
+        )
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {

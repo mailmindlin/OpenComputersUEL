@@ -1,6 +1,7 @@
 package li.cil.oc.common.inventory
 
 import li.cil.oc.api.Driver
+import li.cil.oc.api.internal.Tiered
 import li.cil.oc.api.internal.Server as InternalServer
 import li.cil.oc.common.InventorySlots
 import li.cil.oc.util.ItemUtils
@@ -8,11 +9,12 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import kotlin.math.max
 
-abstract class ServerInventory : ItemStackInventory() {
+abstract class ServerInventory : ItemStackInventory(), Tiered {
     open val tier: Int
         get() = max(ItemUtils.caseTier(container), 0)
+    override fun tier(): Int = tier
 
-    override fun getSizeInventory(): Int = InventorySlots.server(tier).size
+    override fun getSizeInventory(): Int = InventorySlots.server[tier].size
 
     override val inventoryName: String
         get() = "server"
@@ -24,7 +26,7 @@ abstract class ServerInventory : ItemStackInventory() {
     override fun isItemValidForSlot(slot: Int, stack: ItemStack): Boolean {
         val driver = Driver.driverFor(stack, InternalServer::class.java)
         return if (driver != null) {
-            val provided = InventorySlots.server(tier)[slot]
+            val provided = InventorySlots.server[tier][slot]
             driver.slot(stack) == provided.slot && driver.tier(stack) <= provided.tier
         } else {
             false

@@ -117,7 +117,7 @@ abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfoKt {
     }
 
     class UpgradeSignInAdapter(override val host: EnvironmentHost) : UpgradeSign() {
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("sign", Visibility.Network)
             .withConnector()
             .create()
@@ -142,7 +142,7 @@ abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfoKt {
         private val rotatable: Rotatable
             get() = rotatableHost as Rotatable
 
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("sign", Visibility.Neighbors)
             .withConnector()
             .create()

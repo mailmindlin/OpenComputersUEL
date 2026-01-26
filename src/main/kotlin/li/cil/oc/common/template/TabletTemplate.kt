@@ -32,13 +32,13 @@ object TabletTemplate : Template() {
     override val hostClass: Class<Tablet> = Tablet::class.java
 
     @JvmStatic
-    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.TabletCaseTier1)
+    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.TabletCaseTier1
 
     @JvmStatic
-    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.TabletCaseTier2)
+    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.TabletCaseTier2
 
     @JvmStatic
-    fun selectCreative(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.TabletCaseCreative)
+    fun selectCreative(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.TabletCaseCreative
 
     @JvmStatic
     fun validate(inventory: IInventory): Array<Any> = validateComputer(inventory)
@@ -49,11 +49,11 @@ object TabletTemplate : Template() {
         val data = TabletData()
         data.tier = ItemUtils.caseTier(inventory.getStackInSlot(0))
         data.container = items.firstOrNull() ?: ItemStack.EMPTY
-        data.items = arrayOf(Items.get(Constants.BlockName.ScreenTier1).createItemStack(1)) +
+        data.items = arrayOf(Constants.BlockInfo.ScreenTier1.createItemStack(1)) +
                 items.drop(if (data.tier == Tier.One) 0 else 1).filter { !it.isEmpty }
         data.energy = Settings.get.bufferTablet
         data.maxEnergy = data.energy
-        val stack = Items.get(Constants.ItemName.Tablet).createItemStack(1)
+        val stack = Constants.ItemInfo.Tablet.createItemStack(1)
         data.save(stack)
         val energy = Settings.get.tabletBaseCost + complexity(inventory) * Settings.get.tabletComplexityCost
 
@@ -62,13 +62,13 @@ object TabletTemplate : Template() {
 
     @JvmStatic
     @Suppress("unused")
-    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.Tablet)
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.Tablet
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = TabletData(stack)
-        val itemName = Constants.ItemName.TabletCase(info.tier)
-        return (arrayOf(Items.get(itemName).createItemStack(1), info.container) +
+        val itemInfo = Constants.ItemInfo.TabletCase(info.tier)
+        return (arrayOf(itemInfo.createItemStack(1), info.container) +
                 info.items.filter { !it.isEmpty }.drop(1) /* Screen */).filter { !it.isEmpty }.toTypedArray()
     }
 

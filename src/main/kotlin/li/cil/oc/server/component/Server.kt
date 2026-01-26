@@ -1,22 +1,19 @@
 package li.cil.oc.server.component
 
-import java.lang.Iterable
-import java.util
-
 import li.cil.oc.Constants
+import li.cil.oc.OpenComputers
+import li.cil.oc.api.component.RackBusConnectable
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.OpenComputers
-import li.cil.oc.api.Machine as MachineFactory
-import li.cil.oc.api.component.RackBusConnectable
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.internal.Rack
+import li.cil.oc.api.internal.Server
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
+import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.GuiType
 import li.cil.oc.common.InventorySlots
 import li.cil.oc.common.Slot
@@ -35,201 +32,230 @@ import net.minecraft.util.EnumHand
 import net.minecraft.world.World
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.common.capabilities.ICapabilityProvider
+import java.util.*
+import li.cil.oc.api.Machine as MachineFactory
+import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.common.item.Server as ItemServer
 
-class Server(val rack: Rack, val slot: Int): Environment, MachineHost, ServerInventory, ComponentInventory, Analyzable, internal.Server, ICapabilityProvider, DeviceInfoKt {
-  val machine: Machine = MachineFactory.create(this)
+class Server(val rack: Rack, val slot: Int) : ServerInventory(), Environment, MachineHost, ComponentInventory, Analyzable, Server, ICapabilityProvider, DeviceInfoKt {
+    val machine: Machine = MachineFactory.create(this)!!
+    override fun machine(): Machine = machine
+    override fun rack(): Rack = rack
+    override fun slot(): Int = slot
 
-  val node: Node? = if (!rack.world.isRemote) machine.node() else null
+    val node: Node? = if (!rack.world.isRemote) machine.node() else null
 
-  var wasRunning = false
-  var hadErrored = false
-  var lastFileSystemAccess = 0L
-  var lastNetworkActivity = 0L
+    var wasRunning = false
+    var hadErrored = false
+    var lastFileSystemAccess = 0L
+    var lastNetworkActivity = 0L
 
-  override val deviceInfo = mapOf(
-    DeviceAttribute.Class to DeviceClass.System,
-    DeviceAttribute.Description to "Server",
-    DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product to "Blader",
-    DeviceAttribute.Capacity to sizeInventory.toString()
-  )
+    override val deviceInfo = mapOf(
+        DeviceAttribute.Class to DeviceClass.System,
+        DeviceAttribute.Description to "Server",
+        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+        DeviceAttribute.Product to "Blader",
+        DeviceAttribute.Capacity to sizeInventory.toString()
+    )
 
-  // ----------------------------------------------------------------------- //
-  // Environment
+    // ----------------------------------------------------------------------- //
+    // Environment
 
-  override fun onConnect(node: Node) {
-    if (node == this.node) {
-      connectComponents()
-    }
-  }
+    override fun node(): Node? = node
 
-  override fun onDisconnect(node: Node) {
-    if (node == this.node) {
-      disconnectComponents()
-    }
-  }
-
-  override fun onMessage(message: Message) {
-  }
-
-  private final val MachineTag = "machine"
-
-  override fun load(nbt: NBTTagCompound) {
-    super.load(nbt)
-    if (!rack.world.isRemote) {
-      machine.load(nbt.getCompoundTag(MachineTag))
-    }
-  }
-
-  override fun save(nbt: NBTTagCompound) {
-    super.save(nbt)
-    if (!rack.world.isRemote) {
-      nbt.setNewCompoundTag(MachineTag) { machine.save(it) }
-    }
-  }
-
-  // ----------------------------------------------------------------------- //
-  // MachineHost
-
-  override fun internalComponents(): Iterable[ItemStack] = (0 until getSizeInventory).collect {
-    case i if !getStackInSlot(i).isEmpty && isComponentSlot(i, getStackInSlot(i)) => getStackInSlot(i)
-  }
-
-  override fun componentSlot(address: String): Int = components.indexWhere(_.exists(env => env.node != null && env.node.address == address))
-
-  override fun onMachineConnect(node: Node): Unit = onConnect(node)
-
-  override fun onMachineDisconnect(node: Node): Unit = onDisconnect(node)
-
-  // ----------------------------------------------------------------------- //
-  // EnvironmentHost
-
-  override fun xPosition: Double = rack.xPosition()
-  override fun yPosition: Double = rack.yPosition()
-  override fun zPosition: Double = rack.zPosition()
-  override fun world: World = rack.world
-
-  override fun markChanged(): Unit = rack.markChanged()
-
-  // ----------------------------------------------------------------------- //
-  // ServerInventory
-
-  override fun tier: Int = Delegator.subItem(container) match {
-    case Some(server: item.Server) => server.tier
-    case _ => 0
-  }
-
-  override fun isUsableByPlayer(player: EntityPlayer): Boolean = rack.isUsableByPlayer(player)
-
-  // ----------------------------------------------------------------------- //
-  // ItemStackInventory
-
-  override fun host: Rack = rack
-
-  // ----------------------------------------------------------------------- //
-  // ComponentInventory
-
-  override fun container: ItemStack = rack.getStackInSlot(slot)
-
-  override protected fun connectItemNode(node: Node) {
-    if (node != null) {
-      api.Network.joinNewNetwork(machine.node())
-      machine.node().connect(node)
-    }
-  }
-
-  override protected fun onItemRemoved(slot: Int, stack: ItemStack): Unit = {
-    super.onItemRemoved(slot, stack)
-    if (!rack.world.isRemote) {
-      val slotType = InventorySlots.server(tier)(slot).slot
-      if (slotType == Slot.CPU) {
-        machine.stop()
-      }
-    }
-  }
-
-  // ----------------------------------------------------------------------- //
-  // RackMountable
-
-  override fun getData(): NBTTagCompound {
-    val nbt = NBTTagCompound()
-    nbt.setBoolean("isRunning", wasRunning)
-    nbt.setBoolean("hasErrored", hadErrored)
-    nbt.setLong("lastFileSystemAccess", lastFileSystemAccess)
-    nbt.setLong("lastNetworkActivity", lastNetworkActivity)
-    return nbt
-  }
-
-  override fun getConnectableCount: Int = components.count {
-    case Some(_: RackBusConnectable) => true
-    case _ => false
-  }
-
-  override fun getConnectableAt(index: Int): RackBusConnectable = components.collect {
-    case Some(busConnectable: RackBusConnectable) => busConnectable
-  }.apply(index)
-
-  override fun onActivate(player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, hitX: Float, hitY: Float): Boolean = {
-    if (!player.getEntityWorld().isRemote) {
-      if (player.isSneaking) {
-        if (!machine.isRunning && isUsableByPlayer(player)) {
-          wasRunning = false
-          hadErrored = false
-          machine.start()
+    override fun onConnect(node: Node) {
+        if (node == this.node) {
+            connectComponents()
         }
-      }
-      else {
-        val position = BlockPosition(rack)
-        player.openGui(OpenComputers, GuiType.ServerInRack.id, world, position.x, GuiType.embedSlot(position.y, slot), position.z)
-      }
-    }
-    true
-  }
-
-  // ----------------------------------------------------------------------- //
-  // ManagedEnvironment
-
-  override fun canUpdate: Boolean = true
-
-  override fun update(){
-    if (!rack.world.isRemote) {
-      machine.update()
-
-      val isRunning = machine.isRunning
-      val hasErrored = machine.lastError() != null
-      if (isRunning != wasRunning || hasErrored != hadErrored) {
-        rack.markChanged(slot)
-      }
-      wasRunning = isRunning
-      hadErrored = hasErrored
-      if (tier == Tier.Four) node.asInstanceOf[Connector].changeBuffer(Double.PositiveInfinity)
     }
 
-    updateComponents()
-  }
+    override fun onDisconnect(node: Node) {
+        if (node == this.node) {
+            disconnectComponents()
+        }
+    }
 
-  // ----------------------------------------------------------------------- //
-  // StateAware
+    override fun onMessage(message: Message) {}
 
-  override fun getCurrentState: util.EnumSet[api.util.StateAware.State] = {
-    if (machine.isRunning) util.EnumSet.of(api.util.StateAware.State.IsWorking)
-    else util.EnumSet.noneOf(classOf[api.util.StateAware.State])
-  }
+    private val MachineTag = "machine"
 
-  // ----------------------------------------------------------------------- //
-  // Analyzable
+    override fun load(nbt: NBTTagCompound) {
+        super<ComponentInventory>.load(nbt)
+        if (!rack.world.isRemote) {
+            machine.load(nbt.getCompoundTag(MachineTag))
+        }
+    }
 
-  override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float) = Array(machine.node())
+    override fun save(nbt: NBTTagCompound) {
+        super<ComponentInventory>.save(nbt)
+        if (!rack.world.isRemote) {
+            nbt.setNewCompoundTag(MachineTag) { machine.save(it) }
+        }
+    }
 
-  // ----------------------------------------------------------------------- //
-  // ICapabilityProvider
+    // ----------------------------------------------------------------------- //
+    // MachineHost
 
-  override fun hasCapability(capability: Capability[_], facing: EnumFacing): Boolean = components.exists {
-    case Some(component: ICapabilityProvider) => component.hasCapability(capability, host.toLocal(facing))
-    case _ => false
-  }
+    override fun internalComponents(): Iterable<ItemStack> {
+        return (0 until getSizeInventory())
+            .filter { slot -> !getStackInSlot(slot).isEmpty && isComponentSlot(slot, getStackInSlot(slot)) }
+            .map { slot -> getStackInSlot(slot) }
+    }
 
-  override fun getCapability[T](capability: Capability[T], facing: EnumFacing): T = components.collectFirst {
-    case Some(component: ICapabilityProvider) if component.hasCapability(capability, host.toLocal(facing)) => component.getCapability[T](capability, host.toLocal(facing))
-  }.getOrElse(null.asInstanceOf[T])
+    override fun componentSlot(address: String): Int {
+        return components.indexOfFirst { env ->
+            env?.node()?.address() == address
+        }
+    }
+
+    override fun onMachineConnect(node: Node) = onConnect(node)
+
+    override fun onMachineDisconnect(node: Node) = onDisconnect(node)
+
+    // ----------------------------------------------------------------------- //
+    // EnvironmentHost
+
+    override fun xPosition(): Double = rack.xPosition()
+    override fun yPosition(): Double = rack.yPosition()
+    override fun zPosition(): Double = rack.zPosition()
+    override fun world(): World = rack.world()
+
+    override fun markChanged() = rack.markChanged()
+
+    // ----------------------------------------------------------------------- //
+    // ServerInventory
+
+    override val tier: Int
+        get() {
+            val subItem = Delegator.subItem(container)
+            return if (subItem is ItemServer) subItem.tier else 0
+        }
+
+    override fun isUsableByPlayer(player: EntityPlayer): Boolean = rack.isUsableByPlayer(player)
+
+    // ----------------------------------------------------------------------- //
+    // ItemStackInventory
+
+    override val host: Rack get() = rack
+
+    // ----------------------------------------------------------------------- //
+    // ComponentInventory
+
+    override val componentInventoryDelegate = ComponentInventory.State()
+
+    override val container: ItemStack get() = rack.getStackInSlot(slot)
+
+    override fun connectItemNode(node: Node?) {
+        if (node != null) {
+            ApiNetwork.joinNewNetwork(machine.node())
+            machine.node()!!.connect(node)
+        }
+    }
+
+    override fun onItemRemoved(slot: Int, stack: ItemStack) {
+//        super<ServerInventory>.onItemRemoved(slot, stack) // is no-op
+        super<ComponentInventory>.onItemRemoved(slot, stack)
+        if (!rack.world.isRemote) {
+            val slotType = InventorySlots.server[tier][slot].slot
+            if (slotType == Slot.CPU) {
+                machine.stop()
+            }
+        }
+    }
+
+    override fun getInventoryStackLimit(): Int = super<ComponentInventory>.getInventoryStackLimit()
+
+    // ----------------------------------------------------------------------- //
+    // RackMountable
+
+    override fun getData(): NBTTagCompound {
+        val nbt = NBTTagCompound()
+        nbt.setBoolean("isRunning", wasRunning)
+        nbt.setBoolean("hasErrored", hadErrored)
+        nbt.setLong("lastFileSystemAccess", lastFileSystemAccess)
+        nbt.setLong("lastNetworkActivity", lastNetworkActivity)
+        return nbt
+    }
+
+    override fun getConnectableCount(): Int = components.count { it is RackBusConnectable }
+
+    override fun getConnectableAt(index: Int): RackBusConnectable? {
+        return components.filterIsInstance<RackBusConnectable>().getOrNull(index)
+    }
+
+    override fun onActivate(player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, hitX: Float, hitY: Float): Boolean {
+        if (!player.entityWorld.isRemote) {
+            if (player.isSneaking) {
+                if (!machine.isRunning && isUsableByPlayer(player)) {
+                    wasRunning = false
+                    hadErrored = false
+                    machine.start()
+                }
+            } else {
+                val position = BlockPosition(rack)
+                player.openGui(OpenComputers, GuiType.ServerInRack.id, world(), position.x, GuiType.embedSlot(position.y, slot), position.z)
+            }
+        }
+        return true
+    }
+
+    // ----------------------------------------------------------------------- //
+    // ManagedEnvironment
+
+    override fun canUpdate(): Boolean = true
+
+    override fun update() {
+        if (!rack.world.isRemote) {
+            machine.update()
+
+            val isRunning = machine.isRunning
+            val hasErrored = machine.lastError() != null
+            if (isRunning != wasRunning || hasErrored != hadErrored) {
+                rack.markChanged(slot)
+            }
+            wasRunning = isRunning
+            hadErrored = hasErrored
+            if (tier == Tier.Four) {
+                (node as? Connector)?.changeBuffer(Double.POSITIVE_INFINITY)
+            }
+        }
+
+        updateComponents()
+    }
+
+    // ----------------------------------------------------------------------- //
+    // StateAware
+
+    override fun getCurrentState(): EnumSet<StateAware.State> {
+        return if (machine.isRunning) EnumSet.of(StateAware.State.IsWorking)
+        else EnumSet.noneOf(StateAware.State::class.java)
+    }
+
+    // ----------------------------------------------------------------------- //
+    // Analyzable
+
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node>? {
+        val n = machine.node()
+        return if (n != null) arrayOf(n) else null
+    }
+
+    // ----------------------------------------------------------------------- //
+    // ICapabilityProvider
+
+    override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
+        return components.any { component ->
+            (component as? ICapabilityProvider)?.hasCapability(capability, facing?.let { host.toLocal(it) }) == true
+        }
+    }
+
+    override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
+        for (component in components) {
+            val provider = component as? ICapabilityProvider ?: continue
+            val localFacing = facing?.let { host.toLocal(it) }
+            if (provider.hasCapability(capability, localFacing)) {
+                return provider.getCapability(capability, localFacing)
+            }
+        }
+        return null
+    }
 }

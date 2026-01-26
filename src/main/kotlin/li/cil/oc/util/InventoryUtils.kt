@@ -19,7 +19,7 @@ import kotlin.math.min
 public object InventoryUtils {
     @JvmStatic
     @JvmOverloads
-    fun asItemHandler(inventory: IInventory, side: EnumFacing? = null): IItemHandlerModifiable = when {
+    fun asItemHandler(inventory: IInventory?, side: EnumFacing? = null): IItemHandlerModifiable = when {
         inventory is ISidedInventory && side != null -> SidedInvWrapper(inventory, side)
         else -> InvWrapper(inventory)
     }

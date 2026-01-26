@@ -1,16 +1,9 @@
 package li.cil.oc.server.component
 
 import com.google.common.net.InetAddresses
-
-import java.nio.ByteBuffer
-import java.nio.channels.SelectionKey
-import java.nio.channels.Selector
-import java.nio.channels.SocketChannel
-import java.util.UUID
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -23,20 +16,23 @@ import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.util.ThreadPoolFactory
 import net.minecraftforge.fml.common.FMLCommonHandler
 import java.io.*
-
 import java.net.*
+import java.nio.ByteBuffer
+import java.nio.channels.SelectionKey
+import java.nio.channels.Selector
+import java.nio.channels.SocketChannel
+import java.util.*
 import java.util.concurrent.Callable
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
-import kotlin.jvm.Throws
 
 class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Network).withComponent("internet", Visibility.Neighbors).create()
+  override val node = nodeFactory(Visibility.Network).withComponent("internet", Visibility.Neighbors).create()
 
-  protected var owner: Context? = null
+  private var owner: Context? = null
 
-  protected val connections = mutableSetOf<InternetCard.Closable>()
+  private val connections = mutableSetOf<Closable>()
 
   // ----------------------------------------------------------------------- //
 
@@ -60,7 +56,7 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
     synchronized(this) {
       checkOwner(context)
       val address = args.checkString(0)
-      if (!Settings.get.internetAccessAllowed()) {
+      if (!Settings.get.internetAccessAllowed) {
         return result(Unit, "internet access is unavailable")
       }
       if (!Settings.get.httpEnabled) {
@@ -77,13 +73,13 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
           for ((k, v) in raw)
             result[k.toString()] = v.toString()
           return@run result
-        } else emptyMap<String, String>()
+        } else emptyMap()
 
       if (!Settings.get.httpHeadersEnabled && headers.isNotEmpty())
         return result(Unit, "http request headers are unavailable")
 
       val method = if (args.isString(3)) args.checkString(3) else null
-      val request = InternetCard.HTTPRequest(this, checkAddress(address), post, headers, method)
+      val request = HTTPRequest(this, checkAddress(address), post, headers, method)
       connections += request
       return result(request)
     }
@@ -100,7 +96,7 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
     checkOwner(context)
     val address = args.checkString(0)
     val port = args.optInteger(1, -1)
-    if (!Settings.get.internetAccessAllowed()) {
+    if (!Settings.get.internetAccessAllowed) {
       return result(Unit, "internet access is unavailable")
     }
     if (!Settings.get.tcpEnabled)
@@ -109,7 +105,7 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
       throw IOException("too many open connections")
 
     val uri = checkUri(address, port)
-    val socket = InternetCard.TCPSocket(this, uri, port)
+    val socket = TCPSocket(this, uri, port)
     connections += socket
     result(socket)
   }
@@ -245,7 +241,7 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
     }
 
     private fun isRequestAllowed(settings: Settings, inetAddress: InetAddress, host: String): Boolean {
-      if (!settings.internetAccessAllowed())
+      if (!settings.internetAccessAllowed)
         return false
 
       fun evaluateRules(address: InetAddress): Boolean? =

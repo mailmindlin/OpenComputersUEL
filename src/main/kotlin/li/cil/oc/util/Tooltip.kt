@@ -11,7 +11,7 @@ object Tooltip {
     private val font get() = Minecraft.getMinecraft().fontRenderer
 
     @JvmStatic
-    fun get(name: String, vararg args: Any): MutableList<String> {
+    fun get(name: String, vararg args: Any?): MutableList<String> {
         if (!Localization.canLocalize(Settings.namespace + "tooltip." + name)) {
             return mutableListOf()
         }

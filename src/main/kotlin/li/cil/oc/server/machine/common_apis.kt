@@ -4,15 +4,10 @@ import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.driver.item.MutableProcessor
 import li.cil.oc.api.driver.item.Processor
-import li.cil.oc.api.machine.Architecture
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Connector
-import li.cil.oc.api.network.Node
-import li.cil.oc.server.machine.luaj.luaError
-import li.cil.oc.server.machine.luaj.setClosure
 import li.cil.oc.util.ExtendedUnicodeHelper
 import li.cil.oc.util.FontUtils
-import li.cil.repack.org.luaj.vm2.LuaValue
 import java.util.function.IntUnaryOperator
 import kotlin.math.max
 import kotlin.math.min
@@ -51,9 +46,9 @@ object ComputerApi {
                 }
             }
             ?.let { archs ->
-                archs.asSequence().map { li.cil.oc.api.Machine.getArchitectureName(it) }
+                archs.asSequence().map { li.cil.oc.api.Machine.getArchitectureName(it)!! }
             }
-            ?: emptySequence<String>()
+            ?: emptySequence()
     }
 
     fun ArchitectureAPI.getArchitecture(): String? {

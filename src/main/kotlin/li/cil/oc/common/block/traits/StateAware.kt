@@ -9,15 +9,11 @@ interface StateAware {
     fun stateAwareHasComparatorInputOverride(state: IBlockState): Boolean = true
 
     fun stateAwareGetComparatorInputOverride(state: IBlockState, world: World, pos: BlockPos): Int {
-        val tileEntity = world.getTileEntity(pos)
-        return when (tileEntity) {
-            is StateAware -> {
-                when {
-                    tileEntity.currentState.contains(ApiStateAware.State.IsWorking) -> 15
-                    tileEntity.currentState.contains(ApiStateAware.State.CanWork) -> 10
-                    else -> 0
-                }
-            }
+        val tileEntity = world.getTileEntity(pos) as? li.cil.oc.common.tileentity.traits.StateAware ?: return 0
+        val currentState = tileEntity.currentState
+        return when {
+            ApiStateAware.State.IsWorking in tileEntity.currentState -> 15
+            ApiStateAware.State.CanWork in tileEntity.currentState -> 10
             else -> 0
         }
     }

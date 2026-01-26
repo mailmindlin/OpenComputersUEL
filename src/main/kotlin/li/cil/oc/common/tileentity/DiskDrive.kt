@@ -61,7 +61,7 @@ class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, T
     // Environment
 
     @JvmField
-    val node: Component = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("disk_drive")
         .create()
 

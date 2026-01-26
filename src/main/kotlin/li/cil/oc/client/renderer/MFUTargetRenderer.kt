@@ -13,18 +13,16 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import org.lwjgl.opengl.GL11
 
 object MFUTargetRenderer {
-    private const val color = 0x00FF00
-    private val mfu by lazy { Items.get(Constants.ItemName.MFU) }
+    private const val COLOR = 0x00FF00
 
     @SubscribeEvent
     @Suppress("unused")
     fun onRenderWorldLastEvent(e: RenderWorldLastEvent) {
         val mc = Minecraft.getMinecraft()
-        val player = mc.player
-        if (player == null) return
+        val player = mc.player ?: return
 
         val stack = player.heldItemMainhand
-        if (stack is ItemStack && Items.get(stack) == mfu && stack.hasTagCompound()) {
+        if (stack is ItemStack && Items.get(stack) == Constants.ItemInfo.MFU && stack.hasTagCompound()) {
             val data = stack.tagCompound ?: return
             if (data.hasKey(Settings.namespace + "coord", NBT.TAG_INT_ARRAY)) {
                 val coords = data.getIntArray(Settings.namespace + "coord")
@@ -50,9 +48,9 @@ object MFUTargetRenderer {
                 GL11.glDisable(GL11.GL_CULL_FACE)
 
                 GL11.glColor4f(
-                    ((color shr 16) and 0xFF) / 255f,
-                    ((color shr 8) and 0xFF) / 255f,
-                    ((color shr 0) and 0xFF) / 255f,
+                    ((COLOR shr 16) and 0xFF) / 255f,
+                    ((COLOR shr 8) and 0xFF) / 255f,
+                    ((COLOR shr 0) and 0xFF) / 255f,
                     0.25f
                 )
                 GL11.glPolygonMode(GL11.GL_FRONT_AND_BACK, GL11.GL_LINE)

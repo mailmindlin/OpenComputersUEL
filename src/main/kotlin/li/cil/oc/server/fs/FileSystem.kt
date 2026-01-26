@@ -18,11 +18,10 @@ import java.net.MalformedURLException
 import java.net.URISyntaxException
 import java.net.URL
 import java.util.UUID
-import java.util.concurrent.Future
 import li.cil.oc.api.fs.FileSystem as ApiFileSystem
 
 object FileSystem : FileSystemAPI {
-    val isCaseInsensitive: Boolean by lazy {
+    private val isCaseInsensitive: Boolean by lazy {
         Settings.get.forceCaseInsensitive || run {
             try {
                 val uuid = UUID.randomUUID().toString()
@@ -114,18 +113,16 @@ object FileSystem : FileSystemAPI {
         }
     }
 
-    override fun fromSaveDirectory(root: String, capacity: Long, buffered: Boolean): Capacity? {
+    override fun fromSaveDirectory(root: String, capacity: Long, buffered: Boolean): ApiFileSystem? {
         val path = File(DimensionManager.getCurrentSaveRootDirectory(), Settings.savePath + root)
-        if (!path.isDirectory) {
+        if (!path.isDirectory)
             path.delete()
-        }
         path.mkdirs()
-        return if (path.exists() && path.isDirectory) {
-            if (buffered) BufferedFileSystem(path, capacity)
-            else ReadWriteFileSystem(path, capacity)
-        } else {
-            null
-        }
+        if (!path.exists() || !path.isDirectory) return null
+
+        val inner = if (buffered) Buffered(BufferedFileSystem(), path)
+            else ReadWriteFileSystem(path)
+        return Capacity(inner, capacity)
     }
 
     @JvmStatic
@@ -144,7 +141,7 @@ object FileSystem : FileSystemAPI {
         return false
     }
 
-    override fun fromMemory(capacity: Long): ApiFileSystem = RamFileSystem(capacity)
+    override fun fromMemory(capacity: Long): ApiFileSystem = Capacity(RamFileSystem(), capacity)
 
     override fun asReadOnly(fileSystem: ApiFileSystem): ApiFileSystem =
         if (fileSystem.isReadOnly) fileSystem
@@ -174,6 +171,34 @@ object FileSystem : FileSystemAPI {
     override fun asManagedEnvironment(fileSystem: ApiFileSystem?): FileSystemComponent? =
         asManagedEnvironment(fileSystem, null as Label?, null, null, 1)
 
+    override fun asManagedEnvironment(
+        fileSystem: ApiFileSystem?,
+        label: Label?,
+        host: EnvironmentHost?,
+        accessSound: String?
+    ): FileSystemComponent? =
+        asManagedEnvironment(fileSystem, label, host, accessSound, 1)
+
+    override fun asManagedEnvironment(
+        fileSystem: ApiFileSystem?,
+        label: String?,
+        host: EnvironmentHost?,
+        accessSound: String?
+    ): FileSystemComponent? =
+        asManagedEnvironment(fileSystem, label?.let { ReadOnlyLabel(it) }, host, accessSound, 1)
+
+    override fun asManagedEnvironment(
+        fileSystem: ApiFileSystem?,
+        label: Label?
+    ): FileSystemComponent? =
+        asManagedEnvironment(fileSystem, label, null, null, 1)
+
+    override fun asManagedEnvironment(
+        fileSystem: ApiFileSystem?,
+        label: String?
+    ): FileSystemComponent? =
+        asManagedEnvironment(fileSystem, label?.let { ReadOnlyLabel(it) }, null, null, 1)
+
     abstract class ItemLabel(val stack: ItemStack) : Label
 
     class ReadOnlyLabel(private val label: String?) : Label {
@@ -194,76 +219,16 @@ object FileSystem : FileSystemAPI {
         }
     }
 
-    private class ReadOnlyFileSystem(override val root: File) : InputStreamFileSystem, FileInputStreamFileSystem {
-        override val inputHandles = mutableMapOf<Int, InputStreamFileSystem.InputHandle>()
-        private val _spaceUsed by lazy { FileInputStreamFileSystem.computeSpaceUsed(root) }
-        override fun spaceUsed() = _spaceUsed
+    private class ReadOnlyFileSystem(override val root: File) : FileInputStreamFileSystem()
+
+    private class ReadWriteFileSystem(override val root: File) : FileOutputStreamFileSystem()
+
+    private class RamFileSystem() : Volatile() {
+        override fun spaceTotal(): Long = -1L
+        override fun spaceUsed(): Long = -1L
     }
 
-    private class ReadWriteFileSystem(override val root: File, override val capacity: Long) :
-        OutputStreamFileSystem, FileOutputStreamFileSystem, Capacity {
-        override val inputHandles = mutableMapOf<Int, InputStreamFileSystem.InputHandle>()
-        override val outputHandles = mutableMapOf<Int, OutputStreamFileSystem.OutputHandle>()
-        override var used = computeSize("/")
-        override var ignoreCapacity = false
-
-        override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputStreamFileSystem.OutputHandle? =
-            capacityOpenOutputHandle(id, path, mode) { i, p, m ->
-                FileOutputStreamFileSystem.FileHandle(
-                    java.io.RandomAccessFile(File(root, p), if (m == Mode.Read) "r" else "rw"),
-                    this, i, p, m
-                )
-            }
-    }
-
-    private class RamFileSystem(override val capacity: Long) : VirtualFileSystem, Volatile, Capacity {
-        override val inputHandles = mutableMapOf<Int, InputStreamFileSystem.InputHandle>()
-        override val outputHandles = mutableMapOf<Int, OutputStreamFileSystem.OutputHandle>()
-        override val root = VirtualFileSystem.VirtualDirectory()
-        override var used = computeSize("/")
-        override var ignoreCapacity = false
-
-        override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputStreamFileSystem.OutputHandle? =
-            capacityOpenOutputHandle(id, path, mode) { i, p, m ->
-                val parts = segments(p)
-                if (parts.isEmpty()) null
-                else {
-                    val parent = root.get(parts.dropLast(1))
-                    if (parent is VirtualFileSystem.VirtualDirectory) {
-                        val file = parent.touch(parts.last())
-                        file?.openOutputHandle(this, i, p, m)
-                    } else {
-                        null
-                    }
-                }
-            }
-    }
-
-    private class BufferedFileSystem(override val fileRoot: File, override val capacity: Long) :
-        VirtualFileSystem, Buffered, Capacity {
-        override val inputHandles = mutableMapOf<Int, InputStreamFileSystem.InputHandle>()
-        override val outputHandles = mutableMapOf<Int, OutputStreamFileSystem.OutputHandle>()
-        override val root = VirtualFileSystem.VirtualDirectory()
-        override var used = computeSize("/")
-        override var ignoreCapacity = false
-        override val deletions = mutableMapOf<String, Long>()
-        override var saving: Future<*>? = null
-
-        override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputStreamFileSystem.OutputHandle? =
-            capacityOpenOutputHandle(id, path, mode) { i, p, m ->
-                val parts = segments(p)
-                if (parts.isEmpty()) null
-                else {
-                    val parent = root.get(parts.dropLast(1))
-                    if (parent is VirtualFileSystem.VirtualDirectory) {
-                        val file = parent.touch(parts.last())
-                        file?.openOutputHandle(this, i, p, m)
-                    } else {
-                        null
-                    }
-                }
-            }
-
+    private class BufferedFileSystem(): VirtualFileSystem() {
         override fun segments(path: String): List<String> {
             val parts = FileSystem.validatePath(path).split("/").filter { it.isNotEmpty() }
             return if (isCaseInsensitive) toCaseInsensitive(parts) else parts
@@ -273,21 +238,14 @@ object FileSystem : FileSystemAPI {
             var node: VirtualFileSystem.VirtualObject? = root
             return path.map { segment ->
                 assert(node != null) { "corrupted virtual file system" }
-                val dir = node as? VirtualFileSystem.VirtualDirectory
-                if (dir != null) {
-                    val match = dir.children.entries.find { (key, _) ->
-                        key.equals(segment, ignoreCase = true)
-                    }
-                    if (match != null) {
-                        val (name, child) = match
-                        node = if (child is VirtualFileSystem.VirtualDirectory) child else null
-                        name
-                    } else {
-                        segment
-                    }
-                } else {
-                    segment
-                }
+                val dir = node as? VirtualDirectory ?: return@map segment
+                val match = dir.children.entries
+                    .find { (key, _) -> key.equals(segment, ignoreCase = true) }
+                    ?: return@map segment
+
+                val (name, child) = match
+                node = child as? VirtualDirectory
+                name
             }
         }
     }

@@ -33,8 +33,9 @@ object DriverPartInterface : DriverBlock {
     }
 
   override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment {
-    val host: IPartHost = world.getTileEntity(pos) as IPartHost
-    val tile = host as TilePartInterface
+    val tile = world.getTileEntity(pos)
+    if ( tile !is ISegmentedInventory || tile !is IPartHost || tile !is IActionHost || tile !is IGridHost)
+      throw AssertionError()
     val aePos: AEPartLocation = when (side) {
       EnumFacing.EAST -> AEPartLocation.WEST
       EnumFacing.WEST -> AEPartLocation.EAST
@@ -43,17 +44,23 @@ object DriverPartInterface : DriverBlock {
       EnumFacing.UP -> AEPartLocation.DOWN
       EnumFacing.DOWN -> AEPartLocation.UP
     }
-    return Environment(host, tile, aePos)
+    return Environment(tile, tile, aePos)
   }
 
-  class Environment(
+  class Environment<TE: TileEntity>(
     override val host: IPartHost,
-    override val tile: TilePartInterface,
+    override val tile: TE,
     override val pos: AEPartLocation
   ) : ManagedTileEntityEnvironment<IPartHost>(host, "me_interface"),
     NamedBlock,
     PartEnvironmentBase,
-    NetworkControl<TilePartInterface> {
+    NetworkControl<TE>
+  where
+    TE: ISegmentedInventory,
+    TE: IPartHost,
+    TE: IActionHost,
+    TE: IGridHost
+  {
 
     override fun preferredName() = "me_interface"
 
@@ -75,7 +82,3 @@ object DriverPartInterface : DriverBlock {
       else null
   }
 }
-
-// Kotlin doesn't support intersection types, so we use TileEntity as base
-// and cast to required interfaces when needed
-private typealias TilePartInterface = TileEntity

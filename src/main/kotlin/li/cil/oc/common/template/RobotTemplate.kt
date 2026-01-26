@@ -16,16 +16,16 @@ object RobotTemplate : Template() {
     override val hostClass: Class<Robot> = Robot::class.java
 
     @JvmStatic
-    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseTier1)
+    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Constants.BlockInfo.CaseTier1
 
     @JvmStatic
-    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseTier2)
+    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Constants.BlockInfo.CaseTier2
 
     @JvmStatic
-    fun selectTier3(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseTier3)
+    fun selectTier3(stack: ItemStack): Boolean = Items.get(stack) == Constants.BlockInfo.CaseTier3
 
     @JvmStatic
-    fun selectCreative(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.CaseCreative)
+    fun selectCreative(stack: ItemStack): Boolean = Items.get(stack) == Constants.BlockInfo.CaseCreative
 
     @JvmStatic
     fun validate(inventory: IInventory): Array<Any> = validateComputer(inventory)
@@ -48,14 +48,14 @@ object RobotTemplate : Template() {
 
     @JvmStatic
     @Suppress("unused")
-    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.Robot)
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Constants.BlockInfo.Robot
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = RobotData(stack)
-        val itemName = Constants.BlockName.Case(info.tier)
+        val itemInfo = Constants.BlockInfo.Case(info.tier)
 
-        return arrayOf(Items.get(itemName).createItemStack(1)) + info.containers + info.components
+        return arrayOf(itemInfo.createItemStack(1)) + info.containers + info.components
     }
 
     @JvmStatic

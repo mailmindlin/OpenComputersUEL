@@ -19,6 +19,7 @@ import li.cil.oc.api.internal.TextBuffer as ApiTextBuffer
 import li.cil.oc.common.nanomachines.ControllerImpl
 import li.cil.oc.common.tileentity.*
 import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.position
 import li.cil.oc.common.PacketHandler as CommonPacketHandler
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.jei.ModJEI

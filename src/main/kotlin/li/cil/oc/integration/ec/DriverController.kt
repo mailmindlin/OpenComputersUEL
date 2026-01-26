@@ -18,13 +18,17 @@ object DriverController : DriverSidedTileEntity() {
     override fun getTileEntityClass(): Class<*> = AEUtil.controllerClass()!!
 
     override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment {
-        val tile = world.getTileEntity(pos) as TileController
+        val tile = world.getTileEntity(pos)!!
+        if (tile !is IActionHost) throw AssertionError()
+        if (tile !is IGridHost) throw AssertionError()
         return Environment(tile)
     }
 
-    class Environment(override val tile: TileController) :
-        ManagedTileEntityEnvironment<TileController>(tile, "me_controller"),
-        NetworkControl<TileController> {
+    class Environment<T>(override val tile: T) :
+        ManagedTileEntityEnvironment<T>(tile, "me_controller"),
+        NetworkControl<T>
+        where T: TileEntity, T: IActionHost, T: IGridHost
+    {
         override val pos: AEPartLocation = AEPartLocation.INTERNAL
     }
 
@@ -33,6 +37,3 @@ object DriverController : DriverSidedTileEntity() {
             if (AEUtil.isController(stack)) Environment::class.java else null
     }
 }
-
-// Type alias for the complex intersection type
-typealias TileController = TileEntity

@@ -38,9 +38,9 @@ import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.PlayerInputAware as TraitPlayerInputAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
-class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfoKt {
+class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.None)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.None)!!
         .withConnector(Settings.get.bufferConverter)
         .create()
 
@@ -83,7 +83,7 @@ class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, Tra
         }
     }
 
-    override val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Disassembler",
@@ -91,6 +91,8 @@ class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, Tra
             DeviceAttribute.Product to "Break.3R-100"
         )
     }
+
+    override fun getDeviceInfo() = deviceInfo
 
     // ----------------------------------------------------------------------- //
 

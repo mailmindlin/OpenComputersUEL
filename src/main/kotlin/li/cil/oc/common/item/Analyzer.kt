@@ -11,7 +11,6 @@ import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.SidedEnvironment
-import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.server.PacketSender
 import li.cil.oc.util.BlockPosition
@@ -26,7 +25,7 @@ import net.minecraftforge.common.util.FakePlayer
 import net.minecraftforge.event.entity.player.PlayerInteractEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 
-class Analyzer(override val parent: Delegator) : Delegate {
+class Analyzer(parent: Delegator) : AbstractDelegate(parent) {
     override fun onItemRightClick(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         if (player.isSneaking && stack.hasTagCompound()) {
             stack.tagCompound!!.removeTag(Settings.namespace + "clipboard")
@@ -36,9 +35,6 @@ class Analyzer(override val parent: Delegator) : Delegate {
         }
         return super.onItemRightClick(stack, world, player)
     }
-
-    override var showInItemList: Boolean = false
-    override val itemId: Int = 0
 
     override fun onItemUse(stack: ItemStack, player: EntityPlayer, position: BlockPosition, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val world = player.entityWorld
@@ -55,18 +51,16 @@ class Analyzer(override val parent: Delegator) : Delegate {
                 false
             }
         }
-        return Analyzer.analyze(position.world?.getTileEntity(position), player, side, hitX, hitY, hitZ)
+        return analyze(position.world?.getTileEntity(position), player, side, hitX, hitY, hitZ)
     }
 
     companion object {
-        private val analyzer by lazy { Items.get(Constants.ItemName.Analyzer) }
-
         @JvmStatic
         @SubscribeEvent
         fun onInteract(e: PlayerInteractEvent.EntityInteract) {
             val player = e.entityPlayer
             val held = player.getHeldItem(e.hand)
-            if (Items.get(held) == analyzer) {
+            if (Items.get(held) == Constants.ItemInfo.Analyzer) {
                 if (analyze(e.target, player, EnumFacing.DOWN, 0f, 0f, 0f)) {
                     player.swingArm(e.hand)
                     e.isCanceled = true
@@ -77,30 +71,30 @@ class Analyzer(override val parent: Delegator) : Delegate {
         @JvmStatic
         fun analyze(thing: Any?, player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
             val world = player.world
+            if (world.isRemote)
+                return when (thing) {
+                    is Analyzable, is SidedEnvironment, is Environment -> true
+                    else -> false
+                }
+
             return when (thing) {
                 is Analyzable -> {
-                    if (!world.isRemote) {
-                        analyzeNodes(thing.onAnalyze(player, side, hitX, hitY, hitZ), player)
-                    }
+                    analyzeNodes(thing.onAnalyze(player, side, hitX, hitY, hitZ), player)
                     true
                 }
                 is SidedEnvironment -> {
-                    if (!world.isRemote) {
-                        analyzeNodes(arrayOf(thing.sidedNode(side)), player)
-                    }
+                    analyzeNodes(arrayOf(thing.sidedNode(side)!!), player)
                     true
                 }
                 is Environment -> {
-                    if (!world.isRemote) {
-                        analyzeNodes(arrayOf(thing.node()), player)
-                    }
+                    analyzeNodes(arrayOf(thing.node()), player)
                     true
                 }
                 else -> false
             }
         }
 
-        private fun analyzeNodes(nodes: Array<Node>?, player: EntityPlayer) {
+        private fun analyzeNodes(nodes: Array<out Node?>?, player: EntityPlayer) {
             if (nodes == null) return
             for (node in nodes) {
                 if (node == null) continue

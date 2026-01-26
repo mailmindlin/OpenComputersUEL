@@ -47,23 +47,23 @@ object ItemUtils {
     fun caseTier(stack: ItemStack): Int {
         val descriptor = Items.get(stack)
         return when (descriptor) {
-            Items.get(Constants.BlockName.CaseTier1) -> Tier.One
-            Items.get(Constants.BlockName.CaseTier2) -> Tier.Two
-            Items.get(Constants.BlockName.CaseTier3) -> Tier.Three
-            Items.get(Constants.BlockName.CaseCreative) -> Tier.Four
-            Items.get(Constants.ItemName.MicrocontrollerCaseTier1) -> Tier.One
-            Items.get(Constants.ItemName.MicrocontrollerCaseTier2) -> Tier.Two
-            Items.get(Constants.ItemName.MicrocontrollerCaseCreative) -> Tier.Four
-            Items.get(Constants.ItemName.DroneCaseTier1) -> Tier.One
-            Items.get(Constants.ItemName.DroneCaseTier2) -> Tier.Two
-            Items.get(Constants.ItemName.DroneCaseCreative) -> Tier.Four
-            Items.get(Constants.ItemName.ServerTier1) -> Tier.One
-            Items.get(Constants.ItemName.ServerTier2) -> Tier.Two
-            Items.get(Constants.ItemName.ServerTier3) -> Tier.Three
-            Items.get(Constants.ItemName.ServerCreative) -> Tier.Four
-            Items.get(Constants.ItemName.TabletCaseTier1) -> Tier.One
-            Items.get(Constants.ItemName.TabletCaseTier2) -> Tier.Two
-            Items.get(Constants.ItemName.TabletCaseCreative) -> Tier.Four
+            Constants.BlockInfo.CaseTier1 -> Tier.One
+            Constants.BlockInfo.CaseTier2 -> Tier.Two
+            Constants.BlockInfo.CaseTier3 -> Tier.Three
+            Constants.BlockInfo.CaseCreative -> Tier.Four
+            Constants.ItemInfo.MicrocontrollerCaseTier1 -> Tier.One
+            Constants.ItemInfo.MicrocontrollerCaseTier2 -> Tier.Two
+            Constants.ItemInfo.MicrocontrollerCaseCreative -> Tier.Four
+            Constants.ItemInfo.DroneCaseTier1 -> Tier.One
+            Constants.ItemInfo.DroneCaseTier2 -> Tier.Two
+            Constants.ItemInfo.DroneCaseCreative -> Tier.Four
+            Constants.ItemInfo.ServerTier1 -> Tier.One
+            Constants.ItemInfo.ServerTier2 -> Tier.Two
+            Constants.ItemInfo.ServerTier3 -> Tier.Three
+            Constants.ItemInfo.ServerCreative -> Tier.Four
+            Constants.ItemInfo.TabletCaseTier1 -> Tier.One
+            Constants.ItemInfo.TabletCaseTier2 -> Tier.Two
+            Constants.ItemInfo.TabletCaseCreative -> Tier.Four
             else -> Tier.None
         }
     }

@@ -20,12 +20,20 @@ object DriverBlockInterface : DriverSidedTileEntity() {
 
     override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment {
         val tile = world.getTileEntity(pos) as TileEntity
-        return Environment(tile as InterfaceTile)
+        if (tile !is IActionHost || tile !is IGridHost || tile !is ISegmentedInventory)
+            throw AssertionError()
+        return Environment(tile)
     }
 
-    class Environment(override val tile: InterfaceTile) :
-        ManagedTileEntityEnvironment<InterfaceTile>(tile, "me_interface"),
-        NetworkControl<InterfaceTile> {
+    class Environment<TE>(override val tile: TE) :
+        ManagedTileEntityEnvironment<TE>(tile, "me_interface"),
+        NetworkControl<TE>
+    where
+        TE : TileEntity,
+        TE: IActionHost,
+        TE: IGridHost,
+        TE: ISegmentedInventory
+    {
         override val pos: AEPartLocation = AEPartLocation.INTERNAL
     }
 
@@ -34,6 +42,3 @@ object DriverBlockInterface : DriverSidedTileEntity() {
             if (AEUtil.isBlockInterface(stack)) Environment::class.java else null
     }
 }
-
-// Type alias for the complex intersection type
-typealias InterfaceTile = TileEntity

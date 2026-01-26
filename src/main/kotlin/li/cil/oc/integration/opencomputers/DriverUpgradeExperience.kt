@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeExperience : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.ExperienceUpgrade))
+    Constants.ItemInfo.ExperienceUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     when (host) {

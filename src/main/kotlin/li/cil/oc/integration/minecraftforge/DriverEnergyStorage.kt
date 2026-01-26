@@ -40,7 +40,7 @@ object DriverEnergyStorage : DriverBlock {
     class Environment(val storage: IEnergyStorage) : AbstractManagedEnvironment(), NamedBlock {
 
         init {
-            setNode(Network.newNode(this, Visibility.Network).withComponent("energy_device").create())
+            setNode(Network.newNode(this, Visibility.Network)!!.withComponent("energy_device").create())
         }
 
         @Callback(doc = "function():number -- Returns the amount of stored energy on the connected side.")

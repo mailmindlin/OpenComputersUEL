@@ -3,7 +3,6 @@ package li.cil.oc.integration.opencomputers
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.Machine
 import li.cil.oc.api.driver.item.CallBudget
 import li.cil.oc.api.driver.item.MutableProcessor
@@ -19,15 +18,15 @@ import li.cil.oc.server.machine.luac.NativeLuaArchitecture
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
-object DriverCPU : DriverCPUClass()
+internal object DriverCPU : DriverCPUClass()
 
-abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
+internal sealed class DriverCPUClass : Item(), MutableProcessor, CallBudget {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.CPUTier1),
-    ApiItems.get(Constants.ItemName.CPUTier2),
-    ApiItems.get(Constants.ItemName.CPUTier3))
+    Constants.ItemInfo.CPUTier1,
+    Constants.ItemInfo.CPUTier2,
+    Constants.ItemInfo.CPUTier3)
 
-  override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment = ComponentCPU(tier(stack))
+  override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? = ComponentCPU(tier(stack))
 
   override fun slot(stack: ItemStack) = Slot.CPU
 
@@ -39,13 +38,13 @@ abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
       else -> Tier.One
     }
 
-  override fun supportedComponents(stack: ItemStack) = Settings.get.cpuComponentSupport(cpuTier(stack))
+  override fun supportedComponents(stack: ItemStack) = Settings.get.cpuComponentSupport[cpuTier(stack)]
 
   override fun allArchitectures(): List<Class<out Architecture>> = Machine.architectures().toList()
 
   override fun architecture(stack: ItemStack): Class<out Architecture>? {
     if (stack.hasTagCompound()) {
-      val archClass = when (val clazz = stack.tagCompound.getString(Settings.namespace + "archClass")) {
+      val archClass = when (val clazz = stack.tagCompound!!.getString(Settings.namespace + "archClass")) {
         NativeLuaArchitecture::class.java.name -> {
           // Migrate old saved CPUs to new versions (since the class they refer still
           // exists, but is abstract, which would lead to issues).
@@ -73,5 +72,5 @@ abstract class DriverCPUClass : Item(), MutableProcessor, CallBudget {
     stack.tagCompound!!.setString(Settings.namespace + "archName", Machine.getArchitectureName(architecture))
   }
 
-  override fun getCallBudget(stack: ItemStack): Double = Settings.get.callBudgets(tier(stack).coerceIn(Tier.One, Tier.Three))
+  override fun getCallBudget(stack: ItemStack): Double = Settings.get.callBudgets[tier(stack).coerceIn(Tier.One, Tier.Three)]
 }

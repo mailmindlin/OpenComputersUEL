@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeTank : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.TankUpgrade))
+    Constants.ItemInfo.TankUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

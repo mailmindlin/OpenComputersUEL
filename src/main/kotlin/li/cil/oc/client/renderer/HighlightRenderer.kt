@@ -12,6 +12,7 @@ import li.cil.oc.util.rotateTowards
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.getBlock
+import li.cil.oc.itemInfo
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper
@@ -30,8 +31,6 @@ import kotlin.random.Random
 object HighlightRenderer {
     private val random = Random.Default
 
-    val tablet by lazy { Items.get(Constants.ItemName.Tablet) }
-
     @SubscribeEvent
     @Suppress("unused")
     fun onDrawBlockHighlight(e: DrawBlockHighlightEvent) {
@@ -41,7 +40,7 @@ object HighlightRenderer {
         val world = e.player.entityWorld
         val blockPos = BlockPosition(hitInfo.blockPos, world)
 
-        if (hitInfo.typeOfHit == RayTraceResult.Type.BLOCK && Items.get(e.player.heldItemMainhand) == tablet) {
+        if (hitInfo.typeOfHit == RayTraceResult.Type.BLOCK && Items.get(e.player.heldItemMainhand) == Constants.ItemInfo.Tablet) {
             val isAir = world.isAirBlock(blockPos.toBlockPos())
             if (!isAir) {
                 val block = world.getBlock(blockPos)

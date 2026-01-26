@@ -2,8 +2,6 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
-import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -15,9 +13,8 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.EventHandler
 import li.cil.oc.server.component.traits.WorldAware
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedArguments.checkSideAny
-import li.cil.oc.util.ExtendedNBT.setNewTagList
 import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.setNewStringList
 import li.cil.oc.util.setNewTagList
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLiving
@@ -27,9 +24,7 @@ import net.minecraftforge.common.util.Constants as NBT
 import java.util.*
 
 class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("leash")
-        .create()
+    override val node = nodeFactory(Visibility.Network, "leash").create()
 
     val MaxLeashedEntities = 8
 
@@ -114,6 +109,6 @@ class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, Devic
 
     override fun save(nbt: NBTTagCompound) {
         super.save(nbt)
-        nbt.setNewTagList(LeashedEntitiesTag, leashedEntities.map { it.toString() })
+        nbt.setNewStringList(LeashedEntitiesTag, leashedEntities.map { it.toString() })
     }
 }

@@ -7,6 +7,9 @@ import li.cil.oc.api.event.RobotRenderEvent.MountPoint
 import li.cil.oc.client.Textures
 import li.cil.oc.integration.opencomputers.Item
 import li.cil.oc.util.RenderState
+import li.cil.oc.Constants.ItemInfo.CraftingUpgrade
+import li.cil.oc.Constants.ItemInfo.GeneratorUpgrade
+import li.cil.oc.Constants.ItemInfo.InventoryUpgrade
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
@@ -15,39 +18,36 @@ import net.minecraft.util.math.AxisAlignedBB
 import org.lwjgl.opengl.GL11
 
 object UpgradeRenderer {
-    val craftingUpgrade by lazy { ApiItems.get(Constants.ItemName.CraftingUpgrade) }
-    val generatorUpgrade by lazy { ApiItems.get(Constants.ItemName.GeneratorUpgrade) }
-    val inventoryUpgrade by lazy { ApiItems.get(Constants.ItemName.InventoryUpgrade) }
-
     fun preferredMountPoint(stack: ItemStack, availableMountPoints: Set<String>): String {
         val descriptor = ApiItems.get(stack)
 
-        return if (descriptor == craftingUpgrade || descriptor == generatorUpgrade || descriptor == inventoryUpgrade) {
-            if (descriptor == generatorUpgrade && availableMountPoints.contains(MountPointName.BottomBack)) MountPointName.BottomBack
-            else if (descriptor == inventoryUpgrade && availableMountPoints.contains(MountPointName.TopBack)) MountPointName.TopBack
-            else MountPointName.Any
-        } else MountPointName.None
+        return when (descriptor) {
+            GeneratorUpgrade -> if (availableMountPoints.contains(MountPointName.BottomBack)) MountPointName.BottomBack else MountPointName.Any
+            InventoryUpgrade -> if (availableMountPoints.contains(MountPointName.TopBack)) MountPointName.BottomBack else MountPointName.Any
+            CraftingUpgrade -> MountPointName.Any
+            else -> MountPointName.None
+        }
     }
 
     fun canRender(stack: ItemStack): Boolean {
         val descriptor = ApiItems.get(stack)
-        return descriptor == craftingUpgrade || descriptor == generatorUpgrade || descriptor == inventoryUpgrade
+        return descriptor == CraftingUpgrade || descriptor == GeneratorUpgrade || descriptor == InventoryUpgrade
     }
 
     fun render(stack: ItemStack, mountPoint: MountPoint) {
         val descriptor = ApiItems.get(stack)
 
-        if (descriptor == ApiItems.get(Constants.ItemName.CraftingUpgrade)) {
+        if (descriptor == Constants.ItemInfo.CraftingUpgrade) {
             Textures.bind(Textures.Model.UpgradeCrafting)
             drawSimpleBlock(mountPoint)
 
             RenderState.checkError(javaClass.name + ".renderItem: crafting upgrade")
-        } else if (descriptor == ApiItems.get(Constants.ItemName.GeneratorUpgrade)) {
+        } else if (descriptor == Constants.ItemInfo.GeneratorUpgrade) {
             Textures.bind(Textures.Model.UpgradeGenerator)
             drawSimpleBlock(mountPoint, if (Item.dataTag(stack).getInteger("remainingTicks") > 0) 0.5f else 0f)
 
             RenderState.checkError(javaClass.name + ".renderItem: generator upgrade")
-        } else if (descriptor == ApiItems.get(Constants.ItemName.InventoryUpgrade)) {
+        } else if (descriptor == Constants.ItemInfo.InventoryUpgrade) {
             Textures.bind(Textures.Model.UpgradeInventory)
             drawSimpleBlock(mountPoint)
 

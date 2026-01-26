@@ -2,24 +2,20 @@ package li.cil.oc.server
 
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
-import li.cil.oc.api
 import li.cil.oc.api.internal.Server
 import li.cil.oc.api.machine.Machine
 import li.cil.oc.common.Achievement
 import li.cil.oc.common.PacketType
 import li.cil.oc.common.component.TextBuffer
-import li.cil.oc.common.container
+import li.cil.oc.common.container.Player
 import li.cil.oc.common.entity.Drone
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.item.data.DriveData
 import li.cil.oc.common.item.traits.FileSystemLike
-import li.cil.oc.common.tileentity.Assembler
-import li.cil.oc.common.tileentity.Rack
-import li.cil.oc.common.tileentity.RobotProxy
-import li.cil.oc.common.tileentity.Screen
-import li.cil.oc.common.tileentity.Waypoint
+import li.cil.oc.common.tileentity.*
 import li.cil.oc.common.tileentity.traits.Computer
+import li.cil.oc.common.tileentity.traits.position
 import li.cil.oc.common.PacketHandler as CommonPacketHandler
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
@@ -79,10 +75,10 @@ object PacketHandler : CommonPacketHandler() {
         val player = p.player
         if (player is EntityPlayerMP) {
             when (val container = player.openContainer) {
-                is container.Player -> {
+                is Player<*> -> {
                     val computer = container.otherInventory
                     if (computer is Computer && entity != null && entity.position == computer.position) {
-                        trySetComputerPower(computer.machine, setPower, player)
+                        trySetComputerPower(computer.machine!!, setPower, player)
                     } else {
                         logForgedPacket(player)
                     }
@@ -100,7 +96,7 @@ object PacketHandler : CommonPacketHandler() {
         val player = p.player
         if (player is EntityPlayerMP) {
             when (val container = player.openContainer) {
-                is container.Server -> {
+                is li.cil.oc.common.container.Server -> {
                     val server = container.server
                     if (server != null && server == readServer) {
                         trySetComputerPower(server.machine(), setPower, player)
@@ -151,12 +147,11 @@ object PacketHandler : CommonPacketHandler() {
         val player = p.player
         if (player is EntityPlayerMP) {
             val container = player.openContainer
-            if (container is container.Drone && entity != null && container.drone == entity) {
+            if (container is li.cil.oc.common.container.Drone && entity != null && container.drone == entity) {
                 val drone = container.drone
-                if (power) {
+                if (power)
                     drone.preparePowerUp()
-                }
-                trySetComputerPower(drone.machine, power, player)
+                trySetComputerPower(drone.machine!!, power, player)
             } else {
                 logForgedPacket(player)
             }
@@ -183,7 +178,7 @@ object PacketHandler : CommonPacketHandler() {
         val key = p.readChar()
         val code = p.readInt()
         val buffer = ComponentTracker.get(p.player.world, address)
-        if (buffer is api.internal.TextBuffer) {
+        if (buffer is li.cil.oc.api.internal.TextBuffer) {
             buffer.keyDown(key, code, p.player)
         }
     }
@@ -193,7 +188,7 @@ object PacketHandler : CommonPacketHandler() {
         val key = p.readChar()
         val code = p.readInt()
         val buffer = ComponentTracker.get(p.player.world, address)
-        if (buffer is api.internal.TextBuffer) {
+        if (buffer is li.cil.oc.api.internal.TextBuffer) {
             buffer.keyUp(key, code, p.player)
         }
     }
@@ -202,7 +197,7 @@ object PacketHandler : CommonPacketHandler() {
         val address = p.readUTF()
         val copy = p.readUTF()
         val buffer = ComponentTracker.get(p.player.world, address)
-        if (buffer is api.internal.TextBuffer) {
+        if (buffer is li.cil.oc.api.internal.TextBuffer) {
             buffer.clipboard(copy, p.player)
         }
     }
@@ -214,8 +209,10 @@ object PacketHandler : CommonPacketHandler() {
         val dragging = p.readBoolean()
         val button = p.readByte()
         val buffer = ComponentTracker.get(p.player.world, address)
-        if (buffer is api.internal.TextBuffer) {
+        if (buffer is li.cil.oc.api.internal.TextBuffer) {
             val player = p.player
+            val x = x.toDouble()
+            val y = y.toDouble()
             if (dragging) buffer.mouseDrag(x, y, button.toInt(), player)
             else buffer.mouseDown(x, y, button.toInt(), player)
         }
@@ -227,9 +224,9 @@ object PacketHandler : CommonPacketHandler() {
         val y = p.readFloat()
         val button = p.readByte()
         val buffer = ComponentTracker.get(p.player.world, address)
-        if (buffer is api.internal.TextBuffer) {
+        if (buffer is li.cil.oc.api.internal.TextBuffer) {
             val player = p.player
-            buffer.mouseUp(x, y, button.toInt(), player)
+            buffer.mouseUp(x.toDouble(), y.toDouble(), button.toInt(), player)
         }
     }
 
@@ -239,9 +236,9 @@ object PacketHandler : CommonPacketHandler() {
         val y = p.readFloat()
         val button = p.readByte()
         val buffer = ComponentTracker.get(p.player.world, address)
-        if (buffer is api.internal.TextBuffer) {
+        if (buffer is li.cil.oc.api.internal.TextBuffer) {
             val player = p.player
-            buffer.mouseScroll(x, y, button.toInt(), player)
+            buffer.mouseScroll(x.toDouble(), y.toDouble(), button.toInt(), player)
         }
     }
 
@@ -269,7 +266,7 @@ object PacketHandler : CommonPacketHandler() {
         val player = p.player
         if (player is EntityPlayerMP) {
             val container = player.openContainer
-            if (container is container.Rack && entity != null && entity == container.rack) {
+            if (container is li.cil.oc.common.container.Rack && entity != null && entity == container.rack) {
                 if (container.rack.isUsableByPlayer(player))
                     container.rack.connect(mountableIndex, nodeIndex - 1, side)
             } else {
@@ -313,7 +310,7 @@ object PacketHandler : CommonPacketHandler() {
         val player = p.player
         if (player is EntityPlayerMP) {
             val stack = p.readItemStack()
-            PacketSender.sendMachineItemState(player, stack, Tablet.get(stack, p.player).machine.isRunning)
+            PacketSender.sendMachineItemState(player, stack, Tablet.get(stack, p.player).machine!!.isRunning)
         }
     }
 

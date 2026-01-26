@@ -7,9 +7,9 @@ import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 
 object InventoryProviderServer : InventoryProvider {
-  override fun worksWith(stack: ItemStack, player: EntityPlayer): Boolean = DriverServer.worksWith(stack)
+  override fun worksWith(stack: ItemStack, player: EntityPlayer?): Boolean = DriverServer.worksWith(stack)
 
-  override fun getInventory(stack: ItemStack, player: EntityPlayer): IInventory = object : ServerInventory() {
+  override fun getInventory(stack: ItemStack, player: EntityPlayer?): IInventory = object : ServerInventory() {
     override val container: ItemStack
       get() = stack
   }

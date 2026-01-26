@@ -5,7 +5,7 @@ import li.cil.oc.integration.util.WirelessRedstone.WirelessRedstoneSystem
 import li.cil.oc.server.component.RedstoneWireless
 
 object WirelessRedstoneCBE : WirelessRedstoneSystem {
-    override fun addTransmitter(rs: RedstoneWireless) {
+    fun addTransmitter(rs: RedstoneWireless) {
         if (rs.wirelessOutput && rs.wirelessFrequency > 0) {
             RedstoneEther.server().addTransmittingDevice(rs)
         }

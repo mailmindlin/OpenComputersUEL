@@ -17,7 +17,7 @@ import java.io.IOException
 import kotlin.math.sqrt
 
 abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), WirelessEndpoint {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("modem", Visibility.Neighbors)
         .withConnector()
         .create()

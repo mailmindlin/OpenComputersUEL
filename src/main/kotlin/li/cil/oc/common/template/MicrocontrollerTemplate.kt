@@ -20,13 +20,13 @@ object MicrocontrollerTemplate : Template() {
     override val hostClass: Class<Microcontroller> = Microcontroller::class.java
 
     @JvmStatic
-    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.MicrocontrollerCaseTier1)
+    fun selectTier1(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.MicrocontrollerCaseTier1
 
     @JvmStatic
-    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.MicrocontrollerCaseTier2)
+    fun selectTier2(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.MicrocontrollerCaseTier2
 
     @JvmStatic
-    fun selectTierCreative(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.MicrocontrollerCaseCreative)
+    fun selectTierCreative(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.MicrocontrollerCaseCreative
 
     @JvmStatic
     fun validate(inventory: IInventory): Array<Any> = validateComputer(inventory)
@@ -45,14 +45,14 @@ object MicrocontrollerTemplate : Template() {
     }
 
     @JvmStatic
-    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.BlockName.Microcontroller)
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Constants.BlockInfo.Microcontroller
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = MicrocontrollerData(stack)
-        val itemName = Constants.ItemName.MicrocontrollerCase(info.tier)
+        val itemInfo = Constants.ItemInfo.MicrocontrollerCase(info.tier)
 
-        return arrayOf(Items.get(itemName).createItemStack(1)) + info.components
+        return arrayOf(itemInfo.createItemStack(1)) + info.components
     }
 
     @JvmStatic

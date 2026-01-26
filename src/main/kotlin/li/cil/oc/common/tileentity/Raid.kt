@@ -34,9 +34,8 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
     override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
     override val inventoryDelegate: TraitInventory.Delegate = register(TraitInventory::Delegate)
 
-
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
+    val node: Node = ApiNetwork.newNode(this, Visibility.None)!!.create()
 
     override fun node(): Node = node
 
@@ -91,7 +90,7 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
             ServerPacketSender.sendRaidChange(this)
             filesystem?.let { fs ->
                 fs.fileSystem.close()
-                fs.fileSystem.list("/").forEach { fs.fileSystem.delete(it) }
+                fs.fileSystem.list("/")!!.forEach { fs.fileSystem.delete(it) }
                 fs.save(NBTTagCompound()) // Flush buffered fs.
                 fs.node().remove()
                 filesystem = null
@@ -131,7 +130,7 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
                     val nbt = driver.dataTag(hdd)
                     env.load(nbt)
                     env.fileSystem.close()
-                    env.fileSystem.list("/").forEach { env.fileSystem.delete(it) }
+                    env.fileSystem.list("/")!!.forEach { env.fileSystem.delete(it) }
                     env.save(nbt)
                     env.fileSystem.spaceTotal()
                 } else 0L

@@ -16,11 +16,15 @@ import li.cil.oc.api.util.StateAware
 import li.cil.oc.common.Slot
 import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
+import li.cil.oc.common.tileentity.traits.ComponentInventory
 import li.cil.oc.common.tileentity.traits.Hub
+import li.cil.oc.common.tileentity.traits.PowerBalancer
 import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
+import li.cil.oc.util.asExtended
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.util.setNewCompoundTag
 import li.cil.oc.util.setNewTagList
@@ -30,6 +34,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagIntArray
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -41,10 +46,25 @@ import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 import li.cil.oc.common.tileentity.traits.BundledRedstoneAware as TraitBundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer, TraitComponentInventory, TraitRotatable, TraitBundledRedstoneAware, Analyzable, InternalRack, TraitStateAware {
+class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer, TraitComponentInventory, TraitRotatable, TraitBundledRedstoneAware, Analyzable, InternalRack, TraitStateAware {
     override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
     override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
+    override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
+    override val hubDelegate: Hub.Delegate = register(Hub::Delegate)
+    override val powerDelegate: PowerBalancer.Delegate = register(PowerBalancer::Delegate)
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+    override val componentInventoryDelegate: ComponentInventory.Delegate = register(ComponentInventory::Delegate)
+
+    override var globalBuffer: Double = 0.0
+    override var globalBufferSize: Double = 0.0
+    // Idk if these are right
+    override fun node(): Node? = super.node()
+    override val isConnected: Boolean
+        get() = super<Hub>.isConnected
+
+    override fun getDisplayName(): ITextComponent = super<ComponentInventory>.getDisplayName()
+
     @JvmField
     var isRelayEnabled = false
 
@@ -66,7 +86,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
 
     @JvmField
     val snifferNodes: Array<Array<Node>> = Array(sizeInventory) {
-        Array(3) { ApiNetwork.newNode(this, Visibility.Neighbors).create() }
+        Array(3) { ApiNetwork.newNode(this, Visibility.Neighbors)!!.create() }
     }
 
     fun connect(slot: Int, connectableIndex: Int, side: EnumFacing?) {
@@ -104,11 +124,11 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
                 }
             } else if (connectableIndex >= 0 && connectableIndex < mountable.connectableCount) {
                 val connectable = mountable.getConnectableAt(connectableIndex)
-                if (connectable != null && connectable.node() != null) {
-                    if (connectable.node().network() == null) {
+                val cNode = connectable?.node()
+                if (cNode != null) {
+                    if (cNode.network() == null)
                         ApiNetwork.joinNewNetwork(connectable.node())
-                    }
-                    connectable.node().connect(snifferNodes[slot][connectableIndex])
+                    cNode.connect(snifferNodes[slot][connectableIndex])
                 }
             }
         }
@@ -133,11 +153,11 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
                         val mountable = getMountable(slot)
                         if (mountable != null && connectableIndex < mountable.connectableCount) {
                             val connectable = mountable.getConnectableAt(connectableIndex)
-                            if (connectable != null && connectable.node() != null) {
-                                if (connectable.node().network() == null) {
+                            connectable?.node()?.let { cNode ->
+                                if (cNode.network() == null) {
                                     ApiNetwork.joinNewNetwork(connectable.node())
                                 }
-                                connectable.node().connect(snifferNodes[slot][connectableIndex])
+                                cNode.connect(snifferNodes[slot][connectableIndex])
                             }
                         }
                     }
@@ -184,7 +204,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
         reconnect(plug.side)
     }
 
-    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)!!
         .withConnector(Settings.get.bufferDistributor)
         .create()
 
@@ -192,7 +212,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     // Environment
 
     override fun dispose() {
-        super<TileEntityBase>.dispose()
+        super.dispose()
         disconnectComponents()
     }
 
@@ -267,13 +287,13 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     // ----------------------------------------------------------------------- //
     // Analyzable
 
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node>? {
-        return slotAt(side, hitX, hitY, hitZ)?.let { slot ->
-            components[slot]?.let { component ->
-                if (component is Analyzable) component.onAnalyze(player, side, hitX, hitY, hitZ)
-                else null
-            }
-        } ?: arrayOf(sidedNode(side))
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node?>? {
+        val slot = slotAt(side, hitX, hitY, hitZ)
+        if (slot != null) {
+            val component = components[slot] as? Analyzable
+            component?.let { return@onAnalyze it.onAnalyze(player, side, hitX, hitY, hitZ) }
+        }
+        return arrayOf(sidedNode(side))
     }
 
     // ----------------------------------------------------------------------- //
@@ -287,7 +307,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
 
     override fun markChanged(slot: Int) {
         synchronized(hasChanged) { hasChanged[slot] = true }
-        setOutputEnabled(hasRedstoneCard)
+        this.outputEnabled = hasRedstoneCard
     }
 
     // ----------------------------------------------------------------------- //
@@ -317,9 +337,11 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
         components.filterNotNull().forEach { component ->
-            if (component is RackMountable && component.node() != null) {
-                val toLocalArgs = RedstoneChangedEventArgs(toLocal(args.side), args.oldValue, args.newValue, args.color)
-                component.node().sendToNeighbors("redstone.changed", toLocalArgs)
+            if (component is RackMountable) {
+                component.node()?.let { componentNode ->
+                    val toLocalArgs = RedstoneChangedEventArgs(toLocal(args.side!!), args.oldValue, args.newValue, args.color)
+                    componentNode.sendToNeighbors("redstone.changed", toLocalArgs)
+                }
             }
         }
     }
@@ -339,7 +361,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     override fun markDirty() {
         super.markDirty()
         if (isServer) {
-            setOutputEnabled(hasRedstoneCard)
+            this.outputEnabled = hasRedstoneCard
             ServerPacketSender.sendRackInventory(this)
         } else {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
@@ -370,7 +392,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
         super.onItemRemoved(slot, stack)
     }
 
-    override fun connectItemNode(node: Node) {
+    override fun connectItemNode(node: Node?) {
         // By default create a new network for mountables. They have to
         // be wired up manually (mapping is reset in onItemAdded).
         ApiNetwork.joinNewNetwork(node)
@@ -393,7 +415,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
                         ServerPacketSender.sendRackMountableData(this, slot)
                         world.notifyNeighborsOfStateChange(pos, blockType, false)
                         // These are working state dependent, so recompute them.
-                        setOutputEnabled(hasRedstoneCard)
+                        this.outputEnabled = hasRedstoneCard
                     }
 
                     // Power mountables without requiring them to be connected to the outside.
@@ -425,7 +447,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super<TileEntityBase>.readFromNBTForServer(nbt)
+        super.readFromNBTForServer(nbt)
 
         isRelayEnabled = nbt.getBoolean(IsRelayEnabledTag)
         nbt.getTagList(NodeMappingTag, NBT.TAG_INT_ARRAY).forEachIndexed { slotIndex, tag ->
@@ -437,11 +459,11 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
         }
 
         // Kickstart initialization.
-        _isOutputEnabled = hasRedstoneCard
+        redstoneDelegate._isOutputEnabled = hasRedstoneCard
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super<TileEntityBase>.writeToNBTForServer(nbt)
+        super.writeToNBTForServer(nbt)
 
         nbt.setBoolean(IsRelayEnabledTag, isRelayEnabled)
         nbt.setNewTagList(NodeMappingTag, nodeMapping.map { buses ->
@@ -485,7 +507,7 @@ class Rack : TileEntityBase(), TraitPowerAcceptor, TraitHub, TraitPowerBalancer,
 
     val hasRedstoneCard: Boolean get() = components.any { component ->
         if (component is EnvironmentHost && component is RackMountable && component is IInventory && isWorking(component)) {
-            component.exists { stack -> DriverRedstoneCard.worksWith(stack, component.javaClass) }
+            component.asExtended().any { stack -> DriverRedstoneCard.worksWith(stack, component.javaClass) }
         } else false
     }
 }

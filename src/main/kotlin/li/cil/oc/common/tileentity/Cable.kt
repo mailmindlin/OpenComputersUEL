@@ -16,7 +16,7 @@ import net.minecraft.util.math.AxisAlignedBB
 
 class Cable : TileEntityBase.TEEnvironmentBase(), Environment, NotAnalyzable, ImmibisMicroblock, Colored {
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
+    val node: Node = ApiNetwork.newNode(this, Visibility.None)!!.create()
     override fun node(): Node = node
 
     @JvmField
@@ -31,7 +31,7 @@ class Cable : TileEntityBase.TEEnvironmentBase(), Environment, NotAnalyzable, Im
     }
 
     fun createItemStack(): ItemStack {
-        val stack = ApiItems.get(Constants.BlockName.Cable).createItemStack(1)
+        val stack = Constants.BlockInfo.Cable.createItemStack(1)
         if (color != EnumDyeColor.SILVER.rgbValue) {
             ItemColorizer.setColor(stack, color.toInt())
         }

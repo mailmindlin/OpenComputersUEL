@@ -20,7 +20,7 @@ import li.cil.oc.server.network.QuantumNode
 import net.minecraft.nbt.NBTTagCompound
 
 class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfoKt, WakeMessageAware {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("tunnel", Visibility.Neighbors)
         .withConnector()
         .create()
@@ -47,7 +47,7 @@ class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfoKt, WakeMessag
         val endpoints = QuantumNetwork.getEndpoints(tunnel).filter { it != this }
         // Convert args to array to use Scala's toArray instead of the Arguments' one (which converts byte arrays to Strings).
         val argsIterable = args as Iterable<*>
-        val packet = Network.newPacket(node.address(), null, 0, argsIterable.toList().toTypedArray())
+        val packet = Network.newPacket(node.address(), null, 0, argsIterable.toList().toTypedArray())!!
 
         val cost = -(packet.size() / 32.0 + Settings.get.wirelessCostPerRange[Tier.Two] * Settings.get.maxWirelessRange[Tier.Two] * 5)
         return if (node.tryChangeBuffer(cost)) {

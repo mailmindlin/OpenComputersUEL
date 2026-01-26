@@ -3,6 +3,7 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Machine
@@ -16,7 +17,6 @@ import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.Colored
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.Color
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -31,7 +31,7 @@ import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
 class Case @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-) : Computer(), TraitPowerAcceptor, TraitColored, InternalCase, DeviceInfoKt {
+) : Computer(), TraitPowerAcceptor, TraitColored, InternalCase, DeviceInfo {
 
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
@@ -57,7 +57,8 @@ class Case @JvmOverloads constructor(
     @JvmField
     var lastNetworkActivity = 0L
 
-    override val deviceInfo: Map<String, String> by lazy {
+    override fun getDeviceInfo() = deviceInfo
+    private val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.System,
             DeviceAttribute.Description to "Computer",

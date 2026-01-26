@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeGenerator : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.GeneratorUpgrade))
+    Constants.ItemInfo.GeneratorUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? {
     if (host !is Agent) return null

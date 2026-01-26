@@ -2,6 +2,7 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -11,6 +12,7 @@ import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
+import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.template.AssemblerTemplates
 import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
@@ -33,9 +35,9 @@ import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.server.PacketSender as ServerPacketSender
 
-class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, SidedEnvironment, TraitStateAware, TraitTickable, DeviceInfoKt {
+class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, SidedEnvironment, TraitStateAware, TraitTickable, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("assembler")
         .withConnector(Settings.get.bufferConverter)
         .create()
@@ -59,7 +61,7 @@ class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitI
     @JvmField
     var requiredEnergy: Double = 0.0
 
-    override val deviceInfo: Map<String, String> get() = Companion.deviceInfo
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     // ----------------------------------------------------------------------- //
 

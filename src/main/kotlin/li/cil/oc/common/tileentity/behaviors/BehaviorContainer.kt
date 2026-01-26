@@ -3,6 +3,8 @@ package li.cil.oc.common.tileentity.behaviors
 import li.cil.oc.OpenComputers
 import li.cil.oc.common.tileentity.TileEntityBase
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.util.EnumFacing
+import net.minecraftforge.common.capabilities.Capability
 import kotlin.reflect.KClass
 
 /**
@@ -34,6 +36,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
     private val nbtBehaviors = mutableListOf<NbtSeriailzable>()
     private val updateBehaviors = mutableListOf<BehaviorUpdate>()
     private val lifecycleBehaviors = mutableListOf<BehaviorLifecycle>()
+    private val capabilityBehaviors = mutableListOf<BehaviorCapability>()
 
     /**
      * Map of behavior types to behavior instances for fast lookup.
@@ -66,6 +69,8 @@ class BehaviorContainer(private val owner: TileEntityBase) {
             updateBehaviors.add(behavior)
         if (behavior is BehaviorLifecycle)
             lifecycleBehaviors.add(behavior)
+        if (behavior is BehaviorCapability)
+            capabilityBehaviors.add(behavior)
         return behavior
     }
 
@@ -232,4 +237,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
      * Check if behaviors are registered.
      */
     fun isNotEmpty(): Boolean = behaviors.isNotEmpty()
+
+    fun hasCapability(capability: Capability<*>, facing: EnumFacing?) = capabilityBehaviors.any { it.hasCapability(capability, facing) }
+    fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? = capabilityBehaviors.firstNotNullOfOrNull { it.getCapability(capability, facing) }
 }

@@ -230,20 +230,20 @@ object Recipes {
             }
 
             // Recrafting operations.
-            val cable = ApiItems.get(Constants.BlockName.Cable)
-            val chamelium = ApiItems.get(Constants.ItemName.Chamelium)
-            val chameliumBlock = ApiItems.get(Constants.BlockName.ChameliumBlock)
-            val drone = ApiItems.get(Constants.ItemName.Drone)
-            val eeprom = ApiItems.get(Constants.ItemName.EEPROM)
-            val floppy = ApiItems.get(Constants.ItemName.Floppy)
-            val hoverBoots = ApiItems.get(Constants.ItemName.HoverBoots)
-            val mcu = ApiItems.get(Constants.BlockName.Microcontroller)
-            val navigationUpgrade = ApiItems.get(Constants.ItemName.NavigationUpgrade)
-            val print = ApiItems.get(Constants.BlockName.Print)
-            val relay = ApiItems.get(Constants.BlockName.Relay)
-            val robot = ApiItems.get(Constants.BlockName.Robot)
-            val tablet = ApiItems.get(Constants.ItemName.Tablet)
-            val linkedCard = ApiItems.get(Constants.ItemName.LinkedCard)
+            val cable = Constants.BlockInfo.Cable
+            val chamelium = Constants.ItemInfo.Chamelium
+            val chameliumBlock = Constants.BlockInfo.ChameliumBlock
+            val drone = Constants.ItemInfo.Drone
+            val eeprom = Constants.ItemInfo.EEPROM
+            val floppy = Constants.ItemInfo.Floppy
+            val hoverBoots = Constants.ItemInfo.HoverBoots
+            val mcu = Constants.BlockInfo.Microcontroller
+            val navigationUpgrade = Constants.ItemInfo.NavigationUpgrade
+            val print = Constants.BlockInfo.Print
+            val relay = Constants.BlockInfo.Relay
+            val robot = Constants.BlockInfo.Robot
+            val tablet = Constants.ItemInfo.Tablet
+            val linkedCard = Constants.ItemInfo.LinkedCard
 
             // Navigation upgrade recrafting.
             addRecipe(ExtendedShapelessOreRecipe(
@@ -321,9 +321,9 @@ object Recipes {
 
             // Hard disk formatting.
             val hdds = arrayOf(
-                ApiItems.get(Constants.ItemName.HDDTier1),
-                ApiItems.get(Constants.ItemName.HDDTier2),
-                ApiItems.get(Constants.ItemName.HDDTier3)
+                Constants.ItemInfo.HDDTier1,
+                Constants.ItemInfo.HDDTier2,
+                Constants.ItemInfo.HDDTier3
             )
             for (hdd in hdds) {
                 addRecipe(ExtendedShapelessOreRecipe(hdd.createItemStack(1), hdd.createItemStack(1)))

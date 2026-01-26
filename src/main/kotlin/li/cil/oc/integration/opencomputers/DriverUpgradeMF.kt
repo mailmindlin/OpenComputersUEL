@@ -20,7 +20,7 @@ import net.minecraftforge.common.DimensionManager
  */
 object DriverUpgradeMF : Item(), HostAware {
   override fun worksWith(stack: ItemStack): Boolean = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.MFU))
+    Constants.ItemInfo.MFU)
 
   override fun worksWith(stack: ItemStack, host: Class<out EnvironmentHost>): Boolean =
     worksWith(stack) && isAdapter(host)

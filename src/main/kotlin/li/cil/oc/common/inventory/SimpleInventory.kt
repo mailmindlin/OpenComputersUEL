@@ -16,10 +16,6 @@ interface SimpleInventory : IInventory {
     // Items required in a slot before it's set to null (for ghost stacks).
     open fun getInventoryStackRequired(): Int = 1
 
-    // Kotlin property for easier access
-    val inventoryStackRequired: Int
-        get() = getInventoryStackRequired()
-
     override fun openInventory(player: EntityPlayer) {}
 
     override fun closeInventory(player: EntityPlayer) {}
@@ -29,7 +25,7 @@ interface SimpleInventory : IInventory {
             val stack = getStackInSlot(slot)
             val result = when {
                 stack.isEmpty -> ItemStack.EMPTY
-                stack.count - amount < inventoryStackRequired -> {
+                stack.count - amount < getInventoryStackRequired() -> {
                     setInventorySlotContents(slot, ItemStack.EMPTY)
                     stack
                 }

@@ -5,14 +5,28 @@ import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 
-interface FileInputStreamFileSystem : InputStreamFileSystem {
-    val root: File
+abstract class FileInputStreamFileSystem : InputStreamFileSystem() {
+    protected abstract val root: File
 
     // ----------------------------------------------------------------------- //
 
     override fun spaceTotal() = spaceUsed()
 
-    override fun spaceUsed(): Long
+    companion object {
+        fun computeSpaceUsed(root: File): Long {
+            fun recurse(path: File): Long {
+                return if (path.isDirectory) {
+                    path.listFiles()?.fold(0L) { acc, f -> acc + recurse(f) } ?: 0L
+                } else {
+                    path.length()
+                }
+            }
+            return recurse(root)
+        }
+    }
+
+    private val spaceUsed: Long by lazy { computeSpaceUsed(root) }
+    override fun spaceUsed(): Long = spaceUsed
 
     // ----------------------------------------------------------------------- //
 
@@ -39,10 +53,10 @@ interface FileInputStreamFileSystem : InputStreamFileSystem {
 
     // ----------------------------------------------------------------------- //
 
-    override fun openInputChannel(path: String): InputStreamFileSystem.InputChannel? =
+    override fun openInputChannel(path: String): InputChannel? =
         FileChannel(File(root, path))
 
-    class FileChannel(file: File) : InputStreamFileSystem.InputChannel {
+    class FileChannel(file: File) : InputChannel {
         private val channel = RandomAccessFile(file, "r").channel
 
         override fun position(newPosition: Long): Long {
@@ -56,21 +70,13 @@ interface FileInputStreamFileSystem : InputStreamFileSystem {
 
         override fun isOpen() = channel.isOpen
 
-        override fun read(dst: ByteArray) = channel.read(ByteBuffer.wrap(dst))
+        override fun read(dst: ByteArray, off: Int, len: Int): Int {
+            val bbuf = ByteBuffer.wrap(dst)
+            bbuf.position(off)
+            bbuf.limit(off + len)
+            return channel.read(bbuf)
+        }
 
         override fun read(dst: ByteBuffer) = channel.read(dst)
-    }
-
-    companion object {
-        fun computeSpaceUsed(root: File): Long {
-            fun recurse(path: File): Long {
-                return if (path.isDirectory) {
-                    path.listFiles()?.fold(0L) { acc, f -> acc + recurse(f) } ?: 0L
-                } else {
-                    path.length()
-                }
-            }
-            return recurse(root)
-        }
     }
 }

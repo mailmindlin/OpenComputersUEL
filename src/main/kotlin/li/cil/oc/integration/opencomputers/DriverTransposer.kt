@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 
 object DriverTransposer : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.BlockName.Transposer))
+    Constants.BlockInfo.Transposer)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

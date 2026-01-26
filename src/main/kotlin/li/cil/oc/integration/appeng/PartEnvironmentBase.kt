@@ -46,7 +46,7 @@ interface PartEnvironmentBase : ManagedEnvironment {
             else
               Triple(args.checkString(2), args.checkInteger(3), args.optInteger(4, 1))
 
-          when (val component = node().network().node(address)) {
+          when (val component = node()!!.network().node(address)) {
             is Component -> when (val componentHost = component.host()) {
               is Database -> {
                 val dbStack = componentHost.getStackInSlot(entry - 1)

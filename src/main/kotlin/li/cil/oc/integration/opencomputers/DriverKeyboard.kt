@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack
 
 object DriverKeyboard : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.BlockName.Keyboard))
+    Constants.BlockInfo.Keyboard)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = Keyboard(host)
 

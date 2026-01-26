@@ -40,6 +40,8 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
+import net.minecraft.world.World
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
@@ -48,15 +50,21 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentIn
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
 class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInventory, TraitPowerAcceptor, Analyzable, WirelessEndpoint, QuantumNode {
-    val WirelessNetworkCardTier1: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier1) }
-    val WirelessNetworkCardTier2: ItemInfo by lazy { ApiItems.get(Constants.ItemName.WirelessNetworkCardTier2) }
-    val LinkedCard: ItemInfo by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }
+    val WirelessNetworkCardTier1: ItemInfo by lazy { Constants.ItemInfo.WirelessNetworkCardTier1 }
+    val WirelessNetworkCardTier2: ItemInfo by lazy { Constants.ItemInfo.WirelessNetworkCardTier2 }
+    val LinkedCard: ItemInfo by lazy { Constants.ItemInfo.LinkedCard }
 
     override val componentInventoryDelegate: ComponentInventory.Delegate = register(ComponentInventory::Delegate)
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
     override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
     override val hubDelegate: Hub.Delegate = register(Hub::Delegate)
+
+    override fun node(): Node? = super.node()
+    override fun world(): World? = super<TEEnvironmentBase>.world()
+    override val isConnected: Boolean
+        get() = super<Hub>.isConnected
+    override fun getDisplayName(): ITextComponent = super<ComponentInventory>.getDisplayName()
 
 
     @JvmField
@@ -83,7 +91,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
 
     @JvmField
     val componentNodes: Array<Component> = Array(6) {
-        ApiNetwork.newNode(this, Visibility.Network)
+        ApiNetwork.newNode(this, Visibility.Network)!!
             .withComponent("relay")
             .create()
     }
@@ -167,6 +175,10 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
 
     // ----------------------------------------------------------------------- //
 
+    override fun x(): Int = x
+    override fun y(): Int = y
+    override fun z(): Int = z
+
     override fun receivePacket(packet: Packet, source: WirelessEndpoint) {
         if (isWirelessEnabled) {
             tryEnqueuePacket(null, packet)
@@ -224,7 +236,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Hub.Plug): Connector = ApiNetwork.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Hub.Plug): Connector = ApiNetwork.newNode(plug, Visibility.Network)!!
         .withConnector(Math.round(Settings.get.bufferAccessPoint).toDouble())
         .create()
 

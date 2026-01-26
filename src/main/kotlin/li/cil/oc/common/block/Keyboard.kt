@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.api.Items
 import li.cil.oc.api.Network
 import li.cil.oc.common.block.property.PropertyRotatable
+import li.cil.oc.itemInfo
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.getRotation
@@ -103,7 +104,7 @@ class Keyboard : SimpleBlock(Material.ROCK) {
             val facing = tileEntity.facing() ?: return
             if (!canPlaceBlockOnSide(world, pos, facing)) {
                 world.setBlockToAir(pos)
-                InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), Items.get(Constants.BlockName.Keyboard).createItemStack(1))
+                InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), Constants.BlockInfo.Keyboard.createItemStack(1))
             }
         }
     }

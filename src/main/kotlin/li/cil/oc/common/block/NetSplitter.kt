@@ -41,7 +41,7 @@ class NetSplitter : RedstoneAware() {
             val tileEntity = world.getTileEntity(pos)
             if (tileEntity is TENetSplitter) {
                 if (!world.isRemote) {
-                    val oldValue = tileEntity.openSides(sideToToggle.ordinal)
+                    val oldValue = tileEntity.openSides[sideToToggle.ordinal]
                     tileEntity.setSideOpen(sideToToggle, !oldValue)
                 }
                 return true

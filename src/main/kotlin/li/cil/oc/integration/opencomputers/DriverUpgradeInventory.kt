@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeInventory : Item(), Inventory, HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.InventoryUpgrade))
+    Constants.ItemInfo.InventoryUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
 

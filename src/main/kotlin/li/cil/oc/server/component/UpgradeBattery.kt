@@ -8,7 +8,7 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.Visibility
 
 class UpgradeBattery(val tier: Int) : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withConnector(Settings.get.bufferCapacitorUpgrades[tier])
         .create()
 

@@ -12,7 +12,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeBarcodeReader : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.Analyzer))
+    Constants.ItemInfo.Analyzer)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment =
     UpgradeBarcodeReader(host)

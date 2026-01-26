@@ -44,10 +44,11 @@ object EnvironmentProviderBlocks : EnvironmentProvider {
       }
     } else null
     else -> {
-      if (ApiItems.get(stack) == ApiItems.get(Constants.ItemName.Drone)) ComponentDrone::class.java as Class<out Environment>
+      if (ApiItems.get(stack) == Constants.ItemInfo.Drone) ComponentDrone::class.java as Class<out Environment>
       else null
     }
   }
 
-  private fun isOneOf(block: Block, vararg names: String) = names.any { ApiItems.get(it).block() == block }
+  private fun isOneOf(block: Block, name: String) = ApiItems.get(name)?.block() == block
+  private fun isOneOf(block: Block, vararg names: String) = names.any { ApiItems.get(it)?.block() == block }
 }

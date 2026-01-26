@@ -515,7 +515,7 @@ object PacketSender {
 
     pb.writeTileEntity(t)
     pb.writeInt(mountable)
-    pb.writeNBT(t.lastData(mountable))
+    pb.writeNBT(t.lastData[mountable])
 
     pb.sendToPlayersNearTileEntity(t)
   }

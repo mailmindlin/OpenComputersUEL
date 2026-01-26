@@ -2,42 +2,26 @@ package li.cil.oc.common.component
 
 import com.google.common.base.Strings
 import li.cil.oc.Constants
-import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
-import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.Items as ApiItems
-import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo
-import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
+import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
+import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.client.renderer.TextBufferRenderCache
 import li.cil.oc.client.renderer.font.TextBufferRenderData
-import li.cil.oc.client.ComponentTracker as ClientComponentTracker
-import li.cil.oc.client.PacketSender as ClientPacketSender
-import li.cil.oc.common.Tier
-import li.cil.oc.common.tileentity.Screen as TEScreen
-import li.cil.oc.common.tileentity.traits.Computer as TEComputer
-import li.cil.oc.common.item.data.NodeData
+import li.cil.oc.common.*
 import li.cil.oc.common.component.traits.TextBufferProxy
 import li.cil.oc.common.component.traits.VideoRamRasterizer
-import li.cil.oc.common.SaveHandler
-import li.cil.oc.common.CompressedPacketBuilder
-import li.cil.oc.common.PacketBuilder
-import li.cil.oc.common.PacketType
-import li.cil.oc.server.component.DeviceInfoKt
+import li.cil.oc.common.item.data.NodeData
 import li.cil.oc.server.component.Keyboard
+import li.cil.oc.server.component.ManagedEnvironmentKt
 import li.cil.oc.util.*
-import li.cil.oc.util.by
-import li.cil.oc.server.ComponentTracker as ServerComponentTracker
-import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.TextBuffer as UtilTextBuffer
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
@@ -47,13 +31,18 @@ import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
+import li.cil.oc.client.ComponentTracker as ClientComponentTracker
+import li.cil.oc.client.PacketSender as ClientPacketSender
+import li.cil.oc.common.tileentity.Screen as TEScreen
+import li.cil.oc.common.tileentity.traits.Computer as TEComputer
+import li.cil.oc.server.ComponentTracker as ServerComponentTracker
+import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.util.TextBuffer as UtilTextBuffer
 
-open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(), TextBufferProxy, VideoRamRasterizer, DeviceInfoKt {
-    private val node: Node = ApiNetwork.newNode(this, Visibility.Network)
-        .withComponent("screen")
-        .withConnector()
-        .create()
-    override fun node(): Node = node
+open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextBufferProxy, VideoRamRasterizer, DeviceInfo {
+    override val node = newComponentConnector(Visibility.Network, "screen")
 
     override val internalRasterizerBuffers: MutableMap<String, VideoRamRasterizer.VirtualRamDevice> = mutableMapOf()
 
@@ -119,7 +108,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
         relativeLitArea = -1.0 // Recompute lit area, avoid screens blanking out until something changes.
     }
 
-    override val deviceInfo: Map<String, String> by lazy {
+    val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Display,
             DeviceAttribute.Description to "Text buffer",
@@ -129,6 +118,7 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             DeviceAttribute.Width to arrayOf("1", "4", "8")[maxDepth.ordinal]
         )
     }
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     // ----------------------------------------------------------------------- //
 
@@ -195,14 +185,14 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
     @Callback(doc = """function():boolean -- Turns the screen on. Returns whether the state changed, and whether it is now on.""")
     fun turnOn(computer: Context, args: Arguments): Array<Any?> {
         val oldPowerState = isDisplaying
-        setPowerState(true)
+        powerState = true
         return result(isDisplaying != oldPowerState, isDisplaying)
     }
 
     @Callback(doc = """function():boolean -- Turns off the screen. Returns whether the state changed, and whether it is now on.""")
     fun turnOff(computer: Context, args: Arguments): Array<Any?> {
         val oldPowerState = isDisplaying
-        setPowerState(false)
+        powerState = false
         return result(isDisplaying != oldPowerState, isDisplaying)
     }
 
@@ -504,8 +494,9 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             for (networkNode in node.network().nodes()) {
                 val host = networkNode.host()
                 if (host is TEComputer) {
-                    if (!host.machine.isPaused) {
-                        host.machine.pause(0.1)
+                    val machine = host.machine!!
+                    if (!machine.isPaused) {
+                        machine.pause(0.1)
                     }
                 }
             }
@@ -749,11 +740,9 @@ open class TextBuffer(val host: EnvironmentHost) : AbstractManagedEnvironment(),
             ClientPacketSender.sendCopyToAnalyzer(nodeAddress, line)
         }
 
-        private val Debugger by lazy { ApiItems.get(Constants.ItemName.Debugger) }
-
         private fun debug(message: String) {
             val mc = Minecraft.getMinecraft()
-            if (mc != null && mc.player != null && ApiItems.get(mc.player.heldItemMainhand) == Debugger) {
+            if (mc?.player != null && ApiItems.get(mc.player.heldItemMainhand) == Constants.ItemInfo.Debugger) {
                 OpenComputers.log.info("[NETWORK DEBUGGER] Sending packet to node $nodeAddress: $message")
             }
         }

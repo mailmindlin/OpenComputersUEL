@@ -10,6 +10,7 @@ import li.cil.oc.common.item.data.MicrocontrollerData
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.item.data.TabletData
+import li.cil.oc.itemInfo
 import li.cil.oc.server.machine.luac.LuaStateFactory
 import li.cil.oc.util.Color
 import li.cil.oc.util.SideTracker
@@ -23,32 +24,22 @@ import net.minecraft.nbt.NBTTagString
 import java.util.UUID
 
 object ExtendedRecipe {
-    private val drone by lazy { ApiItems.get(Constants.ItemName.Drone) }
-    private val eeprom by lazy { ApiItems.get(Constants.ItemName.EEPROM) }
-    private val luaBios by lazy { ApiItems.get(Constants.ItemName.LuaBios) }
-    private val mcu by lazy { ApiItems.get(Constants.BlockName.Microcontroller) }
-    private val navigationUpgrade by lazy { ApiItems.get(Constants.ItemName.NavigationUpgrade) }
-    private val linkedCard by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }
-    private val floppy by lazy { ApiItems.get(Constants.ItemName.Floppy) }
     private val hdds by lazy {
         arrayOf(
-            ApiItems.get(Constants.ItemName.HDDTier1),
-            ApiItems.get(Constants.ItemName.HDDTier2),
-            ApiItems.get(Constants.ItemName.HDDTier3)
+            Constants.ItemInfo.HDDTier1,
+            Constants.ItemInfo.HDDTier2,
+            Constants.ItemInfo.HDDTier3
         )
     }
     private val cpus by lazy {
         arrayOf(
-            ApiItems.get(Constants.ItemName.CPUTier1),
-            ApiItems.get(Constants.ItemName.CPUTier2),
-            ApiItems.get(Constants.ItemName.CPUTier3),
-            ApiItems.get(Constants.ItemName.APUTier1),
-            ApiItems.get(Constants.ItemName.APUTier2)
+            Constants.ItemInfo.CPUTier1,
+            Constants.ItemInfo.CPUTier2,
+            Constants.ItemInfo.CPUTier3,
+            Constants.ItemInfo.APUTier1,
+            Constants.ItemInfo.APUTier2
         )
     }
-    private val robot by lazy { ApiItems.get(Constants.BlockName.Robot) }
-    private val tablet by lazy { ApiItems.get(Constants.ItemName.Tablet) }
-    private val print by lazy { ApiItems.get(Constants.BlockName.Print) }
     private val disabled by lazy {
         val stack = ItemStack(Blocks.DIRT)
         val tag = NBTTagCompound()
@@ -65,12 +56,12 @@ object ExtendedRecipe {
     fun addNBTToResult(recipe: IRecipe, craftedStack: ItemStack, inventory: InventoryCrafting): ItemStack {
         val craftedItemName = ApiItems.get(craftedStack)
 
-        if (craftedItemName == navigationUpgrade) {
+        if (craftedItemName == Constants.ItemInfo.NavigationUpgrade) {
             Driver.driverFor(craftedStack)?.let { driver ->
                 for (stack in getItems(inventory)) {
                     if (stack.item == net.minecraft.init.Items.FILLED_MAP) {
                         // Store information of the map used for crafting in the result.
-                        val nbt = driver.dataTag(craftedStack)
+                        val nbt = driver.dataTag(craftedStack)!!
                         val mapTag = NBTTagCompound()
                         stack.writeToNBT(mapTag)
                         nbt.setTag(Settings.namespace + "map", mapTag)
@@ -79,10 +70,10 @@ object ExtendedRecipe {
             }
         }
 
-        if (craftedItemName == linkedCard) {
+        if (craftedItemName == Constants.ItemInfo.LinkedCard) {
             if (SideTracker.isServer()) {
                 Driver.driverFor(craftedStack)?.let { driver ->
-                    val nbt = driver.dataTag(craftedStack)
+                    val nbt = driver.dataTag(craftedStack)!!
                     nbt.setString(Settings.namespace + "tunnel", UUID.randomUUID().toString())
                 }
             }
@@ -92,7 +83,7 @@ object ExtendedRecipe {
             LuaStateFactory.setDefaultArch(craftedStack)
         }
 
-        if (craftedItemName == floppy || hdds.contains(craftedItemName)) {
+        if (craftedItemName == Constants.ItemInfo.Floppy || hdds.contains(craftedItemName)) {
             if (!craftedStack.hasTagCompound()) {
                 craftedStack.tagCompound = NBTTagCompound()
             }
@@ -102,7 +93,7 @@ object ExtendedRecipe {
                 val colorKey = Settings.namespace + "color"
                 for (stack in getItems(inventory)) {
                     val stackInfo = ApiItems.get(stack)
-                    if (stackInfo != null && (stackInfo == floppy || stackInfo.name() == "lootDisk") && stack.hasTagCompound()) {
+                    if (stackInfo != null && (stackInfo == Constants.ItemInfo.Floppy || stackInfo.name() == "lootDisk") && stack.hasTagCompound()) {
                         val oldData = stack.tagCompound!!
                         if (oldData.hasKey(colorKey) && oldData.getInteger(colorKey) != Color.dyes.indexOf("lightGray")) {
                             nbt.setTag(colorKey, oldData.getTag(colorKey).copy())
@@ -112,10 +103,10 @@ object ExtendedRecipe {
                 if (nbt.isEmpty) {
                     craftedStack.tagCompound = null
                 }
-            } else if (getItems(inventory).all { ApiItems.get(it) == floppy }) {
+            } else if (getItems(inventory).all { ApiItems.get(it) == Constants.ItemInfo.Floppy }) {
                 // Copy operation.
                 for (stack in getItems(inventory)) {
-                    if (ApiItems.get(stack) == floppy && stack.hasTagCompound()) {
+                    if (ApiItems.get(stack) == Constants.ItemInfo.Floppy && stack.hasTagCompound()) {
                         val oldData = stack.tagCompound!!
                         for (oldTagName in oldData.keySet) {
                             if (!nbt.hasKey(oldTagName)) {
@@ -127,7 +118,7 @@ object ExtendedRecipe {
             }
         }
 
-        if (craftedItemName == print &&
+        if (craftedItemName == Constants.BlockInfo.Print &&
             recipe is ExtendedShapelessOreRecipe &&
             recipe.ingredients.size == 2
         ) {
@@ -135,7 +126,7 @@ object ExtendedRecipe {
             val data = PrintData(craftedStack)
             val inputs = getItems(inventory)
             for (stack in inputs) {
-                if (ApiItems.get(stack) == print) {
+                if (ApiItems.get(stack) == Constants.BlockInfo.Print) {
                     data.load(stack)
                 }
             }
@@ -179,13 +170,13 @@ object ExtendedRecipe {
         }
 
         // EEPROM copying.
-        if (craftedItemName == eeprom &&
+        if (craftedItemName == Constants.ItemInfo.EEPROM &&
             craftedStack.count == 2 &&
             recipe is ExtendedShapelessOreRecipe &&
             recipe.ingredients.size == 2
         ) {
             for (stack in getItems(inventory)) {
-                if (ApiItems.get(stack) == eeprom && stack.hasTagCompound()) {
+                if (ApiItems.get(stack) == Constants.ItemInfo.EEPROM && stack.hasTagCompound()) {
                     val copy = stack.tagCompound!!.copy() as NBTTagCompound
                     // Erase node address, just in case.
                     copy.getCompoundTag(Settings.namespace + "data").getCompoundTag("node").removeTag("address")
@@ -196,10 +187,10 @@ object ExtendedRecipe {
         }
 
         // Swapping EEPROM in devices.
-        recraft(craftedStack, inventory, mcu) { stack -> MCUDataWrapper(stack) }
-        recraft(craftedStack, inventory, drone) { stack -> DroneDataWrapper(stack) }
-        recraft(craftedStack, inventory, robot) { stack -> RobotDataWrapper(stack) }
-        recraft(craftedStack, inventory, tablet) { stack -> TabletDataWrapper(stack) }
+        recraft(craftedStack, inventory, Constants.BlockInfo.Microcontroller) { stack -> MCUDataWrapper(stack) }
+        recraft(craftedStack, inventory, Constants.ItemInfo.Drone) { stack -> DroneDataWrapper(stack) }
+        recraft(craftedStack, inventory, Constants.BlockInfo.Robot) { stack -> RobotDataWrapper(stack) }
+        recraft(craftedStack, inventory, Constants.ItemInfo.Tablet) { stack -> TabletDataWrapper(stack) }
 
         return craftedStack
     }
@@ -215,12 +206,12 @@ object ExtendedRecipe {
                 val data = dataFactory(oldMcu)
 
                 // Remove old EEPROM.
-                val oldRom = data.components.filter { ApiItems.get(it) == eeprom }
+                val oldRom = data.components.filter { ApiItems.get(it) == Constants.ItemInfo.EEPROM }
                 data.components = data.components.toMutableList().apply { removeAll(oldRom) }.toTypedArray()
 
                 // Insert new EEPROM.
                 for (stack in getItems(inventory)) {
-                    if (ApiItems.get(stack) == eeprom) {
+                    if (ApiItems.get(stack) == Constants.ItemInfo.EEPROM) {
                         data.components = data.components + stack.copy().apply { count = 1 }
                     }
                 }

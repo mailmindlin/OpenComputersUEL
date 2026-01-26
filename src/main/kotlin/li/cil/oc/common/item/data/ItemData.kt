@@ -22,11 +22,9 @@ abstract class ItemData(val itemName: String?) : Persistable {
     }
 
     fun createItemStack(): ItemStack {
-        return if (itemName == null) ItemStack.EMPTY
-        else {
-            val stack = ApiItems.get(itemName).createItemStack(1)
-            save(stack)
-            stack
-        }
+        if (itemName == null) return ItemStack.EMPTY
+        val stack = ApiItems.get(itemName)!!.createItemStack(1)
+        save(stack)
+        return stack
     }
 }

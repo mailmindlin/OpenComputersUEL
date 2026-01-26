@@ -185,5 +185,5 @@ class Print(protected val tileTag: KClass<TEPrint> = TEPrint::class) : RedstoneA
         super.breakBlock(world, pos, state)
     }
 
-    override val tileEntityClass: Class<TEPrint> get() = TEPrint::class.java
+    override val tileClass: Class<TEPrint> get() = TEPrint::class.java
 }

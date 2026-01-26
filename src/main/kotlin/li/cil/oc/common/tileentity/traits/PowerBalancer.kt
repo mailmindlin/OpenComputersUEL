@@ -3,6 +3,7 @@ package li.cil.oc.common.tileentity.traits
 import li.cil.oc.Settings
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.SidedEnvironment
+import li.cil.oc.common.tileentity.behaviors.BehaviorUpdate
 import li.cil.oc.util.mapArray
 import net.minecraft.util.EnumFacing
 
@@ -10,7 +11,7 @@ interface PowerBalancer : PowerInformation, SidedEnvironment, Tickable {
     val isConnected: Boolean
     override val powerDelegate: Delegate
 
-    class Delegate(tile: PowerBalancer) : PowerInformation.Delegate(tile) {
+    class Delegate(tile: PowerBalancer) : PowerInformation.Delegate(tile), BehaviorUpdate {
         protected open fun distribute(): Pair<Double, Double> {
             var sumBuffer = 0.0
             var sumSize = 0.0
@@ -34,7 +35,11 @@ interface PowerBalancer : PowerInformation, SidedEnvironment, Tickable {
             return index >= 0 && nodes[index] == connector
         }
 
-        internal fun update() {
+        override fun update() {
+            val tile = tile as PowerBalancer
+            if (!tile.isServer && !tile.isConnected || !Settings.get.isTickMultiple(tile.world))
+                return
+
             val nodes = connectors
             fun network(connector: Connector?) = connector?.network() ?: this
             // Yeeeeah, so that just happened... it's not a beauty, but it works. This
@@ -67,13 +72,6 @@ interface PowerBalancer : PowerInformation, SidedEnvironment, Tickable {
                 }
             }
             this.updatePowerInformation()
-        }
-    }
-
-    override fun updateEntity() {
-//        super.updateEntity()
-        if (isServer && isConnected && Settings.get.isTickMultiple(world!!)) {
-            this.powerDelegate.update()
         }
     }
 }

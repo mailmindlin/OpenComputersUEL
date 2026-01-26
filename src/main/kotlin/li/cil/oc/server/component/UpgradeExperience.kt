@@ -31,7 +31,7 @@ class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
     private val agent: Agent
         get() = host as Agent
 
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("experience")
         .withConnector((30 * Settings.get.bufferPerLevel).toDouble())
         .create()

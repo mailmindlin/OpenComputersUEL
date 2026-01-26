@@ -28,12 +28,12 @@ import org.apache.commons.io.output.ByteArrayOutputStream
 import java.security.*
 import kotlin.jvm.Throws
 
-typealias Result = Array<Any?>
-abstract class DataCard: ManagedEnvironmentKt(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Neighbors).
-    withComponent("data", Visibility.Neighbors).
-    withConnector().
-    create()
+internal typealias Result = Array<Any?>
+abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo {
+  override val node = nodeFactory()
+    .withComponent("data", Visibility.Neighbors)
+    .withConnector()
+    .create()
 
   // ----------------------------------------------------------------------- //
 
@@ -295,7 +295,7 @@ abstract class DataCard: ManagedEnvironmentKt(), DeviceInfoKt {
     // Empty constructor for deserialization.
     @Suppress("unused")
     private constructor(): this(null)
-    constructor(value: Key): this(value as Key?)
+    constructor(value: Key, flag: Boolean = false): this(value as Key?)
 
     val isPublic: Boolean get() = value is ECPublicKey
 

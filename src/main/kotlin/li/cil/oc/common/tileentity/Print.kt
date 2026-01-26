@@ -3,6 +3,7 @@ package li.cil.oc.common.tileentity
 import com.google.common.base.Strings
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.network.Node
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.tileentity.traits.*
@@ -31,14 +32,10 @@ class Print @JvmOverloads constructor(
 ) : TileEntityBase.TEEnvironmentBase(), TraitRedstoneAware, TraitRotatableTile {
     override val rotatableDelegate: TraitRotatableTile.Delegate = register(TraitRotatableTile::Delegate)
     override val redstoneDelegate: RedstoneAware.Delegate = register(RedstoneAware::Delegate)
-
-    override fun initialize() {
-        super<TEEnvironmentBase>.initialize()
-        super<RedstoneAware>.initialize()
-    }
+    override fun node(): Node? = null
 
     init {
-        redstoneDelegate.isOutputEnabled = true
+        redstoneDelegate._isOutputEnabled = true
     }
 
     @JvmField
@@ -143,7 +140,7 @@ class Print @JvmOverloads constructor(
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
             updateRedstone()
             if (state && data.isButtonMode) {
-                val block = ApiItems.get(Constants.BlockName.Print).block()
+                val block = Constants.BlockInfo.Print.block()
                 val delay = block.tickRate(world)
                 if (scheduleUpdate != null) {
                     scheduleUpdate.invoke(delay)

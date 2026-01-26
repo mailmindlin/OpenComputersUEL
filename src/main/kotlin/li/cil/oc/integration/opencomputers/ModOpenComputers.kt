@@ -321,7 +321,7 @@ internal object ModOpenComputers : ModProxy {
     // redstone card availability here, after all other mods were inited.
     if (BundledRedstone.isAvailable) {
       OpenComputers.log.info("Found extended redstone mods, enabling tier two redstone card.")
-      when (val item = Delegator.subItem(Items.get(Constants.ItemName.RedstoneCardTier2).createItemStack(1))) {
+      when (val item = Delegator.subItem(Constants.ItemInfo.RedstoneCardTier2.createItemStack(1))) {
         is RedstoneCard -> item.showInItemList = true
       }
     }
@@ -334,8 +334,8 @@ internal object ModOpenComputers : ModProxy {
     Manual.addProvider("oredict", OreDictImageProvider)
 
     Manual.addTab(TextureTabIconRenderer(Textures.GUI.ManualHome), "oc:gui.Manual.Home", "%LANGUAGE%/index.md")
-    Manual.addTab(ItemStackTabIconRenderer(Items.get("case1").createItemStack(1)), "oc:gui.Manual.Blocks", "%LANGUAGE%/block/index.md")
-    Manual.addTab(ItemStackTabIconRenderer(Items.get("cpu1").createItemStack(1)), "oc:gui.Manual.Items", "%LANGUAGE%/item/index.md")
+    Manual.addTab(ItemStackTabIconRenderer(Constants.BlockInfo.CaseTier1.createItemStack(1)), "oc:gui.Manual.Blocks", "%LANGUAGE%/block/index.md")
+    Manual.addTab(ItemStackTabIconRenderer(Constants.ItemInfo.CPUTier1.createItemStack(1)), "oc:gui.Manual.Items", "%LANGUAGE%/item/index.md")
 
     Nanomachines.addProvider(DisintegrationProvider)
     Nanomachines.addProvider(HungryProvider)
@@ -369,7 +369,7 @@ internal object ModOpenComputers : ModProxy {
 
   @JvmStatic
   fun inkCartridgeInkProvider(stack: ItemStack): Int =
-    if (Items.get(stack) == Items.get(Constants.ItemName.InkCartridge))
+    if (Items.get(stack) == Constants.ItemInfo.InkCartridge)
       Settings.get.printInkValue
     else
       0
@@ -383,8 +383,12 @@ internal object ModOpenComputers : ModProxy {
 
   private fun blacklistHost(host: Class<*>, vararg itemNames: String) {
     for (itemName in itemNames) {
+      val itemInfo = Items.get(itemName)
+      if (itemInfo == null)
+        TODO()
+
       try {
-        IMC.blacklistHost(itemName, host, Items.get(itemName).createItemStack(1))
+        IMC.blacklistHost(itemName, host, itemInfo.createItemStack(1))
       } catch (t: Throwable) {
         OpenComputers.log.warn("Error blacklisting '$itemName' for '${host.simpleName}.", t)
       }

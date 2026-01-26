@@ -11,7 +11,7 @@ import li.cil.oc.util.BlockPosition
 import net.minecraft.util.EnumFacing
 
 class UpgradeSolarGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withConnector()
         .create()
 

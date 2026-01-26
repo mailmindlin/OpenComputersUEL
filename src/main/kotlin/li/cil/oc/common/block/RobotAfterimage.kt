@@ -7,6 +7,7 @@ import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.Robot as TERobot
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
+import li.cil.oc.itemInfo
 import li.cil.oc.util.Rarity
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
@@ -93,7 +94,7 @@ class RobotAfterimage : SimpleBlock() {
     override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val robot = findMovingRobot(world, pos)
         return if (robot != null) {
-            ApiItems.get(Constants.BlockName.Robot).block().onBlockActivated(world, robot.pos, world.getBlockState(robot.pos), player, hand, side, hitX, hitY, hitZ)
+            Constants.BlockInfo.Robot.block().onBlockActivated(world, robot.pos, world.getBlockState(robot.pos), player, hand, side, hitX, hitY, hitZ)
         } else {
             world.setBlockToAir(pos)
             false

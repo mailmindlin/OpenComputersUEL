@@ -6,6 +6,7 @@ import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Node
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.behaviors.Behavior
+import li.cil.oc.common.tileentity.behaviors.BehaviorCapability
 import li.cil.oc.common.tileentity.behaviors.BehaviorLifecycle
 import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.common.inventory.ComponentInventory as InventoryComponentInventory
@@ -22,7 +23,7 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
     // ----------------------------------------------------------------------- //
     override val componentInventoryDelegate: Delegate
 
-    class Delegate(val tile: ComponentInventory): InventoryComponentInventory.State(), Behavior, BehaviorLifecycle, NbtSeriailzable {
+    class Delegate(val tile: ComponentInventory): InventoryComponentInventory.State(), Behavior, BehaviorLifecycle, NbtSeriailzable, BehaviorCapability {
         // Cache changes to inventory slots on the client side to avoid recreating
         // components when we don't have to and the slots are just cleared by MC
         // temporarily.
@@ -62,8 +63,7 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
         fun getSizeInventory() = tile.sizeInventory
 
         private fun applyInventoryChanges() {
-
-            fun onItemRemoved(slot: Int, removed: ItemStack) = if (tile.isServer) tile.onItemRemoved()
+            fun onItemRemoved(slot: Int, removed: ItemStack) { if (tile.isServer) tile.onItemRemoved(slot, removed) }
             updateScheduled = false
             for (slot in 0 until getSizeInventory()) {
                 val removed = pendingRemovals[slot]
@@ -127,25 +127,23 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
             }
         }
 
-        fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
+        override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean {
             val localFacing = when {
                 facing == null -> null
                 tile is Rotatable -> (tile as Rotatable).toLocal(facing)
                 else -> facing
             }
-            return super.hasCapability(capability, facing) || tile.components.any { component ->
+            return tile.components.any { component ->
                 component != null && component is ICapabilityProvider && component.hasCapability(capability, localFacing)
             }
         }
 
-        fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
+        override fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? {
             val localFacing = when {
                 facing == null -> null
                 tile is Rotatable -> (tile as Rotatable).toLocal(facing)
                 else -> facing
             }
-            val superResult = if (super.hasCapability(capability, facing)) super.getCapability(capability, facing) else null
-            if (superResult != null) return superResult
 
             for (component in tile.components) {
                 if (component != null && component is ICapabilityProvider && component.hasCapability(capability, localFacing)) {
@@ -205,7 +203,7 @@ interface ComponentInventory : Environment, Inventory, InventoryComponentInvento
 
     override fun save(component: ManagedEnvironment, driver: DriverItem, stack: ItemStack) {
         if (isServer)
-            super.save(component, driver, stack)
+            super<InventoryComponentInventory>.save(component, driver, stack)
     }
 
     override val host: EnvironmentHost

@@ -10,17 +10,12 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.util.DatabaseAccess
-import li.cil.oc.util.ItemUtils
-import li.cil.oc.util.StackOption
-import li.cil.oc.util.checkSlot
+import li.cil.oc.util.*
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 
 class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("database")
-        .create()
+    override val node = nodeFactory(Visibility.Network, "database").create()
 
     override val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
@@ -32,11 +27,9 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
     
     override fun size(): Int = data.sizeInventory
 
-    override fun getStackInSlot(slot: Int): ItemStack {
-        return StackOption(data.getStackInSlot(slot)).map { it.copy() }.orEmpty()
-    }
+    override fun getStackInSlot(slot: Int): ItemStack? = data.getStackInSlot(slot)?.notEmpty()?.copy()
 
-    override fun setStackInSlot(slot: Int, stack: ItemStack) {
+    override fun setStackInSlot(slot: Int, stack: ItemStack?) {
         data.setInventorySlotContents(slot, stack)
     }
 

@@ -201,8 +201,9 @@ interface ComponentInventory : Inventory, Environment {
     open fun isComponentSlot(slot: Int, stack: ItemStack): Boolean = true
 
     fun connectItemNode(node: Node?) {
-        if (node() != null && node != null) {
-            node().connect(node)
+        val myNode = node()
+        if (myNode != null && node != null) {
+            myNode.connect(node)
         }
     }
 

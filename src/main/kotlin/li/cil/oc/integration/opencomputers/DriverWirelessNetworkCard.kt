@@ -1,20 +1,19 @@
 package li.cil.oc.integration.opencomputers
 
 import li.cil.oc.Constants
-import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.common.item.WirelessNetworkCard as ItemWirelessNetworkCard
 import li.cil.oc.common.item.Delegator
-import li.cil.oc.server.component.WirelessNetworkCard as ComponentWirelessNetworkCard
 import net.minecraft.item.ItemStack
+import li.cil.oc.common.item.WirelessNetworkCard as ItemWirelessNetworkCard
+import li.cil.oc.server.component.WirelessNetworkCard as ComponentWirelessNetworkCard
 
 object DriverWirelessNetworkCard : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.WirelessNetworkCardTier1),
-    ApiItems.get(Constants.ItemName.WirelessNetworkCardTier2))
+    Constants.ItemInfo.WirelessNetworkCardTier1,
+    Constants.ItemInfo.WirelessNetworkCardTier2)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

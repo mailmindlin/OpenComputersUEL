@@ -5,7 +5,6 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.common.tileentity.traits.PowerBalancer
 import li.cil.oc.common.tileentity.traits.isServer
 import net.minecraft.nbt.NBTTagCompound
@@ -26,7 +25,7 @@ class PowerDistributor: TileEntityBase.TEEnvironmentBase(), TraitPowerBalancer, 
     override val powerDelegate: PowerBalancer.Delegate = PowerBalancer.Delegate(this)
 
     private val nodes: Array<Connector> = Array(6) {
-        Network.newNode(this, Visibility.None)
+        Network.newNode(this, Visibility.None)!!
             .withConnector(Settings.get.bufferDistributor)
             .create()
     }
@@ -45,11 +44,6 @@ class PowerDistributor: TileEntityBase.TEEnvironmentBase(), TraitPowerBalancer, 
 
     companion object {
         private const val ConnectorTag = Settings.namespace + "connector"
-    }
-
-    override fun updateEntity() {
-        super<PowerBalancer>.updateEntity()
-        super<TEEnvironmentBase>.updateEntity()
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {

@@ -57,7 +57,7 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
         // -----------------------------------------------------------------------
 
         override fun node(): Node = node
-        val node: Node = Network.newNode(this, Visibility.Network).withComponent("serial_port").create()
+        val node: Node = Network.newNode(this, Visibility.Network)!!.withComponent("serial_port").create()
 
         override fun onMessage(message: Message) {}
 
@@ -154,8 +154,8 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
         }
 
         private fun ensureConnected() {
-            if (tileEntity.node().network() != node.network()) {
-                tileEntity.node().connect(node)
+            if (tileEntity.node()!!.network() != node.network()) {
+                tileEntity.node()!!.connect(node)
             }
         }
     }

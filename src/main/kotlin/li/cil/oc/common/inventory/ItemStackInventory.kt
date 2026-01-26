@@ -1,5 +1,6 @@
 package li.cil.oc.common.inventory
 
+import li.cil.oc.util.ensureTagCompound
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
@@ -17,28 +18,19 @@ abstract class ItemStackInventory : Inventory {
     // Initialize the list automatically if we have a container.
     init {
         @Suppress("LeakingThis")
-        val _container = container
-        if (!_container.isEmpty) {
+        if (!container.isEmpty)
             reinitialize()
-        }
     }
 
     // Load items from tag.
     fun reinitialize() {
-        for (i in items.indices) {
+        for (i in items.indices)
             updateItems(i, ItemStack.EMPTY)
-        }
-        if (!container.hasTagCompound()) {
-            container.tagCompound = NBTTagCompound()
-        }
-        load(container.tagCompound!!)
+        load(container.ensureTagCompound)
     }
 
     // Write items back to tag.
     override fun markDirty() {
-        if (!container.hasTagCompound()) {
-            container.tagCompound = NBTTagCompound()
-        }
-        save(container.tagCompound!!)
+        save(container.ensureTagCompound)
     }
 }

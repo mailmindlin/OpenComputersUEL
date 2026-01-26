@@ -12,9 +12,9 @@ import net.minecraft.item.ItemStack
 
 object DriverContainerUpgrade : Item(), Container {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.UpgradeContainerTier1),
-    ApiItems.get(Constants.ItemName.UpgradeContainerTier2),
-    ApiItems.get(Constants.ItemName.UpgradeContainerTier3))
+    Constants.ItemInfo.UpgradeContainerTier1,
+    Constants.ItemInfo.UpgradeContainerTier2,
+    Constants.ItemInfo.UpgradeContainerTier3)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
 

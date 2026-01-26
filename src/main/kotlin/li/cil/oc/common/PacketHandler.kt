@@ -6,6 +6,7 @@ import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.block.RobotAfterimage
+import li.cil.oc.itemInfo
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack
@@ -73,7 +74,7 @@ abstract class PacketHandler {
     inner class PacketParser(stream: InputStream, val player: EntityPlayer) : DataInputStream(stream) {
         val packetType: PacketType = PacketType(readByte())
 
-        inline fun <reified T> getTileEntity(dimension: Int, x: Int, y: Int, z: Int): T? {
+        internal inline fun <reified T> getTileEntity(dimension: Int, x: Int, y: Int, z: Int): T? {
             val w = world(player, dimension) ?: return null
             val pos = BlockPos(x, y, z)
             if (!w.isBlockLoaded(pos))
@@ -85,7 +86,7 @@ abstract class PacketHandler {
             // In case a robot moved away before the packet arrived. This is
             // mostly used when the robot *starts* moving while the client sends
             // a request to the server.
-            val afterimageBlock = ApiItems.get(Constants.BlockName.RobotAfterimage)?.block()
+            val afterimageBlock = Constants.BlockInfo.RobotAfterimage.block()
             if (afterimageBlock is RobotAfterimage) {
                 val robot = afterimageBlock.findMovingRobot(w, pos)
                 if (robot != null && T::class.java.isAssignableFrom(robot.proxy.javaClass)) {
@@ -106,7 +107,7 @@ abstract class PacketHandler {
             return null
         }
 
-        inline fun <reified T> readTileEntity(): T? {
+        internal inline fun <reified T> readTileEntity(): T? {
             val dimension = readInt()
             val x = readInt()
             val y = readInt()

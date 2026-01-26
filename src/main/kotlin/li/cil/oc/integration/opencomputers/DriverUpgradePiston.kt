@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradePiston : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.PistonUpgrade))
+    Constants.ItemInfo.PistonUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

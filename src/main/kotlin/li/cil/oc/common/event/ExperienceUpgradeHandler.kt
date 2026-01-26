@@ -101,14 +101,14 @@ object ExperienceUpgradeHandler {
 
     private fun getLevel(agent: Agent): Int {
         var level = 0
-        forEachUpgrade(agent.machine().node()) { upgrade -> level += upgrade.level }
+        forEachUpgrade(agent.machine().node()!!) { upgrade -> level += upgrade.level }
         return level
     }
 
     private fun getLevelAndExperience(agent: Agent): Pair<Int, Double> {
         var level = 0
         var experience = 0.0
-        forEachUpgrade(agent.machine().node()) { upgrade ->
+        forEachUpgrade(agent.machine().node()!!) { upgrade ->
             level += upgrade.level
             experience += upgrade.experience
         }
@@ -116,7 +116,7 @@ object ExperienceUpgradeHandler {
     }
 
     private fun addExperience(agent: Agent, amount: Double) {
-        forEachUpgrade(agent.machine().node()) { upgrade -> upgrade.addExperience(amount) }
+        forEachUpgrade(agent.machine().node()!!) { upgrade -> upgrade.addExperience(amount) }
     }
 
     private inline fun forEachUpgrade(node: Node, f: (UpgradeExperience) -> Unit) {

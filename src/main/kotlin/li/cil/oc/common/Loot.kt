@@ -8,6 +8,7 @@ import li.cil.oc.api.FileSystem as ApiFileSystem
 import li.cil.oc.api.fs.FileSystem
 import li.cil.oc.common.init.Items
 import li.cil.oc.util.Color
+import li.cil.oc.itemInfo
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -21,8 +22,9 @@ import java.io.FileInputStream
 import java.util.Properties
 import java.util.Random
 import java.util.concurrent.Callable
+import java.util.function.Supplier
 
-object Loot {
+internal object Loot {
     @JvmField
     val factories = mutableMapOf<String, Callable<FileSystem>>()
 
@@ -33,7 +35,7 @@ object Loot {
     val worldDisks = mutableListOf<Pair<ItemStack, Int>>()
 
     @JvmStatic
-    fun disksForCycling(): MutableList<ItemStack> = if (disksForCyclingClient.isNotEmpty()) disksForCyclingClient else disksForCyclingServer
+    fun disksForCycling(): MutableList<ItemStack> = disksForCyclingClient.ifEmpty { disksForCyclingServer }
 
     @JvmField
     val disksForCyclingServer = mutableListOf<ItemStack>()
@@ -49,7 +51,7 @@ object Loot {
 
     @JvmStatic
     fun isLootDisk(stack: ItemStack): Boolean {
-        return ApiItems.get(stack) == ApiItems.get(Constants.ItemName.Floppy) &&
+        return ApiItems.get(stack) == Constants.ItemInfo.Floppy &&
             stack.hasTagCompound() &&
             stack.tagCompound!!.hasKey(Settings.namespace + "lootFactory", NBT.TAG_STRING)
     }
@@ -81,7 +83,7 @@ object Loot {
         nbt.setString(Settings.namespace + "lootFactory", modSpecificName)
         nbt.setInteger(Settings.namespace + "color", color.dyeDamage)
 
-        val stack = Items.get(Constants.ItemName.Floppy)!!.createItemStack(1)
+        val stack = Constants.ItemInfo.Floppy.createItemStack(1)
         stack.tagCompound = nbt
 
         factories[modSpecificName] = factory
@@ -96,9 +98,8 @@ object Loot {
     @JvmStatic
     fun init() {
         val list = Properties()
-        val listStream = javaClass.getResourceAsStream("/assets/${Settings.resourceDomain}/loot/loot.properties")
-        list.load(listStream)
-        listStream.close()
+        javaClass.getResourceAsStream("/assets/${Settings.resourceDomain}/loot/loot.properties")!!
+            .use(list::load)
         parseLootDisks(list, globalDisks, external = false)
     }
 
@@ -158,9 +159,9 @@ object Loot {
     @JvmOverloads
     fun createLootDisk(name: String, path: String, external: Boolean, color: EnumDyeColor? = null): ItemStack {
         val callable = if (external) {
-            Callable { ApiFileSystem.asReadOnly(ApiFileSystem.fromSaveDirectory("loot/$path", 0, false)) }
+            { ApiFileSystem.asReadOnly(ApiFileSystem.fromSaveDirectory("loot/$path", 0, false))!! }
         } else {
-            Callable { ApiFileSystem.fromClass(OpenComputers::class.java, Settings.resourceDomain, "loot/$path") }
+            { ApiFileSystem.fromClass(OpenComputers::class.java, Settings.resourceDomain, "loot/$path")!! }
         }
         val stack = registerLootDisk(path, color ?: EnumDyeColor.SILVER, callable, doRecipeCycling = true)
         stack.setStackDisplayName(name)

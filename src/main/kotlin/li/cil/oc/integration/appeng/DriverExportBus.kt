@@ -1,6 +1,5 @@
 package li.cil.oc.integration.appeng
 
-import appeng.api.AEApi
 import appeng.api.config.Actionable
 import appeng.api.config.FuzzyMode
 import appeng.api.config.Settings
@@ -24,9 +23,10 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.integration.ManagedTileEntityEnvironment
 import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.ExtendedArguments.*
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.optSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
@@ -105,14 +105,13 @@ object DriverExportBus : DriverBlock {
         return result(Unit, "no export bus")
       }
 
-      val exportBus = part as ISegmentedInventory
-      val upgradeableHost = part as IUpgradeableHost
-      val gridHost = part as IGridHost
-      val configurableObject = part as IConfigurableObject
+      val exportBus = part
+      if (exportBus !is ISegmentedInventory || exportBus !is IUpgradeableHost || exportBus !is IGridHost || exportBus !is IActionHost)
+        throw AssertionError()
       val location = host.location
 
       val inventory: IItemHandler = InventoryUtils.inventoryAt(
-        BlockPosition(location.x, location.y, location.z, Some(location.world)).offset(side),
+        BlockPosition(location.x, location.y, location.z, location.world).offset(side),
         side.opposite
       ) ?: return result(Unit, "no inventory")
 
@@ -121,24 +120,24 @@ object DriverExportBus : DriverBlock {
         else -> slot
       }
       val config = exportBus.getInventoryByName("config")
-      val itemStorage = AEUtil.getGridStorage(gridHost.getGridNode(AEPartLocation.fromFacing(side)).grid)
+      val itemStorage = AEUtil.getGridStorage(exportBus.getGridNode(AEPartLocation.fromFacing(side))!!.grid)
         .getInventory(AEUtil.itemStorageChannel)
-      var count = when (upgradeableHost.getInstalledUpgrades(Upgrades.SPEED)) {
+      var count = when (exportBus.getInstalledUpgrades(Upgrades.SPEED)) {
         1 -> 8
         2 -> 32
         3 -> 64
         4 -> 96
         else -> 1
       }
-      val fuzzyMode = configurableObject.configManager.getSetting(Settings.FUZZY_MODE) as FuzzyMode
-      val source = MachineSource(gridHost)
+      val fuzzyMode = exportBus.configManager.getSetting(Settings.FUZZY_MODE) as FuzzyMode
+      val source = MachineSource(exportBus)
       val potentialWork = count
 
       for (slot in 0 until config.slots) {
         if (count <= 0) break
         val filter = AEUtil.itemStorageChannel.createStack(config.getStackInSlot(slot))
         val stacks: Sequence<IAEItemStack> =
-          if (upgradeableHost.getInstalledUpgrades(Upgrades.FUZZY) > 0)
+          if (exportBus.getInstalledUpgrades(Upgrades.FUZZY) > 0)
             itemStorage.storageList.findFuzzy(filter, fuzzyMode).asSequence()
               .map { it as IAEItemStack }
           else

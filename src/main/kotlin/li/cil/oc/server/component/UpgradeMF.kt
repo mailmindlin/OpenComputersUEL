@@ -28,7 +28,7 @@ class UpgradeMF(
     val coord: BlockPosition,
     val dir: EnumFacing
 ) : ManagedEnvironmentKt(), ChangeListener, DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.None)
+    override val node = nodeFactory(Visibility.None)
         .withConnector()
         .create()
 

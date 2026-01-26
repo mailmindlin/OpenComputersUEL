@@ -7,6 +7,7 @@ import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.traits.Rotatable
+import li.cil.oc.itemInfo
 import li.cil.oc.common.tileentity.Keyboard as TEKeyboard
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.common.tileentity.traits.Rotatable as TERotatable
@@ -42,7 +43,7 @@ class Item(value: Block) : ItemBlock(value) {
     override fun getMetadata(itemDamage: Int): Int = itemDamage
 
     override fun getItemStackDisplayName(stack: ItemStack): String {
-        if (Items.get(stack) == Items.get(Constants.BlockName.Print)) {
+        if (Items.get(stack) == Constants.BlockInfo.Print) {
             val data = PrintData(stack)
             return data.label ?: super.getItemStackDisplayName(stack)
         }
@@ -60,7 +61,7 @@ class Item(value: Block) : ItemBlock(value) {
         // When placing robots in creative mode, we have to copy the stack
         // manually before it's placed to ensure different component addresses
         // in the different robots, to avoid interference of screens e.g.
-        val needsCopying = player.capabilities.isCreativeMode && Items.get(stack) == Items.get(Constants.BlockName.Robot)
+        val needsCopying = player.capabilities.isCreativeMode && Items.get(stack) == Constants.BlockInfo.Robot
         val stackToUse = if (needsCopying) RobotData(stack).copyItemStack() else stack
         if (super.placeBlockAt(stackToUse, player, world, pos, side, hitX, hitY, hitZ, newState)) {
             // If it's a rotatable block try to make it face the player.

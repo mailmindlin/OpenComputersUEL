@@ -6,7 +6,6 @@ import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.tileentity.behaviors.Behavior
 import li.cil.oc.common.tileentity.behaviors.BehaviorContainer
 import li.cil.oc.common.tileentity.traits.Environment
-import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.common.tileentity.traits.TileEntityTrait
 import li.cil.oc.common.tileentity.traits.isServer
 import net.minecraft.block.state.IBlockState
@@ -14,8 +13,10 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.network.NetworkManager
 import net.minecraft.network.play.server.SPacketUpdateTileEntity
 import net.minecraft.tileentity.TileEntity
+import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
+import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
@@ -113,6 +114,12 @@ abstract class TileEntityBase : TileEntity(), TileEntityTrait {
         // Write all behaviors' client-side state
         behaviors.writeToNBTForClient(nbt)
     }
+
+    override fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean
+        = super.hasCapability(capability, facing) || behaviors.hasCapability(capability, facing)
+
+    override fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T?
+        = super.getCapability(capability, facing) ?: behaviors.getCapability(capability, facing)
 
     // ----------------------------------------------------------------------- //
     // NBT Dispatch

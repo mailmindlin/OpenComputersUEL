@@ -23,7 +23,7 @@ object DisintegrationProvider : ScalaProvider("c4e7e3c2-8069-4fbb-b08e-74b1bddcd
 
     override fun readBehaviorFromNBT(player: EntityPlayer, nbt: NBTTagCompound): Behavior = DisintegrationBehavior(player)
 
-    class DisintegrationBehavior(p: EntityPlayer) : AbstractBehavior(p) {
+    class DisintegrationBehavior(p: EntityPlayer) : AbstractBehaviorKt(p) {
         var breakingMap: MutableMap<BlockPosition, SlowBreakInfo> = mutableMapOf()
         var breakingMapNew: MutableMap<BlockPosition, SlowBreakInfo> = mutableMapOf()
 
@@ -48,7 +48,7 @@ object DisintegrationProvider : ScalaProvider("c4e7e3c2-8069-4fbb-b08e-74b1bddcd
 
                         // Check blocks in range.
                         val blockPos = BlockPosition(player)
-                        val actualRange = Settings.get.nanomachineDisintegrationRange * ApiNanomachines.getController(player).getInputCount(this)
+                        val actualRange = Settings.get.nanomachineDisintegrationRange * controller.getInputCount(this)
                         for (x in -actualRange..actualRange) {
                             for (y in 0..(actualRange * 2)) {
                                 for (z in -actualRange..actualRange) {

@@ -2,7 +2,10 @@
 
 package li.cil.oc
 
+import li.cil.oc.api.Items
+import li.cil.oc.api.detail.ItemInfo as ItemInfoT
 import li.cil.oc.util.ItemUtils
+import net.minecraft.item.Item
 
 object Constants {
 
@@ -47,6 +50,47 @@ object Constants {
         @JvmStatic
         @Suppress("FunctionName")
         fun Case(tier: Int): String = ItemUtils.caseNameWithTierSuffix("case", tier)
+    }
+    object BlockInfo {
+        internal val Adapter: ItemInfoT by lazy { itemInfo(Constants.BlockName.Adapter) }
+        internal val Assembler: ItemInfoT by lazy { itemInfo(Constants.BlockName.Assembler) }
+        internal val Cable: ItemInfoT by lazy { itemInfo(Constants.BlockName.Cable) }
+        internal val Capacitor: ItemInfoT by lazy { itemInfo(Constants.BlockName.Capacitor) }
+        internal val CarpetedCapacitor: ItemInfoT by lazy { itemInfo(Constants.BlockName.CarpetedCapacitor) }
+        internal val CaseCreative: ItemInfoT by lazy { itemInfo(Constants.BlockName.CaseCreative) }
+        internal val CaseTier1: ItemInfoT by lazy { itemInfo(Constants.BlockName.CaseTier1) }
+        internal val CaseTier2: ItemInfoT by lazy { itemInfo(Constants.BlockName.CaseTier2) }
+        internal val CaseTier3: ItemInfoT by lazy { itemInfo(Constants.BlockName.CaseTier3) }
+        internal val ChameliumBlock: ItemInfoT by lazy { itemInfo(Constants.BlockName.ChameliumBlock) }
+        internal val Charger: ItemInfoT by lazy { itemInfo(Constants.BlockName.Charger) }
+        internal val Disassembler: ItemInfoT by lazy { itemInfo(Constants.BlockName.Disassembler) }
+        internal val DiskDrive: ItemInfoT by lazy { itemInfo(Constants.BlockName.DiskDrive) }
+        internal val Endstone: ItemInfoT by lazy { itemInfo(Constants.BlockName.Endstone) }
+        internal val Geolyzer: ItemInfoT by lazy { itemInfo(Constants.BlockName.Geolyzer) }
+        internal val HologramTier1: ItemInfoT by lazy { itemInfo(Constants.BlockName.HologramTier1) }
+        internal val HologramTier2: ItemInfoT by lazy { itemInfo(Constants.BlockName.HologramTier2) }
+        internal val Keyboard: ItemInfoT by lazy { itemInfo(Constants.BlockName.Keyboard) }
+        internal val Microcontroller: ItemInfoT by lazy { itemInfo(Constants.BlockName.Microcontroller) }
+        internal val MotionSensor: ItemInfoT by lazy { itemInfo(Constants.BlockName.MotionSensor) }
+        internal val NetSplitter: ItemInfoT by lazy { itemInfo(Constants.BlockName.NetSplitter) }
+        internal val PowerConverter: ItemInfoT by lazy { itemInfo(Constants.BlockName.PowerConverter) }
+        internal val PowerDistributor: ItemInfoT by lazy { itemInfo(Constants.BlockName.PowerDistributor) }
+        internal val Print: ItemInfoT by lazy { itemInfo(Constants.BlockName.Print) }
+        internal val Printer: ItemInfoT by lazy { itemInfo(Constants.BlockName.Printer) }
+        internal val Raid: ItemInfoT by lazy { itemInfo(Constants.BlockName.Raid) }
+        internal val Redstone: ItemInfoT by lazy { itemInfo(Constants.BlockName.Redstone) }
+        internal val Relay: ItemInfoT by lazy { itemInfo(Constants.BlockName.Relay) }
+        internal val Robot: ItemInfoT by lazy { itemInfo(Constants.BlockName.Robot) }
+        internal val RobotAfterimage: ItemInfoT by lazy { itemInfo(Constants.BlockName.RobotAfterimage) }
+        internal val ScreenTier1: ItemInfoT by lazy { itemInfo(Constants.BlockName.ScreenTier1) }
+        internal val ScreenTier2: ItemInfoT by lazy { itemInfo(Constants.BlockName.ScreenTier2) }
+        internal val ScreenTier3: ItemInfoT by lazy { itemInfo(Constants.BlockName.ScreenTier3) }
+        internal val Rack: ItemInfoT by lazy { itemInfo(Constants.BlockName.Rack) }
+        internal val Transposer: ItemInfoT by lazy { itemInfo(Constants.BlockName.Transposer) }
+        internal val Waypoint: ItemInfoT by lazy { itemInfo(Constants.BlockName.Waypoint) }
+        @JvmStatic
+        @Suppress("FunctionName")
+        fun Case(tier: Int): ItemInfoT = itemInfo(Constants.BlockName.Case(tier))
     }
 
     object ItemName {
@@ -183,4 +227,137 @@ object Constants {
         const val DefaultVendor = "MightyPirates GmbH & Co. KG"
         const val Scummtech = "Scummtech, Inc."
     }
+
+    internal object ItemInfo {
+        internal val AbstractBusCard: ItemInfoT by lazy { itemInfo(Constants.ItemName.AbstractBusCard) }
+        internal val Acid: ItemInfoT by lazy { itemInfo(Constants.ItemName.Acid) }
+        internal val Alu: ItemInfoT by lazy { itemInfo(Constants.ItemName.Alu) }
+        internal val Analyzer: ItemInfoT by lazy { itemInfo(Constants.ItemName.Analyzer) }
+        internal val AngelUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.AngelUpgrade) }
+        internal val APUCreative: ItemInfoT by lazy { itemInfo(Constants.ItemName.APUCreative) }
+        internal val APUTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.APUTier1) }
+        internal val APUTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.APUTier2) }
+        internal val ArrowKeys: ItemInfoT by lazy { itemInfo(Constants.ItemName.ArrowKeys) }
+        internal val BatteryUpgradeTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.BatteryUpgradeTier1) }
+        internal val BatteryUpgradeTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.BatteryUpgradeTier2) }
+        internal val BatteryUpgradeTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.BatteryUpgradeTier3) }
+        internal val ButtonGroup: ItemInfoT by lazy { itemInfo(Constants.ItemName.ButtonGroup) }
+        internal val Card: ItemInfoT by lazy { itemInfo(Constants.ItemName.Card) }
+        internal val CardContainerTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.CardContainerTier1) }
+        internal val CardContainerTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.CardContainerTier2) }
+        internal val CardContainerTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.CardContainerTier3) }
+        internal val Chamelium: ItemInfoT by lazy { itemInfo(Constants.ItemName.Chamelium) }
+        internal val ChipTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.ChipTier1) }
+        internal val ChipTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.ChipTier2) }
+        internal val ChipTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.ChipTier3) }
+        internal val ChunkloaderUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.ChunkloaderUpgrade) }
+        internal val CircuitBoard: ItemInfoT by lazy { itemInfo(Constants.ItemName.CircuitBoard) }
+        internal val ComponentBusTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.ComponentBusTier1) }
+        internal val ComponentBusTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.ComponentBusTier2) }
+        internal val ComponentBusTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.ComponentBusTier3) }
+        internal val ComponentBusCreative: ItemInfoT by lazy { itemInfo(Constants.ItemName.ComponentBusCreative) }
+        internal val CPUTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.CPUTier1) }
+        internal val CPUTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.CPUTier2) }
+        internal val CPUTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.CPUTier3) }
+        internal val CraftingUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.CraftingUpgrade) }
+        internal val ControlUnit: ItemInfoT by lazy { itemInfo(Constants.ItemName.ControlUnit) }
+        internal val CuttingWire: ItemInfoT by lazy { itemInfo(Constants.ItemName.CuttingWire) }
+        internal val DatabaseUpgradeTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.DatabaseUpgradeTier1) }
+        internal val DatabaseUpgradeTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.DatabaseUpgradeTier2) }
+        internal val DatabaseUpgradeTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.DatabaseUpgradeTier3) }
+        internal val DataCardTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.DataCardTier1) }
+        internal val DataCardTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.DataCardTier2) }
+        internal val DataCardTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.DataCardTier3) }
+        internal val DebugCard: ItemInfoT by lazy { itemInfo(Constants.ItemName.DebugCard) }
+        internal val Debugger: ItemInfoT by lazy { itemInfo(Constants.ItemName.Debugger) }
+        internal val DiamondChip: ItemInfoT by lazy { itemInfo(Constants.ItemName.DiamondChip) }
+        internal val Disk: ItemInfoT by lazy { itemInfo(Constants.ItemName.Disk) }
+        internal val DiskDriveMountable: ItemInfoT by lazy { itemInfo(Constants.ItemName.DiskDriveMountable) }
+        internal val Drone: ItemInfoT by lazy { itemInfo(Constants.ItemName.Drone) }
+        internal val DroneCaseCreative: ItemInfoT by lazy { itemInfo(Constants.ItemName.DroneCaseCreative) }
+        internal val DroneCaseTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.DroneCaseTier1) }
+        internal val DroneCaseTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.DroneCaseTier2) }
+        internal val EEPROM: ItemInfoT by lazy { itemInfo(Constants.ItemName.EEPROM) }
+        internal val ExperienceUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.ExperienceUpgrade) }
+        internal val Floppy: ItemInfoT by lazy { itemInfo(Constants.ItemName.Floppy) }
+        internal val GeneratorUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.GeneratorUpgrade) }
+        internal val GraphicsCardTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.GraphicsCardTier1) }
+        internal val GraphicsCardTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.GraphicsCardTier2) }
+        internal val GraphicsCardTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.GraphicsCardTier3) }
+        internal val HDDTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.HDDTier1) }
+        internal val HDDTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.HDDTier2) }
+        internal val HDDTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.HDDTier3) }
+        internal val HoverBoots: ItemInfoT by lazy { itemInfo(Constants.ItemName.HoverBoots) }
+        internal val HoverUpgradeTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.HoverUpgradeTier1) }
+        internal val HoverUpgradeTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.HoverUpgradeTier2) }
+        internal val InkCartridgeEmpty: ItemInfoT by lazy { itemInfo(Constants.ItemName.InkCartridgeEmpty) }
+        internal val InkCartridge: ItemInfoT by lazy { itemInfo(Constants.ItemName.InkCartridge) }
+        internal val InternetCard: ItemInfoT by lazy { itemInfo(Constants.ItemName.InternetCard) }
+        internal val Interweb: ItemInfoT by lazy { itemInfo(Constants.ItemName.Interweb) }
+        internal val InventoryControllerUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.InventoryControllerUpgrade) }
+        internal val InventoryUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.InventoryUpgrade) }
+        internal val LeashUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.LeashUpgrade) }
+        internal val LinkedCard: ItemInfoT by lazy { itemInfo(Constants.ItemName.LinkedCard) }
+        internal val LuaBios: ItemInfoT by lazy { itemInfo(Constants.ItemName.LuaBios) }
+        internal val MFU: ItemInfoT by lazy { itemInfo(Constants.ItemName.MFU) }
+        internal val Manual: ItemInfoT by lazy { itemInfo(Constants.ItemName.Manual) }
+        internal val MicrocontrollerCaseCreative: ItemInfoT by lazy { itemInfo(Constants.ItemName.MicrocontrollerCaseCreative) }
+        internal val MicrocontrollerCaseTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.MicrocontrollerCaseTier1) }
+        internal val MicrocontrollerCaseTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.MicrocontrollerCaseTier2) }
+        internal val Nanomachines: ItemInfoT by lazy { itemInfo(Constants.ItemName.Nanomachines) }
+        internal val NavigationUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.NavigationUpgrade) }
+        internal val NetworkCard: ItemInfoT by lazy { itemInfo(Constants.ItemName.NetworkCard) }
+        internal val NumPad: ItemInfoT by lazy { itemInfo(Constants.ItemName.NumPad) }
+        internal val OpenOS: ItemInfoT by lazy { itemInfo(Constants.ItemName.OpenOS) }
+        internal val PistonUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.PistonUpgrade) }
+        internal val StickyPistonUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.StickyPistonUpgrade) }
+        internal val Present: ItemInfoT by lazy { itemInfo(Constants.ItemName.Present) }
+        internal val PrintedCircuitBoard: ItemInfoT by lazy { itemInfo(Constants.ItemName.PrintedCircuitBoard) }
+        internal val RAMTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.RAMTier1) }
+        internal val RAMTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.RAMTier2) }
+        internal val RAMTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.RAMTier3) }
+        internal val RAMTier4: ItemInfoT by lazy { itemInfo(Constants.ItemName.RAMTier4) }
+        internal val RAMTier5: ItemInfoT by lazy { itemInfo(Constants.ItemName.RAMTier5) }
+        internal val RAMTier6: ItemInfoT by lazy { itemInfo(Constants.ItemName.RAMTier6) }
+        internal val RawCircuitBoard: ItemInfoT by lazy { itemInfo(Constants.ItemName.RawCircuitBoard) }
+        internal val RedstoneCardTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.RedstoneCardTier1) }
+        internal val RedstoneCardTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.RedstoneCardTier2) }
+        internal val ServerCreative: ItemInfoT by lazy { itemInfo(Constants.ItemName.ServerCreative) }
+        internal val ServerTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.ServerTier1) }
+        internal val ServerTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.ServerTier2) }
+        internal val ServerTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.ServerTier3) }
+        internal val SignUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.SignUpgrade) }
+        internal val SolarGeneratorUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.SolarGeneratorUpgrade) }
+        internal val Tablet: ItemInfoT by lazy { itemInfo(Constants.ItemName.Tablet) }
+        internal val TabletCaseCreative: ItemInfoT by lazy { itemInfo(Constants.ItemName.TabletCaseCreative) }
+        internal val TabletCaseTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.TabletCaseTier1) }
+        internal val TabletCaseTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.TabletCaseTier2) }
+        internal val TankControllerUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.TankControllerUpgrade) }
+        internal val TankUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.TankUpgrade) }
+        internal val Terminal: ItemInfoT by lazy { itemInfo(Constants.ItemName.Terminal) }
+        internal val TerminalServer: ItemInfoT by lazy { itemInfo(Constants.ItemName.TerminalServer) }
+        internal val TexturePicker: ItemInfoT by lazy { itemInfo(Constants.ItemName.TexturePicker) }
+        internal val TractorBeamUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.TractorBeamUpgrade) }
+        internal val TradingUpgrade: ItemInfoT by lazy { itemInfo(Constants.ItemName.TradingUpgrade) }
+        internal val Transistor: ItemInfoT by lazy { itemInfo(Constants.ItemName.Transistor) }
+        internal val UpgradeContainerTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.UpgradeContainerTier1) }
+        internal val UpgradeContainerTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.UpgradeContainerTier2) }
+        internal val UpgradeContainerTier3: ItemInfoT by lazy { itemInfo(Constants.ItemName.UpgradeContainerTier3) }
+        internal val WirelessNetworkCardTier1: ItemInfoT by lazy { itemInfo(Constants.ItemName.WirelessNetworkCardTier1) }
+        internal val WirelessNetworkCardTier2: ItemInfoT by lazy { itemInfo(Constants.ItemName.WirelessNetworkCardTier2) }
+        internal val WorldSensorCard: ItemInfoT by lazy { itemInfo(Constants.ItemName.WorldSensorCard) }
+        internal val Wrench: ItemInfoT by lazy { itemInfo(Constants.ItemName.Wrench) }
+
+        @JvmStatic
+        internal fun DroneCase(tier: Int): ItemInfoT = itemInfo(ItemName.DroneCase(tier))
+
+        @JvmStatic
+        internal fun MicrocontrollerCase(tier: Int): ItemInfoT = itemInfo(ItemName.MicrocontrollerCase(tier))
+
+        @JvmStatic
+        internal fun TabletCase(tier: Int): ItemInfoT = itemInfo(ItemName.TabletCase(tier))
+    }
 }
+
+/** Get item info for constant */
+internal inline fun itemInfo(name: String): ItemInfoT = Items.get(name)!!

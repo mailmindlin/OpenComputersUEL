@@ -28,8 +28,8 @@ object CallbackDocHandler {
     fun getRecipes(registry: IModRegistry): List<CallbackDocRecipe> {
         return registry.ingredientRegistry.getIngredients(ItemStack::class.java)
             .mapNotNull { stack ->
-                val callbacks = Driver.environmentsFor(stack)
-                    .flatMap { getCallbacks(it) }
+                val callbacks = (Driver.environmentsFor(stack) ?: emptySet<Class<*>>())
+                    .flatMap(::getCallbacks)
                     .toMutableList()
 
                 if (callbacks.isNotEmpty()) {

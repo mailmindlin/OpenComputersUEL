@@ -14,9 +14,9 @@ import net.minecraft.item.ItemStack
 
 object DriverGraphicsCard : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.GraphicsCardTier1),
-    ApiItems.get(Constants.ItemName.GraphicsCardTier2),
-    ApiItems.get(Constants.ItemName.GraphicsCardTier3))
+    Constants.ItemInfo.GraphicsCardTier1,
+    Constants.ItemInfo.GraphicsCardTier2,
+    Constants.ItemInfo.GraphicsCardTier3)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

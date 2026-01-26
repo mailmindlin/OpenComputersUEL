@@ -877,8 +877,8 @@ object NetworkObject : NetworkAPI {
       val values = _data
       if (values.size > Settings.get.maxNetworkPacketParts)
         throw IllegalArgumentException("packet has too many parts")
-      values.size * 2 + values.fold(0) { acc, arg ->
-        acc + when (arg) {
+      values.size * 2 + values.sumOf { arg ->
+        when (arg) {
           null, Unit -> 1
           is Boolean -> 1
           is Byte -> 2 /* FIXME: Bytes are currently sent as shorts */

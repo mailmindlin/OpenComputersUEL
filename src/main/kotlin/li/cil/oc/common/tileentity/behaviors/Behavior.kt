@@ -1,5 +1,8 @@
 package li.cil.oc.common.tileentity.behaviors
 
+import net.minecraft.util.EnumFacing
+import net.minecraftforge.common.capabilities.Capability
+
 /**
  * Base interface for all behavior components.
  *
@@ -86,4 +89,9 @@ interface BehaviorUpdate: Behavior {
 interface BehaviorLifecycle: Behavior {
     fun initialize() {}
     fun dispose() {}
+}
+
+interface BehaviorCapability: Behavior {
+    fun hasCapability(capability: Capability<*>, facing: EnumFacing?): Boolean = false
+    fun <T> getCapability(capability: Capability<T>, facing: EnumFacing?): T? = null
 }

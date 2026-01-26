@@ -3,7 +3,6 @@ package li.cil.oc.common.tileentity.traits
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 import li.cil.oc.api.network.Node
 import li.cil.oc.common.tileentity.behaviors.Behavior
@@ -18,8 +17,8 @@ interface TextBuffer : Environment, Tickable {
 
     class Delegate(val tile: TextBuffer, val tier: Int): Behavior, NbtSeriailzable, BehaviorUpdate {
         val buffer: InternalTextBuffer by lazy {
-            val screenItem = ApiItems.get(Constants.BlockName.ScreenTier1).createItemStack(1)
-            val buf = Driver.driverFor(screenItem, tile.javaClass).createEnvironment(screenItem, tile) as InternalTextBuffer
+            val screenItem = Constants.BlockInfo.ScreenTier1.createItemStack(1)
+            val buf = Driver.driverFor(screenItem, tile.javaClass)!!.createEnvironment(screenItem, tile) as InternalTextBuffer
             val (maxWidth, maxHeight) = Settings.screenResolutionsByTier[tier]
             buf.setMaximumResolution(maxWidth, maxHeight)
             buf.setMaximumColorDepth(Settings.screenDepthsByTier[tier])
@@ -56,5 +55,5 @@ interface TextBuffer : Environment, Tickable {
         }
     }
 
-    override fun node(): Node = textBufferDelegate.buffer.node()
+    override fun node(): Node? = textBufferDelegate.buffer.node()
 }

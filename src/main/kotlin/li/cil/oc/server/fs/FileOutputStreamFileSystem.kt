@@ -1,16 +1,42 @@
 package li.cil.oc.server.fs
 
 import li.cil.oc.api.fs.Mode
+import li.cil.oc.server.fs.FileInputStreamFileSystem.FileChannel
 import net.minecraft.nbt.NBTTagCompound
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.RandomAccessFile
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 
-interface FileOutputStreamFileSystem : FileInputStreamFileSystem, OutputStreamFileSystem {
-    override fun spaceTotal() = -1L
+abstract class FileOutputStreamFileSystem : OutputStreamFileSystem() {
+    protected abstract val root: File
 
+    override fun spaceTotal() = -1L
     override fun spaceUsed() = -1L
+
+    // ----------------------------------------------------------------------- //
+
+    override fun exists(path: String) = File(root, FileSystem.validatePath(path)).exists()
+
+    override fun size(path: String): Long {
+        val file = File(root, FileSystem.validatePath(path))
+        return if (file.isFile) file.length() else 0L
+    }
+
+    override fun isDirectory(path: String) = File(root, FileSystem.validatePath(path)).isDirectory
+
+    override fun lastModified(path: String) = File(root, FileSystem.validatePath(path)).lastModified()
+
+    override fun list(path: String): Array<String> {
+        val file = File(root, FileSystem.validatePath(path))
+        return when {
+            file.exists() && file.isFile -> arrayOf(file.name)
+            file.exists() && file.isDirectory && file.list() != null ->
+                file.listFiles()!!.map { f -> if (f.isDirectory) "${f.name}/" else f.name }.toTypedArray()
+            else -> throw FileNotFoundException("no such file or directory: $path")
+        }
+    }
 
     // ----------------------------------------------------------------------- //
 
@@ -39,7 +65,10 @@ interface FileOutputStreamFileSystem : FileInputStreamFileSystem, OutputStreamFi
 
     // ----------------------------------------------------------------------- //
 
-    override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputStreamFileSystem.OutputHandle? {
+    override fun openInputChannel(path: String): InputChannel? =
+        FileChannel(File(root, path))
+
+    override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputHandle? {
         val modeString = when (mode) {
             Mode.Append, Mode.Write -> "rw"
             else -> throw IllegalArgumentException()
@@ -50,7 +79,7 @@ interface FileOutputStreamFileSystem : FileInputStreamFileSystem, OutputStreamFi
     // ----------------------------------------------------------------------- //
 
     override fun save(nbt: NBTTagCompound) {
-        super<OutputStreamFileSystem>.save(nbt)
+        super.save(nbt)
         root.mkdirs()
         root.setLastModified(System.currentTimeMillis())
     }
@@ -63,7 +92,7 @@ interface FileOutputStreamFileSystem : FileInputStreamFileSystem, OutputStreamFi
         handle: Int,
         path: String,
         mode: Mode
-    ) : OutputStreamFileSystem.OutputHandle(owner, handle, path) {
+    ) : OutputHandle(owner, handle, path) {
         init {
             if (mode == Mode.Write) {
                 file.setLength(0)

@@ -3,6 +3,7 @@ package li.cil.oc.integration.appeng
 import appeng.api.implementations.tiles.ISegmentedInventory
 import appeng.api.networking.IGridHost
 import appeng.api.networking.security.IActionHost
+import appeng.api.parts.IPartHost
 import appeng.api.util.AEPartLocation
 import li.cil.oc.api.driver.EnvironmentProvider
 import li.cil.oc.api.driver.NamedBlock
@@ -12,6 +13,7 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.ManagedEnvironment
+import li.cil.oc.api.network.Node
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
 import li.cil.oc.util.ResultWrapper.result
@@ -26,13 +28,22 @@ import net.minecraftforge.items.IItemHandler
 object DriverBlockInterface : DriverSidedTileEntity() {
   override fun getTileEntityClass(): Class<*>? = AEUtil.interfaceClass()
 
-  override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment =
-    Environment(world.getTileEntity(pos) as TileBlockInterface)
+  override fun createEnvironment(world: World, pos: BlockPos, side: EnumFacing): ManagedEnvironment {
+    val te = world.getTileEntity(pos)
+    if (te !is ISegmentedInventory || te !is IActionHost || te !is IGridHost)
+      throw AssertionError()
+    return Environment(te)
+  }
 
-  class Environment(override val tile: TileBlockInterface) :
-    ManagedTileEntityEnvironment<TileBlockInterface>(tile, "me_interface"),
+  class Environment<TE: TileEntity>(override val tile: TE) :
+    ManagedTileEntityEnvironment<TE>(tile, "me_interface"),
     NamedBlock,
-    NetworkControl<TileBlockInterface> {
+    NetworkControl<TE>
+  where
+    TE: ISegmentedInventory,
+    TE: IActionHost,
+    TE: IGridHost
+  {
 
     override fun preferredName() = "me_interface"
     override val pos: AEPartLocation = AEPartLocation.INTERNAL
@@ -41,7 +52,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
 
     @Callback(doc = "function([slot:number]):table -- Get the configuration of the interface.")
     fun getInterfaceConfiguration(context: Context, args: Arguments): Array<Any?> {
-      val config: IItemHandler = (tileEntity as ISegmentedInventory).getInventoryByName("config")
+      val config: IItemHandler = tile.getInventoryByName("config")
       val slot = args.optSlot(config, 0, 0)
       val stack = config.getStackInSlot(slot)
       return result(stack)
@@ -49,7 +60,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
 
     @Callback(doc = "function([slot:number][, database:address, entry:number[, size:number]]):boolean -- Configure the interface.")
     fun setInterfaceConfiguration(context: Context, args: Arguments): Array<Any?> {
-      val config: IItemHandler = (tileEntity as ISegmentedInventory).getInventoryByName("config")
+      val config: IItemHandler = tile.getInventoryByName("config")
       val slot = if (args.isString(0)) 0 else args.optSlot(config, 0, 0)
       val stack = if (args.count() > 1) {
         val (address, entry, size) =
@@ -58,7 +69,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
           else
             Triple(args.checkString(1), args.checkInteger(2), args.optInteger(3, 1))
 
-        when (val component = node().network().node(address)) {
+        when (val component = node()!!.network().node(address)) {
           is Component -> when (val componentHost = component.host()) {
             is Database -> {
               val dbStack = componentHost.getStackInSlot(entry - 1)
@@ -87,7 +98,3 @@ object DriverBlockInterface : DriverSidedTileEntity() {
       else null
   }
 }
-
-// Kotlin doesn't support intersection types, so we use TileEntity as base
-// and cast to required interfaces when needed
-private typealias TileBlockInterface = TileEntity

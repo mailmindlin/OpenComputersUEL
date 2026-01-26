@@ -54,7 +54,7 @@ interface AppliedEnergistics2 : Common, IGridHost {
         }
 
         @Optional.Method(modid = Mods.IDs.AppliedEnergistics2)
-        private fun updateGridNodeState() {
+        internal fun updateGridNodeState() {
             if (tile.asTileEntity().isInvalid)
                 return
             val gridNode = getGridNode(AEPartLocation.INTERNAL)
@@ -124,7 +124,7 @@ interface AppliedEnergistics2 : Common, IGridHost {
         internal fun getGridNode(side: AEPartLocation): IGridNode? {
             if (node != null) return node
             if (tile.isServer) {
-                node = AEApi.instance().grid().createGridNode(AppliedEnergistics2GridBlock(this))
+                node = AEApi.instance().grid().createGridNode(AppliedEnergistics2GridBlock(tile))
                 return node
             }
             return null

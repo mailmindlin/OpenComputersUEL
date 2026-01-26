@@ -37,7 +37,7 @@ import li.cil.oc.server.PacketSender as ServerPacketSender
 
 class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfoKt {
     @JvmField
-    val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
+    val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("printer3d")
         .withConnector(Settings.get.bufferConverter)
         .create()

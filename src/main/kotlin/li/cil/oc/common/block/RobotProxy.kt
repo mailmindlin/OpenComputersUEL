@@ -11,6 +11,7 @@ import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.Robot as TERobot
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
+import li.cil.oc.itemInfo
 import li.cil.oc.server.PacketSender
 import li.cil.oc.server.agent.Player
 import li.cil.oc.util.BlockPosition
@@ -42,7 +43,7 @@ class RobotProxy : RedstoneAware(), StateAware {
         ItemBlacklist.hide(this)
     }
 
-    override val translationKey = "robot"
+    override fun getTranslationKey(): String = "robot"
 
     var moving: ThreadLocal<TERobot?> = object : ThreadLocal<TERobot?>() {
         override fun initialValue(): TERobot? = null
@@ -252,7 +253,7 @@ class RobotProxy : RedstoneAware(), StateAware {
                 InventoryUtils.spawnStackInWorld(BlockPosition(pos, world), robot.info.createItemStack())
             }
             robot.moveFrom?.let { fromPos ->
-                if (world.getBlockState(fromPos).block == Items.get(Constants.BlockName.RobotAfterimage).block()) {
+                if (world.getBlockState(fromPos).block == Constants.BlockInfo.RobotAfterimage.block()) {
                     world.setBlockState(fromPos, Blocks.AIR.defaultState, 1)
                 }
             }

@@ -18,7 +18,7 @@ interface CPULike : Delegate {
     val cpuTier: Int
 
     override val tooltipData: Array<Any>
-        get() = arrayOf(Settings.get.cpuComponentSupport(cpuTier))
+        get() = arrayOf(Settings.get.cpuComponentSupport[cpuTier])
 
     override fun tooltipExtended(stack: ItemStack, tooltip: MutableList<String>) {
         tooltip.addAll(Tooltip.get("cpu.Architecture", ApiMachine.getArchitectureName(DriverCPU.architecture(stack))))

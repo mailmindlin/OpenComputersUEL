@@ -35,7 +35,7 @@ class Hologram @JvmOverloads constructor(
     @JvmField var tier: Int = 0
 ): TileEntityBase.TEEnvironmentBase(), SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfoKt {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("hologram")
         .withConnector()
         .create()

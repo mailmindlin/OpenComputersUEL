@@ -73,10 +73,10 @@ class ModPluginOpenComputers : IModPlugin {
 
     override fun registerItemSubtypes(subtypeRegistry: ISubtypeRegistry) {
         fun useNBT(vararg names: String) {
-            names.map { name ->
-                val info = Items.get(name)
+            names.mapNotNull { name ->
+                val info = Items.get(name)!!
                 Item.getItemFromBlock(info.block()) ?: info.item()
-            }.filterNotNull().distinct().forEach {
+            }.distinct().forEach {
                 subtypeRegistry.useNbtForSubtypes(it)
             }
         }
@@ -90,7 +90,7 @@ class ModPluginOpenComputers : IModPlugin {
             Constants.ItemName.Tablet
         )
 
-        subtypeRegistry.registerSubtypeInterpreter(Items.get(Constants.ItemName.Floppy).item(), object : ISubtypeInterpreter {
+        subtypeRegistry.registerSubtypeInterpreter(Constants.ItemInfo.Floppy.item(), object : ISubtypeInterpreter {
             override fun apply(stack: ItemStack): String? {
                 if (!stack.hasTagCompound()) return null
                 val compound: NBTTagCompound = stack.tagCompound ?: return null

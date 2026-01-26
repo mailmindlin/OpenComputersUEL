@@ -36,7 +36,7 @@ object PistonTraits {
     interface RotatableLike : ExtendAware {
         val rotatable: InternalRotatable
         override fun pushDirection(args: Arguments, index: Int): EnumFacing =
-            (rotatable as InternalRotatable).toGlobal(args.optSideForAction(index, EnumFacing.SOUTH))
+            rotatable.toGlobal(args.optSideForAction(index, EnumFacing.SOUTH))
     }
 
     interface TabletLike : ExtendAware {
@@ -50,7 +50,7 @@ object PistonTraits {
 }
 
 abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt, PistonTraits.ExtendAware {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = Network.newNode(this, Visibility.Network)!!
         .withComponent("piston")
         .withConnector()
         .create()
@@ -91,11 +91,13 @@ abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnviro
 
         return if (piston.doMove(host.world(), hostPos, side, extending)) {
             // send piston extend sound to clients
-            synchronized(host) {
-                ServerPacketSender.sendSound(
-                    host.world, hostPos.x.toDouble(), hostPos.y.toDouble(), hostPos.z.toDouble(),
-                    sound, SoundCategory.BLOCKS, range = 15.0
-                )
+            sound?.let { sound ->
+                synchronized(host) {
+                    ServerPacketSender.sendSound(
+                        host.world, hostPos.x.toDouble(), hostPos.y.toDouble(), hostPos.z.toDouble(),
+                        sound, SoundCategory.BLOCKS, range = 15.0
+                    )
+                }
             }
             context.pause(1.0 / 20.0)
             result(true)
@@ -112,8 +114,8 @@ abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnviro
 
 
     class Drone(drone: InternalDrone) : UpgradePiston(drone), PistonTraits.DroneLike
-    open class Rotatable(override val rotatable: InternalRotatable) : UpgradePiston(rotatable), PistonTraits.RotatableLike
-    class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
+    open class Rotatable<R: InternalRotatable>(override val rotatable: R) : UpgradePiston(rotatable), PistonTraits.RotatableLike where R: EnvironmentHost
+    class Tablet(override val tablet: InternalTablet) : Rotatable<InternalTablet>(tablet), PistonTraits.TabletLike
 }
 
 abstract class UpgradeStickyPiston(host: EnvironmentHost) : UpgradePiston(host) {
@@ -125,6 +127,6 @@ abstract class UpgradeStickyPiston(host: EnvironmentHost) : UpgradePiston(host) 
         return doPistonAction(context, side, false)
     }
     class Drone(drone: InternalDrone) : UpgradeStickyPiston(drone), PistonTraits.DroneLike
-    open class Rotatable(override val rotatable: InternalRotatable) : UpgradeStickyPiston(rotatable), PistonTraits.RotatableLike
-    class Tablet(override val tablet: InternalTablet) : Rotatable(tablet), PistonTraits.TabletLike
+    open class Rotatable<R: InternalRotatable>(override val rotatable: R) : UpgradeStickyPiston(rotatable), PistonTraits.RotatableLike where R: EnvironmentHost
+    class Tablet(override val tablet: InternalTablet) : Rotatable<InternalTablet>(tablet), PistonTraits.TabletLike
 }

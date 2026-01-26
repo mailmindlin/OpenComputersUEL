@@ -53,7 +53,7 @@ object PlayerInteractionManagerHelper {
 
             val hasExperienceUpgrade: Boolean = run {
                 val machineNode = player.agent.machine().node()
-                machineNode.reachableNodes().any { node ->
+                machineNode!!.reachableNodes().any { node ->
                     if (node is Node && node.canBeReachedFrom(machineNode)) {
                         (node.host() as Any) is li.cil.oc.common.item.UpgradeExperience ||
                             node.host() is li.cil.oc.server.component.UpgradeExperience

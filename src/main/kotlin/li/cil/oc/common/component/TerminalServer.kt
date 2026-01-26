@@ -1,37 +1,22 @@
 package li.cil.oc.common.component
 
-import java.util.UUID
-import java.util.EnumSet
-
 import li.cil.oc.Constants
-import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
-import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Items as ApiItems
-import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.component.RackBusConnectable
 import li.cil.oc.api.component.RackMountable
 import li.cil.oc.api.driver.DeviceInfo
-import li.cil.oc.api.internal.Keyboard as InternalKeyboard
-import li.cil.oc.api.internal.Rack as InternalRack
-import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
-import li.cil.oc.api.network.Analyzable
-import li.cil.oc.api.network.Environment
-import li.cil.oc.api.network.EnvironmentHost
-import li.cil.oc.api.network.Message
-import li.cil.oc.api.network.Node
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
+import li.cil.oc.api.driver.DeviceInfo.DeviceClass
+import li.cil.oc.api.network.*
 import li.cil.oc.api.util.Lifecycle
 import li.cil.oc.api.util.StateAware
 import li.cil.oc.api.util.StateAware.State
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.Delegator
 import li.cil.oc.common.item.Terminal
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.setNewCompoundTag
 import li.cil.oc.util.setNewStringList
-import li.cil.oc.util.setNewTagList
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -39,14 +24,20 @@ import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumHand
 import net.minecraftforge.common.util.Constants.NBT
+import java.util.*
+import li.cil.oc.api.Items as ApiItems
+import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.api.internal.Keyboard as InternalKeyboard
+import li.cil.oc.api.internal.Rack as InternalRack
+import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 
-class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfoKt {
-    val node: Node = ApiNetwork.newNode(this, Visibility.None).create()
+class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfo {
+    val node: Node = ApiNetwork.newNode(this, Visibility.None)!!.create()
     override fun node(): Node = node
 
     val buffer: InternalTextBuffer by lazy {
-        val screenItem = ApiItems.get(Constants.BlockName.ScreenTier1).createItemStack(1)
-        val buf = Driver.driverFor(screenItem, javaClass).createEnvironment(screenItem, this) as InternalTextBuffer
+        val screenItem = Constants.BlockInfo.ScreenTier1.createItemStack(1)
+        val buf = Driver.driverFor(screenItem, javaClass)!!.createEnvironment(screenItem, this) as InternalTextBuffer
         val (maxWidth, maxHeight) = Settings.screenResolutionsByTier[Tier.Three]
         buf.setMaximumResolution(maxWidth, maxHeight)
         buf.setMaximumColorDepth(Settings.screenDepthsByTier[Tier.Three])
@@ -54,19 +45,17 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     }
 
     val keyboard: InternalKeyboard by lazy {
-        val keyboardItem = ApiItems.get(Constants.BlockName.Keyboard).createItemStack(1)
-        val kbd = Driver.driverFor(keyboardItem, javaClass).createEnvironment(keyboardItem, this) as InternalKeyboard
-        kbd.setUsableOverride(object : InternalKeyboard.UsabilityChecker {
-            override fun isUsableByPlayer(keyboard: InternalKeyboard, player: EntityPlayer): Boolean {
-                val stack = player.heldItemMainhand
-                val subItem = Delegator.subItem(stack)
-                return if (subItem is Terminal && stack.hasTagCompound()) {
-                    sidedKeys.contains(stack.tagCompound!!.getString(Settings.namespace + "key"))
-                } else {
-                    false
-                }
+        val keyboardItem = Constants.BlockInfo.Keyboard.createItemStack(1)
+        val kbd = Driver.driverFor(keyboardItem, javaClass)!!.createEnvironment(keyboardItem, this) as InternalKeyboard
+        kbd.setUsableOverride { _, player ->
+            val stack = player.heldItemMainhand
+            val subItem = Delegator.subItem(stack)
+            if (subItem is Terminal && stack.hasTagCompound()) {
+                sidedKeys.contains(stack.tagCompound!!.getString(Settings.namespace + "key"))
+            } else {
+                false
             }
-        })
+        }
         kbd
     }
 
@@ -83,13 +72,13 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
         return false
     }
 
-    val address: String get() = rack.getMountableData(slot).getString("terminalAddress")
+    val address: String get() = rack.getMountableData(slot)!!.getString("terminalAddress")
 
     val sidedKeys: List<String> get() {
         return if (!rack.world().isRemote) {
             keys
         } else {
-            val tagList = rack.getMountableData(slot).getTagList("keys", NBT.TAG_STRING)
+            val tagList = rack.getMountableData(slot)!!.getTagList("keys", NBT.TAG_STRING)
             (0 until tagList.tagCount()).map { i -> (tagList[i] as NBTTagString).string }
         }
     }
@@ -97,7 +86,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     // ----------------------------------------------------------------------- //
     // DeviceInfo
 
-    override val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class.toString() to DeviceClass.Generic.toString(),
             DeviceAttribute.Description.toString() to "Terminal server",
@@ -105,6 +94,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
             DeviceAttribute.Product.toString() to "RemoteViewing EX"
         )
     }
+    override fun getDeviceInfo() = deviceInfo
 
     // ----------------------------------------------------------------------- //
     // Environment
@@ -113,14 +103,14 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
         if (node == this.node) {
             node.connect(buffer.node())
             node.connect(keyboard.node())
-            buffer.node().connect(keyboard.node())
+            buffer.node()!!.connect(keyboard.node())
         }
     }
 
     override fun onDisconnect(node: Node) {
         if (node == this.node) {
-            buffer.node().remove()
-            keyboard.node().remove()
+            buffer.node()!!.remove()
+            keyboard.node()!!.remove()
         }
     }
 
@@ -157,7 +147,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     override fun getConnectableAt(index: Int): RackBusConnectable? = null
 
     override fun onActivate(player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, hitX: Float, hitY: Float): Boolean {
-        if (ApiItems.get(heldItem) == ApiItems.get(Constants.ItemName.Terminal)) {
+        if (ApiItems.get(heldItem) == Constants.ItemInfo.Terminal) {
             if (!world().isRemote) {
                 val key = UUID.randomUUID().toString()
                 if (!heldItem.hasTagCompound()) {
@@ -228,7 +218,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     // ----------------------------------------------------------------------- //
     // Analyzable
 
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(buffer.node(), keyboard.node())
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(buffer.node()!!, keyboard.node()!!)
 
     // ----------------------------------------------------------------------- //
     // LifeCycle

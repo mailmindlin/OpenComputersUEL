@@ -1,41 +1,36 @@
 package li.cil.oc.server.component
 
 import li.cil.oc.Constants
-import li.cil.oc.server.component.traits.WorldControl as TraitWorldControl
-import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
-import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
-import li.cil.oc.api.network.EnvironmentHost
+import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
+import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.event.GeolyzerEvent
 import li.cil.oc.api.event.GeolyzerEvent.Analyze
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.common.tileentity.Robot as EntityRobot
-import li.cil.oc.common.tileentity.Microcontroller
-import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.common.item.TabletWrapper
+import li.cil.oc.common.tileentity.Microcontroller
+import li.cil.oc.common.tileentity.position
 import li.cil.oc.common.tileentity.traits.Rotatable
-import li.cil.oc.server.machine.Machine
 import li.cil.oc.util.*
-import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.Item
 import net.minecraft.item.ItemStack
-import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.MinecraftForge
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
+import li.cil.oc.common.entity.Drone as EntityDrone
+import li.cil.oc.common.tileentity.Robot as EntityRobot
+import li.cil.oc.server.component.traits.WorldControl as TraitWorldControl
 
 class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfoKt, TraitWorldControl {
-  override val node = Network.newNode(this, Visibility.Network).
-    withComponent("geolyzer").
-    withConnector().
-    create()
+  override val node = newComponentConnector(Visibility.Network, "geolyzer")
 
   override val deviceInfo = mapOf(
     DeviceAttribute.Class to DeviceClass.Generic,
@@ -49,7 +44,7 @@ class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfoKt,
   override fun checkSideForAction(args: Arguments, n: Int): EnumFacing {
     val side = args.checkSideAny(n)
     return when (host) {
-      is EntityRobot -> host.proxy!!.toGlobal(side)
+      is EntityRobot -> host.proxy.toGlobal(side)
       is EntityDrone -> host.toGlobal(side)
       is Microcontroller -> host.toLocal(side)!! // not really sure what it is reversed for microcontrollers
       is TabletWrapper -> host.toGlobal(side)
@@ -58,7 +53,7 @@ class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfoKt,
   }
 
   override val position: BlockPosition = when (host) {
-    is EntityRobot -> host.proxy!!.position
+    is EntityRobot -> host.proxy.position
     is EntityDrone -> BlockPosition(host.position, host.world)
     is Microcontroller -> host.position
     is TabletWrapper -> BlockPosition(host.xPosition(), host.yPosition(), host.zPosition(), host.world)

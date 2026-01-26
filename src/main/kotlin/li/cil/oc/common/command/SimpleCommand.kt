@@ -6,6 +6,7 @@ import net.minecraft.server.MinecraftServer
 import net.minecraftforge.fml.common.FMLCommonHandler
 
 abstract class SimpleCommand(private val commandName: String, vararg aliases: String) : CommandBase() {
+    @JvmField
     protected val aliases: MutableList<String> = mutableListOf(*aliases)
 
     override fun getName(): String = commandName

@@ -120,7 +120,7 @@ class Cable(protected val tileTag: KClass<TECable> = TECable::class) : SimpleBlo
         }
     }
 
-    override val tileEntityClass: Class<TECable> get() = TECable::class.java
+    override val tileClass: Class<TECable> get() = TECable::class.java
 
     companion object {
         const val MIN = 0.375

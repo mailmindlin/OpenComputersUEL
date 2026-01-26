@@ -14,10 +14,10 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.item.TabletWrapper
 
 class Tablet(val tablet: TabletWrapper): ManagedEnvironmentKt(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Network).
-    withComponent("tablet").
-    withConnector(Settings.get.bufferTablet).
-    create()!!
+  override val node = nodeFactory(Visibility.Network)
+    .withComponent("tablet")
+    .withConnector(Settings.get.bufferTablet)
+    .create()
 
   override fun node(): ComponentConnector = node
 

@@ -9,7 +9,7 @@ import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.integration.util.BundledRedstone
 import li.cil.oc.server.component.Redstone as RedstoneComponent
-import li.cil.oc.server.RedstoneComponentVanilla
+import li.cil.oc.server.component.RedstoneSignaller
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.nbt.NBTTagCompound
 import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
@@ -17,9 +17,10 @@ import li.cil.oc.common.tileentity.traits.BundledRedstoneAware as TraitBundledRe
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Redstone : TileEntityBase.TEEnvironmentBase(), TraitBundledRedstoneAware, TraitTickable {
-//    override val redstoneDelegate: BundledRedstoneAware.Delegate
+    override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
+
     @JvmField
-    val instance: RedstoneVanilla = if (BundledRedstone.isAvailable) {
+    val instance = if (BundledRedstone.isAvailable) {
         RedstoneComponent.Bundled(this)
     } else {
         RedstoneComponent.Vanilla(this)
@@ -29,19 +30,18 @@ class Redstone : TileEntityBase.TEEnvironmentBase(), TraitBundledRedstoneAware, 
         instance.wakeNeighborsOnly = false
     }
 
-    @JvmField
-    val node: Component? = instance.node
+    private val _node: Node? = instance.node()
 
     @JvmField
-    val dummyNode: Node? = if (node != null) {
-        node.setVisibility(Visibility.Network)
-        this.redstoneDelegate.isOutputEnabled = true
-        ApiNetwork.newNode(this, Visibility.None).create()
+    val dummyNode: Node? = if (_node != null) {
+        (_node as? Component)?.setVisibility(Visibility.Network)
+        this.outputEnabled = true
+        ApiNetwork.newNode(this, Visibility.None)!!.create()
     } else {
         null
     }
 
-    override fun node(): Node? = node
+    override fun node(): Node? = _node
 
     // ----------------------------------------------------------------------- //
 
@@ -63,8 +63,8 @@ class Redstone : TileEntityBase.TEEnvironmentBase(), TraitBundledRedstoneAware, 
 
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
-        if (node != null && node.network() != null && dummyNode != null) {
-            node.connect(dummyNode)
+        if (_node != null && _node.network() != null && dummyNode != null) {
+            _node.connect(dummyNode)
             dummyNode.sendToNeighbors("redstone.changed", args)
         }
     }

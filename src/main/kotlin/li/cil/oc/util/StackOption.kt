@@ -73,6 +73,24 @@ data class SomeStack(val stack: ItemStack) : StackOption() {
 
 // Simple Either implementation for compatibility
 sealed class Either<out L, out R> {
+    inline fun <T> map(left: (L) -> T, right: (R) -> T): T {
+        return when (this) {
+            is Left -> left(this.value)
+            is Right -> right(this.value)
+        }
+    }
+    inline fun <T> mapLeft(left: (L) -> T): T {
+        return when (this) {
+            is Left -> left(this.value)
+            is Right -> this.value as T
+        }
+    }
+    inline fun <T> mapRight(right: (R) -> T): T {
+        return when (this) {
+            is Left -> this.value as T
+            is Right -> right(this.value)
+        }
+    }
     data class Left<L>(val value: L) : Either<L, Nothing>()
     data class Right<R>(val value: R) : Either<Nothing, R>()
 }
@@ -82,3 +100,4 @@ fun ItemStack.asStackOption(): StackOption = SomeStack(this)
 
 fun ItemStack?.notEmpty(): ItemStack? = if (this == null || this.isEmpty) null else this
 fun ItemStack.notEmpty(): ItemStack? = if (this.isEmpty) null else this
+fun ItemStack?.isNullOrEmpty(): Boolean = this == null || this.isEmpty

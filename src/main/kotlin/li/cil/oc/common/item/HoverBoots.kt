@@ -1,13 +1,17 @@
 package li.cil.oc.common.item
 
+import li.cil.oc.CreativeTab
 import li.cil.oc.Settings
 import li.cil.oc.client.renderer.item.HoverBootRenderer
 import li.cil.oc.common.item.data.HoverBootsData
 import li.cil.oc.common.item.traits.Chargeable
 import li.cil.oc.common.item.traits.SimpleItem
+import li.cil.oc.common.tileentity.DiskDrive
 import li.cil.oc.util.ItemColorizer
+import li.cil.oc.util.Tooltip
 import net.minecraft.block.BlockCauldron
 import net.minecraft.client.model.ModelBiped
+import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.item.EntityItem
@@ -19,16 +23,47 @@ import net.minecraft.item.ItemArmor
 import net.minecraft.item.ItemStack
 import net.minecraft.potion.Potion
 import net.minecraft.potion.PotionEffect
+import net.minecraft.util.math.BlockPos
+import net.minecraft.world.IBlockAccess
 import net.minecraft.world.World
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import kotlin.math.max
 import kotlin.math.min
 
-class HoverBoots : ItemArmor(ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), SimpleItem, Chargeable {
+class HoverBoots : ItemArmor(ArmorMaterial.DIAMOND, 0, EntityEquipmentSlot.FEET), Chargeable {
     init {
         setNoRepair()
+        creativeTab = CreativeTab
     }
+
+    // ------- Copied from SimpleItem ------- //
+    fun createItemStack(amount: Int = 1): ItemStack = ItemStack(this, amount)
+
+    override fun isBookEnchantable(stack: ItemStack, book: ItemStack): Boolean = false
+
+    override fun doesSneakBypassUse(stack: ItemStack, world: IBlockAccess, pos: BlockPos, player: EntityPlayer): Boolean {
+        val te = world.getTileEntity(pos)
+        return if (te is DiskDrive) {
+            true
+        } else {
+            super.doesSneakBypassUse(stack, world, pos, player)
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    override fun addInformation(stack: ItemStack, world: World?, tooltip: MutableList<String>, flag: ITooltipFlag) {
+        tooltip.addAll(Tooltip.get(javaClass.simpleName.lowercase()))
+
+        if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "data")) {
+            val data = stack.tagCompound!!.getCompoundTag(Settings.namespace + "data")
+            if (data.hasKey("node") && data.getCompoundTag("node").hasKey("address")) {
+                tooltip.add("\u00a78${data.getCompoundTag("node").getString("address").substring(0, 13)}...\u00a77")
+            }
+        }
+    }
+
+    // ------- ------- //
 
     override fun getRarity(stack: ItemStack): EnumRarity = EnumRarity.UNCOMMON
 

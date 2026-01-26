@@ -7,7 +7,6 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.server.component.result
 import li.cil.oc.util.DatabaseAccess
 import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.StackOption
 import li.cil.oc.util.checkSlot
 import net.minecraft.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
@@ -61,7 +60,7 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
         return DatabaseAccess.withDatabase(node, dbAddress) { database ->
             val dbSlot = args.checkSlot(database.data, 2)
             val dbStack = database.getStackInSlot(dbSlot)
-            result(InventoryUtils.haveSameItemType(localStack, dbStack, args.optBoolean(3, false)))
+            result(InventoryUtils.haveSameItemType(localStack, dbStack ?: ItemStack.EMPTY, args.optBoolean(3, false)))
         }
     }
 }

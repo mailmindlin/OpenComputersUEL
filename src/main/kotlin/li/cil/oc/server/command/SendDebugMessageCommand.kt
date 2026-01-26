@@ -16,7 +16,7 @@ object SendDebugMessageCommand: SimpleCommand("oc_sendDebugMessage", "oc_sdbg") 
     }
     val destination = args[0]
     DebugNetwork.getEndpoint(destination).forEach { endpoint ->
-      val packet = Network.newPacket(sender.name, destination, 0, args.sliceArray(1..args.size))
+      val packet = Network.newPacket(sender.name, destination, 0, args.sliceArray(1..args.size))!!
       endpoint.receivePacket(packet)
     }
   }

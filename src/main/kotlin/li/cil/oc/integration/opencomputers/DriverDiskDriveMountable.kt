@@ -14,7 +14,7 @@ import net.minecraft.nbt.NBTTagCompound
 
 object DriverDiskDriveMountable : Item(), HostAware {
   override fun worksWith(stack: ItemStack): Boolean = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.DiskDriveMountable))
+    Constants.ItemInfo.DiskDriveMountable)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? = when (host) {
     is Rack -> DiskDriveMountable(host, host.asExtended().indexOf(stack))

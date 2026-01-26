@@ -5,6 +5,7 @@ import li.cil.oc.Localization
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Nanomachines
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -24,7 +25,6 @@ import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.util.ItemCharge
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.BlockPosition
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -36,7 +36,6 @@ import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
@@ -44,9 +43,9 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentIn
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
-class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfoKt {
+class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.None)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.None)!!
         .withConnector(Settings.get.bufferConverter)
         .create()
 
@@ -74,14 +73,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
     @JvmField
     var invertSignal = false
 
-    override val deviceInfo: Map<String, String> by lazy {
-        mapOf(
-            DeviceAttribute.Class to DeviceClass.Generic,
-            DeviceAttribute.Description to "Charger",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "PowerUpper"
-        )
-    }
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     override fun getDisplayName(): ITextComponent = super<ComponentInventory>.getDisplayName()
 
@@ -205,6 +197,13 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
         private const val HasPowerTagCompat = "hasPower"
         private val InvertSignalTag = Settings.namespace + "invertSignal"
         private const val InvertSignalTagCompat = "invertSignal"
+
+        private val deviceInfo: Map<String, String> = mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Charger",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "PowerUpper"
+        )
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {

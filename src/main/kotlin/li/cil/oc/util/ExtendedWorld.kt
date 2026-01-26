@@ -18,12 +18,15 @@ import kotlin.math.max
  */
 object ExtendedWorld {
     @JvmStatic
+    @Deprecated("use extension methods")
     fun World.extendedWorld(): ExtendedWorldWrapper = ExtendedWorldWrapper(this)
 
     @JvmStatic
+    @Deprecated("use extension methods")
     fun IBlockAccess.extendedBlockAccess(): ExtendedBlockAccessWrapper = ExtendedBlockAccessWrapper(this)
 }
 
+@Deprecated("use extension methods")
 class ExtendedWorldWrapper(private val world: World) {
     fun blockExists(position: BlockPosition): Boolean =
         world.isBlockLoaded(position.toBlockPos())
@@ -140,6 +143,13 @@ fun World.notifyBlocksOfNeighborChange(position: BlockPosition, block: Block, si
 
 fun World.playAuxSFX(id: Int, position: BlockPosition, data: Int) =
     playEvent(id, position.toBlockPos(), data)
+
+internal fun World.getBlockSafe(position: BlockPos): Block?
+    = if (isBlockLoaded(position))
+        this.getBlockState(position).block
+    else null
+
+internal fun World.getBlockSafe(position: BlockPosition): Block? = getBlockSafe(position.toBlockPos())
 
 fun World.setBlock(position: BlockPosition, block: Block): Boolean =
     setBlockState(position.toBlockPos(), block.defaultState)

@@ -16,9 +16,9 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeDatabase : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.DatabaseUpgradeTier1),
-    ApiItems.get(Constants.ItemName.DatabaseUpgradeTier2),
-    ApiItems.get(Constants.ItemName.DatabaseUpgradeTier3))
+    Constants.ItemInfo.DatabaseUpgradeTier1,
+    Constants.ItemInfo.DatabaseUpgradeTier2,
+    Constants.ItemInfo.DatabaseUpgradeTier3)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

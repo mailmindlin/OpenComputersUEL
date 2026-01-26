@@ -17,20 +17,21 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
         // Generic modem methods.
         "open" to { computer, context, arguments ->
             val port = checkPort(arguments, 0)
-            if (relay.openPorts(computer).size >= 128)
+            val openPorts = relay.openPorts[computer]
+            if ((openPorts?.size ?: 0) >= 128)
                 throw IllegalArgumentException("too many open channels")
-            result(relay.openPorts(computer).add(port))
+            result(openPorts!!.add(port))
         },
         "isOpen" to { computer, context, arguments ->
             val port = checkPort(arguments, 0)
-            result(relay.openPorts(computer).contains(port))
+            result(relay.openPorts[computer]!!.contains(port))
         },
         "close" to { computer, context, arguments ->
             val port = checkPort(arguments, 0)
-            result(relay.openPorts(computer).remove(port))
+            result(relay.openPorts[computer]?.remove(port))
         },
         "closeAll" to { computer, context, arguments ->
-            relay.openPorts(computer).clear()
+            relay.openPorts[computer]?.clear()
             emptyArray()
         },
         "transmit" to { computer, context, arguments ->
@@ -41,8 +42,8 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
                 "cc${computer.id}_${computer.attachmentName}",
                 null,
                 sendPort,
-                *data.toTypedArray()
-            )
+                data.toTypedArray()
+            )!!
             result(relay.tryEnqueuePacket(null, packet))
         },
         "isWireless" to { computer, context, arguments ->
@@ -127,7 +128,7 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
             throw LuaException(t.message)
         }
 
-    override fun equals(other: Any?): Boolean {
+    override fun equals(other: IPeripheral?): Boolean {
         return when (other) {
             is RelayPeripheral -> other.relay == relay
             else -> false

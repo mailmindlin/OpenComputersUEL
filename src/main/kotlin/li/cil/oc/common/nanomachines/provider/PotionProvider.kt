@@ -41,12 +41,12 @@ object PotionProvider : ScalaProvider("c29e4eec-5a46-479a-9b3d-ad0f06da784a") {
         return PotionBehavior(Potion.getPotionFromResourceLocation(potionId)!!, player)
     }
 
-    class PotionBehavior(val potion: Potion, player: EntityPlayer) : AbstractBehavior(player) {
+    class PotionBehavior(val potion: Potion, player: EntityPlayer) : AbstractBehaviorKt(player) {
         companion object {
             const val Duration = 600
         }
 
-        fun amplifier(player: EntityPlayer): Int = ApiNanomachines.getController(player).getInputCount(this) - 1
+        fun amplifier(player: EntityPlayer): Int = controller.getInputCount(this) - 1
 
         override fun getNameHint(): String = potion.name.removePrefix("potion.")
 

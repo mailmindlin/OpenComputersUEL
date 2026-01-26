@@ -3,7 +3,7 @@ package li.cil.oc.integration.computercraft
 import dan200.computercraft.api.filesystem.IMount
 import li.cil.oc.server.fs.InputStreamFileSystem
 
-class ComputerCraftFileSystem(val mount: IMount) : InputStreamFileSystem {
+internal class ComputerCraftFileSystem(private val mount: IMount) : InputStreamFileSystem() {
     override fun spaceTotal() = 0L
 
     override fun spaceUsed() = 0L
@@ -27,8 +27,8 @@ class ComputerCraftFileSystem(val mount: IMount) : InputStreamFileSystem {
     // ----------------------------------------------------------------------- //
 
     override fun openInputChannel(path: String) = try {
-        InputStreamFileSystem.InputStreamChannel(mount.openForRead(path))
-    } catch (t: Throwable) {
+        InputStreamChannel(mount.openForRead(path))
+    } catch (t: Exception) {
         null
     }
 }

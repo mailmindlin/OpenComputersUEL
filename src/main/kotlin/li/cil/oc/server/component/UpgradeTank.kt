@@ -16,7 +16,7 @@ import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.IFluidTank
 
 class UpgradeTank(val owner: EnvironmentHost, val capacity: Int) : ManagedEnvironmentKt(), IFluidTank, DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.None).create()
+    override val node = nodeFactory(Visibility.None).create()
 
     override val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,

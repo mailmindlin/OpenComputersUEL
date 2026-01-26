@@ -41,11 +41,11 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
     override val sidesDelegate: TraitOpenSides.Delegate = register(TraitOpenSides::Delegate)
 
     init {
-        redstoneDelegate.isOutputEnabled = true
+        redstoneDelegate._isOutputEnabled = true
     }
 
     @JvmField
-    val node: Component = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("net_splitter", Visibility.Network)
         .create()
 
@@ -111,12 +111,12 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
     }
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
-        super<TEEnvironmentBase>.readFromNBTForServer(nbt)
+        super.readFromNBTForServer(nbt)
         isInverted = nbt.getBoolean(IsInvertedTag)
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
+        super.writeToNBTForServer(nbt)
         nbt.setBoolean(IsInvertedTag, isInverted)
     }
 

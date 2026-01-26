@@ -36,7 +36,7 @@ interface Inventory : SimpleInventory {
         if (!oldStack.isEmpty) {
             onItemRemoved(slot, oldStack)
         }
-        if (!stack.isEmpty && stack.count >= inventoryStackRequired) {
+        if (!stack.isEmpty && stack.count >= getInventoryStackRequired()) {
             if (stack.count > inventoryStackLimit) {
                 stack.count = inventoryStackLimit
             }
@@ -59,41 +59,40 @@ interface Inventory : SimpleInventory {
 
     // ----------------------------------------------------------------------- //
 
+    fun load(nbt: NBTTagCompound) {
+        val tagList = nbt.getTagList(ItemsTag, NBT.TAG_COMPOUND)
+        for (i in 0 until tagList.tagCount()) {
+            val tag = tagList.getCompoundTagAt(i)
+            if (tag.hasKey(SlotTag)) {
+                val slot = tag.getByte(SlotTag).toInt()
+                if (slot >= 0 && slot < items.size) {
+                    updateItems(slot, ItemStack(tag.getCompoundTag(ItemTag)))
+                }
+            }
+        }
+    }
+
+    fun save(nbt: NBTTagCompound) {
+        val itemsList = items.mapIndexedNotNull { slot, stack ->
+            if (!stack.isEmpty) {
+                val slotNbt = NBTTagCompound()
+                slotNbt.setByte(SlotTag, slot.toByte())
+                val itemNbt = NBTTagCompound()
+                stack.writeToNBT(itemNbt)
+                slotNbt.setTag(ItemTag, itemNbt)
+                slotNbt
+            } else {
+                null
+            }
+        }
+        nbt.setNewTagList(ItemsTag, itemsList)
+    }
+
     companion object {
         private val ItemsTag = Settings.namespace + "items"
         private val SlotTag = "slot"
         private val ItemTag = "item"
-
-        fun Inventory.load(nbt: NBTTagCompound) {
-            val tagList = nbt.getTagList(ItemsTag, NBT.TAG_COMPOUND)
-            for (i in 0 until tagList.tagCount()) {
-                val tag = tagList.getCompoundTagAt(i)
-                if (tag.hasKey(SlotTag)) {
-                    val slot = tag.getByte(SlotTag).toInt()
-                    if (slot >= 0 && slot < items.size) {
-                        updateItems(slot, ItemStack(tag.getCompoundTag(ItemTag)))
-                    }
-                }
-            }
-        }
-
-        fun Inventory.save(nbt: NBTTagCompound) {
-            val itemsList = items.mapIndexedNotNull { slot, stack ->
-                if (!stack.isEmpty) {
-                    val slotNbt = NBTTagCompound()
-                    slotNbt.setByte(SlotTag, slot.toByte())
-                    val itemNbt = NBTTagCompound()
-                    stack.writeToNBT(itemNbt)
-                    slotNbt.setTag(ItemTag, itemNbt)
-                    slotNbt
-                } else {
-                    null
-                }
-            }
-            nbt.setNewTagList(ItemsTag, itemsList)
-        }
     }
-
 
     // ----------------------------------------------------------------------- //
 

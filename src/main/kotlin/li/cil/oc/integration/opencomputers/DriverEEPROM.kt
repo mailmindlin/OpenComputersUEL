@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 
 object DriverEEPROM : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.EEPROM))
+    Constants.ItemInfo.EEPROM)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

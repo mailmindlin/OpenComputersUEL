@@ -8,19 +8,19 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.common.Slot
 import li.cil.oc.server.component.Server
-import li.cil.oc.util.ExtendedInventory.extendedInventory
+import li.cil.oc.util.asExtended
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 
 object DriverServer : Item(), HostAware {
   override fun worksWith(stack: ItemStack): Boolean = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.ServerTier1),
-    ApiItems.get(Constants.ItemName.ServerTier2),
-    ApiItems.get(Constants.ItemName.ServerTier3),
-    ApiItems.get(Constants.ItemName.ServerCreative))
+    Constants.ItemInfo.ServerTier1,
+    Constants.ItemInfo.ServerTier2,
+    Constants.ItemInfo.ServerTier3,
+    Constants.ItemInfo.ServerCreative)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? = when (host) {
-    is Rack -> Server(host, host.indexOf(stack))
+    is Rack -> Server(host, host.asExtended().indexOf(stack))
     else -> null // Welp.
   }
 
@@ -30,6 +30,6 @@ object DriverServer : Item(), HostAware {
     if (!stack.hasTagCompound()) {
       stack.tagCompound = NBTTagCompound()
     }
-    return stack.tagCompound
+    return stack.tagCompound!!
   }
 }

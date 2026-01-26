@@ -24,7 +24,7 @@ open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
     private val agent: Agent
         get() = host as Agent
 
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("generator", Visibility.Neighbors)
         .withConnector()
         .create()

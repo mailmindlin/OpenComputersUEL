@@ -15,7 +15,7 @@ import net.minecraftforge.common.util.Constants.NBT
 
 object DriverTablet : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.Tablet))
+    Constants.ItemInfo.Tablet)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

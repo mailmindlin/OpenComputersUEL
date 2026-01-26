@@ -32,7 +32,7 @@ class Drive(
     val speed: Int,
     val isLocked: Boolean
 ) : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("drive", Visibility.Neighbors)
         .withConnector()
         .create()

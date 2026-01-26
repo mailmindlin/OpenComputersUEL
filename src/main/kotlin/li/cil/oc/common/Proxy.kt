@@ -1,10 +1,7 @@
 package li.cil.oc.common
 
 import com.google.common.base.Strings
-import li.cil.oc.Constants
-import li.cil.oc.CreativeTab
-import li.cil.oc.OpenComputers
-import li.cil.oc.Settings
+import li.cil.oc.*
 import li.cil.oc.api.API
 import li.cil.oc.api.Machine
 import li.cil.oc.api.CreativeTab as ApiCreativeTab
@@ -64,7 +61,7 @@ open class Proxy {
         OreDictionary.registerOre("materialEnderPearl", net.minecraft.init.Items.ENDER_PEARL)
 
         // Make mods that use old wireless card name not have broken recipes
-        OreDictionary.registerOre("oc:wlanCard", Items.get(Constants.ItemName.WirelessNetworkCardTier2)!!.createItemStack(1))
+        OreDictionary.registerOre("oc:wlanCard", Constants.ItemInfo.WirelessNetworkCardTier2.createItemStack(1))
 
         tryRegisterNugget<DiamondChip>(Constants.ItemName.DiamondChip, "chipDiamond", net.minecraft.init.Items.DIAMOND, "gemDiamond")
 

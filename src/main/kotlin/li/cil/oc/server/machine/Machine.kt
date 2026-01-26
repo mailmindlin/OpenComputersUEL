@@ -3,27 +3,25 @@ package li.cil.oc.server.machine
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Network
 import li.cil.oc.api.detail.MachineAPI
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.item.CallBudget
 import li.cil.oc.api.driver.item.Processor
 import li.cil.oc.api.machine.*
 import li.cil.oc.api.network.*
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.Slot
 import li.cil.oc.common.tileentity.traits.Computer
 import li.cil.oc.server.PacketSender
+import li.cil.oc.server.component.ManagedEnvironmentKt
 import li.cil.oc.server.component.world
 import li.cil.oc.server.driver.Registry
-import li.cil.oc.server.driver.Registry.convert
 import li.cil.oc.server.fs.FileSystem
 import li.cil.oc.util.ResultWrapper.result
 import li.cil.oc.util.ThreadPoolFactory
 import li.cil.oc.util.setNewCompoundTag
-import li.cil.oc.util.setNewTagList
+import li.cil.oc.util.setNewStringList
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.*
@@ -35,13 +33,19 @@ import kotlin.math.max
 import kotlin.math.min
 import li.cil.oc.api.machine.Machine as APIMachine
 
-class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine, Runnable, DeviceInfo {
-    val node: ComponentConnector = Network.newNode(this, Visibility.Network)
+class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runnable, DeviceInfo {
+    override val node: ComponentConnector = nodeFactory(Visibility.Network)
         .withComponent("computer", Visibility.Neighbors)
         .withConnector(Settings.get.bufferComputer)
         .create()
 
-    override fun node(): Node = node
+    override fun host(): MachineHost = host
+
+    override fun architecture(): Architecture? = architecture
+
+    override fun maxComponents(): Int = maxComponents
+
+    override fun worldTime(): Long = worldTime
 
     val tmp = if (Settings.get.tmpSize > 0) {
         FileSystem.asManagedEnvironment(
@@ -104,8 +108,8 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
 
     override fun onHostChanged() {
         val components = host.internalComponents()
-        maxComponents = components.fold(0) { sum, item ->
-            sum + if (item != null) {
+        maxComponents = components.sumOf { item ->
+            if (item != null) {
                 val driver = Driver.driverFor(item, host.javaClass)
                 if (driver is Processor) driver.supportedComponents(item) else 0
             } else 0
@@ -186,7 +190,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
 
     // ----------------------------------------------------------------------- //
 
-    override fun getDeviceInfo(): MutableMap<String, String>? = (host as? DeviceInfo)?.deviceInfo
+    override fun getDeviceInfo(): Map<String, String>? = (host as? DeviceInfo)?.deviceInfo
 
     // ----------------------------------------------------------------------- //
 
@@ -386,7 +390,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
         return Callbacks(value).mapValues { it.value.annotation }.toMutableMap()
     }
 
-    override fun invoke(address: String, method: String, args: Array<Any?>): Array<Any?> {
+    override fun invoke(address: String, method: String, args: Array<Any?>): Array<out Any?> {
         if (node != null && node.network() != null) {
             val component = node.network().node(address)
             if (component is li.cil.oc.server.network.Component && (component.canBeSeenFrom(node) || component == node)) {
@@ -475,18 +479,15 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
     fun getDeviceInfo(context: Context, args: Arguments): Array<Any?> {
         context.pause(1.0) // Iterating all nodes is potentially expensive, and I see no practical reason for having to call this frequently.
         return arrayOf(node.network().nodes().mapNotNull { n ->
-            val deviceHost = n.host()
-            if (deviceHost is DeviceInfo) {
-                when (n) {
-                    is Component -> if (n.canBeSeenFrom(node) || n == node) {
-                        n.address() to deviceHost.deviceInfo
-                    } else null
-                    else -> if (n.canBeReachedFrom(node)) {
-                        n.address() to deviceHost.deviceInfo
-                    } else null
-                }
-            } else null
-        }.filterNotNull().toMap())
+            val deviceHost = n.host() as? DeviceInfo ?: return@mapNotNull null
+            val valid = when (n) {
+                is Component -> n.canBeSeenFrom(node) || n == node
+                else -> n.canBeReachedFrom(node)
+            }
+            if (!valid)
+                return@mapNotNull null
+            n.address() to deviceHost.deviceInfo
+        }.toMap())
     }
 
     @Callback(doc = """function():table -- Returns a map of program name to disk label for known programs.""")
@@ -497,7 +498,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
 
     fun isExecuting(): Boolean = synchronized(state) { state.contains(State.Running) }
 
-    override val canUpdate = true
+    override fun canUpdate(): Boolean = true
 
     override fun update() {
         if (synchronized(state) { state.peek() != State.Stopped }) {
@@ -876,7 +877,7 @@ class Machine(val host: MachineHost) : AbstractManagedEnvironment(), APIMachine,
         processAddedComponents()
 
         nbt.setIntArray(StateTag, state.map { it.ordinal }.toIntArray())
-        nbt.setNewTagList(UsersTag, _users)
+        nbt.setNewStringList(UsersTag, _users)
         message?.let { nbt.setString(MessageTag, it) }
 
         val componentsNbt = NBTTagList()

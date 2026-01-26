@@ -23,7 +23,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
         else -> Visibility.Network
     }
 
-    override val node: Component = Network.newNode(this, visibility)
+    override val node: Component = nodeFactory(visibility)
         .withComponent("modem", Visibility.Neighbors)
         .create()
 
@@ -95,7 +95,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
     fun send(context: Context, args: Arguments): Array<Any?> {
         val address = args.checkString(0)
         val port = checkPort(args.checkInteger(1))
-        val packet = li.cil.oc.api.Network.newPacket(node.address(), address, port, args.drop(2))
+        val packet = li.cil.oc.api.Network.newPacket(node.address(), address, port, args.drop(2))!!
         doSend(packet)
         networkActivity()
         return result(true)
@@ -105,7 +105,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
     @Callback(doc = """function(port:number, data...) -- Broadcasts the specified data on the specified port.""")
     fun broadcast(context: Context, args: Arguments): Array<Any?> {
         val port = checkPort(args.checkInteger(0))
-        val packet = li.cil.oc.api.Network.newPacket(node.address(), null, port, args.drop(1))
+        val packet = li.cil.oc.api.Network.newPacket(node.address(), null, port, args.drop(1))!!
         doBroadcast(packet)
         networkActivity()
         return result(true)

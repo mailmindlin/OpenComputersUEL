@@ -32,7 +32,7 @@ object UpgradeTankController {
     }
 
     class Adapter(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldTankAnalytics, Common {
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("tank_controller", Visibility.Network)
             .create()
 
@@ -47,7 +47,7 @@ object UpgradeTankController {
         private val agent: Agent
             get() = host as Agent
 
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("tank_controller", Visibility.Neighbors)
             .create()
 
@@ -69,7 +69,7 @@ object UpgradeTankController {
     }
 
     class Robot(val host: TERobot) : ManagedEnvironmentKt(), TankInventoryControl, WorldTankAnalytics, Common {
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("tank_controller", Visibility.Neighbors)
             .create()
 

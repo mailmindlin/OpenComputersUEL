@@ -20,7 +20,7 @@ import net.minecraft.util.math.Vec3d
 import java.util.*
 
 class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("trading")
         .create()
 

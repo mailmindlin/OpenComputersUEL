@@ -21,20 +21,26 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagString
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.text.ITextComponent
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
 
 /**
- * Base computer (Compuer/Robot/Microcontroller) TileEntity
+ * Base computer (Computer/Robot/Microcontroller) TileEntity
  */
-abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, BundledRedstoneAware, Analyzable, MachineHost, StateAware, Tickable {
+abstract class Computer : TileEntityBase.TEEnvironmentBase(), ComponentInventory, Rotatable, BundledRedstoneAware, Analyzable, MachineHost, StateAware, Tickable {
     private val _machine: Machine? by lazy { if (isServer) ApiMachine.create(this) else null }
     open val machine: Machine? get() = _machine
+    override fun machine(): Machine? = machine
 
-    override val redstoneDelegate: BundledRedstoneAware.Delegate = register(BundledRedstoneAware::Delegate)
+    protected open val makeRedstoneDelegate: (Computer) -> BundledRedstoneAware.Delegate get() = BundledRedstoneAware::Delegate
 
+    override val redstoneDelegate: BundledRedstoneAware.Delegate = register(this.makeRedstoneDelegate)
+    override val componentInventoryDelegate: ComponentInventory.Delegate = register(ComponentInventory::Delegate)
+    override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
+    // Don't implement rotatableDelegate because implementers might use TileRotatable
 
     override fun node(): Node? = if (isServer) machine?.node() else null
 
@@ -87,6 +93,9 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
 
     // ----------------------------------------------------------------------- //
 
+    override fun getDisplayName(): ITextComponent
+        = super<ComponentInventory>.getDisplayName()
+
     override fun internalComponents(): Iterable<ItemStack> {
         return (0 until getSizeInventory())
             .filter { slot -> !getStackInSlot(slot).isEmpty && isComponentSlot(slot, getStackInSlot(slot)) }
@@ -97,7 +106,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
 
     override fun onMachineDisconnect(node: Node) = this.onDisconnect(node)
 
-    open fun hasRedstoneCard(): Boolean = items().any { item ->
+    open fun hasRedstoneCard(): Boolean = items.any { item ->
         !item.isEmpty && machine?.isRunning == true && DriverRedstoneCard.worksWith(item, javaClass)
     }
 
@@ -165,7 +174,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
         // readFromNBTForClient if that packet is handled after a manual
         // initialization / state change packet.
         setRunning(machine?.isRunning ?: false)
-        redstoneDelegate.isOutputEnabled = hasRedstoneCard()
+        redstoneDelegate._isOutputEnabled = hasRedstoneCard()
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
@@ -203,7 +212,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
         super.markDirty()
         if (isServer) {
             machine?.onHostChanged()
-            setOutputEnabled(hasRedstoneCard())
+            this.outputEnabled = hasRedstoneCard()
         }
     }
 
@@ -220,7 +229,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
 
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
-        val toLocalSide = toLocal(args.side)
+        val toLocalSide = toLocal(args.side!!)
         if (toLocalSide != null) {
             val toLocalArgs = RedstoneChangedEventArgs(toLocalSide, args.oldValue, args.newValue, args.color)
             machine?.node()?.sendToNeighbors("redstone.changed", toLocalArgs)
@@ -233,11 +242,4 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), Rotatable, Bundled
         val node = machine?.node()
         return if (node != null) arrayOf(node) else null
     }
-
-    // Abstract methods that need to be implemented by concrete classes
-    abstract fun getSizeInventory(): Int
-    abstract fun getStackInSlot(slot: Int): ItemStack
-    abstract fun isComponentSlot(slot: Int, stack: ItemStack): Boolean
-    abstract fun items(): Array<ItemStack>
-    abstract fun updateComponents()
 }

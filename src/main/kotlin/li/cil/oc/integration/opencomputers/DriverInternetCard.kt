@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 
 object DriverInternetCard : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.InternetCard))
+    Constants.ItemInfo.InternetCard)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

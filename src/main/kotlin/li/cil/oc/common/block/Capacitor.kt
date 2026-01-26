@@ -23,7 +23,7 @@ open class Capacitor : SimpleBlock() {
     override fun getComparatorInputOverride(state: IBlockState, world: World, pos: BlockPos): Int {
         val tileEntity = world.getTileEntity(pos)
         return if (tileEntity is TECapacitor && !world.isRemote) {
-            Math.round(15 * tileEntity.node.localBuffer / tileEntity.node.localBufferSize).toInt()
+            Math.round(15 * tileEntity.node.localBuffer() / tileEntity.node.localBufferSize()).toInt()
         } else 0
     }
 

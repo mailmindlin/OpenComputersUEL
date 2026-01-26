@@ -18,9 +18,9 @@ class CompoundBlockDriver(val sidedBlocks: Array<DriverBlock>) : DriverBlock {
             driver.createEnvironment(world, pos, side)?.let { environment ->
                 driver.javaClass.name to environment
             }
-        }.toTypedArray()
+        }
         return if (list.isEmpty()) null
-        else CompoundBlockEnvironment(cleanName(tryGetName(world, pos, list.map { it.second })), *list)
+        else CompoundBlockEnvironment(cleanName(tryGetName(world, pos, list.map { it.second })), list)
     }
 
     override fun worksWith(world: World, pos: BlockPos, side: EnumFacing): Boolean =

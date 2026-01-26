@@ -5,7 +5,6 @@ import li.cil.oc.OpenComputers
 import li.cil.oc.api.Driver
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.IMC
-import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack

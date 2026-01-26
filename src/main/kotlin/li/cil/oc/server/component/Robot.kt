@@ -25,7 +25,7 @@ import net.minecraft.util.EnumParticleTypes
 import li.cil.oc.common.tileentity.Robot as TERobot
 
 class Robot(override val agent: TERobot): Agent(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Network).
+  override val node = nodeFactory(Visibility.Network).
     withComponent("robot").
     withConnector(Settings.get.bufferRobot).
     create()
@@ -139,7 +139,7 @@ class Robot(override val agent: TERobot): Agent(), DeviceInfoKt {
       if (data.size == 1) {
         val packet = data[0]
         if (packet is Packet) {
-          agent.proxy!!.node.sendToReachable(message.name(), packet)
+          agent.proxy.node()!!.sendToReachable(message.name(), packet)
         }
       }
     }

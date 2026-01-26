@@ -57,14 +57,14 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     val outputSides: Array<Boolean> = Array(6) { true }
 
     @JvmField
-    val snooperNode: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)
+    val snooperNode: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("microcontroller")
         .withConnector(Settings.get.bufferMicrocontroller)
         .create()
 
     @JvmField
     val componentNodes: Array<Component> = Array(6) {
-        ApiNetwork.newNode(this, Visibility.Network)
+        ApiNetwork.newNode(this, Visibility.Network)!!
             .withComponent("microcontroller")
             .create()
     }
@@ -112,7 +112,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         return if (side != facing)
             arrayOf(componentNodes[side.index])
         else
-            arrayOf(machine!!.node())
+            arrayOf(machine!!.node()!!)
     }
 
     // ----------------------------------------------------------------------- //
@@ -181,17 +181,17 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     // ----------------------------------------------------------------------- //
 
-    override fun connectItemNode(node: Node) {
+    override fun connectItemNode(node: Node?) {
         val machine = machine
         if (machine?.node() != null && node != null) {
             ApiNetwork.joinNewNetwork(machine.node())
-            machine.node().connect(node)
+            machine.node()!!.connect(node)
         }
     }
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)
+    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)!!
         .withConnector()
         .create()
 
@@ -200,7 +200,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         if (node == plug.node) {
             val machine = machine!!
             ApiNetwork.joinNewNetwork(machine.node())
-            machine.node().connect(snooperNode)
+            machine.node()!!.connect(snooperNode)
             connectComponents()
         }
         if (plug.isPrimary)
@@ -258,7 +258,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         super.readFromNBTForServer(nbt)
         val machine = machine
         ApiNetwork.joinNewNetwork(machine!!.node())
-        machine.node().connect(snooperNode)
+        machine.node()!!.connect(snooperNode)
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
@@ -286,10 +286,11 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     // ----------------------------------------------------------------------- //
 
-    override fun items(): Array<ItemStack> = info.components
+    override val items: Array<ItemStack>
+        get() = super.items
 
-    override fun updateItems(slot: Int, stack: ItemStack) {
-        info.components[slot] = stack
+    override fun updateItems(slot: Int, stack: ItemStack?) {
+        info.components[slot] = stack ?: ItemStack.EMPTY
     }
 
     override fun getSizeInventory(): Int = info.components.size
@@ -314,7 +315,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     // For hotswapping EEPROMs.
     fun changeEEPROM(newEeprom: ItemStack): ItemStack? {
-        val oldEepromIndex = info.components.indexOfFirst { ApiItems.get(it) == ApiItems.get(Constants.ItemName.EEPROM) }
+        val oldEepromIndex = info.components.indexOfFirst { ApiItems.get(it) == Constants.ItemInfo.EEPROM }
         return if (oldEepromIndex >= 0) {
             val oldEeprom = info.components[oldEepromIndex]
             super.setInventorySlotContents(oldEepromIndex, newEeprom)

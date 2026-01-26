@@ -20,10 +20,7 @@ import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.Vec3d
 
 class MotionSensor(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("motion_sensor")
-        .withConnector()
-        .create()
+    override val node = newComponentConnector(Visibility.Network, "motion_sensor")
 
     private val radius = 8
 

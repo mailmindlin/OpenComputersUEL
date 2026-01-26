@@ -2,7 +2,6 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Keyboard.UsabilityChecker
@@ -15,9 +14,7 @@ import net.minecraft.entity.player.EntityPlayer
 // TODO key up after load for anything that was pressed
 
 class Keyboard(val host: EnvironmentHost) : ManagedEnvironmentKt(), li.cil.oc.api.internal.Keyboard, DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("keyboard")
-        .create()
+    override val node = nodeFactory(Visibility.Network, "keyboard").create()
 
     val pressedKeys = mutableMapOf<EntityPlayer, MutableMap<Int, Char>>()
 

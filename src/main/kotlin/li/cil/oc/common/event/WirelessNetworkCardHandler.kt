@@ -9,7 +9,7 @@ object WirelessNetworkCardHandler {
     @JvmStatic
     @SubscribeEvent
     fun onMove(e: RobotMoveEvent.Post) {
-        val machineNode = e.agent.machine().node()
+        val machineNode = e.agent.machine().node()!!
         machineNode.reachableNodes().forEach { node ->
             val host = node.host()
             if (host is WirelessNetworkCard) {

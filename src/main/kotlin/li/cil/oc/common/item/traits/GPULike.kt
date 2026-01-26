@@ -8,8 +8,8 @@ interface GPULike : Delegate {
 
     override val tooltipData: Array<Any>
         get() {
-            val (w, h) = Settings.screenResolutionsByTier(gpuTier)
-            val depth = PackedColor.Depth.bits(Settings.screenDepthsByTier(gpuTier))
+            val (w, h) = Settings.screenResolutionsByTier[gpuTier]
+            val depth = PackedColor.Depth.bits(Settings.screenDepthsByTier[gpuTier])
             return arrayOf(w, h, depth,
                 when (gpuTier) {
                     0 -> "1/1/4/2/2"

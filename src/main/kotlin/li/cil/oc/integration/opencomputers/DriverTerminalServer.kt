@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack
 
 object DriverTerminalServer : Item(), HostAware {
   override fun worksWith(stack: ItemStack): Boolean = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.TerminalServer))
+    Constants.ItemInfo.TerminalServer)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? = when (host) {
     is Rack -> TerminalServer(host, host.asExtended().indexOf(stack))

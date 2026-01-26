@@ -147,7 +147,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
     override fun update(stack: ItemStack, world: World, entity: Entity, slot: Int, selected: Boolean) {
         if (entity is EntityPlayer) {
             // Play an audio cue to let players know when they finished analyzing a block.
-            if (world.isRemote && entity.itemInUseCount == TimeToAnalyze && Items.get(entity.activeItemStack) == Items.get(Constants.ItemName.Tablet)) {
+            if (world.isRemote && entity.itemInUseCount == TimeToAnalyze && Items.get(entity.activeItemStack) == Constants.ItemInfo.Tablet) {
                 Audio.play(entity.posX.toFloat(), entity.posY.toFloat() + 2, entity.posZ.toFloat(), ".")
             }
             Tablet.get(stack, entity).update(world, entity, slot, selected)
@@ -180,11 +180,11 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                     val analyzing = Tablet.currentlyAnalyzing
                     if (analyzing != null) {
                         try {
-                            val computer = Tablet.get(stack, entity).machine
+                            val computer = Tablet.get(stack, entity).machine!!
                             if (computer.isRunning) {
                                 val data = NBTTagCompound()
                                 val (position, side, hit) = analyzing
-                                computer.node().sendToReachable("tablet.use", data, stack, entity, position, side, java.lang.Float.valueOf(hit.first), java.lang.Float.valueOf(hit.second), java.lang.Float.valueOf(hit.third))
+                                computer.node()!!.sendToReachable("tablet.use", data, stack, entity, position, side, java.lang.Float.valueOf(hit.first), java.lang.Float.valueOf(hit.second), java.lang.Float.valueOf(hit.third))
                                 if (!data.isEmpty) {
                                     computer.signal("tablet_use", data)
                                 }
@@ -198,14 +198,14 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                 if (entity.isSneaking) {
                     if (!world.isRemote) {
                         val tablet = Tablet.Server.get(stack, entity)
-                        tablet.machine.stop()
+                        tablet.machine!!.stop()
                         if (tablet.data.tier > Tier.One) {
                             entity.openGui(OpenComputers, GuiType.TabletInner.id, world, 0, 0, 0)
                         }
                     }
                 } else {
                     if (!world.isRemote) {
-                        val computer = Tablet.get(stack, entity).machine
+                        val computer = Tablet.get(stack, entity).machine!!
                         computer.start()
                         val lastError = computer.lastError()
                         if (lastError != null) {
@@ -356,8 +356,8 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                 if (tablet.node() != null) {
                     // Server.
                     if (tablet.autoSave) tablet.writeToNBT()
-                    tablet.machine.stop()
-                    for (node in tablet.machine.node().network().nodes()) {
+                    tablet.machine!!.stop()
+                    for (node in tablet.machine!!.node()!!.network().nodes()) {
                         node.remove()
                     }
                     if (tablet.autoSave) tablet.writeToNBT()
@@ -421,11 +421,16 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
     // changes of players holding tablets - since the player entity instance may be
     // kept the same and components are not required to properly handle world changes.
     val world: World = player.world
+    override fun world(): World = world
 
-    val machine: Machine by lazy {
+    override val componentInventoryDelegate: ComponentInventory.State = ComponentInventory.State()
+
+    val machine: Machine? by lazy {
         if (world.isRemote) throw IllegalStateException("Machine not available on client")
-        else MachineFactory.create(this)
+        return@lazy MachineFactory.create(this)
     }
+    override fun machine(): Machine? = machine
+    override fun player(): EntityPlayer = player
 
     val data = TabletData()
 
@@ -463,7 +468,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
             load(nbt)
             if (!world.isRemote) {
                 tablet?.load(nbt.getCompoundTag(Settings.namespace + "component"))
-                machine.load(nbt.getCompoundTag(Settings.namespace + "data"))
+                machine!!.load(nbt.getCompoundTag(Settings.namespace + "data"))
             }
         }
     }
@@ -478,7 +483,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
                 nbt.setTag(Settings.namespace + "data", NBTTagCompound())
             }
             nbt.setNewCompoundTag(Settings.namespace + "component") { tablet?.save(it) }
-            nbt.setNewCompoundTag(Settings.namespace + "data") { machine.save(it) }
+            nbt.setNewCompoundTag(Settings.namespace + "data") { machine!!.save(it) }
 
             if (clearState) {
                 // Force tablets into stopped state to avoid errors when trying to
@@ -492,7 +497,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
     init {
         readFromNBT()
         if (!world.isRemote) {
-            Network.joinNewNetwork(machine.node())
+            Network.joinNewNetwork(machine!!.node())
             val tablet = tablet!!
             val charge = (data.energy - tablet.node().globalBuffer()).coerceAtLeast(0.0)
             tablet.node().changeBuffer(charge)
@@ -522,14 +527,14 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
                 is TextBuffer -> {
                     for (comp in components) {
                         if (comp is Keyboard) {
-                            host.node().connect(comp.node())
+                            host.node()!!.connect(comp.node())
                         }
                     }
                 }
                 is Keyboard -> {
                     for (comp in components) {
                         if (comp is TextBuffer) {
-                            host.node().connect(comp.node())
+                            host.node()!!.connect(comp.node())
                         }
                     }
                 }
@@ -559,7 +564,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
             driver.tier(stack) <= containerSlotTier
     }
 
-    override fun isUsableByPlayer(player: EntityPlayer): Boolean = machine.canInteract(player.name)
+    override fun isUsableByPlayer(player: EntityPlayer): Boolean = machine!!.canInteract(player.name)
 
     override fun markDirty() {
         data.save(stack)
@@ -605,7 +610,7 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
 
     // ----------------------------------------------------------------------- //
 
-    override fun node(): Node? = machine.node()
+    override fun node(): Node? = machine!!.node()
 
     // ----------------------------------------------------------------------- //
 
@@ -629,8 +634,9 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
         }
         if (!world.isRemote) {
             if (isCreative && Settings.get.isTickMultiple(world)) {
-                (machine.node() as Connector).changeBuffer(Double.POSITIVE_INFINITY)
+                (machine!!.node() as Connector).changeBuffer(Double.POSITIVE_INFINITY)
             }
+            val machine = machine!!
             machine.update()
             updateComponents()
             data.isRunning = machine.isRunning

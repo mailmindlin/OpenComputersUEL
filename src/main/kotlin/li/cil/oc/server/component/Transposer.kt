@@ -19,11 +19,8 @@ import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.checkSideAny
 
 object Transposer {
-    abstract sealed class Common : AbstractManagedEnvironment(), WorldInventoryAnalytics, WorldTankAnalytics, InventoryTransfer, DeviceInfoKt {
-        override val node = Network.newNode(this, Visibility.Network)
-            .withComponent("transposer")
-            .withConnector()
-            .create()
+    abstract sealed class Common : ManagedEnvironmentKt(), WorldInventoryAnalytics, WorldTankAnalytics, InventoryTransfer, DeviceInfoKt {
+        override val node = newComponentConnector(Visibility.Network, "transposer")
 
         override val deviceInfo = mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,

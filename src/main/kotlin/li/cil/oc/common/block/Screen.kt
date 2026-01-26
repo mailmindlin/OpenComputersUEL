@@ -9,6 +9,7 @@ import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.integration.util.Wrench
+import li.cil.oc.itemInfo
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.Tooltip
@@ -79,8 +80,8 @@ class Screen(val tier: Int) : RedstoneAware() {
 
     fun rightClick(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack,
                    side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float, force: Boolean): Boolean {
-        if (Wrench.holdsApplicableWrench(player, pos) && getValidRotations(world, pos).contains(side) && !force) return false
-        if (ApiItems.get(heldItem) == ApiItems.get(Constants.ItemName.Analyzer)) return false
+        if (Wrench.holdsApplicableWrench(player, pos) && getValidRotations(world, pos)?.contains(side) != false && !force) return false
+        if (ApiItems.get(heldItem) == Constants.ItemInfo.Analyzer) return false
 
         val tileEntity = world.getTileEntity(pos)
         return when {

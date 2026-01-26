@@ -16,35 +16,29 @@ import java.util.concurrent.Future
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 
-object BufferedCompanion {
-    val fileSaveHandler: SafeThreadPool = ThreadPoolFactory.createSafePool("FileSystem", 1)
-}
+internal class Buffered(private val inner: OutputStreamFileSystem, protected val fileRoot: File) : li.cil.oc.api.fs.FileSystem by inner {
+    companion object {
+        private val fileSaveHandler: SafeThreadPool = ThreadPoolFactory.createSafePool("FileSystem", 1)
+    }
 
-interface Buffered : OutputStreamFileSystem {
-    val fileRoot: File
-
-    val deletions: MutableMap<String, Long>
-
-    var saving: Future<*>?
+    /** Files to delete (path -> deletion timestamp) */
+    private val deletions: MutableMap<String, Long> = mutableMapOf()
+    private var saving: Future<*>? = null
 
     // ----------------------------------------------------------------------- //
 
     override fun delete(path: String): Boolean {
-        return if (super.delete(path)) {
-            deletions[path] = System.currentTimeMillis()
-            true
-        } else {
-            false
-        }
+        if (!inner.delete(path))
+            return false
+        deletions[path] = System.currentTimeMillis()
+        return true
     }
 
     override fun rename(from: String, to: String): Boolean {
-        return if (super.rename(from, to)) {
-            deletions[from] = System.currentTimeMillis()
-            true
-        } else {
-            false
-        }
+        if (!inner.rename(from, to))
+            return false
+        deletions[from] = System.currentTimeMillis()
+        return true
     }
 
     // ----------------------------------------------------------------------- //
@@ -60,10 +54,13 @@ interface Buffered : OutputStreamFileSystem {
             }
         }
         loadFiles(nbt)
-        super.load(nbt)
+        if (inner is VirtualFileSystem)
+            inner.loadBuffered(nbt)
+        else
+            inner.load(nbt)
     }
 
-    fun loadFiles(nbt: NBTTagCompound) {
+    private fun loadFiles(nbt: NBTTagCompound) {
         synchronized(this) {
             fun recurse(path: String, directory: File) {
                 makeDirectory(path)
@@ -75,27 +72,23 @@ interface Buffered : OutputStreamFileSystem {
                     if (child.exists() && child.isDirectory && child.list() != null) {
                         recurse("$childPath/", childFile)
                     } else if (!exists(childPath) || !isDirectory(childPath)) {
-                        val stream = openOutputHandle(0, childPath, Mode.Write)
-                        if (stream != null) {
+                        inner.openOutputHandle(0, childPath, Mode.Write)?.use { stream ->
                             try {
-                                val input = FileInputStream(childFile)
-                                val buffer = ByteArray(8 * 1024)
-                                var read: Int
-                                do {
-                                    read = input.read(buffer)
-                                    if (read > 0) {
-                                        if (read == buffer.size) {
-                                            stream.write(buffer)
-                                        } else {
-                                            stream.write(buffer.copyOfRange(0, read))
-                                        }
+                                FileInputStream(childFile).use { input ->
+                                    val buffer = ByteArray(8 * 1024)
+                                    while (true) {
+                                        val read = input.read(buffer)
+                                        if (read < 0) break
+                                        if (read == 0) continue
+                                        stream.write(
+                                            if (read == buffer.size) buffer
+                                            else buffer.copyOfRange(0, read)
+                                        )
                                     }
-                                } while (read >= 0)
-                                input.close()
+                                }
                             } catch (_: FileNotFoundException) {
                                 // File got deleted in the meantime.
                             }
-                            stream.close()
                             setLastModified(childPath, childFile.lastModified())
                         }
                         // else: File is open for writing.
@@ -113,10 +106,11 @@ interface Buffered : OutputStreamFileSystem {
     }
 
     override fun save(nbt: NBTTagCompound) {
-        super.save(nbt)
-        saving = BufferedCompanion.fileSaveHandler.withPool { pool ->
-            pool.submit { saveFiles() }
-        }
+        if (inner is VirtualFileSystem)
+            inner.saveBuffered(nbt)
+        else
+            inner.save(nbt)
+        saving = fileSaveHandler.withPool { it.submit(::saveFiles) }
     }
 
     fun saveFiles() {
@@ -145,7 +139,7 @@ interface Buffered : OutputStreamFileSystem {
                             FileUtils.deleteQuietly(childFile)
                             childFile.createNewFile()
                             val out = FileOutputStream(childFile).channel
-                            val inputChannel = openInputChannel(childPath)!!
+                            val inputChannel = inner.openInputChannel(childPath)!!
 
                             buffer.clear()
                             while (inputChannel.read(buffer) != -1) {
@@ -173,7 +167,7 @@ interface Buffered : OutputStreamFileSystem {
                 return false
             }
             val rootList = list("")
-            if (rootList == null || rootList.isEmpty()) {
+            if (rootList.isNullOrEmpty()) {
                 fileRoot.delete()
             } else {
                 recurse("")

@@ -1,6 +1,6 @@
 package li.cil.oc.common.container
 
-import li.cil.oc.TextBuffer
+import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.client.Textures
 import li.cil.oc.common.Slot as CommonSlot
 import li.cil.oc.common.Tier as CommonTier

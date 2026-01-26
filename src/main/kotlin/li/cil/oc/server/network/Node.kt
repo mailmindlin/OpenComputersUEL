@@ -37,11 +37,11 @@ interface Node : ImmutableNode {
   // the network is ready. We don't desire those things to crash here.
   // With typical nodes we are talking about components here
   // which will be connected anyways when the network is created
-  fun connect(node: ImmutableNode) {
+  override fun connect(node: ImmutableNode) {
     network?.connect(this, node)
   }
 
-  fun disconnect(node: ImmutableNode) {
+  override fun disconnect(node: ImmutableNode) {
     if (network != null && isInSameNetwork(node)) {
       network?.disconnect(this, node)
     }

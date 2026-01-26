@@ -24,7 +24,7 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
     private val rotatable: Rotatable
         get() = host as Rotatable
 
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = nodeFactory(Visibility.Network)
         .withComponent("navigation", Visibility.Neighbors)
         .withConnector()
         .create()

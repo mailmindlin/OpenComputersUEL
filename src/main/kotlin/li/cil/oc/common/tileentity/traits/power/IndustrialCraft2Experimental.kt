@@ -28,7 +28,7 @@ interface IndustrialCraft2Experimental : Common, IndustrialCraft2Common, Tickabl
     @Optional.Interface(iface = "li.cil.oc.common.tileentity.behaviors.BehaviorLifecycle", modid = Mods.IDs.IndustrialCraft2)
     class Delegate(private val tile: IndustrialCraft2Experimental): NbtSeriailzable, BehaviorUpdate, BehaviorLifecycle {
         private var conversionBuffer: Double = 0.0
-        private var addedToIC2PowerGrid = false
+        internal var addedToIC2PowerGrid = false
 
         override fun readFromNBTForServer(nbt: NBTTagCompound) {
             super.readFromNBTForServer(nbt)

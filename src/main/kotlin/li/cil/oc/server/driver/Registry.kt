@@ -123,7 +123,7 @@ internal object Registry: DriverAPI {
   override fun environmentsFor(stack: ItemStack): Set<Class<*>>
     = environmentProviders.mapNotNullTo(mutableSetOf()) { it.getEnvironment(stack) }
 
-  override fun itemHandlerFor(stack: ItemStack, player: EntityPlayer): IItemHandler? {
+  override fun itemHandlerFor(stack: ItemStack, player: EntityPlayer?): IItemHandler? {
     return inventoryProviders
       .find { provider -> provider.worksWith(stack, player) }
       ?.let { provider -> InventoryUtils.asItemHandler(provider.getInventory(stack, player)) }

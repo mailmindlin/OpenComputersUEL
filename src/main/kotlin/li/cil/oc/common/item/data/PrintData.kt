@@ -181,15 +181,15 @@ class PrintData() : ItemData(Constants.BlockName.Print) {
 
         @JvmStatic
         fun computeCosts(data: PrintData): Pair<Int, Int>? {
-            val totalVolume = data.stateOn.fold(0) { acc, shape -> acc + shape.bounds.volume } +
-                data.stateOff.fold(0) { acc, shape -> acc + shape.bounds.volume }
-            val totalSurface = data.stateOn.fold(0) { acc, shape -> acc + shape.bounds.surface } +
-                data.stateOff.fold(0) { acc, shape -> acc + shape.bounds.surface }
+            val totalVolume = data.stateOn.sumOf { shape -> shape.bounds.volume } +
+                data.stateOff.sumOf { shape -> shape.bounds.volume }
+            val totalSurface = data.stateOn.sumOf { shape -> shape.bounds.surface } +
+                data.stateOff.sumOf { shape -> shape.bounds.surface }
             val multiplier = if (data.noclipOff || data.noclipOn) Settings.get.noclipMultiplier else 1.0
 
             return if (totalVolume > 0) {
                 val baseMaterialRequired = maxOf(totalVolume / 2, 1)
-                val materialRequired = if (data.redstoneLevel > 0 && data.redstoneLevel < 15) {
+                val materialRequired = if (0 < data.redstoneLevel && data.redstoneLevel < 15) {
                     baseMaterialRequired + Settings.get.printCustomRedstone
                 } else {
                     baseMaterialRequired
@@ -206,8 +206,8 @@ class PrintData() : ItemData(Constants.BlockName.Print) {
         @JvmStatic
         fun materialValue(stack: ItemStack): Int {
             return when {
-                Items.get(stack) == Items.get(Constants.ItemName.Chamelium) -> materialPerItem
-                Items.get(stack) == Items.get(Constants.BlockName.Print) -> {
+                Items.get(stack) == Constants.ItemInfo.Chamelium -> materialPerItem
+                Items.get(stack) == Constants.BlockInfo.Print -> {
                     val data = PrintData(stack)
                     val costs = computeCosts(data)
                     if (costs != null) {

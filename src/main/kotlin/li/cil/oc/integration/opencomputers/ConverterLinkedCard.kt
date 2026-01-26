@@ -10,7 +10,7 @@ import li.cil.oc.server.component.LinkedCard
 import net.minecraft.item.ItemStack
 
 object ConverterLinkedCard : Converter {
-  val linkedCard: ItemInfo by lazy { ApiItems.get(Constants.ItemName.LinkedCard) }
+  val linkedCard: ItemInfo by lazy { Constants.ItemInfo.LinkedCard }
 
   override fun convert(value: Any?, output: MutableMap<Any, Any>) {
     when (value) {

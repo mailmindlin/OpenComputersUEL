@@ -23,18 +23,18 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.EventHandler
+import li.cil.oc.server.component.Result
 import li.cil.oc.server.driver.Registry
-import li.cil.oc.util.DatabaseAccess
-import li.cil.oc.util.setNewTagList
-import li.cil.oc.util.NbtDataStream
+import li.cil.oc.util.*
 import li.cil.oc.util.ResultWrapper.result
-import li.cil.oc.util.optSlot
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.math.BlockPos
 import net.minecraftforge.common.DimensionManager
 import net.minecraftforge.common.util.Constants.NBT
+import scala.concurrent.Future
+import kotlin.collections.map
 
 // Note to self: this class is used by ExtraCells (and potentially others), do not rename / drastically change it.
 // AETile must be a TileEntity that also implements IActionHost and IGridHost
@@ -42,7 +42,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   val tile: AETile
   val pos: AEPartLocation
 
-  fun node(): Node
+  fun node(): Node?
 
   private fun aeCraftItem(aeItem: IAEItemStack): IAEItemStack {
     val patterns = AEUtil.getGridCrafting(tile.getGridNode(pos)!!.grid).getCraftingFor(aeItem, null, 0, tile.world)
@@ -114,7 +114,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   private fun allItems(): Iterable<IAEItemStack> {
-    val storage = AEUtil.getGridStorage(tile.getGridNode(pos).grid)
+    val storage = AEUtil.getGridStorage(tile.getGridNode(pos)!!.grid)
     val inventory = storage.getInventory(AEUtil.itemStorageChannel)
     return inventory.storageList
   }
@@ -127,7 +127,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     // but craftables need the device that crafts them
     val hash = java.util.HashMap<Any?, Any?>()
     Registry.convert(arrayOf(aePotentialItem(aeItem).createItemStack()))
-      .firstOrNull()
+      ?.firstOrNull()
       ?.let { it as? Map<*, *> }
       ?.forEach { (key, value) ->
         hash[key] = value
@@ -140,7 +140,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   @Callback(doc = """function():table -- Get a list of tables representing the available CPUs in the network.""")
   fun getCpus(context: Context, args: Arguments): Array<Any?> {
     val buffer = mutableListOf<Map<String, Any>>()
-    AEUtil.getGridCrafting(tile.getGridNode(pos).grid).cpus.forEach { cpu ->
+    AEUtil.getGridCrafting(tile.getGridNode(pos)!!.grid).cpus.forEach { cpu ->
       buffer.add(
         mapOf(
           "name" to cpu.name,
@@ -159,7 +159,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     return result(
       allCraftables()
         .filter { aeCraftItem -> filter.isEmpty() || matches(convert(aeCraftItem), filter) }
-        .map { NetworkControl.Craftable(tile, pos, it) }
+        .map { Craftable(tile, pos, it) }
         .toTypedArray()
     )
   }
@@ -179,8 +179,8 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   fun store(context: Context, args: Arguments): Array<Any?> {
     val filter = getFilter(args, 0)
     val database = when (val address = args.optString(1, null)) {
-      is String -> DatabaseAccess.database(node(), address)
-      else -> DatabaseAccess.databases(node()).firstOrNull()
+      is String -> DatabaseAccess.database(node()!!, address)
+      else -> DatabaseAccess.databases(node()!!).firstOrNull()
         ?: throw IllegalArgumentException("no database upgrade found")
     }
     val items = allItems()
@@ -192,8 +192,8 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     var slot = offset
     for (i in 0 until count) {
       val stack = items[i]?.createItemStack()?.copy()
-      while (!database.getStackInSlot(slot).isEmpty && slot < database.size()) slot += 1
-      if (database.getStackInSlot(slot).isEmpty) {
+      while (!database.getStackInSlot(slot).isNullOrEmpty() && slot < database.size()) slot += 1
+      if (database.getStackInSlot(slot).isNullOrEmpty()) {
         database.setStackInSlot(slot, stack)
       }
     }
@@ -277,6 +277,8 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   companion object {
+    private val dispatchPool: SafeThreadPool = ThreadPoolFactory.createSafePool("AE2", 1)
+
     object LinkCache {
       val linkCache = mutableMapOf<String, ICraftingLink>()
       val statusCache = mutableMapOf<String, CraftingStatus>()
@@ -330,7 +332,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
       fun injectCratedItems(link: ICraftingLink, stack: IAEItemStack, p3: Actionable): IAEItemStack = stack
 
       // rv2
-      fun injectCraftedItems(link: ICraftingLink, stack: IAEItemStack, p3: Actionable): IAEItemStack = stack
+      override fun injectCraftedItems(link: ICraftingLink, stack: IAEItemStack, p3: Actionable): IAEItemStack = stack
 
       override fun getActionableNode(): IGridNode = (controller as IActionHost).actionableNode
 
@@ -338,7 +340,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
       override fun getCableConnectionType(dir: AEPartLocation): AECableType =
         (controller as IGridHost).getCableConnectionType(dir)
 
-      override fun securityBreak() = (controller as IActionHost).securityBreak()
+      override fun securityBreak() = (controller as IGridHost).securityBreak()
 
       // ----------------------------------------------------------------------- //
 
@@ -393,9 +395,9 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
           } else null
 
           val status = CraftingStatus()
-          GlobalScope.launch {
+          dispatchPool.withPool { pool -> pool.submit {
             try {
-              val job = future.await() // Make 100% sure we wait for this outside the scheduled closure.
+              val job = future.get() // Make 100% sure we wait for this outside the scheduled closure.
               EventHandler.scheduleServer {
                 val link = craftingGrid.submitJob(job, this@Craftable, cpu, prioritizePower, source)
                 if (link != null) {
@@ -409,7 +411,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
               OpenComputers.log.debug("Error submitting job to AE2.", e)
               status.fail(e.toString())
             }
-          }
+          } }
 
           result(status)
         }
@@ -474,7 +476,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
             LinkCache.store(AEApi.instance().storage().loadCraftingLink(tag as NBTTagCompound, this))
           }
         )
-        pos = AEPartLocation.fromOrdinal(NbtDataStream.getOptInt(nbt, POS_KEY, AEPartLocation.INTERNAL.ordinal()))
+        pos = AEPartLocation.fromOrdinal(NbtDataStream.getOptInt(nbt, POS_KEY, AEPartLocation.INTERNAL.ordinal))
         if (nbt.hasKey(DIMENSION_KEY)) {
           val dimension = nbt.getInteger(DIMENSION_KEY)
           val x = nbt.getInteger(X_KEY)
@@ -498,7 +500,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
             comp
           }
         )
-        pos?.let { nbt.setInteger(POS_KEY, it.ordinal()) }
+        pos?.let { nbt.setInteger(POS_KEY, it.ordinal) }
         controller?.let { ctrl ->
           if (!ctrl.isInvalid) {
             nbt.setInteger(DIMENSION_KEY, ctrl.world.provider.dimension)
@@ -527,26 +529,30 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
         this.reason = "request failed ($reason)"
       }
 
-      private fun asCraft(f: (ICraftingLink) -> Array<Any?>): Array<Any?> {
-        return if (isComputing) result(Unit, "computing")
-        else link?.let { craft ->
-          if (!failed) f(craft)
-          else result(false, reason)
-        } ?: result(false, reason)
+      private fun tryCraft(): Either<ICraftingLink, Result> {
+        if (isComputing) return Either.Right(result(Unit, "computing"))
+        val craft = link
+        if (craft == null || failed) return Either.Right(result(false, reason))
+        return Either.Left(craft)
+      }
+
+      private inline fun asCraft(f: (ICraftingLink) -> Result): Result {
+        if (isComputing) return result(Unit, "computing")
+        val craft = link
+        if (craft == null || failed) return result(false, reason)
+        return f(craft)
       }
 
       @Callback(doc = """function():boolean -- Get whether the crafting request has been canceled.""")
-      fun isCanceled(context: Context, args: Arguments): Array<Any?> {
-        return asCraft { craft -> result(craft.isCanceled) }
-      }
+      fun isCanceled(context: Context, args: Arguments): Result
+        = asCraft { result(it.isCanceled) }
 
       @Callback(doc = """function():boolean -- Get whether the crafting request is done.""")
-      fun isDone(context: Context, args: Arguments): Array<Any?> {
-        return asCraft { craft -> result(craft.isDone) }
-      }
+      fun isDone(context: Context, args: Arguments): Result
+        = asCraft { result(it.isDone) }
 
       @Callback(doc = """function():boolean -- Cancels the request. Returns false if the craft cannot be canceled or nil if the link is computing""")
-      fun cancel(context: Context, args: Arguments): Array<Any?> {
+      fun cancel(context: Context, args: Arguments): Result {
         return asCraft { craft ->
           if (craft.isDone) {
             return result(false, "job already completed")

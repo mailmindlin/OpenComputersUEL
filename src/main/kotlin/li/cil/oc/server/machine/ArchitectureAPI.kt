@@ -4,7 +4,7 @@ import li.cil.oc.api.machine.Machine as ApiMachine
 import net.minecraft.nbt.NBTTagCompound
 
 abstract class ArchitectureAPI(val machine: ApiMachine) {
-  protected val node = machine.node()
+  protected val node = machine.node()!!
 
   protected val components = machine.components()
 

@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 
 object DriverLinkedCard : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.LinkedCard))
+    Constants.ItemInfo.LinkedCard)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

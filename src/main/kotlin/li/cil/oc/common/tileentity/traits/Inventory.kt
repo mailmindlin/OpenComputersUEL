@@ -1,8 +1,5 @@
 package li.cil.oc.common.tileentity.traits
 
-import li.cil.oc.common.inventory.Inventory.Companion.load
-import li.cil.oc.common.inventory.Inventory.Companion.save
-import li.cil.oc.common.tileentity.behaviors.Behavior
 import li.cil.oc.common.tileentity.behaviors.NbtSeriailzable
 import li.cil.oc.common.inventory.Inventory as InventoryInterface
 import li.cil.oc.util.BlockPosition

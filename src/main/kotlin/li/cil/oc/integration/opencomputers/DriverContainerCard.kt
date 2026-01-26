@@ -12,9 +12,9 @@ import net.minecraft.item.ItemStack
 
 object DriverContainerCard : Item(), Container {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.CardContainerTier1),
-    ApiItems.get(Constants.ItemName.CardContainerTier2),
-    ApiItems.get(Constants.ItemName.CardContainerTier3))
+    Constants.ItemInfo.CardContainerTier1,
+    Constants.ItemInfo.CardContainerTier2,
+    Constants.ItemInfo.CardContainerTier3)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
 

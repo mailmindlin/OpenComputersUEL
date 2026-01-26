@@ -10,7 +10,7 @@ import net.minecraft.item.ItemStack
 
 object DriverDebugCard : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.DebugCard))
+    Constants.ItemInfo.DebugCard)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

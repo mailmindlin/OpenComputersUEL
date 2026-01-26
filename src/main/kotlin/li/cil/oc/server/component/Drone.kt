@@ -21,10 +21,9 @@ import kotlin.math.sqrt
 import li.cil.oc.common.entity.Drone as EntityDrone
 
 class Drone(override val agent: EntityDrone): Agent(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Network).
-    withComponent("drone").
-    withConnector(Settings.get.bufferDrone).
-    create()
+  override val node = nodeFactory(Visibility.Network, "drone")
+    .withConnector(Settings.get.bufferDrone)
+    .create()
   override fun node(): ComponentConnector = node
 
   override val deviceInfo = mapOf(

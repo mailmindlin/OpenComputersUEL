@@ -37,7 +37,7 @@ class FileSystem(
     val speed: Int
 ) : ManagedEnvironmentKt(), DeviceInfoKt {
 
-    override val node = Network.newNode(this, Visibility.Network)
+    override val node = Network.newNode(this, Visibility.Network)!!
         .withComponent("filesystem", Visibility.Neighbors)
         .withConnector()
         .create()
@@ -146,7 +146,7 @@ class FileSystem(
     fun remove(context: Context, args: Arguments): Array<Any?> {
         fun recurse(parent: String): Boolean {
             return (!fileSystem.isDirectory(parent) ||
-                fileSystem.list(parent).all { child -> recurse("$parent/$child") }) && fileSystem.delete(parent)
+                fileSystem.list(parent)?.all { child -> recurse("$parent/$child") } == true) && fileSystem.delete(parent)
         }
         val success = recurse(clean(args.checkString(0)))
         diskActivity()

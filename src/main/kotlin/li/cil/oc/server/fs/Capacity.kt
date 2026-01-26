@@ -1,65 +1,77 @@
 package li.cil.oc.server.fs
 
 import li.cil.oc.Settings
+import li.cil.oc.api.fs.FileSystem
+import li.cil.oc.api.fs.Handle
 import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 import java.io.IOException
+import java.util.WeakHashMap
 
-interface Capacity : OutputStreamFileSystem {
-    var used: Long
+class Capacity(protected val wrapped: FileSystem, private val capacity: Long): FileSystem by wrapped {
+    private val openWriteHandles = mutableSetOf<Int>()
+    private val writeHandleCache = WeakHashMap<Handle, CountingOutputHandle>()
 
-    var ignoreCapacity: Boolean
+    private var used: Long = computeSize("/")
+    // Used when loading data from disk to virtual file systems, to allow
+    // exceeding the actual capacity of a file system.
+    private var ignoreCapacity = false
 
-    val capacity: Long
+    private fun releaseCapacity(freed: Long) {
+        used = (used - freed).coerceAtLeast(0)
+    }
+    private fun acquireCapacity(space: Long) {
+        used = (used + space).coerceAtLeast(0)
+    }
+
+    private fun assertCapacity(space: Long) {
+        if (capacity - used < space && !ignoreCapacity)
+            throw IOException("not enough space")
+    }
 
     // ----------------------------------------------------------------------- //
 
     override fun spaceTotal() = capacity
-
     override fun spaceUsed() = used
 
     // ----------------------------------------------------------------------- //
 
     override fun delete(path: String): Boolean {
         val freed = Settings.get.fileCost + size(path)
-        return if (super.delete(path)) {
-            used = maxOf(0, used - freed)
-            true
-        } else {
-            false
-        }
+        if (!wrapped.delete(path))
+            return false
+        releaseCapacity(freed)
+        return true
     }
 
     override fun rename(from: String, to: String): Boolean {
-        return if (exists(to)) {
-            val freed = Settings.get.fileCost + size(to)
-            if (super.rename(from, to)) {
-                used = maxOf(0, used - freed)
-                true
-            } else {
-                false
-            }
-        } else {
-            super.rename(from, to)
-        }
+        if (!exists(to))
+            return wrapped.rename(from, to)
+
+        // 'to' is being deleted
+        val freed = Settings.get.fileCost + size(to)
+        if (!wrapped.rename(from, to))
+            return false
+
+        releaseCapacity(freed)
+        return true
     }
 
     override fun makeDirectory(path: String): Boolean {
-        if (capacity - used < Settings.get.fileCost && !ignoreCapacity) {
-            throw IOException("not enough space")
-        }
-        return if (super.makeDirectory(path)) {
-            used += Settings.get.fileCost
-            true
-        } else {
-            false
-        }
+        val space = Settings.get.fileCost.toLong()
+        assertCapacity(space)
+
+        if (!wrapped.makeDirectory(path))
+            return false
+
+        acquireCapacity(space)
+        return true
     }
 
     // ----------------------------------------------------------------------- //
 
     override fun close() {
-        super.close()
+        wrapped.close()
         used = computeSize("/")
     }
 
@@ -68,7 +80,7 @@ interface Capacity : OutputStreamFileSystem {
     override fun load(nbt: NBTTagCompound) {
         try {
             ignoreCapacity = true
-            super.load(nbt)
+            wrapped.load(nbt)
         } finally {
             ignoreCapacity = false
         }
@@ -77,65 +89,72 @@ interface Capacity : OutputStreamFileSystem {
     }
 
     override fun save(nbt: NBTTagCompound) {
-        super.save(nbt)
+        wrapped.save(nbt)
 
         // For the tooltip.
         nbt.setLong("capacity.used", used)
     }
 
-    // ----------------------------------------------------------------------- //
+    override fun open(path: String, mode: Mode): Int {
+        if (mode == Mode.Read)
+            return wrapped.open(path, mode)
 
-    fun capacityOpenOutputHandle(id: Int, path: String, mode: Mode, superOpenOutputHandle: (Int, String, Mode) -> OutputStreamFileSystem.OutputHandle?): OutputStreamFileSystem.OutputHandle? {
         val delta = when {
-            exists(path) -> if (mode == Mode.Write) -size(path) else 0 // Overwrite clears, append no change
-            else -> Settings.get.fileCost.toLong() // File creation.
+            !exists(path) -> Settings.get.fileCost.toLong() // File creation.
+            mode == Mode.Write -> -size(path) // Overwrite clears
+            else -> 0L // append no change
         }
-        if (capacity - used < delta && !ignoreCapacity) {
-            throw IOException("not enough space")
-        }
-        val stream = superOpenOutputHandle(id, path, mode)
-        return if (stream != null) {
-            used = maxOf(0, used + delta)
-            if (mode == Mode.Append) {
-                stream.seek(stream.length())
+        assertCapacity(delta)
+        val handle = wrapped.open(path, mode)
+        this.openWriteHandles.add(handle)
+        this.acquireCapacity(delta)
+        return handle
+    }
+
+    override fun getHandle(handle: Int): Handle? {
+        val handleObj = wrapped.getHandle(handle) ?: return null
+        synchronized(this) {
+            var handleRef = this.writeHandleCache[handleObj]
+            if (handleRef == null) {
+                handleRef = CountingOutputHandle(handleObj)
+                this.writeHandleCache[handleObj] = handleRef
             }
-            CountingOutputHandle(this, stream)
-        } else {
-            null
+            return handleRef
         }
     }
 
     // ----------------------------------------------------------------------- //
 
-    fun computeSize(path: String): Long =
+    /*override fun openInputChannel(path: String): InputChannel? = wrapped.openInputChannel(path)
+    override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputHandle? {
+        val delta = when {
+            exists(path) -> if (mode == Mode.Write) -size(path) else 0 // Overwrite clears, append no change
+            else -> Settings.get.fileCost.toLong() // File creation.
+        }
+        assertCapacity(delta)
+        val stream = wrapped.openOutputHandle(id, path, mode) ?: return null
+        this.acquireCapacity(delta)
+        if (mode == Mode.Append)
+            stream.seek(stream.length())
+        return CountingOutputHandle(stream)
+    }*/
+
+    // ----------------------------------------------------------------------- //
+
+    private fun computeSize(path: String): Long =
         Settings.get.fileCost +
-            size(path) +
-            if (isDirectory(path)) {
-                (list(path) ?: emptyArray()).fold(0L) { acc, child -> acc + computeSize(path + child) }
-            } else {
-                0L
-            }
+                size(path) +
+                // Add child cost
+                (path.takeIf(::isDirectory)
+                    ?.let(::list)
+                    ?.sumOf { child -> computeSize(path + child) }
+                ?: 0L)
 
-    class CountingOutputHandle(
-        override val owner: Capacity,
-        private val inner: OutputStreamFileSystem.OutputHandle
-    ) : OutputStreamFileSystem.OutputHandle(inner.owner, inner.handle, inner.path) {
-        override val isClosed: Boolean
-            get() = inner.isClosed
-
-        override fun length() = inner.length()
-
-        override fun position() = inner.position()
-
-        override fun close() = inner.close()
-
-        override fun seek(to: Long) = inner.seek(to)
-
+    private inner class CountingOutputHandle(private val inner: Handle) : Handle by inner {
         override fun write(b: ByteArray) {
-            if (owner.capacity - owner.used < b.size && !owner.ignoreCapacity)
-                throw IOException("not enough space")
+            assertCapacity(b.size.toLong())
             inner.write(b)
-            owner.used = owner.used + b.size
+            acquireCapacity(b.size.toLong())
         }
     }
 }

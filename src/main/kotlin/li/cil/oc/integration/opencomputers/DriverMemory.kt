@@ -23,12 +23,12 @@ object DriverMemory : Item(), MemoryDriver, CallBudget {
   }
 
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.RAMTier1),
-    ApiItems.get(Constants.ItemName.RAMTier2),
-    ApiItems.get(Constants.ItemName.RAMTier3),
-    ApiItems.get(Constants.ItemName.RAMTier4),
-    ApiItems.get(Constants.ItemName.RAMTier5),
-    ApiItems.get(Constants.ItemName.RAMTier6))
+    Constants.ItemInfo.RAMTier1,
+    Constants.ItemInfo.RAMTier2,
+    Constants.ItemInfo.RAMTier3,
+    Constants.ItemInfo.RAMTier4,
+    Constants.ItemInfo.RAMTier5,
+    Constants.ItemInfo.RAMTier6)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = ComponentMemory(tier(stack))
 

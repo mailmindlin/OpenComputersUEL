@@ -13,10 +13,10 @@ import net.minecraft.item.ItemStack
 
 object DriverComponentBus : Item(), Processor {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.ComponentBusTier1),
-    ApiItems.get(Constants.ItemName.ComponentBusTier2),
-    ApiItems.get(Constants.ItemName.ComponentBusTier3),
-    ApiItems.get(Constants.ItemName.ComponentBusCreative))
+    Constants.ItemInfo.ComponentBusTier1,
+    Constants.ItemInfo.ComponentBusTier2,
+    Constants.ItemInfo.ComponentBusTier3,
+    Constants.ItemInfo.ComponentBusCreative)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = null
 

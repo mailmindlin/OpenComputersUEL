@@ -37,13 +37,11 @@ object Nanomachines : NanomachinesAPI {
         }
     }
 
-    @JvmStatic
-    fun hasController(player: EntityPlayer): Boolean {
+    override fun hasController(player: EntityPlayer): Boolean {
         return PlayerUtils.persistedData(player).getBoolean(Settings.namespace + "hasNanomachines")
     }
 
-    @JvmStatic
-    fun installController(player: EntityPlayer): Controller? {
+    override fun installController(player: EntityPlayer): Controller? {
         if (!hasController(player)) {
             PlayerUtils.persistedData(player).setBoolean(Settings.namespace + "hasNanomachines", true)
         }

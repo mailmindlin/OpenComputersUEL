@@ -47,7 +47,7 @@ class Nanomachines(parent: Delegator) : AbstractDelegate(parent) {
 
                 // Re-install to get new address, make sure we're configured.
                 ApiNanomachines.uninstallController(entity)
-                val controller = ApiNanomachines.installController(entity)
+                val controller = ApiNanomachines.installController(entity)!!
                 if (controller is ControllerImpl) {
                     val configuration = data.configuration
                     if (configuration != null) {

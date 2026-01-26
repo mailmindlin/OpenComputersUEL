@@ -8,8 +8,7 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.Visibility
 
 class Memory(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Neighbors).
-    create()
+  override val node = nodeFactory().create()
 
   override val deviceInfo: Map<String, String> = mapOf(
     DeviceAttribute.Class to DeviceClass.Memory,

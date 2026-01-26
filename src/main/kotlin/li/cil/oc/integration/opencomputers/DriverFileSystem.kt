@@ -25,10 +25,10 @@ object DriverFileSystem : Item() {
   val UUIDVerifier = """^([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$""".toRegex()
 
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.HDDTier1),
-    ApiItems.get(Constants.ItemName.HDDTier2),
-    ApiItems.get(Constants.ItemName.HDDTier3),
-    ApiItems.get(Constants.ItemName.Floppy)) &&
+    Constants.ItemInfo.HDDTier1,
+    Constants.ItemInfo.HDDTier2,
+    Constants.ItemInfo.HDDTier3,
+    Constants.ItemInfo.Floppy) &&
     (!stack.hasTagCompound() || !stack.tagCompound!!.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
@@ -69,7 +69,7 @@ object DriverFileSystem : Item() {
       // if necessary. No one will know, right? Right!?
       val address = addressFromTag(dataTag(stack))
       var label: Label = ReadWriteItemLabel(stack)
-      val isFloppy = ApiItems.get(stack) == ApiItems.get(Constants.ItemName.Floppy)
+      val isFloppy = ApiItems.get(stack) == Constants.ItemInfo.Floppy
       val sound = Settings.resourceDomain + ":" + (if (isFloppy) "floppy_access" else "hdd_access")
       val drive = DriveData(stack)
       val environment = if (drive.isUnmanaged) {

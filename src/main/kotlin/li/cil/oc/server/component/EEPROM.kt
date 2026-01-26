@@ -15,7 +15,7 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import net.minecraft.nbt.NBTTagCompound
 
 class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Neighbors)
+    override val node = nodeFactory(Visibility.Neighbors)
         .withComponent("eeprom", Visibility.Neighbors)
         .withConnector()
         .create()

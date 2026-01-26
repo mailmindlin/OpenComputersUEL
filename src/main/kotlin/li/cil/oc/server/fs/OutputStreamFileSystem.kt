@@ -5,11 +5,12 @@ import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 import net.minecraftforge.common.util.Constants.NBT
+import java.io.Closeable
 import java.io.FileNotFoundException
 import java.io.IOException
 
-interface OutputStreamFileSystem : InputStreamFileSystem {
-    val outputHandles: MutableMap<Int, OutputHandle>
+abstract class OutputStreamFileSystem : InputStreamFileSystem() {
+    protected val outputHandles: MutableMap<Int, OutputHandle> = mutableMapOf()
 
     // ----------------------------------------------------------------------- //
 
@@ -17,26 +18,20 @@ interface OutputStreamFileSystem : InputStreamFileSystem {
 
     // ----------------------------------------------------------------------- //
 
-    override fun open(path: String, mode: Mode): Int = synchronized(this) {
-        when (mode) {
-            Mode.Read -> super.open(path, mode)
-            else -> {
-                FileSystem.validatePath(path)
-                if (!isDirectory(path)) {
-                    val handle = generateSequence { (Math.random() * Int.MAX_VALUE).toInt() + 1 }
-                        .filter { !outputHandles.containsKey(it) }
-                        .first()
-                    val fileHandle = openOutputHandle(handle, path, mode)
-                    if (fileHandle != null) {
-                        outputHandles[handle] = fileHandle
-                        handle
-                    } else {
-                        throw FileNotFoundException(path)
-                    }
-                } else {
-                    throw FileNotFoundException(path)
-                }
-            }
+    override fun open(path: String, mode: Mode): Int {
+        FileSystem.validatePath(path)
+
+        if (mode == Mode.Read)
+            return super.open(path, mode)
+
+        return synchronized(this) {
+            if (isDirectory(path))
+                throw FileNotFoundException(path)
+            val handle = generateSequence { (Math.random() * Int.MAX_VALUE).toInt() + 1 }
+                .first { it !in outputHandles }
+            val fileHandle = openOutputHandle(handle, path, mode) ?: throw FileNotFoundException(path)
+            outputHandles[handle] = fileHandle
+            handle
         }
     }
 
@@ -47,14 +42,18 @@ interface OutputStreamFileSystem : InputStreamFileSystem {
     override fun close() {
         synchronized(this) {
             super.close()
-            for (handle in outputHandles.values) {
-                handle.close()
-            }
+            outputHandles.values.forEach(Handle::close)
             outputHandles.clear()
         }
     }
 
     // ----------------------------------------------------------------------- //
+
+    companion object {
+        private const val OutputTag = "output"
+        private const val HandleTag = "handle"
+        private const val PathTag = "path"
+    }
 
     override fun load(nbt: NBTTagCompound) {
         super.load(nbt)
@@ -90,7 +89,7 @@ interface OutputStreamFileSystem : InputStreamFileSystem {
 
     // ----------------------------------------------------------------------- //
 
-    fun openOutputHandle(id: Int, path: String, mode: Mode): OutputHandle?
+    internal abstract fun openOutputHandle(id: Int, path: String, mode: Mode): OutputHandle?
 
     // ----------------------------------------------------------------------- //
 
@@ -98,7 +97,7 @@ interface OutputStreamFileSystem : InputStreamFileSystem {
         open val owner: OutputStreamFileSystem,
         val handle: Int,
         val path: String
-    ) : Handle {
+    ) : Handle, Closeable {
         protected var _isClosed = false
 
         open val isClosed: Boolean
@@ -119,10 +118,16 @@ interface OutputStreamFileSystem : InputStreamFileSystem {
             throw IOException("bad file descriptor")
         }
     }
+    abstract class WrappingOutputHandle(
+        protected val inner: OutputHandle
+    ) : OutputHandle(inner.owner, inner.handle, inner.path) {
+        override val isClosed: Boolean
+            get() = inner.isClosed
 
-    companion object {
-        private const val OutputTag = "output"
-        private const val HandleTag = "handle"
-        private const val PathTag = "path"
+        override fun length() = inner.length()
+        override fun position() = inner.position()
+        override fun close() = inner.close()
+        override fun seek(to: Long) = inner.seek(to)
+        override fun write(b: ByteArray) = inner.write(b)
     }
 }

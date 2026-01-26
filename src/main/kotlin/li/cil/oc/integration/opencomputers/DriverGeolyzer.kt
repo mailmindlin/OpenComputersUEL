@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 
 object DriverGeolyzer : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.BlockName.Geolyzer))
+    Constants.BlockInfo.Geolyzer)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

@@ -8,8 +8,19 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
-interface VirtualFileSystem : OutputStreamFileSystem {
-    val root: VirtualDirectory
+/**
+ * Abstract base class for in-memory virtual file systems that can be persisted to NBT.
+ *
+ * This file system implementation stores all files and directories in memory using a tree structure
+ * rooted at [root]. The entire filesystem state can be serialized to and deserialized from
+ * NBT for persistence across game saves.
+ */
+internal sealed class VirtualFileSystem : OutputStreamFileSystem() {
+    /** Root directory of the virtual filesystem tree */
+    protected val root = VirtualDirectory()
+
+    override fun spaceUsed(): Long = -1L
+    override fun spaceTotal(): Long = -1L
 
     // ----------------------------------------------------------------------- //
 
@@ -102,15 +113,12 @@ interface VirtualFileSystem : OutputStreamFileSystem {
 
     override fun openInputChannel(path: String): InputStreamFileSystem.InputChannel? {
         val obj = root.get(segments(path))
-        return if (obj is VirtualFile) {
-            val stream = obj.openInputStream()
-            if (stream != null) InputStreamFileSystem.InputStreamChannel(stream) else null
-        } else {
-            null
-        }
+        val file = obj as? VirtualFile ?: return null
+        val stream = obj.openInputStream() ?: return null
+        return InputStreamChannel(stream)
     }
 
-    override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputStreamFileSystem.OutputHandle? {
+    override fun openOutputHandle(id: Int, path: String, mode: Mode): OutputHandle? {
         val parts = segments(path)
         if (parts.isEmpty()) return null
         val parent = root.get(parts.dropLast(1))
@@ -125,18 +133,26 @@ interface VirtualFileSystem : OutputStreamFileSystem {
     // ----------------------------------------------------------------------- //
 
     override fun load(nbt: NBTTagCompound) {
-        if (this !is Buffered) root.load(nbt)
+//        if (this !is Buffered<*>)
+        root.load(nbt)
         super.load(nbt) // Last to ensure streams can be re-opened.
+    }
+    internal fun loadBuffered(nbt: NBTTagCompound) {
+        super.load(nbt)
     }
 
     override fun save(nbt: NBTTagCompound) {
         super.save(nbt) // First to allow flushing.
-        if (this !is Buffered) root.save(nbt)
+//        if (this !is Buffered<*>)
+        root.save(nbt)
+    }
+    internal fun saveBuffered(nbt: NBTTagCompound) {
+        super.save(nbt)
     }
 
     // ----------------------------------------------------------------------- //
 
-    fun segments(path: String): List<String> =
+    protected open fun segments(path: String): List<String> =
         FileSystem.validatePath(path).split("/").filter { it.isNotEmpty() }
 
     // ----------------------------------------------------------------------- //
@@ -177,7 +193,7 @@ interface VirtualFileSystem : OutputStreamFileSystem {
 
         override var lastModified = System.currentTimeMillis()
 
-        fun openInputStream(): InputStream? = VirtualFileInputStream(this)
+        fun openInputStream(): InputStream = VirtualFileInputStream(this)
 
         fun openOutputHandle(owner: OutputStreamFileSystem, id: Int, path: String, mode: Mode): VirtualOutputHandle? {
             if (handle != null) return null
@@ -358,7 +374,7 @@ interface VirtualFileSystem : OutputStreamFileSystem {
         owner: OutputStreamFileSystem,
         handle: Int,
         path: String
-    ) : OutputStreamFileSystem.OutputHandle(owner, handle, path) {
+    ) : OutputHandle(owner, handle, path) {
         override fun length() = file.size
 
         private var _position: Long = file.data.size.toLong()

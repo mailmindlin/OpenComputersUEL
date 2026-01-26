@@ -10,7 +10,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 
-data class RedstoneChangedEventArgs(val side: EnumFacing, val oldValue: Int, val newValue: Int, val color: Int = -1)
+data class RedstoneChangedEventArgs(val side: EnumFacing?, val oldValue: Int, val newValue: Int, val color: Int = -1)
 
 @JvmInline
 value class RedstoneValues private constructor(val values: IntArray) {
@@ -85,66 +85,26 @@ interface RedstoneAware : Environment, RotationAware {
             }
         }
 
-    fun setOutput(side: EnumFacing, value: Byte) {
-        redstoneDelegate.output[side] = value.toInt()
-    }
-    fun setOutput(values: RedstoneValues) {
-        redstoneDelegate.output = values
-    }
-    fun getOutput(side: EnumFacing): Int
-        = redstoneDelegate.output[side]
-    /*
+    fun getOutput(side: EnumFacing): Int = redstoneDelegate.output[side]
 
-    protected fun getObjectFuzzy(map: Map<*, *>, key: Int): Any? {
-        return when {
-            map.containsKey(key) -> map[key]
-            map.containsKey(key as Any) -> map[key as Any]
-            map.containsKey(key.toDouble()) -> map[key.toDouble()]
-            else -> null
-        }
-    }
-
-    protected fun valueToInt(value: Any?): Int? {
-        return when (value) {
-            is Number -> value.toInt()
-            else -> null
-        }
-    }
-
-    fun getInput(): IntArray = _input.map { maxOf(it, 0) }.toIntArray()
-
-    fun getInput(side: EnumFacing): Int = maxOf(_input[side.ordinal], 0)
-
-    fun setInput(side: EnumFacing, newInput: Int) {
-        val oldInput = _input[side.ordinal]
-        _input[side.ordinal] = newInput
-        if (oldInput >= 0 && newInput != oldInput) {
-            onRedstoneInputChanged(RedstoneChangedEventArgs(side, oldInput, newInput))
-        }
-    }
-
-    fun setInput(values: IntArray) {
-        for (side in EnumFacing.values()) {
-            val value = if (side.ordinal < values.size) values[side.ordinal] else 0
-            setInput(side, value)
-        }
-    }*/
-
-    val maxInput: Int
-        get() = this.redstoneDelegate.input.values.max()
-
-    /*fun getOutput(): IntArray = EnumFacing.values().map { side -> _output[toLocal(side)!!.ordinal] }.toIntArray()
-
-    fun getOutput(side: EnumFacing): Int {
-        val localSide = toLocal(side)!!
-        return if (_output.size > localSide.ordinal) _output[localSide.ordinal] else 0
-    }
+    fun getOutput(): IntArray = EnumFacing.values().map { side ->
+        redstoneDelegate.output[toLocal(side)]
+    }.toIntArray()
 
     fun setOutput(side: EnumFacing, value: Int): Boolean {
         if (value == getOutput(side)) return false
-        _output[toLocal(side)!!.ordinal] = value
+        val localSide = toLocal(side)
+        redstoneDelegate.output[localSide] = value
         onRedstoneOutputChanged(side)
         return true
+    }
+
+    fun setOutput(values: RedstoneValues): Boolean {
+        var changed = false
+        for (side in EnumFacing.values())
+            if (setOutput(side, values[side]))
+                changed = true
+        return changed
     }
 
     fun setOutput(values: Map<*, *>): Boolean {
@@ -157,7 +117,47 @@ interface RedstoneAware : Environment, RotationAware {
             }
         }
         return changed
-    }*/
+    }
+
+    fun getInput(): IntArray = redstoneDelegate.input.values.map { maxOf(it, 0) }.toIntArray()
+
+    fun getInput(side: EnumFacing): Int = maxOf(redstoneDelegate.input[side], 0)
+
+    fun setInput(side: EnumFacing, newInput: Int) {
+        val delegate = redstoneDelegate
+        val oldInput = delegate.input[side]
+        delegate.input[side] = newInput
+        if (oldInput >= 0 && newInput != oldInput) {
+            onRedstoneInputChanged(RedstoneChangedEventArgs(side, oldInput, newInput))
+        }
+    }
+
+    fun setInput(values: IntArray) {
+        for (side in EnumFacing.values()) {
+            val value = if (side.ordinal < values.size) values[side.ordinal] else 0
+            setInput(side, value)
+        }
+    }
+
+    val maxInput: Int
+        get() = this.redstoneDelegate.input.values.max()
+
+    private fun getObjectFuzzy(map: Map<*, *>, key: Int): Any? {
+        val keyAsAny: Any = key
+        return when {
+            map.containsKey(key) -> map[key]
+            map.containsKey(keyAsAny) -> map[keyAsAny]
+            map.containsKey(key.toDouble()) -> map[key.toDouble()]
+            else -> null
+        }
+    }
+
+    private fun valueToInt(value: Any?): Int? {
+        return when (value) {
+            is Number -> value.toInt()
+            else -> null
+        }
+    }
 
     fun checkRedstoneInputChanged() {
         if (this is Tickable) {

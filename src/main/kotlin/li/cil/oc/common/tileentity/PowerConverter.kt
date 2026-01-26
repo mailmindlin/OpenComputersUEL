@@ -19,7 +19,7 @@ import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
 class PowerConverter : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitNotAnalyzable, DeviceInfoKt {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.None)
+    val node: Connector = ApiNetwork.newNode(this, Visibility.None)!!
         .withConnector(Settings.get.bufferConverter)
         .create()
     override fun node(): Node = node

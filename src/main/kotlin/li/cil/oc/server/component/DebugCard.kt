@@ -64,7 +64,7 @@ import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModAPIManager
 
 class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
-    override val node: ComponentConnector = Network.newNode(this, Visibility.Neighbors)
+    override val node: ComponentConnector = Network.newNode(this, Visibility.Neighbors)!!
         .withComponent("debug")
         .withConnector()
         .create()
@@ -289,7 +289,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         DebugNetwork.getEndpoint(destination)
             ?.firstOrNull { it != this@DebugCard }
             ?.let { endpoint ->
-                val packet = Network.newPacket(node.address(), destination, 0, args.drop(1))
+                val packet = Network.newPacket(node.address(), destination, 0, args.drop(1))!!
                 endpoint.receivePacket(packet)
             }
         return result()

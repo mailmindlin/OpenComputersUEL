@@ -22,11 +22,11 @@ object HungryProvider : ScalaProvider("d697c24a-014c-4773-a288-23084a59e9e8") {
 
     override fun readBehaviorFromNBT(player: EntityPlayer, nbt: NBTTagCompound): Behavior = HungryBehavior(player)
 
-    class HungryBehavior(player: EntityPlayer) : AbstractBehavior(player) {
+    class HungryBehavior(player: EntityPlayer) : AbstractBehaviorKt(player) {
         override fun onDisable(reason: DisableReason) {
             if (reason == DisableReason.OutOfEnergy) {
                 player.attackEntityFrom(HungryDamage, Settings.get.nanomachinesHungryDamage)
-                ApiNanomachines.getController(player).changeBuffer(Settings.get.nanomachinesHungryEnergyRestored)
+                controller.changeBuffer(Settings.get.nanomachinesHungryEnergyRestored)
             }
         }
     }

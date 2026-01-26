@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeLeash : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.LeashUpgrade))
+    Constants.ItemInfo.LeashUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

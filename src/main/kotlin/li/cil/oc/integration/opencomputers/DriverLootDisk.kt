@@ -17,7 +17,7 @@ import net.minecraftforge.common.DimensionManager
 // a factory system that allows third-party mods to register loot disks.
 object DriverLootDisk : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.Floppy)) &&
+    Constants.ItemInfo.Floppy) &&
     (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "lootPath"))
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =

@@ -9,9 +9,9 @@ object AngelUpgradeHandler {
     @JvmStatic
     @SubscribeEvent
     fun onPlaceInAir(e: RobotPlaceInAirEvent) {
-        val machineNode = e.agent.machine().node()
-        e.setAllowed(machineNode.reachableNodes().any { node ->
+        val machineNode = e.agent.machine().node()!!
+        e.isAllowed = machineNode.reachableNodes().any { node ->
             node is Node && node.canBeReachedFrom(machineNode) && node.host() is UpgradeAngel
-        })
+        }
     }
 }

@@ -5,27 +5,24 @@ import li.cil.oc.OpenComputers
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.io.InputStream
-import java.util.concurrent.Callable
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 class ZipFileInputStreamFileSystem private constructor(
     private val archive: ArchiveDirectory
-) : InputStreamFileSystem {
-    override val inputHandles = mutableMapOf<Int, InputStreamFileSystem.InputHandle>()
-
+) : InputStreamFileSystem() {
     override fun spaceTotal() = spaceUsed()
-
     override fun spaceUsed() = spaceUsedLazy
 
     private val spaceUsedLazy: Long by lazy {
-        fun recurse(d: ArchiveDirectory): Long = d.children.fold(0L) { acc, c ->
-            acc + when (c) {
+        fun recurse(d: ArchiveDirectory): Long = d.children.sumOf { c ->
+            when (c) {
                 is ArchiveDirectory -> recurse(c)
                 is ArchiveFile -> c.size.toLong()
                 else -> 0L
             }
         }
+
         synchronized(ZipFileInputStreamFileSystem) {
             recurse(archive)
         }
@@ -51,18 +48,16 @@ class ZipFileInputStreamFileSystem private constructor(
     }
 
     override fun list(path: String): Array<String>? = synchronized(ZipFileInputStreamFileSystem) {
-        val e = entry(path)
-        if (e != null && e.isDirectory) e.list() else null
+        entry(path)?.takeIf(Archive::isDirectory)?.list()
     }
 
     // ----------------------------------------------------------------------- //
 
-    override fun openInputChannel(path: String): InputStreamFileSystem.InputChannel? =
+    override fun openInputChannel(path: String): InputChannel? =
         synchronized(ZipFileInputStreamFileSystem) {
-            entry(path)?.let { e ->
-                val stream = e.openStream()
-                if (stream != null) InputStreamFileSystem.InputStreamChannel(stream) else null
-            }
+            entry(path)
+                ?.openStream()
+                ?.let(::InputStreamChannel)
         }
 
     // ----------------------------------------------------------------------- //
@@ -82,14 +77,12 @@ class ZipFileInputStreamFileSystem private constructor(
         @Synchronized
         fun fromFile(file: File, innerPath: String): ZipFileInputStreamFileSystem? {
             return try {
-                val archiveDir = cache.get("${file.path}:$innerPath", Callable {
-                    val zip = ZipFile(file.path)
-                    try {
+                val archiveDir = cache.get("${file.path}:$innerPath") {
+                    ZipFile(file.path).use { zip ->
                         val cleanedPath = innerPath.removePrefix("/").removeSuffix("/") + "/"
                         val rootEntry = zip.getEntry(cleanedPath)
-                        if (rootEntry == null || !rootEntry.isDirectory) {
+                        if (rootEntry == null || !rootEntry.isDirectory)
                             throw IllegalArgumentException("Root path $innerPath doesn't exist or is not a directory in ZIP file ${file.name}.")
-                        }
                         val directories = mutableSetOf<ArchiveDirectory>()
                         val files = mutableSetOf<ArchiveFile>()
                         val iterator = zip.entries()
@@ -114,10 +107,8 @@ class ZipFileInputStreamFileSystem private constructor(
                             }
                         }
                         root
-                    } finally {
-                        zip.close()
                     }
-                })
+                }
                 if (archiveDir != null) ZipFileInputStreamFileSystem(archiveDir) else null
             } catch (e: Throwable) {
                 OpenComputers.log.warn("Failed creating ZIP file system.", e)
@@ -126,7 +117,7 @@ class ZipFileInputStreamFileSystem private constructor(
         }
     }
 
-    abstract class Archive(entry: ZipEntry, root: String) {
+    private abstract class Archive(entry: ZipEntry, root: String) {
         val path: String = entry.name.removePrefix(root).removeSuffix("/")
 
         val name: String = path.substring(path.lastIndexOf('/') + 1)
@@ -160,7 +151,7 @@ class ZipFileInputStreamFileSystem private constructor(
             if (path.size == 1 && path.first() == name) this else null
     }
 
-    class ArchiveDirectory(entry: ZipEntry, root: String) : Archive(entry, root) {
+    private class ArchiveDirectory(entry: ZipEntry, root: String) : Archive(entry, root) {
         val children = mutableSetOf<Archive>()
 
         override val size = 0
@@ -173,13 +164,10 @@ class ZipFileInputStreamFileSystem private constructor(
 
         override fun find(path: List<String>): Archive? {
             if (path.isEmpty()) return null
-            return if (path.first() == name) {
-                if (path.size == 1) this
-                else {
-                    val subPath = path.drop(1)
-                    children.asSequence().mapNotNull { it.find(subPath) }.firstOrNull()
-                }
-            } else null
+            if (path.first() != name) return null
+            if (path.size == 1) return this
+            val subPath = path.drop(1)
+            return children.firstNotNullOfOrNull { it.find(subPath) }
         }
     }
 }

@@ -3,7 +3,6 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.network.Analyzable
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.SidedEnvironment
@@ -29,11 +28,11 @@ class Keyboard : TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitImmibi
 
     @JvmField
     val keyboard = run {
-        val keyboardItem = ApiItems.get(Constants.BlockName.Keyboard).createItemStack(1)
-        Driver.driverFor(keyboardItem, javaClass).createEnvironment(keyboardItem, this)
+        val keyboardItem = Constants.BlockInfo.Keyboard.createItemStack(1)
+        Driver.driverFor(keyboardItem, javaClass)!!.createEnvironment(keyboardItem, this)
     }
 
-    override fun node(): Node = keyboard.node()
+    override fun node(): Node? = keyboard?.node()
 
     fun hasNodeOnSide(side: EnumFacing): Boolean =
         side != facing() && (isOnWall || side.opposite != forward)
@@ -46,7 +45,7 @@ class Keyboard : TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitImmibi
     override fun sidedNode(side: EnumFacing): Node? = if (hasNodeOnSide(side)) node() else null
 
     // Override automatic analyzer implementation for sided environments.
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(node())
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(node()!!)
 
     // ----------------------------------------------------------------------- //
 
@@ -57,14 +56,14 @@ class Keyboard : TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitImmibi
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         super.readFromNBTForServer(nbt)
         if (isServer) {
-            keyboard.load(nbt.getCompoundTag(KeyboardTag))
+            keyboard!!.load(nbt.getCompoundTag(KeyboardTag))
         }
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
         super.writeToNBTForServer(nbt)
         if (isServer) {
-            nbt.setNewCompoundTag(KeyboardTag) { keyboard.save(it) }
+            nbt.setNewCompoundTag(KeyboardTag) { keyboard!!.save(it) }
         }
     }
 

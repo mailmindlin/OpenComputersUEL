@@ -8,8 +8,8 @@ class InkCartridge(parent: Delegator) : AbstractDelegate(parent) {
     override val maxStackSize: Int = 1
 
     override fun getContainerItem(stack: ItemStack): ItemStack {
-        return if (Items.get(stack) == Items.get(Constants.ItemName.InkCartridge))
-            Items.get(Constants.ItemName.InkCartridgeEmpty).createItemStack(1)
+        return if (Items.get(stack) == Constants.ItemInfo.InkCartridge)
+            Constants.ItemInfo.InkCartridgeEmpty.createItemStack(1)
         else
             super.getContainerItem(stack)
     }

@@ -23,7 +23,7 @@ import kotlin.math.floor
 object UpgradeTractorBeam {
 
     abstract class Common : ManagedEnvironmentKt(), DeviceInfoKt {
-        override val node = Network.newNode(this, Visibility.Network)
+        override val node = nodeFactory(Visibility.Network)
             .withComponent("tractor_beam")
             .create()
 

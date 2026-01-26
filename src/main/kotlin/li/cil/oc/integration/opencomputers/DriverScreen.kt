@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack
 
 object DriverScreen : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.BlockName.ScreenTier1))
+    Constants.BlockInfo.ScreenTier1)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) = when (host) {
     is TileEntityScreen -> if (host.tier > 0) ComponentScreen(host) else null

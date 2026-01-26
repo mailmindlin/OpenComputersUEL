@@ -1,12 +1,8 @@
 package li.cil.oc.server.component
 
-import java.util
 import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
-import li.cil.oc.api
-import li.cil.oc.api.Network
-import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.TextBuffer
@@ -15,19 +11,16 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.machine.LimitReachedException
 import li.cil.oc.api.network.*
-import li.cil.oc.api.prefab
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
-import li.cil.oc.util.ExtendedUnicodeHelper
-import li.cil.oc.util.PackedColor
-import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagList
-//import li.cil.oc.common.component
 import li.cil.oc.common.component.GpuTextBuffer
 import li.cil.oc.common.component.traits.VideoRamDevice
 import li.cil.oc.common.component.traits.VideoRamDevice.Companion.RESERVED_SCREEN_INDEX
 import li.cil.oc.common.component.traits.VideoRamRasterizer
-
-import scala.util.matching.Regex
+import li.cil.oc.server.machine.Machine
+import li.cil.oc.util.ExtendedUnicodeHelper
+import li.cil.oc.util.PackedColor
+import net.minecraft.nbt.NBTTagCompound
+import net.minecraft.nbt.NBTTagList
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -43,11 +36,10 @@ import kotlin.math.pow
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
-  override val node = Network.newNode(this, Visibility.Neighbors).
-    withComponent("gpu").
-    withConnector().
-    create()
+open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
+  override val node = nodeFactory(Visibility.Neighbors, component = "gpu")
+    .withConnector()
+    .create()
 
   private val maxResolution = Settings.screenResolutionsByTier[tier]
   private val maxDepth = Settings.screenDepthsByTier[tier]
@@ -346,7 +338,7 @@ class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
   }
 
   @Callback(direct = true, doc = """function():string -- Get the address of the screen the GPU is currently bound to.""")
-  fun getScreen(context: Context, args: Arguments): Result = screen(RESERVED_SCREEN_INDEX) { s -> result(s.node().address()) }
+  fun getScreen(context: Context, args: Arguments): Result = screen(RESERVED_SCREEN_INDEX) { s -> result(s.node()!!.address()) }
 
   @Callback(direct = true, doc = """function():number, boolean -- Get the current background color and whether it's from the palette or not.""")
   fun getBackground(context: Context, args: Arguments): Result =
@@ -609,39 +601,44 @@ class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
         val smw = s.maximumWidth
         val smh = s.maximumHeight
         s.setResolution(min(gmw, smw), min(gmh, smh))
-        s.setColorDepth(TextBuffer.ColorDepth.values()[min(maxDepth.ordinal, s.getMaximumColorDepth().ordinal)])
+        s.setColorDepth(TextBuffer.ColorDepth.values()[min(maxDepth.ordinal, s.maximumColorDepth.ordinal)])
         s.setForegroundColor(0xFFFFFF)
         val w = s.width
         val h = s.height
-        message.source().host() match {
-          case machine: li.cil.oc.server.machine.Machine if machine.lastError != null =>
-            if (s.getColorDepth().ordinal > api.internal.TextBuffer.ColorDepth.OneBit.ordinal) s.setBackgroundColor(0x0000FF)
-            else s.setBackgroundColor(0x000000)
-            s.fill(0, 0, w, h, 0x20)
-            try {
-              val wrapRegEx = s"(.{1,${max(1, w - 2)}})\\s".r
-              val lines = wrapRegEx.replaceAllIn(Localization.localizeImmediately(machine.lastError).replace("\t", "  ") + "\n", m => Regex.quoteReplacement(m.group(1) + "\n")).lines.toArray
-              val firstRow = ((h - lines.length) / 2) max 2
-
-              val message = "Unrecoverable Error"
-              s.set((w - message.length) / 2, firstRow - 2, message, false)
-
-              val maxLineLength = lines.map(_.length).max
-              val col = ((w - maxLineLength) / 2) max 0
-              for ((line, idx) <- lines.zipWithIndex) {
-                val row = firstRow + idx
-                s.set(col, row, line, false)
-              }
-            }
-            catch {
-              case t: Throwable => t.printStackTrace()
-            }
-          case _ =>
+        val host = message.source().host()
+        val lastError = (host as? Machine)?.lastError()
+        if (lastError != null) {
+          if (s.colorDepth.ordinal > TextBuffer.ColorDepth.OneBit.ordinal) {
+            s.setBackgroundColor(0x0000FF)
+          } else {
             s.setBackgroundColor(0x000000)
-            s.fill(0, 0, w, h, 0x20)
+          }
+          s.fill(0, 0, w, h, 0x20)
+          try {
+            val wrapRegEx = Regex("(.{1,${max(1, w - 2)}})\\s")
+            val errorText = Localization.localizeImmediately(lastError).replace("\t", "  ") + "\n"
+            val wrappedText = wrapRegEx.replace(errorText) { m -> m.groupValues[1] + "\n" }
+            val lines = wrappedText.lines().filter { it.isNotEmpty() }
+            val firstRow = ((h - lines.size) / 2).coerceAtLeast(2)
+
+            val errorMessage = "Unrecoverable Error"
+            s.set((w - errorMessage.length) / 2, firstRow - 2, errorMessage, false)
+
+            val maxLineLength = lines.maxOfOrNull { it.length } ?: 0
+            val col = ((w - maxLineLength) / 2).coerceAtLeast(0)
+            for ((idx, line) in lines.withIndex()) {
+              val row = firstRow + idx
+              s.set(col, row, line, false)
+            }
+          } catch (t: Throwable) {
+            t.printStackTrace()
+          }
+        } else {
+          s.setBackgroundColor(0x000000)
+          s.fill(0, 0, w, h, 0x20)
         }
-        null // For screen()
-      })
+        return@screen result(Unit) // For screen()
+      }
     }
   }
 
@@ -679,11 +676,9 @@ class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
     super.load(nbt)
 
     if (nbt.hasKey(SCREEN_KEY)) {
-      nbt.getString(SCREEN_KEY) match {
-        case screen: String if !screen.isEmpty() => screenAddress = Some(screen)
-        case _ => screenAddress = None
-      }
-      screenInstance = None
+      val screen = nbt.getString(SCREEN_KEY)
+      screenAddress = if (!screen.isNullOrEmpty()) screen else null
+      screenInstance = null
     }
 
     if (nbt.hasKey(BUFFER_INDEX_KEY)) {
@@ -693,8 +688,8 @@ class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
     device.removeAllBuffers() // JUST in case
     if (nbt.hasKey(VIDEO_RAM_KEY)) {
       val videoRamNbt = nbt.getCompoundTag(VIDEO_RAM_KEY)
-      val nbtPages = videoRamNbt.getTagList(NBT_PAGES, COMPOUND_ID)
-      for (i <- 0 until nbtPages.tagCount()) {
+      val nbtPages = videoRamNbt.getTagList(NBT_PAGES, COMPOUND_ID.toInt())
+      for (i in 0 until nbtPages.tagCount()) {
         val nbtPage = nbtPages.getCompoundTagAt(i)
         val idx: Int = nbtPage.getInteger(NBT_PAGE_IDX)
         val data = nbtPage.getCompoundTag(NBT_PAGE_DATA)
@@ -717,17 +712,13 @@ class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
 
     val indexes = device.bufferIndexes()
     for (idx in indexes) {
-      getBuffer(idx) match {
-        case Some(page) => {
-          val nbtPage = new NBTTagCompound
-          nbtPage.setInteger(NBT_PAGE_IDX, idx)
-          val data = new NBTTagCompound
-          page.data.save(data)
-          nbtPage.setTag(NBT_PAGE_DATA, data)
-          nbtPages.appendTag(nbtPage)
-        }
-        case _ => // ignore
-      }
+      val page = device.getBuffer(idx) ?: continue // ignore
+      val nbtPage = NBTTagCompound()
+      nbtPage.setInteger(NBT_PAGE_IDX, idx)
+      val data = NBTTagCompound()
+      page.data.save(data)
+      nbtPage.setTag(NBT_PAGE_DATA, data)
+      nbtPages.appendTag(nbtPage)
     }
     videoRamNbt.setTag(NBT_PAGES, nbtPages)
     nbt.setTag(VIDEO_RAM_KEY, videoRamNbt)

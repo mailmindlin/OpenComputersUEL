@@ -39,7 +39,7 @@ class ServerRackModel(val parent: IBakedModel) : SmartBlockModelBase() {
                 for (slot in 0 until 4) {
                     val mountable = tile.getMountable(slot)
                     if (mountable is RackMountable) {
-                        val event = RackMountableRenderEvent.Block(tile, slot, tile.lastData(slot), side)
+                        val event = RackMountableRenderEvent.Block(tile, slot, tile.lastData[slot], side)
                         MinecraftForge.EVENT_BUS.post(event)
                         if (!event.isCanceled) {
                             if (event.frontTextureOverride != null) {

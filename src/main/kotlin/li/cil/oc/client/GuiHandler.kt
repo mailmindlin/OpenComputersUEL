@@ -24,7 +24,8 @@ object GuiHandler : CommonGuiHandler() {
   override fun getClientGuiElement(id: Int, player: EntityPlayer, world: World, x: Int, y: Int, z: Int): Any? {
     return when (GuiType.Categories[id]) {
       GuiType.Category.Block -> {
-        when (val t = world.getTileEntity(BlockPosition(x, GuiType.extractY(y), z))) {
+        val t = world.getTileEntity(BlockPosition(x, GuiType.extractY(y), z)) ?: return null
+        when (t) {
           is li.cil.oc.common.tileentity.Adapter -> if (id == GuiType.Adapter.id) li.cil.oc.client.gui.Adapter(player.inventory, t) else null
           is li.cil.oc.common.tileentity.Assembler -> if (id == GuiType.Assembler.id) li.cil.oc.client.gui.Assembler(player.inventory, t) else null
           is li.cil.oc.common.tileentity.Case -> if (id == GuiType.Case.id) li.cil.oc.client.gui.Case(player.inventory, t) else null

@@ -45,14 +45,14 @@ object RobotCommonHandler {
                     .map { agent.equipmentInventory().getStackInSlot(it) }
                     .mapNotNull { Delegator.subItem(it) }
                     .filterIsInstance<UpgradeHover>()
-                    .forEach { item -> maxFlyingHeight = maxOf(maxFlyingHeight, Settings.get.upgradeFlightHeight(item.tier)) }
+                    .forEach { item -> maxFlyingHeight = maxOf(maxFlyingHeight, Settings.get.upgradeFlightHeight[item.tier]) }
 
                 (0 until agent.componentCount())
                     .map { it + agent.mainInventory().sizeInventory + agent.equipmentInventory().sizeInventory }
                     .map { agent.getStackInSlot(it) }
                     .mapNotNull { Delegator.subItem(it) }
                     .filterIsInstance<UpgradeHover>()
-                    .forEach { item -> maxFlyingHeight = maxOf(maxFlyingHeight, Settings.get.upgradeFlightHeight(item.tier)) }
+                    .forEach { item -> maxFlyingHeight = maxOf(maxFlyingHeight, Settings.get.upgradeFlightHeight[item.tier]) }
 
                 fun isMovingDown() = e.direction == EnumFacing.DOWN
                 fun bypassesFlightLimit() = maxFlyingHeight >= world.height

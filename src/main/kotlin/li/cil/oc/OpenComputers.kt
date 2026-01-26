@@ -13,6 +13,7 @@ import li.cil.oc.util.ThreadPoolFactory
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 
+@Suppress("RemoveRedundantQualifierName")
 @Mod(modid = OpenComputers.ID, name = OpenComputers.Name,
   version = OpenComputers.Version,
   modLanguage = "kotlin", useMetadata = true /*@MCVERSIONDEP@*/)
@@ -25,7 +26,7 @@ object OpenComputers {
 
   const val Version = "@VERSION@"
 
-  var logger: Logger? = null
+  private var logger: Logger? = null
   val log: Logger
     get() = logger ?: LogManager.getLogger(Name)
 
@@ -55,12 +56,13 @@ object OpenComputers {
   }
 
   @EventHandler
+  @Suppress("LoggingSimilarMessage")
   fun serverStart(e: FMLServerStartingEvent) {
     CommandHandler.register(e)
     ThreadPoolFactory.safePools.forEach { it.newThreadPool() }
 
-    if (Settings.get.internetAccessConfigured()) {
-      if (Settings.get.internetFilteringRulesInvalid()) {
+    if (Settings.get.internetAccessConfigured) {
+      if (Settings.get.internetFilteringRulesInvalid) {
         OpenComputers.log.warn("####################################################")
         OpenComputers.log.warn("#                                                  #")
         OpenComputers.log.warn("#  Could not parse Internet Card filtering rules!  #")

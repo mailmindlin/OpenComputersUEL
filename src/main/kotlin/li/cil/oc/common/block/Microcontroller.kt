@@ -10,6 +10,7 @@ import li.cil.oc.common.item.data.MicrocontrollerData
 import li.cil.oc.common.tileentity.Microcontroller as TEMicrocontroller
 import li.cil.oc.integration.util.ItemBlacklist
 import li.cil.oc.integration.util.Wrench
+import li.cil.oc.itemInfo
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.StackOption
@@ -89,7 +90,7 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
                     }
                 }
                 return true
-            } else if (Items.get(heldItem) == Items.get(Constants.ItemName.EEPROM)) {
+            } else if (Items.get(heldItem) == Constants.ItemInfo.EEPROM) {
                 if (!world.isRemote) {
                     val tileEntity = world.getTileEntity(pos)
                     if (tileEntity is TEMicrocontroller) {

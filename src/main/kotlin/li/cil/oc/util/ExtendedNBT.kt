@@ -287,3 +287,10 @@ inline fun <reified Tag : NBTBase, Value> NBTTagList.map(f: (Tag) -> Value): Lis
 
 inline fun <reified Tag : NBTBase> NBTTagList.toArray(): Array<Tag> =
     map<Tag, Tag> { it }.toTypedArray()
+
+val ItemStack.ensureTagCompound: NBTTagCompound
+    get() {
+        if (!hasTagCompound())
+            tagCompound = NBTTagCompound()
+        return tagCompound!!
+    }

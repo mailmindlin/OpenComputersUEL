@@ -11,6 +11,7 @@ import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.*
 import li.cil.oc.common.inventory.InventoryProxy
 import li.cil.oc.common.tileentity.traits.*
+import li.cil.oc.common.tileentity.traits.Computer
 import li.cil.oc.common.tileentity.traits.PowerInformation
 import li.cil.oc.common.tileentity.traits.RotatableTile
 import li.cil.oc.server.agent.Player
@@ -48,12 +49,12 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
         return super.getCapability(capability, facing)
     }
 
-    private val node: Component = ApiNetwork.newNode(this, Visibility.Network)
+    private val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("robot", Visibility.Neighbors)
         .create()
     override fun node(): Node? = node
 
-    override fun machine(): Machine = robot.machine()
+    override fun machine(): Machine = robot.machine()!!
 
     override fun tier(): Int = robot.tier()
 
@@ -85,9 +86,9 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     override fun connectComponents() {}
     override fun disconnectComponents() {}
-    override fun isRunning(): Boolean = robot.isRunning
+    override val isRunning: Boolean get() = robot.isRunning
 
-    override fun setRunning(value: Boolean) = robot.setRunning(value)
+    override fun setRunning(value: Boolean) { robot.setRunning(value) }
 
     override fun shouldAnimate(): Boolean = robot.shouldAnimate()
 
@@ -95,7 +96,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     override fun componentCount(): Int = robot.componentCount()
 
-    override fun getComponentInSlot(index: Int): ManagedEnvironment = robot.getComponentInSlot(index)
+    override fun getComponentInSlot(index: Int): ManagedEnvironment? = robot.getComponentInSlot(index)
 
     override fun synchronizeSlot(slot: Int) = robot.synchronizeSlot(slot)
 
@@ -131,7 +132,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
         if (message.name() == "network.message" && message.source() != this.node) {
             when (val data = message.data()) {
                 is Array<*> -> if (data.isNotEmpty() && data[0] is Packet) {
-                    robot.node.sendToReachable(message.name(), data[0])
+                    robot.node()!!.sendToReachable(message.name(), data[0])
                 }
             }
         }
@@ -147,15 +148,15 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
         super.validate()
         val firstProxy = robot.proxyRaw == null
         robot.proxyRaw = this
-        robot.setWorld(world)
-        robot.setPos(pos)
+        robot.world = world
+        robot.pos = pos
         if (firstProxy) {
             robot.validate()
         }
         if (isServer) {
             // Use the same address we use internally on the outside.
             val nbt = NBTTagCompound()
-            nbt.setString("address", robot.node().address())
+            nbt.setString("address", robot.node()!!.address())
             node.load(nbt)
         }
     }
@@ -202,21 +203,16 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     // ----------------------------------------------------------------------- //
 
-    override val _input: IntArray get() = robot._input
-
-    override val _output: IntArray get() = robot._output
-
-    override val _bundledInput: Array<IntArray> get() = robot._bundledInput
-
-    override val _rednetInput: Array<IntArray> get() = robot._rednetInput
-
-    override val _bundledOutput: Array<IntArray> get() = robot._bundledOutput
-
-    override fun isOutputEnabled(): Boolean = robot.isOutputEnabled()
-
-    override fun setOutputEnabled(value: Boolean): RedstoneAware = robot.setOutputEnabled(value)
-
-    override fun checkRedstoneInputChanged() = robot.checkRedstoneInputChanged()
+    override fun setBundledOutput(values: Map<*, *>): Boolean = robot.setBundledOutput(values)
+    override var outputEnabled: Boolean by robot::outputEnabled
+    override fun checkRedstoneInputChanged() {
+        robot.checkRedstoneInputChanged()
+    }
+//    override val _input: IntArray get() = robot._input
+//    override val _output: IntArray get() = robot._output
+//    override val _bundledInput: Array<IntArray> get() = robot._bundledInput
+//    override val _rednetInput: Array<IntArray> get() = robot._rednetInput
+//    override val _bundledOutput: Array<IntArray> get() = robot._bundledOutput
 
     /* TORO RedLogic
     @Optional.Method(modid = Mods.IDs.RedLogic)
@@ -240,17 +236,8 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     // ----------------------------------------------------------------------- //
 
-    override fun pitch(): EnumFacing = robot.pitch()
-
-    override fun setPitch(value: EnumFacing) {
-        robot.setPitch(value)
-    }
-
-    override fun yaw(): EnumFacing = robot.yaw()
-
-    override fun setYaw(value: EnumFacing) {
-        robot.setYaw(value)
-    }
+    override var pitch: EnumFacing? by robot::pitch
+    override var yaw: EnumFacing? by robot::yaw
 
     override fun setFromEntityPitchAndYaw(entity: Entity): Boolean = robot.setFromEntityPitchAndYaw(entity)
 
@@ -258,7 +245,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     override fun invertRotation(): Boolean = robot.invertRotation()
 
-    override fun facing(): EnumFacing = robot.facing()
+    override fun facing(): EnumFacing? = robot.facing()
 
     override fun rotate(axis: EnumFacing): Boolean = robot.rotate(axis)
 
@@ -314,17 +301,8 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     // ----------------------------------------------------------------------- //
 
-    override fun globalBuffer(): Double = robot.globalBuffer()
-
-    override fun setGlobalBuffer(value: Double) {
-        robot.setGlobalBuffer(value)
-    }
-
-    override fun globalBufferSize(): Double = robot.globalBufferSize()
-
-    override fun setGlobalBufferSize(value: Double) {
-        robot.setGlobalBufferSize(value)
-    }
+    override var globalBuffer: Double by robot::globalBuffer
+    override var globalBufferSize: Double by robot::globalBufferSize
 
     // ----------------------------------------------------------------------- //
 
@@ -338,5 +316,5 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
 
     fun canDrain(fluid: Fluid): Boolean = robot.canDrain(fluid)
 
-    override fun getTankProperties(): Array<IFluidTankProperties> = robot.getTankProperties()
+    override fun getTankProperties(): Array<out IFluidTankProperties> = robot.getTankProperties()
 }

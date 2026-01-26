@@ -37,7 +37,7 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
     override val redstoneDelegate: RedstoneAware.Delegate = register(RedstoneAware::Delegate)
     init {
         // Enable redstone functionality.
-        redstoneDelegate.isOutputEnabled = true
+        redstoneDelegate._isOutputEnabled = true
         color = Color.rgbValues(Color.byTier[tier])
     }
 
@@ -186,9 +186,9 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
         if (lastPos == null || lastPos.first != x || lastPos.second != y) {
             when {
                 entity is EntityPlayer && Settings.get.inputUsername ->
-                    origin.node().sendToReachable("computer.signal", "walk", x + 1, height - y, entity.name)
+                    origin.node()!!.sendToReachable("computer.signal", "walk", x + 1, height - y, entity.name)
                 else ->
-                    origin.node().sendToReachable("computer.signal", "walk", x + 1, height - y)
+                    origin.node()!!.sendToReachable("computer.signal", "walk", x + 1, height - y)
             }
         }
     }
@@ -319,14 +319,14 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         tier = max(0, min(2, nbt.getByte(TierTag).toInt()))
         color = Color.rgbValues(Color.byTier[tier])
-        super<RedstoneAware>.readFromNBTForServer(nbt)
+        super.readFromNBTForServer(nbt)
         hadRedstoneInput = nbt.getBoolean(HadRedstoneInputTag)
         invertTouchMode = nbt.getBoolean(InvertTouchModeTag)
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
         nbt.setByte(TierTag, tier.toByte())
-        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
+        super.writeToNBTForServer(nbt)
         nbt.setBoolean(HadRedstoneInputTag, hadRedstoneInput)
         nbt.setBoolean(InvertTouchModeTag, invertTouchMode)
     }
@@ -375,11 +375,11 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
     // ----------------------------------------------------------------------- //
 
     override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> =
-        arrayOf(origin.node())
+        arrayOf(origin.node()!!)
 
     override fun onRedstoneInputChanged(args: RedstoneChangedEventArgs) {
         super.onRedstoneInputChanged(args)
-        val hasRedstoneInput = screens.maxOfOrNull { it.maxInput } ?: 0 > 0
+        val hasRedstoneInput = (screens.maxOfOrNull { it.maxInput } ?: 0) > 0
         if (hasRedstoneInput != hadRedstoneInput) {
             hadRedstoneInput = hasRedstoneInput
             if (hasRedstoneInput) {

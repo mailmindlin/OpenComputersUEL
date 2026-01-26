@@ -12,7 +12,7 @@ import net.minecraft.item.ItemStack
 
 object DriverNetworkCard : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.NetworkCard))
+    Constants.ItemInfo.NetworkCard)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? =
     if (host.world()?.isRemote != false) null

@@ -3,7 +3,6 @@ package li.cil.oc.common.item.data
 import li.cil.oc.Settings
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
-import li.cil.oc.server.fs
 import li.cil.oc.server.fs.FileSystem
 import net.minecraft.entity.player.EntityPlayer
 
@@ -20,9 +19,6 @@ class DriveData : ItemData {
     val isLocked: Boolean
         get() = lockInfo.isNotEmpty()
 
-    private val UnmanagedTag = Settings.namespace + "unmanaged"
-    private val LockTag = Settings.namespace + "lock"
-
     override fun load(nbt: NBTTagCompound) {
         isUnmanaged = nbt.getBoolean(UnmanagedTag)
         lockInfo = if (nbt.hasKey(LockTag)) {
@@ -36,6 +32,9 @@ class DriveData : ItemData {
     }
 
     companion object {
+        private const val UnmanagedTag = Settings.namespace + "unmanaged"
+        private const val LockTag = Settings.namespace + "lock"
+
         @JvmStatic
         fun lock(stack: ItemStack, player: EntityPlayer) {
             val key = player.name

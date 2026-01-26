@@ -9,9 +9,9 @@ import net.minecraft.item.ItemStack
 object ServerTemplate {
     @JvmStatic
     fun selectDisassembler(stack: ItemStack): Boolean =
-        Items.get(stack) == Items.get(Constants.ItemName.ServerTier1) ||
-                Items.get(stack) == Items.get(Constants.ItemName.ServerTier2) ||
-                Items.get(stack) == Items.get(Constants.ItemName.ServerTier3)
+        Items.get(stack) == Constants.ItemInfo.ServerTier1 ||
+                Items.get(stack) == Constants.ItemInfo.ServerTier2 ||
+                Items.get(stack) == Constants.ItemInfo.ServerTier3
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<Array<ItemStack>> {

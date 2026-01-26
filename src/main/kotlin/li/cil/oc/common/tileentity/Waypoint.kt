@@ -26,7 +26,7 @@ import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Waypoint: TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitRedstoneAware, TraitTickable {
     @JvmField
-    val node: Component = ApiNetwork.newNode(this, Visibility.Network)
+    val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("waypoint")
         .create()
     override fun node(): Node = node

@@ -19,10 +19,12 @@ import li.cil.oc.common.GuiType
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Sound
 import li.cil.oc.common.inventory.ComponentInventory
+import li.cil.oc.common.inventory.Inventory
 import li.cil.oc.common.inventory.ItemStackInventory
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedNBT.toNbt
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.ensureTagCompound
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -32,12 +34,12 @@ import net.minecraft.util.EnumHand
 class DiskDriveMountable(
     val rack: Rack,
     val slot: Int
-) : ManagedEnvironmentKt(), ItemStackInventory, ComponentInventory, RackMountable, Analyzable, DeviceInfoKt {
+) : ManagedEnvironmentKt(), Inventory, ComponentInventory, RackMountable, Analyzable, DeviceInfoKt {
     // Stored for filling data packet when queried.
     var lastAccess = 0L
 
     val filesystemNode: Node?
-        get() = components(0)?.node
+        get() = components[0]?.node()
 
     // ----------------------------------------------------------------------- //
     // DeviceInfo
@@ -52,7 +54,7 @@ class DiskDriveMountable(
     // ----------------------------------------------------------------------- //
     // Environment
 
-    override val node: Component = Network.newNode(this, Visibility.Network)
+    override val node: Component = Network.newNode(this, Visibility.Network)!!
         .withComponent("disk_drive")
         .create() as Component
 
@@ -98,10 +100,37 @@ class DiskDriveMountable(
     // ----------------------------------------------------------------------- //
     // ItemStackInventory
 
-    override fun host(): EnvironmentHost = rack
+    override val host: EnvironmentHost get() = rack
 
     // ----------------------------------------------------------------------- //
     // IInventory
+
+    private val inventory: Array<ItemStack> by lazy {
+        Array(sizeInventory) { ItemStack.EMPTY }
+    }
+
+    override val items: Array<ItemStack>
+        get() = inventory
+
+    // Initialize the list automatically if we have a container.
+    init {
+        if (!container.isEmpty)
+            reinitialize()
+    }
+
+    // Load items from tag.
+    fun reinitialize() {
+        for (i in items.indices)
+            updateItems(i, ItemStack.EMPTY)
+        load(container.ensureTagCompound)
+    }
+
+    // Write items back to tag.
+    override fun markDirty() {
+        save(container.ensureTagCompound)
+    }
+
+    override val componentInventoryDelegate = ComponentInventory.State()
 
     override fun getSizeInventory(): Int = 1
 
@@ -116,11 +145,11 @@ class DiskDriveMountable(
     // ----------------------------------------------------------------------- //
     // ComponentInventory
 
-    override fun container(): ItemStack = rack.getStackInSlot(slot)
+    private val container: ItemStack get() = rack.getStackInSlot(slot)
 
     override fun onItemAdded(slot: Int, stack: ItemStack) {
-        super.onItemAdded(slot, stack)
-        components(slot)?.node?.let { node ->
+        super<ComponentInventory>.onItemAdded(slot, stack)
+        components[slot]?.node()?.let { node ->
             if (node is Component) {
                 node.setVisibility(Visibility.Network)
             }
@@ -132,7 +161,7 @@ class DiskDriveMountable(
     }
 
     override fun onItemRemoved(slot: Int, stack: ItemStack) {
-        super.onItemRemoved(slot, stack)
+        super<ComponentInventory>.onItemRemoved(slot, stack)
         if (!rack.world.isRemote) {
             rack.markChanged(this.slot)
             Sound.playDiskEject(rack)
@@ -148,14 +177,14 @@ class DiskDriveMountable(
     // Persistable
 
     override fun load(nbt: NBTTagCompound) {
-        super<AbstractManagedEnvironment>.load(nbt)
-        (this as ComponentInventory).load(nbt)
+        super<ManagedEnvironmentKt>.load(nbt)
+        super<ComponentInventory>.load(nbt)
         connectComponents()
     }
 
     override fun save(nbt: NBTTagCompound) {
-        super<AbstractManagedEnvironment>.save(nbt)
-        (this as ComponentInventory).save(nbt)
+        super<ManagedEnvironmentKt>.save(nbt)
+        super<ComponentInventory>.save(nbt)
     }
 
     // ----------------------------------------------------------------------- //

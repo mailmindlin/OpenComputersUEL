@@ -88,7 +88,7 @@ class RobotData : ItemData {
         newInfo.components.forEach { cs ->
             val driver = Driver.driverFor(cs)
             if (driver != null && driver == DriverScreen) {
-                val nbt = driver.dataTag(cs)
+                val nbt = driver.dataTag(cs)!!
                 for (tagName in nbt.keySet.toTypedArray()) {
                     nbt.removeTag(tagName)
                 }

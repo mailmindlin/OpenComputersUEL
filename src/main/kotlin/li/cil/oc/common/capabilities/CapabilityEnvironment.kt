@@ -30,7 +30,7 @@ object CapabilityEnvironment {
             return if (hasCapability(capability, facing)) this as T else null
         }
 
-        override fun node(): Node = environmentTileEntity.node()
+        override fun node(): Node? = environmentTileEntity.node()
 
         override fun onMessage(message: Message) = environmentTileEntity.onMessage(message)
 
@@ -40,7 +40,7 @@ object CapabilityEnvironment {
     }
 
     class DefaultImpl : Environment {
-        val node: Node = Network.newNode(this, Visibility.None).create()
+        val node: Node = Network.newNode(this, Visibility.None)!!.create()
         override fun node(): Node = node
 
         override fun onMessage(message: Message) {}

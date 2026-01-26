@@ -16,7 +16,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeTankController : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.TankControllerUpgrade))
+    Constants.ItemInfo.TankControllerUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? =
     if (host.world() != null && host.world().isRemote) null

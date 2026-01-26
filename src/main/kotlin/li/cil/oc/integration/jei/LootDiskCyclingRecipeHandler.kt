@@ -21,7 +21,7 @@ object LootDiskCyclingRecipeHandler : IRecipeWrapperFactory<LootDiskCyclingRecip
         private fun getInputs(): List<List<ItemStack>> {
             return listOf(
                 Loot.disksForCycling().toList(),
-                listOf(Items.get(Constants.ItemName.Wrench).createItemStack(1))
+                listOf(Constants.ItemInfo.Wrench.createItemStack(1))
             )
         }
 

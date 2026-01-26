@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.util.ResourceLocation
 
 class DynamicComponentSlot(
-    override val container: Player,
+    override val container: Player<*>,
     inventory: IInventory,
     index: Int,
     x: Int,
@@ -39,7 +39,7 @@ class DynamicComponentSlot(
 
     override fun hasBackground(): Boolean = Textures.Icons.get(slot) != null
 
-    override fun getBackgroundLocation(): ResourceLocation? = Textures.Icons.get(slot) ?: super.getBackgroundLocation()
+    override fun getBackgroundLocation(): ResourceLocation = Textures.Icons.get(slot) ?: super.getBackgroundLocation()
 
     override fun getSlotStackLimit(): Int = when (slot) {
         CommonSlot.Tool, CommonSlot.Any, CommonSlot.Filtered -> super.getSlotStackLimit()

@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeCrafting : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.CraftingUpgrade))
+    Constants.ItemInfo.CraftingUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

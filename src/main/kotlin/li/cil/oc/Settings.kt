@@ -166,8 +166,10 @@ class Settings(val config: Config) {
     val ignorePower: Boolean = getBoolean("power.ignorePower")
     val tickFrequency: Double = getDouble("power.tickFrequency", atLeast = 1.0)
     fun isTickMultiple(worldTime: Long): Boolean = worldTime % tickFrequency.toLong() == 0L
-    fun isTickMultiple(world: World): Boolean = isTickMultiple(world.totalWorldTime)
-    fun isTickMultiple(world: World?): Boolean = world?.let(::isTickMultiple) ?: false
+    fun isTickMultiple(world: World?): Boolean {
+        if (world == null) return false
+        return isTickMultiple(world.totalWorldTime)
+    }
     val chargeRateExternal: Double = getDouble("power.chargerChargeRate")
     val chargeRateTablet: Double = config.getDouble("power.chargerChargeRateTablet")
     val generatorEfficiency: Double = config.getDouble("power.generatorEfficiency")
@@ -452,17 +454,19 @@ class Settings(val config: Config) {
     val maxNetworkClientEffectPacketDistance: Double = getDouble("misc.maxNetworkClientEffectPacketDistance", atLeast = 0.0)
     val maxNetworkClientSoundPacketDistance: Double = getDouble("misc.maxNetworkClientSoundPacketDistance", atLeast = 0.0)
 
+    @Deprecated("", replaceWith = ReplaceWith("this.internetFilteringRulesInvalid"))
     fun internetFilteringRulesInvalid(): Boolean {
         return internetFilteringRules.any { it.invalid() }
     }
 
-    fun internetAccessConfigured(): Boolean {
-        return httpEnabled || tcpEnabled
-    }
+    val internetFilteringRulesInvalid: Boolean
+        get() = internetFilteringRules.any { it.invalid() }
 
-    fun internetAccessAllowed(): Boolean {
-        return internetAccessConfigured() && !internetFilteringRulesInvalid()
-    }
+    val internetAccessConfigured: Boolean
+        get() = httpEnabled || tcpEnabled
+
+    val internetAccessAllowed: Boolean
+        get() = internetAccessConfigured && !internetFilteringRulesInvalid
 
     // >= 1.8.8
     val httpUserAgent: String = getString("internet.httpUserAgent")

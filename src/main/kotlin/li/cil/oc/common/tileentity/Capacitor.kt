@@ -3,6 +3,7 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.Connector
@@ -13,17 +14,17 @@ import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.util.EnumFacing
 
-open class Capacitor : TileEntityBase.TEEnvironmentBase(), Environment, DeviceInfoKt {
+open class Capacitor : TileEntityBase.TEEnvironmentBase(), Environment, DeviceInfo {
     // Start with maximum theoretical capacity, gets reduced after validation.
     // This is done so that we don't lose energy while loading.
     @JvmField
-    val node: Connector = Network.newNode(this, Visibility.Network)
+    val node: Connector = Network.newNode(this, Visibility.Network)!!
         .withConnector(maxCapacity)
         .create()
 
     override fun node(): Node = node
 
-    override val deviceInfo = mapOf(
+    override fun getDeviceInfo() = mapOf(
         DeviceAttribute.Class to DeviceClass.Power,
         DeviceAttribute.Description to "Battery",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,

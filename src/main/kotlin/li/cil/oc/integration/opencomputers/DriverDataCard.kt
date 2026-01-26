@@ -13,9 +13,9 @@ import net.minecraft.item.ItemStack
 
 object DriverDataCard : Item() {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.DataCardTier1),
-    ApiItems.get(Constants.ItemName.DataCardTier2),
-    ApiItems.get(Constants.ItemName.DataCardTier3))
+    Constants.ItemInfo.DataCardTier1,
+    Constants.ItemInfo.DataCardTier2,
+    Constants.ItemInfo.DataCardTier3)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

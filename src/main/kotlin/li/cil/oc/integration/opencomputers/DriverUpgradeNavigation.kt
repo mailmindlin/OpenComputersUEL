@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeNavigation : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.NavigationUpgrade))
+    Constants.ItemInfo.NavigationUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

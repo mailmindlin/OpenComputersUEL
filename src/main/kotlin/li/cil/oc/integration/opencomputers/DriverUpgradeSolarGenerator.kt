@@ -11,7 +11,7 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeSolarGenerator : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.SolarGeneratorUpgrade))
+    Constants.ItemInfo.SolarGeneratorUpgrade)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null

@@ -4,13 +4,13 @@ import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
+import li.cil.oc.api.Driver
 import li.cil.oc.api.Items
 import li.cil.oc.api.Network
 import li.cil.oc.api.detail.ItemInfo
 import li.cil.oc.api.internal.Colored
 import li.cil.oc.api.internal.Rack
 import li.cil.oc.api.internal.Server
-import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.machine.MachineHost
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.SidedComponent
@@ -32,22 +32,16 @@ import li.cil.oc.common.recipe.Recipes
 import li.cil.oc.common.tileentity.Case
 import li.cil.oc.common.tileentity.Robot
 import li.cil.oc.common.tileentity.RobotProxy
+import li.cil.oc.common.tileentity.TileEntityBase
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.util.WirelessRedstone
-import li.cil.oc.server.PacketSender as ServerPacketSender
 import li.cil.oc.server.component.Keyboard
 import li.cil.oc.server.component.RedstoneWireless
 import li.cil.oc.server.machine.Callbacks
-import li.cil.oc.server.machine.Machine
 import li.cil.oc.server.machine.luac.LuaStateFactory
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.PlayerUtils
-import li.cil.oc.util.SideTracker
-import li.cil.oc.util.StackOption
-import li.cil.oc.util.UpdateCheck
+import li.cil.oc.util.*
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.init.SoundEvents
@@ -64,21 +58,15 @@ import net.minecraftforge.event.world.WorldEvent
 import net.minecraftforge.fml.common.FMLCommonHandler
 import net.minecraftforge.fml.common.Optional
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemCraftedEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.ItemPickupEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerChangedDimensionEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedInEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerLoggedOutEvent
-import net.minecraftforge.fml.common.gameevent.PlayerEvent.PlayerRespawnEvent
+import net.minecraftforge.fml.common.gameevent.PlayerEvent.*
 import net.minecraftforge.fml.common.gameevent.TickEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent
 import net.minecraftforge.fml.common.gameevent.TickEvent.ServerTickEvent
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToServerEvent
-import java.util.Calendar
-import java.util.Collections
-import java.util.PriorityQueue
-import java.util.WeakHashMap
+import java.util.*
 import kotlin.concurrent.thread
+import li.cil.oc.server.PacketSender as ServerPacketSender
+import li.cil.oc.itemInfo
 
 object EventHandler {
     private var serverTicks = 0L
@@ -115,7 +103,7 @@ object EventHandler {
     }
 
     @JvmStatic
-    fun unscheduleClose(machine: Machine) {
+    fun unscheduleClose(machine: li.cil.oc.server.machine.Machine) {
         machines.remove(machine)
     }
 
@@ -154,11 +142,12 @@ object EventHandler {
     fun scheduleIC2Add(tileEntity: IndustrialCraft2Experimental) {
         if (SideTracker.isServer()) {
             synchronized(pendingServer) {
+                @Suppress("USELESS_IS_CHECK") // This might've been stripped or something
                 if (tileEntity is ic2.api.energy.tile.IEnergyTile) {
                     pendingServer.add {
-                        if (!tileEntity.addedToIC2PowerGrid && !tileEntity.isInvalid) {
+                        if (!tileEntity.ic2Delegate.addedToIC2PowerGrid && !tileEntity.asTileEntity().isInvalid) {
                             MinecraftForge.EVENT_BUS.post(ic2.api.energy.event.EnergyTileLoadEvent(tileEntity))
-                            tileEntity.addedToIC2PowerGrid = true
+                            tileEntity.ic2Delegate.addedToIC2PowerGrid = true
                         }
                     }
                 }
@@ -171,7 +160,7 @@ object EventHandler {
     fun scheduleAE2Add(tileEntity: AppliedEnergistics2) {
         if (SideTracker.isServer()) {
             synchronized(pendingServer) {
-                pendingServer.add { tileEntity.updateGridNodeState() }
+                pendingServer.add { tileEntity.ae2Delegate.updateGridNodeState() }
             }
         }
     }
@@ -181,7 +170,7 @@ object EventHandler {
         if (SideTracker.isServer()) {
             synchronized(pendingServer) {
                 pendingServer.add {
-                    if (rs.node.network() != null) {
+                    if (rs.node().network() != null) {
                         WirelessRedstone.addReceiver(rs)
                         WirelessRedstone.updateOutput(rs)
                     }
@@ -260,13 +249,13 @@ object EventHandler {
                 if (robot.isInvalid) {
                     invalid.add(robot)
                 } else if (robot.world != null) {
-                    robot.machine.update()
+                    robot.machine!!.update()
                 }
             }
             runningRobots.removeAll(invalid)
         } else if (e.phase == TickEvent.Phase.END) {
             // Clean up machines *after* a tick, to allow stuff to be saved, first.
-            val closed = mutableListOf<Machine>()
+            val closed = mutableListOf<li.cil.oc.server.machine.Machine>()
             for (machine in machines) {
                 if (machine.tryClose()) {
                     closed.add(machine)
@@ -326,7 +315,7 @@ object EventHandler {
                 val server = FMLCommonHandler.instance().minecraftServerInstance
                 if (!server.isDedicatedServer || server.playerList.canSendCommands(player.gameProfile)) {
                     thread {
-                        UpdateCheck.info()?.let { release ->
+                        UpdateCheck.info.get()?.let { release ->
                             player.sendMessage(Localization.Chat.InfoNewVersion(release.tag_name))
                         }
                     }
@@ -392,52 +381,44 @@ object EventHandler {
                 val persistedData = PlayerUtils.persistedData(entity)
                 if (!persistedData.getBoolean(Settings.namespace + "receivedManual")) {
                     persistedData.setBoolean(Settings.namespace + "receivedManual", true)
-                    entity.inventory.addItemStackToInventory(Items.get(Constants.ItemName.Manual).createItemStack(1))
+                    entity.inventory.addItemStackToInventory(Constants.ItemInfo.Manual.createItemStack(1))
                 }
             }
         }
     }
-
-    private val drone by lazy { Items.get(Constants.ItemName.Drone) }
-    private val eeprom by lazy { Items.get(Constants.ItemName.EEPROM) }
-    private val mcu by lazy { Items.get(Constants.BlockName.Microcontroller) }
-    private val navigationUpgrade by lazy { Items.get(Constants.ItemName.NavigationUpgrade) }
-    private val robot by lazy { Items.get(Constants.BlockName.Robot) }
-    private val tablet by lazy { Items.get(Constants.ItemName.Tablet) }
 
     @SubscribeEvent
     @Suppress("unused")
     fun onCrafting(e: ItemCraftedEvent) {
         var didRecraft = false
 
-        didRecraft = recraft(e, navigationUpgrade) { stack ->
+        didRecraft = recraft(e, Constants.ItemInfo.NavigationUpgrade) { stack ->
             // Restore the map currently used in the upgrade.
-            val driver = api.Driver.driverFor(e.crafting)
-            if (driver != null) {
-                StackOption(ItemStack(driver.dataTag(stack).getCompoundTag(Settings.namespace + "map")))
-            } else {
-                StackOption.Empty
-            }
+            val driver = Driver.driverFor(e.crafting) ?: return@recraft null
+            ItemStack(driver.dataTag(stack)!!.getCompoundTag(Settings.namespace + "map")).notEmpty()
         } || didRecraft
 
-        didRecraft = recraft(e, mcu) { stack ->
+        fun Array<out ItemStack>.findEEPROM(): ItemStack?
+            = find { Items.get(it) == Constants.ItemInfo.EEPROM }.notEmpty()
+
+        didRecraft = recraft(e, Constants.BlockInfo.Microcontroller) { stack ->
             // Restore EEPROM currently used in microcontroller.
-            StackOption(MicrocontrollerData(stack).components.find { Items.get(it) == eeprom })
+            MicrocontrollerData(stack).components.findEEPROM()
         } || didRecraft
 
-        didRecraft = recraft(e, drone) { stack ->
+        didRecraft = recraft(e, Constants.ItemInfo.Drone) { stack ->
             // Restore EEPROM currently used in drone.
-            StackOption(MicrocontrollerData(stack).components.find { Items.get(it) == eeprom })
+            MicrocontrollerData(stack).components.findEEPROM()
         } || didRecraft
 
-        didRecraft = recraft(e, robot) { stack ->
+        didRecraft = recraft(e, Constants.BlockInfo.Robot) { stack ->
             // Restore EEPROM currently used in robot.
-            StackOption(RobotData(stack).components.find { Items.get(it) == eeprom })
+            RobotData(stack).components.findEEPROM()
         } || didRecraft
 
-        didRecraft = recraft(e, tablet) { stack ->
+        didRecraft = recraft(e, Constants.ItemInfo.Tablet) { stack ->
             // Restore EEPROM currently used in tablet.
-            StackOption(TabletData(stack).items.filterNot { it.isEmpty }.find { Items.get(it) == eeprom })
+            TabletData(stack).items.filterNot { it.isEmpty }.find { Items.get(it) == Constants.ItemInfo.EEPROM }.notEmpty()
         } || didRecraft
 
         // Presents?
@@ -449,7 +430,7 @@ object EventHandler {
                 if (Settings.get.presentChance > 0 && !didRecraft && Items.get(e.crafting) != null &&
                     player.rng.nextFloat() < Settings.get.presentChance && timeForPresents) {
                     // Presents!
-                    val present = Items.get(Constants.ItemName.Present).createItemStack(1)
+                    val present = Constants.ItemInfo.Present.createItemStack(1)
                     player.world.playSound(player, player.posX, player.posY, player.posZ, SoundEvents.BLOCK_NOTE_PLING, SoundCategory.MASTER, 0.2f, 1f)
                     InventoryUtils.addToPlayerInventory(present, player)
                 }
@@ -493,12 +474,12 @@ object EventHandler {
             return month == Calendar.APRIL && dayOfMonth == 1
         }
 
-    private fun recraft(e: ItemCraftedEvent, item: ItemInfo, callback: (ItemStack) -> StackOption): Boolean {
+    private fun recraft(e: ItemCraftedEvent, item: ItemInfo, callback: (ItemStack) -> ItemStack?): Boolean {
         if (Items.get(e.crafting) == item) {
             for (slot in 0 until e.craftMatrix.sizeInventory) {
                 val stack = e.craftMatrix.getStackInSlot(slot)
                 if (Items.get(stack) == item) {
-                    callback(stack).stack?.let { extra ->
+                    callback(stack)?.let { extra ->
                         InventoryUtils.addToPlayerInventory(extra, e.player)
                     }
                 }
@@ -518,7 +499,7 @@ object EventHandler {
     fun onWorldUnload(e: WorldEvent.Unload) {
         if (!e.world.isRemote) {
             for (te in e.world.loadedTileEntityList) {
-                if (te is tileentity.traits.TileEntity) {
+                if (te is TileEntityBase) {
                     te.dispose()
                 }
             }

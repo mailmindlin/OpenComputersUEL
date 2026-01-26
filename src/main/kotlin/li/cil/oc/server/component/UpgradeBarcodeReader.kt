@@ -10,10 +10,7 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 
 class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("barcode_reader")
-        .withConnector()
-        .create()
+    override val node = newComponentConnector(Visibility.Network, "barcode_reader")
 
     override val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,

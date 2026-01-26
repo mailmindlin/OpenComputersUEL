@@ -24,21 +24,16 @@ import li.cil.oc.common.inventory.InventoryProxy
 import li.cil.oc.common.inventory.InventorySelection
 import li.cil.oc.common.inventory.TankSelection
 import li.cil.oc.common.item.data.RobotData
-import li.cil.oc.common.tileentity.traits.Computer
+import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.PowerInformation
-import li.cil.oc.common.tileentity.traits.isClient
-import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.integration.opencomputers.DriverKeyboard
 import li.cil.oc.integration.opencomputers.DriverRedstoneCard
 import li.cil.oc.integration.opencomputers.DriverScreen
-import li.cil.oc.server.agent
 import li.cil.oc.server.agent.Player
 import li.cil.oc.server.component.GraphicsCard
+import li.cil.oc.util.*
 import li.cil.oc.server.component.Robot as RobotComponent
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.block.Block
 import net.minecraft.block.BlockLiquid
 import net.minecraft.client.Minecraft
@@ -46,6 +41,7 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.init.Blocks
 import net.minecraft.init.SoundEvents
 import net.minecraft.inventory.EntityEquipmentSlot
+import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -77,6 +73,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     val proxy: RobotProxy get() = proxyRaw!!
 
     override val powerDelegate: PowerInformation.Delegate = register(PowerInformation::Delegate)
+    override val rotatableDelegate: TraitRotatableTile.Delegate = register(TraitRotatableTile::Delegate)
 
     @JvmField
     val info = RobotData()
@@ -86,7 +83,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     init {
         if (isServer) {
-            machine.setCostPerTick(Settings.get.robotCost)
+            machine!!.setCostPerTick(Settings.get.robotCost)
         }
     }
 
@@ -109,6 +106,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         override val inventory: Robot get() = this@Robot
         override fun getSizeInventory(): Int = 4
     }
+    override fun equipmentInventory(): IInventory = equipmentInventory
 
     // Wrapper for the part of the inventory that is mutable.
     @JvmField
@@ -117,6 +115,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         override fun getSizeInventory(): Int = this@Robot.inventorySize
         override val offset: Int get() = equipmentInventory.getSizeInventory()
     }
+    override fun mainInventory(): IInventory = mainInventory
 
     val actualInventorySize = 100
 
@@ -126,12 +125,12 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     var inventorySize: Int = -1
 
     override var selectedSlot = 0
+    override fun selectedSlot(): Int = selectedSlot
 
     override fun setSelectedSlot(index: Int) {
-        selectedSlot = Math.max(0, Math.min(index, mainInventory.getSizeInventory() - 1))
-        if (world != null) {
+        selectedSlot = index.coerceIn(0, mainInventory.getSizeInventory() - 1)
+        if (world != null)
             ServerPacketSender.sendRobotSelectedSlotChange(this)
-        }
     }
 
     @JvmField
@@ -139,8 +138,13 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         override fun tankCount(): Int = this@Robot.tankCount()
         override fun getFluidTank(index: Int): IFluidTank? = this@Robot.getFluidTank(index)
     }
+    override fun tank(): MultiTank = tank
 
     override var selectedTank = 0
+    override fun selectedTank(): Int = selectedTank
+    override fun setSelectedTank(index: Int) {
+        selectedTank = index.coerceIn(0, tankCount() - 1)
+    }
 
     // For client.
     @JvmField
@@ -151,8 +155,9 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     override fun getComponentInSlot(index: Int): ManagedEnvironment? = if (components.size > index) components[index] else null
 
     override fun player(): Player {
-        agent.Player.updatePositionAndRotation(player_, facing(), facing())
-        agent.Player.setInventoryPlayerItems(player_)
+        val facing = facing()!!
+        Player.updatePositionAndRotation(player_, facing, facing)
+        Player.setInventoryPlayerItems(player_)
         return player_
     }
 
@@ -161,7 +166,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
             val stack = getStackInSlot(slot)
             components[slot]?.let { component ->
                 // We're guaranteed to have a driver for entries.
-                save(component, Driver.driverFor(stack, javaClass), stack)
+                save(component, Driver.driverFor(stack, javaClass)!!, stack)
             }
             ServerPacketSender.sendRobotInventory(this, slot, stack)
         }
@@ -184,18 +189,18 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     override fun node(): Node? = if (isServer) machine!!.node() else null
 
-    @JvmField
-    var globalBuffer = 0.0
-    @JvmField
-    var globalBufferSize = 0.0
+    override var globalBuffer = 0.0
+    override var globalBufferSize = 0.0
 
     val maxComponents = 32
 
     @JvmField
     var ownerName: String = Settings.get.fakePlayerName
+    override fun ownerName(): String = ownerName
 
     @JvmField
     var ownerUUID: UUID = Settings.get.fakePlayerProfile.id
+    override fun ownerUUID(): UUID = ownerUUID
 
     @JvmField
     var animationTicksLeft = 0
@@ -215,7 +220,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     @JvmField
     var appliedToolEnchantments = false
 
-    private val player_ by lazy { agent.Player(this) }
+    private val player_ by lazy { Player(this) }
 
     // ----------------------------------------------------------------------- //
 
@@ -245,8 +250,8 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
             if (event.isCanceled) return false
         }
 
-        val blockRobotProxy = ApiItems.get(Constants.BlockName.Robot).block() as RobotProxyBlock
-        val blockRobotAfterImage = ApiItems.get(Constants.BlockName.RobotAfterimage).block() as RobotAfterimage
+        val blockRobotProxy = Constants.BlockInfo.Robot.block() as RobotProxyBlock
+        val blockRobotAfterImage = Constants.BlockInfo.RobotAfterimage.block() as RobotAfterimage
         val wasAir = world.isAirBlock(newPosition)
         val state = world.getBlockState(newPosition)
         val block = state.block
@@ -316,7 +321,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     val isAnimatingTurn: Boolean get() = animationTicksLeft > 0 && turnAxis != 0
 
     fun animateSwing(duration: Double) {
-        if (!items()[0].isEmpty) {
+        if (!items[0].isEmpty) {
             setAnimateSwing((duration * 20).toInt())
             ServerPacketSender.sendRobotAnimateSwing(this)
         }
@@ -455,18 +460,15 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         updateInventorySize()
-        machine.onHostChanged()
+        machine!!.onHostChanged()
 
         bot!!.load(nbt.getCompoundTag(RobotTag))
-        if (nbt.hasKey(OwnerTag)) {
+        if (nbt.hasKey(OwnerTag))
             ownerName = nbt.getString(OwnerTag)
-        }
-        if (nbt.hasKey(OwnerUUIDTag)) {
+        if (nbt.hasKey(OwnerUUIDTag))
             ownerUUID = UUID.fromString(nbt.getString(OwnerUUIDTag))
-        }
-        if (inventorySize > 0) {
-            selectedSlot = Math.max(0, Math.min(nbt.getInteger(SelectedSlotTag), mainInventory.sizeInventory - 1))
-        }
+        if (inventorySize > 0)
+            selectedSlot = nbt.getInteger(SelectedSlotTag).coerceIn(0 until mainInventory.sizeInventory)
         selectedTank = nbt.getInteger(SelectedTankTag)
         animationTicksTotal = nbt.getInteger(AnimationTicksTotalTag)
         animationTicksLeft = nbt.getInteger(AnimationTicksLeftTag)
@@ -483,7 +485,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
         // Normally set in superclass, but that's not called directly, only in the
         // robot's proxy instance.
-        _isOutputEnabled = hasRedstoneCard()
+        redstoneDelegate._isOutputEnabled = hasRedstoneCard()
         if (isRunning) EventHandler.onRobotStart(this)
     }
 
@@ -563,7 +565,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     override fun onMachineConnect(node: Node) {
         super.onConnect(node)
         if (node == this.node()) {
-            node().connect(bot!!.node())
+            node!!.connect(bot!!.node())
             (node as Connector).setLocalBufferSize(0.0)
         }
     }
@@ -642,23 +644,22 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         renderingErrored = false
     }
 
-    override fun connectItemNode(node: Node) {
+    override fun connectItemNode(node: Node?) {
         super.connectItemNode(node)
         if (node != null) {
-            val host = node.host()
-            when (host) {
+            when (val host = node.host()) {
                 is InternalTextBuffer -> {
                     for (slot in componentSlots) {
                         when (val component = getComponentInSlot(slot)) {
-                            is InternalKeyboard -> host.node().connect(component.node())
-                            is GraphicsCard -> host.node().connect(component.node())
+                            is InternalKeyboard -> host.node()!!.connect(component.node())
+                            is GraphicsCard -> host.node()!!.connect(component.node())
                         }
                     }
                 }
                 is InternalKeyboard -> {
                     for (slot in componentSlots) {
                         when (val component = getComponentInSlot(slot)) {
-                            is InternalTextBuffer -> host.node().connect(component.node())
+                            is InternalTextBuffer -> host.node()!!.connect(component.node())
                         }
                     }
                 }
@@ -696,16 +697,16 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     // ----------------------------------------------------------------------- //
 
-    override fun componentSlot(address: String): Int = components.indexOfFirst { it?.node != null && it.node.address() == address }
+    override fun componentSlot(address: String): Int = components.indexOfFirst { it?.node()?.address() == address }
 
     override fun hasRedstoneCard(): Boolean = (containerSlots union componentSlots).any { slot ->
         val stack = getStackInSlot(slot)
         !stack.isEmpty && DriverRedstoneCard.worksWith(stack, javaClass)
     }
 
-    private fun computeInventorySize(): Int = Math.min(maxInventorySize, (containerSlots union componentSlots).fold(0) { acc, slot ->
+    private fun computeInventorySize(): Int = Math.min(maxInventorySize, (containerSlots union componentSlots).sumOf { slot ->
         val stack = getStackInSlot(slot)
-        acc + if (!stack.isEmpty) {
+        if (!stack.isEmpty) {
             val driver = Driver.driverFor(stack, javaClass)
             if (driver is DriverInventory) driver.inventoryCapacity(stack) else 0
         } else 0
@@ -754,6 +755,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
     @JvmField
     var sizeInventory: Int = actualInventorySize
+    override fun getSizeInventory(): Int = sizeInventory
 
     override fun getInventoryStackLimit(): Int = 64
 
@@ -857,11 +859,11 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         tryGetTank(selectedTank)?.drain(maxDrain, doDrain)
 
     fun canFill(fluid: Fluid): Boolean =
-        tryGetTank(selectedTank)?.let { t -> t.fluid == null || t.fluid.fluid == fluid } ?: false
+        tryGetTank(selectedTank)?.let { t -> t.fluid?.fluid == fluid } ?: false
 
     fun canDrain(fluid: Fluid): Boolean =
-        tryGetTank(selectedTank)?.let { t -> t.fluid != null && t.fluid.fluid == fluid } ?: false
+        tryGetTank(selectedTank)?.let { t -> t.fluid?.fluid == fluid } ?: false
 
-    override fun getTankProperties(): Array<IFluidTankProperties> =
+    override fun getTankProperties(): Array<out IFluidTankProperties> =
         FluidTankProperties.convert(components.filterNotNull().filterIsInstance<IFluidTank>().map { it.info }.toTypedArray())
 }

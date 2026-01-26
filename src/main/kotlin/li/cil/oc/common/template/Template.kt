@@ -125,10 +125,10 @@ abstract class Template {
 
     protected open fun maxComplexity(inventory: IInventory): Int {
         val caseTier = this.caseTier(inventory)
-        val cpuTier = (0 until inventory.sizeInventory).fold(0) { acc, slot ->
+        val cpuTier = (0 until inventory.sizeInventory).sumOf { slot ->
             val stack = inventory.getStackInSlot(slot)
             val driver = Driver.driverFor(stack, hostClass)
-            acc + if (driver is Processor) driver.tier(stack) else 0
+            if (driver is Processor) driver.tier(stack) else 0
         }
         return if (caseTier >= Tier.One && cpuTier >= Tier.One) {
             Settings.deviceComplexityByTier[caseTier] - (minOf(2, caseTier) - cpuTier) * 6

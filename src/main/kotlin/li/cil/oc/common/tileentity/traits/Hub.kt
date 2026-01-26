@@ -86,7 +86,7 @@ interface Hub : Environment, SidedEnvironment, Tickable {
             for (i in 0 until queueList.tagCount()) {
                 val tag = queueList.getCompoundTagAt(i)
                 val side = tag.getDirection(SideTag)
-                val packet = ApiNetwork.newPacket(tag)
+                val packet = ApiNetwork.newPacket(tag)!!
                 queue.add(Pair(side, packet))
             }
             if (nbt.hasKey(RelayCooldownTag)) {
@@ -173,9 +173,8 @@ interface Hub : Environment, SidedEnvironment, Tickable {
     // ----------------------------------------------------------------------- //
 
     open class Plug(val hub: Hub, val side: EnumFacing) : Environment {
-        val node: Node? = hub.createNode(this)
-
-        override fun node(): Node? = node
+        val node: Node = hub.createNode(this)
+        override fun node(): Node = node
 
         override fun onMessage(message: Message) {
             if (isPrimary) {
@@ -211,5 +210,5 @@ interface Hub : Environment, SidedEnvironment, Tickable {
         }
     }
 
-    fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network).create()
+    fun createNode(plug: Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)!!.create()
 }

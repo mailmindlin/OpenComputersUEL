@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack
 
 object NavigationUpgradeTemplate {
     @JvmStatic
-    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Items.get(Constants.ItemName.NavigationUpgrade)
+    fun selectDisassembler(stack: ItemStack): Boolean = Items.get(stack) == Constants.ItemInfo.NavigationUpgrade
 
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {

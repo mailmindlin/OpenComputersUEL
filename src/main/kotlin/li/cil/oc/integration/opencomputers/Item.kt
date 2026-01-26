@@ -29,6 +29,8 @@ abstract class Item : DriverItem {
 
   override fun dataTag(stack: ItemStack): NBTTagCompound = Item.dataTag(stack)
 
+  protected fun isOneOf(stack: ItemStack, item: ItemInfo): Boolean =
+    ApiItems.get(stack) == item
   protected fun isOneOf(stack: ItemStack, vararg items: ItemInfo): Boolean =
     items.filterNotNull().contains(ApiItems.get(stack))
 

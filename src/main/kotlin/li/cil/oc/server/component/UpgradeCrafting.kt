@@ -19,9 +19,7 @@ class UpgradeCrafting(val host: EnvironmentHost) : ManagedEnvironmentKt(), Devic
     private val robot: Robot
         get() = host as Robot
 
-    override val node = Network.newNode(this, Visibility.Network)
-        .withComponent("crafting")
-        .create()
+    override val node = nodeFactory(Visibility.Network, "crafting").create()
 
     override val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,

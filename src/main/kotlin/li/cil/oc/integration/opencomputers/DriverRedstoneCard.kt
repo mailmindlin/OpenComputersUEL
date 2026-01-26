@@ -19,8 +19,8 @@ import net.minecraft.item.ItemStack
 
 object DriverRedstoneCard : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.RedstoneCardTier1),
-    ApiItems.get(Constants.ItemName.RedstoneCardTier2))
+    Constants.ItemInfo.RedstoneCardTier1,
+    Constants.ItemInfo.RedstoneCardTier2)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost): ManagedEnvironment? {
     if (host.world()?.isRemote == true) return null

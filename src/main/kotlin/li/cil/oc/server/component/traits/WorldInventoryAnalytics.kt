@@ -66,7 +66,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
                 val dbSlot = args.checkSlot(database.data, 3)
                 val dbStack = database.getStackInSlot(dbSlot)
                 val checkNBT = args.optBoolean(4, false)
-                result(InventoryUtils.haveSameItemType(stack, dbStack, checkNBT))
+                result(InventoryUtils.haveSameItemType(stack, dbStack ?: ItemStack.EMPTY, checkNBT))
             }
         }
     }

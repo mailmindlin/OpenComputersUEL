@@ -13,9 +13,9 @@ import net.minecraft.item.ItemStack
 
 object DriverUpgradeBattery : Item(), HostAware {
   override fun worksWith(stack: ItemStack) = isOneOf(stack,
-    ApiItems.get(Constants.ItemName.BatteryUpgradeTier1),
-    ApiItems.get(Constants.ItemName.BatteryUpgradeTier2),
-    ApiItems.get(Constants.ItemName.BatteryUpgradeTier3))
+    Constants.ItemInfo.BatteryUpgradeTier1,
+    Constants.ItemInfo.BatteryUpgradeTier2,
+    Constants.ItemInfo.BatteryUpgradeTier3)
 
   override fun createEnvironment(stack: ItemStack, host: EnvironmentHost) =
     if (host.world() != null && host.world().isRemote) null
