@@ -1,5 +1,7 @@
 package li.cil.oc.api.nanomachines;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * The nanomachine controller is responsible for keeping track of the current
  * layout of neural connections (i.e. how nanomachine "inputs" connect to
@@ -30,7 +32,7 @@ public interface Controller {
      *
      * @return the controller itself, for chaining / convenience.
      */
-    Controller reconfigure();
+    @NotNull Controller reconfigure();
 
     /**
      * Get the number of inputs available.
@@ -94,7 +96,7 @@ public interface Controller {
      *
      * @return the list of currently active behaviors. Never <tt>null</tt>.
      */
-    Iterable<Behavior> getActiveBehaviors();
+    @NotNull Iterable<Behavior> getActiveBehaviors();
 
     /**
      * Get the number of active inputs for the specified behavior.

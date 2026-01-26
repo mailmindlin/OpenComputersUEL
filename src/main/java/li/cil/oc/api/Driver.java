@@ -13,6 +13,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.items.IItemHandler;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Set;
 
@@ -124,7 +125,7 @@ public final class Driver {
      * @param pos   the position of the block.
      * @return a driver for the block, or <tt>null</tt> if there is none.
      */
-    public static DriverBlock driverFor(World world, BlockPos pos, EnumFacing side) {
+    public static @Nullable DriverBlock driverFor(World world, BlockPos pos, EnumFacing side) {
         if (API.driver != null)
             return API.driver.driverFor(world, pos, side);
         return null;
@@ -141,7 +142,7 @@ public final class Driver {
      * @param host  the type that will host the environment created by returned driver.
      * @return a driver for the item, or <tt>null</tt> if there is none.
      */
-    public static DriverItem driverFor(ItemStack stack, Class<? extends EnvironmentHost> host) {
+    public static @Nullable DriverItem driverFor(ItemStack stack, Class<? extends EnvironmentHost> host) {
         if (API.driver != null)
             return API.driver.driverFor(stack, host);
         return null;
@@ -160,7 +161,7 @@ public final class Driver {
      * @param stack the item stack to get a driver for.
      * @return a driver for the item, or <tt>null</tt> if there is none.
      */
-    public static DriverItem driverFor(ItemStack stack) {
+    public static @Nullable DriverItem driverFor(ItemStack stack) {
         if (API.driver != null)
             return API.driver.driverFor(stack);
         return null;
@@ -178,7 +179,7 @@ public final class Driver {
      * @deprecated Use {@link #environmentsFor(ItemStack)} instead.
      */
     @Deprecated
-    public static Class<?> environmentFor(ItemStack stack) {
+    public static @Nullable Class<?> environmentFor(ItemStack stack) {
         if (API.driver != null)
             return API.driver.environmentFor(stack);
         return null;
@@ -194,7 +195,7 @@ public final class Driver {
      * @param stack the item stack to get the environment type for.
      * @return the type of environment associated with the stack, or an empty Set, or null if the API is not present.
      */
-    public static Set<Class<?>> environmentsFor(ItemStack stack) {
+    public static @Nullable Set<Class<?>> environmentsFor(ItemStack stack) {
         if (API.driver != null)
             return API.driver.environmentsFor(stack);
         return null;
@@ -214,7 +215,7 @@ public final class Driver {
      * @param player the player holding the item. May be <tt>null</tt>.
      * @return the IItemHandler implementation interfacing the stack, or <tt>null</tt>.
      */
-    public static IItemHandler itemHandlerFor(ItemStack stack, EntityPlayer player) {
+    public static @Nullable IItemHandler itemHandlerFor(ItemStack stack, @Nullable EntityPlayer player) {
         if (API.driver != null)
             return API.driver.itemHandlerFor(stack, player);
         return null;
@@ -230,7 +231,7 @@ public final class Driver {
      *
      * @return the list of all registered item drivers.
      */
-    public static Collection<DriverItem> itemDrivers() {
+    public static @Nullable Collection<DriverItem> itemDrivers() {
         if (API.driver != null)
             return API.driver.itemDrivers();
         return null;

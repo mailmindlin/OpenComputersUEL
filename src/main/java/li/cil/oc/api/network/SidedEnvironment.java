@@ -5,6 +5,8 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
+
 /**
  * This interface is like {@link net.minecraft.inventory.ISidedInventory} is to
  * {@link net.minecraft.inventory.IInventory}, it allows an environment to
@@ -32,7 +34,7 @@ public interface SidedEnvironment {
      * @return the node for the specified side.
      * @see li.cil.oc.api.network.Environment#node
      */
-    Node sidedNode(EnumFacing side);
+    @Nullable Node sidedNode(EnumFacing side);
 
     /**
      * Whether the environment provides a node to connect to on the specified

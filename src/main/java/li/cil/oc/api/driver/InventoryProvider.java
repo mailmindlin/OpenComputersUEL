@@ -4,6 +4,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 /**
  * Inventory providers are used to access contents of item inventories.
  * <br>
@@ -24,7 +26,7 @@ public interface InventoryProvider {
      * @param player the player holding the item, may be <tt>null</tt>.
      * @return <tt>true</tt> if the stack is supported, <tt>false</tt> otherwise.
      */
-    boolean worksWith(ItemStack stack, EntityPlayer player);
+    boolean worksWith(ItemStack stack, @Nullable EntityPlayer player);
 
     /**
      * Get an inventory implementation that allows interfacing with the
@@ -38,5 +40,5 @@ public interface InventoryProvider {
      * @param player the player holding the item, may be <tt>null</tt>.
      * @return the inventory representing the contents, or <tt>null</tt>.
      */
-    IInventory getInventory(ItemStack stack, EntityPlayer player);
+    @Nullable IInventory getInventory(ItemStack stack, @Nullable EntityPlayer player);
 }

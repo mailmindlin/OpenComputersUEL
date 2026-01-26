@@ -10,6 +10,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
+import javax.annotation.Nullable;
+
 public interface NetworkAPI {
     /**
      * Convenience overload for {@link #joinOrCreateNetwork(IBlockAccess, BlockPos)}.
@@ -174,7 +176,7 @@ public interface NetworkAPI {
      * @param data        the payload of the packet.
      * @return the new packet.
      */
-    Packet newPacket(String source, String destination, int port, Object[] data);
+    Packet newPacket(String source, @Nullable String destination, int port, Object[] data);
 
     /**
      * Re-creates a network packet from a previously stored state.

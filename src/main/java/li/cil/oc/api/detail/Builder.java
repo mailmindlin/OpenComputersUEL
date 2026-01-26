@@ -5,6 +5,7 @@ import li.cil.oc.api.network.ComponentConnector;
 import li.cil.oc.api.network.Connector;
 import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Used for building {@link Node}s via {@link li.cil.oc.api.Network#newNode}.
@@ -39,7 +40,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a component.
          * @see li.cil.oc.api.network.Component
          */
-        ComponentBuilder withComponent(String name, Visibility visibility);
+        @NotNull ComponentBuilder withComponent(String name, Visibility visibility);
 
         /**
          * Makes the node a component.
@@ -51,7 +52,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a component.
          * @see li.cil.oc.api.network.Component
          */
-        ComponentBuilder withComponent(String name);
+        @NotNull ComponentBuilder withComponent(String name);
 
         /**
          * Makes the node a connector.
@@ -65,7 +66,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a connector.
          * @see li.cil.oc.api.network.Connector
          */
-        ConnectorBuilder withConnector(double bufferSize);
+        @NotNull ConnectorBuilder withConnector(double bufferSize);
 
         /**
          * Makes the node a connector.
@@ -76,7 +77,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a connector.
          * @see li.cil.oc.api.network.Connector
          */
-        ConnectorBuilder withConnector();
+        @NotNull ConnectorBuilder withConnector();
     }
 
     /**
@@ -96,7 +97,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a connector.
          * @see li.cil.oc.api.network.Connector
          */
-        ComponentConnectorBuilder withConnector(double bufferSize);
+        @NotNull ComponentConnectorBuilder withConnector(double bufferSize);
 
         /**
          * Makes the node a connector.
@@ -107,7 +108,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a connector.
          * @see li.cil.oc.api.network.Connector
          */
-        ComponentConnectorBuilder withConnector();
+        @NotNull ComponentConnectorBuilder withConnector();
     }
 
     /**
@@ -127,7 +128,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a component.
          * @see li.cil.oc.api.network.Component
          */
-        ComponentConnectorBuilder withComponent(String name, Visibility visibility);
+        @NotNull ComponentConnectorBuilder withComponent(String name, Visibility visibility);
 
         /**
          * Makes the node a component.
@@ -139,7 +140,7 @@ public interface Builder<T extends Node> {
          * @return a builder for a node that is also a component.
          * @see li.cil.oc.api.network.Component
          */
-        ComponentConnectorBuilder withComponent(String name);
+        @NotNull ComponentConnectorBuilder withComponent(String name);
     }
 
     /**

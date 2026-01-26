@@ -4,6 +4,9 @@ import li.cil.oc.api.network.EnvironmentHost;
 import li.cil.oc.api.fs.FileSystem;
 import li.cil.oc.api.fs.Label;
 import li.cil.oc.api.network.ManagedEnvironment;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
 
 public interface FileSystemAPI {
     /**
@@ -27,7 +30,7 @@ public interface FileSystemAPI {
      * @param root   an optional subdirectory.
      * @return a file system wrapping the specified folder.
      */
-    FileSystem fromClass(Class<?> clazz, String domain, String root);
+    @Nullable FileSystem fromClass(Class<?> clazz, String domain, String root);
 
     /**
      * Creates a new <em>writable</em> file system in the save folder.
@@ -52,7 +55,7 @@ public interface FileSystemAPI {
      * @param buffered whether data should only be written to disk when saving.
      * @return a file system wrapping the specified folder.
      */
-    FileSystem fromSaveDirectory(String root, long capacity, boolean buffered);
+    @Nullable FileSystem fromSaveDirectory(@NotNull String root, long capacity, boolean buffered);
 
     /**
      * Creates a new <em>writable</em> file system that resides in memory.
@@ -114,7 +117,7 @@ public interface FileSystemAPI {
      * @param speed       the speed multiplier for this file system.
      * @return the network node wrapping the file system.
      */
-    ManagedEnvironment asManagedEnvironment(FileSystem fileSystem, Label label, EnvironmentHost host, String accessSound, int speed);
+    ManagedEnvironment asManagedEnvironment(FileSystem fileSystem, Label label, @Nullable EnvironmentHost host, @Nullable String accessSound, int speed);
 
     /**
      * Creates a network node that makes the specified file system available via
@@ -133,7 +136,7 @@ public interface FileSystemAPI {
      * @param speed       the speed multiplier for this file system.
      * @return the network node wrapping the file system.
      */
-    ManagedEnvironment asManagedEnvironment(FileSystem fileSystem, String label, EnvironmentHost host, String accessSound, int speed);
+    ManagedEnvironment asManagedEnvironment(FileSystem fileSystem, String label, @Nullable EnvironmentHost host, @Nullable String accessSound, int speed);
 
     /**
      * @deprecated Don't use this directly, use the wrapper in {@link li.cil.oc.api.FileSystem}.

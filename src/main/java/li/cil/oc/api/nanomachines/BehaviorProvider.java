@@ -3,6 +3,8 @@ package li.cil.oc.api.nanomachines;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 
+import javax.annotation.Nullable;
+
 /**
  * Implemented by providers for behaviors.
  * <br>
@@ -31,7 +33,7 @@ public interface BehaviorProvider {
      * @param player the player the behaviors should be created for.
      * @return list of new behaviors, may be <tt>null</tt>.
      */
-    Iterable<Behavior> createBehaviors(EntityPlayer player);
+    @Nullable Iterable<Behavior> createBehaviors(EntityPlayer player);
 
     /**
      * Write a behavior to NBT.
@@ -62,5 +64,5 @@ public interface BehaviorProvider {
      * @param nbt    the tag to restore the behavior from.
      * @return the restored behavior, or <tt>null</tt> if unhandled.
      */
-    Behavior readFromNBT(EntityPlayer player, NBTTagCompound nbt);
+    @Nullable Behavior readFromNBT(EntityPlayer player, NBTTagCompound nbt);
 }

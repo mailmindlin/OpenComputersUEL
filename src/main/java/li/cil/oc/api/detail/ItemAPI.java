@@ -4,6 +4,7 @@ import li.cil.oc.api.FileSystem;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 
+import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
@@ -59,7 +60,7 @@ public interface ItemAPI {
      * @return an item stack representing the registered loot disk, to allow
      * adding a recipe for your loot disk, for example.
      */
-    ItemStack registerFloppy(String name, EnumDyeColor color, Callable<li.cil.oc.api.fs.FileSystem> factory, boolean doRecipeCycling);
+    @NotNull ItemStack registerFloppy(String name, EnumDyeColor color, Callable<li.cil.oc.api.fs.FileSystem> factory, boolean doRecipeCycling);
 
     /**
      * Register a single custom EEPROM.
@@ -79,5 +80,5 @@ public interface ItemAPI {
      * @return an item stack representing the registered EEPROM, to allow
      * adding a recipe for your custom BIOS, for example.
      */
-    ItemStack registerEEPROM(String name, byte[] code, byte[] data, boolean readonly);
+    @NotNull ItemStack registerEEPROM(@Nullable String name, @Nullable byte[] code, @Nullable byte[] data, boolean readonly);
 }

@@ -2,6 +2,8 @@ package li.cil.oc.api.internal;
 
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 /**
  * This interface is implemented by the database component.
  * <br>
@@ -32,7 +34,7 @@ public interface Database {
      * @param slot the slot of the item stack.
      * @return the item stack stored in that slot.
      */
-    ItemStack getStackInSlot(int slot);
+    @Nullable ItemStack getStackInSlot(int slot);
 
     /**
      * Set the contents of a slot in the database upgrade.
@@ -42,7 +44,7 @@ public interface Database {
      * @param slot  the slot to configure.
      * @param stack the stack to configure the slot to, <tt>null</tt> to clear.
      */
-    void setStackInSlot(int slot, ItemStack stack);
+    void setStackInSlot(int slot, @Nullable ItemStack stack);
 
     /**
      * Get an item stack with the specified hash stored in this database.

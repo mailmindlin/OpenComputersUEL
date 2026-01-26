@@ -1,7 +1,10 @@
 package li.cil.oc.api.fs;
 
 import li.cil.oc.api.Persistable;
+import org.jetbrains.annotations.CheckReturnValue;
+import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.io.FileNotFoundException;
 
 /**
@@ -118,7 +121,7 @@ public interface FileSystem extends Persistable {
      * <tt>null</tt> if the specified object does not exist or is not a
      * folder.
      */
-    String[] list(String path);
+    @Nullable String[] list(String path);
 
     // ----------------------------------------------------------------------- //
 
@@ -210,7 +213,8 @@ public interface FileSystem extends Persistable {
      *                               the file cannot be opened in the
      *                               specified mode.
      */
-    int open(String path, Mode mode) throws FileNotFoundException;
+    @CheckReturnValue
+    int open(String path, @NotNull Mode mode) throws FileNotFoundException;
 
     /**
      * Gets a wrapper for a file previously opened using {@link #open}.
@@ -225,7 +229,7 @@ public interface FileSystem extends Persistable {
      * @return the wrapper for that handle ID; <tt>null</tt> if there is no
      * handle with the specified ID.
      */
-    Handle getHandle(int handle);
+    @Nullable Handle getHandle(int handle);
 
     /**
      * Called when the file system is destroyed.

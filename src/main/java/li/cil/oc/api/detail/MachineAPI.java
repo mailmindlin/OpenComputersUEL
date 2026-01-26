@@ -4,6 +4,7 @@ import li.cil.oc.api.machine.Architecture;
 import li.cil.oc.api.machine.Machine;
 import li.cil.oc.api.machine.MachineHost;
 
+import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 
 public interface MachineAPI {
@@ -27,7 +28,7 @@ public interface MachineAPI {
      * a custom architecture also registers it, you may not see it in this list
      * until it also created a new machine using that architecture.
      */
-    Collection<Class<? extends Architecture>> architectures();
+    @NotNull Collection<Class<? extends Architecture>> architectures();
 
     /**
      * Get the name of the specified architecture.

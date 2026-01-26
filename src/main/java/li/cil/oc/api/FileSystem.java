@@ -4,6 +4,8 @@ import li.cil.oc.api.network.EnvironmentHost;
 import li.cil.oc.api.fs.Label;
 import li.cil.oc.api.network.ManagedEnvironment;
 
+import javax.annotation.Nullable;
+
 /**
  * This class provides factory methods for creating file systems that are
  * compatible with the built-in file system driver.
@@ -42,7 +44,7 @@ public final class FileSystem {
      * @param root   an optional subdirectory.
      * @return a file system wrapping the specified folder.
      */
-    public static li.cil.oc.api.fs.FileSystem fromClass(final Class<?> clazz, final String domain, final String root) {
+    public static @Nullable li.cil.oc.api.fs.FileSystem fromClass(final Class<?> clazz, final String domain, final String root) {
         if (API.fileSystem != null)
             return API.fileSystem.fromClass(clazz, domain, root);
         return null;
@@ -71,7 +73,7 @@ public final class FileSystem {
      * @param buffered whether data should only be written to disk when saving.
      * @return a file system wrapping the specified folder.
      */
-    public static li.cil.oc.api.fs.FileSystem fromSaveDirectory(final String root, final long capacity, final boolean buffered) {
+    public static @Nullable li.cil.oc.api.fs.FileSystem fromSaveDirectory(final String root, final long capacity, final boolean buffered) {
         if (API.fileSystem != null)
             return API.fileSystem.fromSaveDirectory(root, capacity, buffered);
         return null;
@@ -101,7 +103,7 @@ public final class FileSystem {
      * @param capacity the capacity of the file system.
      * @return a file system residing in memory.
      */
-    public static li.cil.oc.api.fs.FileSystem fromMemory(final long capacity) {
+    public static @Nullable li.cil.oc.api.fs.FileSystem fromMemory(final long capacity) {
         if (API.fileSystem != null)
             return API.fileSystem.fromMemory(capacity);
         return null;
@@ -114,7 +116,7 @@ public final class FileSystem {
      * @param fileSystem the file system to wrap.
      * @return the specified file system wrapped to be read-only.
      */
-    public static li.cil.oc.api.fs.FileSystem asReadOnly(final li.cil.oc.api.fs.FileSystem fileSystem) {
+    public static @Nullable li.cil.oc.api.fs.FileSystem asReadOnly(final li.cil.oc.api.fs.FileSystem fileSystem) {
         if (API.fileSystem != null)
             return API.fileSystem.asReadOnly(fileSystem);
         return null;
@@ -158,7 +160,7 @@ public final class FileSystem {
      * @param speed       the speed multiplier for this file system.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final Label label, final EnvironmentHost host, final String accessSound, int speed) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final Label label, @Nullable final EnvironmentHost host, @Nullable final String accessSound, int speed) {
         if (API.fileSystem != null)
             return API.fileSystem.asManagedEnvironment(fileSystem, label, host, accessSound, speed);
         return null;
@@ -181,7 +183,7 @@ public final class FileSystem {
      * @param speed       the speed multiplier for this file system.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label, final EnvironmentHost host, final String accessSound, int speed) {
+    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label, @Nullable final EnvironmentHost host, @Nullable final String accessSound, int speed) {
         if (API.fileSystem != null)
             return API.fileSystem.asManagedEnvironment(fileSystem, label, host, accessSound, speed);
         return null;

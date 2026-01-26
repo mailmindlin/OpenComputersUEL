@@ -1,5 +1,7 @@
 package li.cil.oc.api.fs;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 
 /**
@@ -38,7 +40,7 @@ public interface Handle {
      *                     I/O error occurred or the file was already
      *                     closed.
      */
-    int read(byte[] into) throws IOException;
+    int read(@NotNull  byte[] into) throws IOException;
 
     /**
      * Jump to the specified position in the file, if possible.
@@ -62,5 +64,5 @@ public interface Handle {
      *                     another I/O error occurred (no more space,
      *                     for example), or the file was already closed.
      */
-    void write(byte[] value) throws IOException;
+    void write(@NotNull byte[] value) throws IOException;
 }

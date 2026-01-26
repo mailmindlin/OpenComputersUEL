@@ -6,6 +6,8 @@ import net.minecraft.inventory.ISidedInventory;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
+
 /**
  * This interface allows interaction with robots.
  * <br>
@@ -46,7 +48,7 @@ public interface Robot extends Agent, Environment, EnvironmentHost, Tiered, ISid
      * @param index the index of the slot from which to get the environment.
      * @return the environment for that slot, or <tt>null</tt>.
      */
-    Environment getComponentInSlot(int index);
+    @Nullable Environment getComponentInSlot(int index);
 
     /**
      * Sends the state of the <em>item</em> in the specified slot to the client

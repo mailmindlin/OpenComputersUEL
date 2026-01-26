@@ -6,6 +6,8 @@ import li.cil.oc.api.network.SidedEnvironment;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
 
+import javax.annotation.Nullable;
+
 /**
  * This interface is implemented by the rack tile entity.
  * <br>
@@ -38,7 +40,7 @@ public interface Rack extends SidedEnvironment, EnvironmentHost, Rotatable, IInv
      * @param slot the slot in which to get the mountable.
      * @return the mountable currently hosted in the specified slot.
      */
-    RackMountable getMountable(int slot);
+    @Nullable RackMountable getMountable(int slot);
 
     /**
      * Get the last data state provided by the mountable in the specified slot.
@@ -48,7 +50,7 @@ public interface Rack extends SidedEnvironment, EnvironmentHost, Rotatable, IInv
      * @param slot the slot of the mountable to get the data for.
      * @return the data of the mountable in that slot, or <tt>null</tt>.
      */
-    NBTTagCompound getMountableData(int slot);
+    @Nullable NBTTagCompound getMountableData(int slot);
 
     /**
      * Mark the mountable in the specified slot as changed.

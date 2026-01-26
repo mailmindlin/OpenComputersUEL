@@ -4,6 +4,8 @@ import li.cil.oc.api.network.ManagedEnvironment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface for item component drivers.
  * <br>
@@ -62,7 +64,7 @@ public interface DriverItem {
      * @param host  the host the environment will be managed by.
      * @return the environment for that item.
      */
-    ManagedEnvironment createEnvironment(ItemStack stack, li.cil.oc.api.network.EnvironmentHost host);
+    @Nullable ManagedEnvironment createEnvironment(ItemStack stack, li.cil.oc.api.network.EnvironmentHost host);
 
     /**
      * The slot type of the specified item this driver supports.
@@ -110,5 +112,5 @@ public interface DriverItem {
      * @return the tag to use for saving and loading, or <tt>null</tt> to use
      * the default tag <tt>oc:data</tt>.
      */
-    NBTTagCompound dataTag(ItemStack stack);
+    @Nullable NBTTagCompound dataTag(ItemStack stack);
 }

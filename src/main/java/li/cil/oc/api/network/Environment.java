@@ -1,5 +1,7 @@
 package li.cil.oc.api.network;
 
+import javax.annotation.Nullable;
+
 /**
  * The environment of a node.
  * <br>
@@ -56,7 +58,7 @@ public interface Environment {
      *
      * @return the node this environment wraps.
      */
-    Node node();
+    @Nullable Node node();
 
     /**
      * This is called when a node is added to a network.

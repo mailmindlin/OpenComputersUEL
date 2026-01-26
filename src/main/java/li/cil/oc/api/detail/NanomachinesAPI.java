@@ -4,6 +4,9 @@ import li.cil.oc.api.nanomachines.BehaviorProvider;
 import li.cil.oc.api.nanomachines.Controller;
 import net.minecraft.entity.player.EntityPlayer;
 
+import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nullable;
+
 public interface NanomachinesAPI {
     /**
      * Register a new behavior provider.
@@ -21,7 +24,7 @@ public interface NanomachinesAPI {
      *
      * @return the list of all currently registered providers.
      */
-    Iterable<BehaviorProvider> getProviders();
+    @NotNull Iterable<BehaviorProvider> getProviders();
 
     /**
      * Check whether a player has a nanomachine controller installed.
@@ -41,7 +44,7 @@ public interface NanomachinesAPI {
      * @param player the player to get the controller for.
      * @return the controller for the specified player.
      */
-    Controller getController(EntityPlayer player);
+    @Nullable Controller getController(EntityPlayer player);
 
     /**
      * Install a controller for the specified player if it doesn't already

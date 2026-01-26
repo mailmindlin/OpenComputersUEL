@@ -4,6 +4,8 @@ import li.cil.oc.api.detail.ItemInfo;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 
+import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
 /**
@@ -27,7 +29,7 @@ public final class Items {
      * @return the descriptor for the item with the specified name, or
      * <tt>null</tt> if there is no such item.
      */
-    public static ItemInfo get(String name) {
+    public static @Nullable ItemInfo get(String name) {
         if (API.items != null)
             return API.items.get(name);
         return null;
@@ -41,7 +43,7 @@ public final class Items {
      * @return the descriptor for the specified item stack, or <tt>null</tt>
      * if the stack is not a valid OpenComputers item or block.
      */
-    public static ItemInfo get(ItemStack stack) {
+    public static @Nullable ItemInfo get(ItemStack stack) {
         if (API.items != null)
             return API.items.get(stack);
         return null;
@@ -72,7 +74,7 @@ public final class Items {
      * @return an item stack representing the registered loot disk, to allow
      * adding a recipe for your loot disk, for example.
      */
-    public static ItemStack registerFloppy(String name, EnumDyeColor color, Callable<li.cil.oc.api.fs.FileSystem> factory, boolean doRecipeCycling) {
+    public static @NotNull ItemStack registerFloppy(String name, EnumDyeColor color, Callable<li.cil.oc.api.fs.FileSystem> factory, boolean doRecipeCycling) {
         if (API.items != null)
             return API.items.registerFloppy(name, color, factory, doRecipeCycling);
         return ItemStack.EMPTY;
@@ -94,7 +96,7 @@ public final class Items {
      * @return an item stack representing the registered EEPROM, to allow
      * adding a recipe for your custom BIOS, for example.
      */
-    public static ItemStack registerEEPROM(String name, byte[] code, byte[] data, boolean readonly) {
+    public static @NotNull ItemStack registerEEPROM(@Nullable String name, @Nullable byte[] code, @Nullable byte[] data, boolean readonly) {
         if (API.items != null)
             return API.items.registerEEPROM(name, code, data, readonly);
         return ItemStack.EMPTY;

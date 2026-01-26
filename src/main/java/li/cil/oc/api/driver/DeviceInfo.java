@@ -1,5 +1,8 @@
 package li.cil.oc.api.driver;
 
+import org.jetbrains.annotations.Unmodifiable;
+
+import javax.annotation.Nullable;
 import java.util.Map;
 
 /**
@@ -44,6 +47,8 @@ public interface DeviceInfo {
      *
      * @return the table of information on this device, or <code>null</code>.
      */
+    @Nullable
+    @Unmodifiable
     Map<String, String> getDeviceInfo();
 
     /**

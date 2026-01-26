@@ -4,6 +4,8 @@ import li.cil.oc.api.nanomachines.BehaviorProvider;
 import li.cil.oc.api.nanomachines.Controller;
 import net.minecraft.entity.player.EntityPlayer;
 
+import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nullable;
 import java.util.Collections;
 
 /**
@@ -32,7 +34,7 @@ public class Nanomachines {
      *
      * @return the list of all currently registered providers.
      */
-    public static Iterable<BehaviorProvider> getProviders() {
+    public static @NotNull Iterable<BehaviorProvider> getProviders() {
         if (API.nanomachines != null)
             return API.nanomachines.getProviders();
         return Collections.emptyList();
@@ -60,7 +62,7 @@ public class Nanomachines {
      * @param player the player to get the controller for.
      * @return the controller for the specified player.
      */
-    public static Controller getController(EntityPlayer player) {
+    public static @Nullable Controller getController(EntityPlayer player) {
         if (API.nanomachines != null)
             return API.nanomachines.getController(player);
         return null;
@@ -75,7 +77,7 @@ public class Nanomachines {
      *
      * @param player the player to install a nanomachine controller for.
      */
-    public static Controller installController(EntityPlayer player) {
+    public static @Nullable Controller installController(EntityPlayer player) {
         if (API.nanomachines != null)
             return API.nanomachines.installController(player);
         return null;

@@ -5,6 +5,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.world.World;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface for side-aware block component drivers.
  * <br>
@@ -67,5 +69,5 @@ public interface DriverBlock {
      * @param side  the side of the block to check.
      * @return the environment for the block at that location.
      */
-    ManagedEnvironment createEnvironment(World world, BlockPos pos, EnumFacing side);
+    @Nullable ManagedEnvironment createEnvironment(World world, BlockPos pos, EnumFacing side);
 }

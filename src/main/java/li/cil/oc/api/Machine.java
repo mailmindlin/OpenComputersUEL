@@ -3,6 +3,8 @@ package li.cil.oc.api;
 import li.cil.oc.api.machine.Architecture;
 import li.cil.oc.api.machine.MachineHost;
 
+import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -39,7 +41,7 @@ public final class Machine {
     /**
      * A list of all <em>registered</em> architectures.
      */
-    public static Collection<Class<? extends Architecture>> architectures() {
+    public static @NotNull Collection<Class<? extends Architecture>> architectures() {
         if (API.machine != null)
             return API.machine.architectures();
         return Collections.emptyList();
@@ -51,7 +53,7 @@ public final class Machine {
      * @param architecture the architecture to get the name for.
      * @return the name of the specified architecture.
      */
-    public static String getArchitectureName(Class<? extends Architecture> architecture) {
+    public static @Nullable String getArchitectureName(Class<? extends Architecture> architecture) {
         if (API.machine != null)
             return API.machine.getArchitectureName(architecture);
         return null;
@@ -66,7 +68,7 @@ public final class Machine {
      * @param host the owner object of the machine, providing context.
      * @return the newly created machine.
      */
-    public static li.cil.oc.api.machine.Machine create(MachineHost host) {
+    public static @Nullable li.cil.oc.api.machine.Machine create(MachineHost host) {
         if (API.machine != null)
             return API.machine.create(host);
         return null;

@@ -11,6 +11,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 
+import javax.annotation.Nullable;
+
 /**
  * This class provides factories for networks and nodes.
  * <br>
@@ -200,7 +202,7 @@ public final class Network {
      * @param reachability the reachability of the node.
      * @return a new node builder.
      */
-    public static Builder.NodeBuilder newNode(final Environment host, final Visibility reachability) {
+    public static @Nullable Builder.NodeBuilder newNode(final Environment host, final Visibility reachability) {
         if (API.network != null)
             return API.network.newNode(host, reachability);
         return null;
@@ -221,7 +223,7 @@ public final class Network {
      * @param data        the payload of the packet.
      * @return the new packet.
      */
-    public static Packet newPacket(final String source, final String destination, final int port, final Object[] data) {
+    public static @Nullable Packet newPacket(final String source, @Nullable final String destination, final int port, final Object[] data) {
         if (API.network != null)
             return API.network.newPacket(source, destination, port, data);
         return null;
@@ -233,7 +235,7 @@ public final class Network {
      * @param nbt the tag to load the packet from.
      * @return the loaded packet.
      */
-    public static Packet newPacket(final NBTTagCompound nbt) {
+    public static @Nullable Packet newPacket(final NBTTagCompound nbt) {
         if (API.network != null)
             return API.network.newPacket(nbt);
         return null;

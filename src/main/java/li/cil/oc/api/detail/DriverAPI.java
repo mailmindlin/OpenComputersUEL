@@ -139,7 +139,7 @@ public interface DriverAPI {
      * @deprecated Use {@link #environmentsFor(ItemStack)} instead.
      */
     @Deprecated
-    Class<?> environmentFor(ItemStack stack);
+    @Nullable Class<?> environmentFor(ItemStack stack);
 
     /**
      * Looks up the environments associated with the specified item stack.
@@ -167,7 +167,7 @@ public interface DriverAPI {
      * @param player the player holding the item. May be <tt>null</tt>.
      * @return the IItemHandler implementation interfacing the stack, or <tt>null</tt>.
      */
-    IItemHandler itemHandlerFor(ItemStack stack, EntityPlayer player);
+    @Nullable IItemHandler itemHandlerFor(ItemStack stack, @Nullable EntityPlayer player);
 
     /**
      * Get a list of all registered item drivers.
