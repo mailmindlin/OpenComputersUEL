@@ -11,7 +11,6 @@ import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.Robot as TERobot
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
-import li.cil.oc.itemInfo
 import li.cil.oc.server.PacketSender
 import li.cil.oc.server.agent.Player
 import li.cil.oc.util.BlockPosition

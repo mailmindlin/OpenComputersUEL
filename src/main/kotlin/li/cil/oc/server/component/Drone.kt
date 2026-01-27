@@ -2,14 +2,13 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ComponentConnector
-import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.checkSideAny
@@ -20,19 +19,23 @@ import net.minecraft.util.SoundCategory
 import kotlin.math.sqrt
 import li.cil.oc.common.entity.Drone as EntityDrone
 
-class Drone(override val agent: EntityDrone): Agent(), DeviceInfoKt {
+class Drone(override val agent: EntityDrone): Agent(), DeviceInfo {
   override val node = nodeFactory(Visibility.Network, "drone")
     .withConnector(Settings.get.bufferDrone)
     .create()
   override fun node(): ComponentConnector = node
 
-  override val deviceInfo = mapOf(
-    DeviceAttribute.Class to DeviceClass.System,
-    DeviceAttribute.Description to "Drone",
-    DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product to "Overwatcher",
-    DeviceAttribute.Capacity to agent.inventorySize.toString()
-  )
+  private val deviceInfo_ by lazy {
+    mapOf(
+      DeviceAttribute.Class to DeviceClass.System,
+      DeviceAttribute.Description to "Drone",
+      DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+      DeviceAttribute.Product to "Overwatcher",
+      DeviceAttribute.Capacity to agent.inventorySize.toString()
+    )
+  }
+
+  override fun getDeviceInfo() = deviceInfo_
 
   override fun checkSideForAction(args: Arguments, n: Int) =
     args.checkSideAny(n)

@@ -16,6 +16,8 @@ val TileEntityTrait.world: World? get() = asTileEntity().world
 val TileEntityTrait.position: BlockPosition get() = BlockPosition(x, y, z, world)
 val TileEntityTrait.isClient: Boolean get() = !isServer
 val TileEntityTrait.isServer: Boolean get() = world?.let { !it.isRemote } ?: SideTracker.isServer()
+// Helper to get the block type
+val TileEntityTrait.blockType: net.minecraft.block.Block get() = asTileEntity().blockType
 
 /**
  * Base trait interface for all OpenComputers tile entities.
@@ -28,15 +30,4 @@ interface TileEntityTrait {
     }
 
     fun asTileEntity(): TileEntity
-
-//    val x: Int get() = asTileEntity().pos.x
-//    val y: Int get() = asTileEntity().pos.y
-//    val z: Int get() = asTileEntity().pos.z
-//    val pos: BlockPos get() = asTileEntity().pos
-//    val world: World? get() = asTileEntity().world
-//    val position: BlockPosition get() = BlockPosition(x, y, z, world)
-
-
-    // Helper to get the block type
-    val blockType: net.minecraft.block.Block get() = asTileEntity().blockType
 }

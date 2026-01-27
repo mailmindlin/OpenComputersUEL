@@ -36,7 +36,7 @@ abstract class RedstoneWireless : RedstoneSignaller(), DeviceInfo, WirelessRecei
 
     // ----------------------------------------------------------------------- //
 
-    private val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Communication,
             DeviceAttribute.Description to "Wireless redstone controller",
@@ -47,7 +47,7 @@ abstract class RedstoneWireless : RedstoneSignaller(), DeviceInfo, WirelessRecei
         )
     }
 
-    override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo.toMutableMap()
+    override fun getDeviceInfo(): MutableMap<String, String> = deviceInfo_.toMutableMap()
 
     // ----------------------------------------------------------------------- //
 

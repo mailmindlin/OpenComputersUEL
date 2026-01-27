@@ -59,7 +59,7 @@ object Items : ItemAPI {
 
     @JvmStatic
     fun registerBlock(instance: Block, id: String): Block {
-        if (!descriptors.containsKey(id)) {
+        if (id !in descriptors) {
             if (instance is SimpleBlock) {
                 instance.setTranslationKey("oc.$id")
                 instance.setRegistryName(id)
@@ -71,7 +71,10 @@ object Items : ItemAPI {
                 item.setRegistryName(id)
                 GameData.register_impl(item)
                 OpenComputers.proxy.registerModel(item, id)
+            } else {
+                OpenComputers.log.warn("Instance $instance is not SimpleBlock")
             }
+            OpenComputers.log.info("Registering block $id")
             descriptors[id] = object : ItemInfo {
                 override fun name(): String = id
 
@@ -94,8 +97,9 @@ object Items : ItemAPI {
 
     @JvmStatic
     fun <T : Delegate> registerItem(delegate: T, id: String): T {
-        if (!descriptors.containsKey(id)) {
+        if (id !in descriptors) {
             OpenComputers.proxy.registerModel(delegate, id)
+            OpenComputers.log.info("Registering item $id")
             descriptors[id] = object : ItemInfo {
                 override fun name(): String = id
 
@@ -118,6 +122,7 @@ object Items : ItemAPI {
                 GameData.register_impl(instance.setRegistryName(ResourceLocation(Settings.resourceDomain, id)))
                 OpenComputers.proxy.registerModel(instance, id)
             }
+            OpenComputers.log.info("Registering item $id")
             descriptors[id] = object : ItemInfo {
                 override fun name(): String = id
 
@@ -141,6 +146,7 @@ object Items : ItemAPI {
     @JvmStatic
     fun registerStack(stack: ItemStack, id: String): ItemStack {
         val immutableStack = stack.copy()
+        OpenComputers.log.info("Registering stack $id")
         descriptors[id] = object : ItemInfo {
             override fun name(): String = id
 
@@ -365,7 +371,9 @@ object Items : ItemAPI {
 
         // Register aliases.
         for ((k, v) in aliases) {
-            descriptors.getOrPut(k) { descriptors[v]!! }
+//            descriptors.getOrPut(k) { descriptors[v]!! }
+            val v = descriptors[v] ?: continue
+            descriptors.getOrPut(k) { v }
         }
     }
 
@@ -554,19 +562,25 @@ object Items : ItemAPI {
     // Special purpose items that don't fit into any other category.
     private fun initSpecial() {
         val misc = newItem(object : Delegator() {
-            private val configuredItems: Array<ItemStack>
-                get() = arrayOf(
+            private val configuredItems: Array<ItemStack> by lazy {
+                (arrayOf(
                     Items.createConfiguredDrone(),
                     Items.createConfiguredMicrocontroller(),
                     Items.createConfiguredRobot(),
                     Items.createConfiguredTablet(),
-                    Items.createChargedHoverBoots()
-                ) + Loot.disksForClient + registeredItems
+//                    Items.createChargedHoverBoots() // TODO this is bad
+                )
+                + Loot.disksForClient
+                + registeredItems
+                )
+            }
 
             override fun getSubItems(tab: CreativeTabs, list: NonNullList<ItemStack>) {
                 super.getSubItems(tab, list)
                 if (isInCreativeTab(tab)) {
-                    configuredItems.forEach { list.add(it) }
+                    for ((idx, configured) in configuredItems.withIndex())
+                        if (configured.item.registryName == null) throw IllegalArgumentException("bad item $idx: $configured")
+                    list.addAll(configuredItems)
                 }
             }
         }, "misc")

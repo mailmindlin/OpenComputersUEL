@@ -4,7 +4,6 @@ import com.google.common.io.Files
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -31,7 +30,7 @@ class Drive(
     val sound: String?,
     val speed: Int,
     val isLocked: Boolean
-) : ManagedEnvironmentKt(), DeviceInfoKt {
+) : ManagedEnvironmentKt(), DeviceInfo {
     override val node = nodeFactory(Visibility.Network)
         .withComponent("drive", Visibility.Neighbors)
         .withConnector()
@@ -53,15 +52,19 @@ class Drive(
 
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Disk,
-        DeviceAttribute.Description to "Hard disk drive",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "MPD${capacity / 1024}L$platterCount",
-        DeviceAttribute.Capacity to (capacity * 1.024).toInt().toString(),
-        DeviceAttribute.Size to capacity.toString(),
-        DeviceAttribute.Clock to "${(2000 / readSectorCosts[speed]).toInt() / 100}/${(2000 / writeSectorCosts[speed]).toInt() / 100}/${(2000 / readByteCosts[speed]).toInt() / 100}/${(2000 / writeByteCosts[speed]).toInt() / 100}"
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Disk,
+            DeviceAttribute.Description to "Hard disk drive",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "MPD${capacity / 1024}L$platterCount",
+            DeviceAttribute.Capacity to (capacity * 1.024).toInt().toString(),
+            DeviceAttribute.Size to capacity.toString(),
+            DeviceAttribute.Clock to "${(2000 / readSectorCosts[speed]).toInt() / 100}/${(2000 / writeSectorCosts[speed]).toInt() / 100}/${(2000 / readByteCosts[speed]).toInt() / 100}/${(2000 / writeByteCosts[speed]).toInt() / 100}"
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

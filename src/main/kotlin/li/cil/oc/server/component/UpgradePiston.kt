@@ -2,6 +2,7 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -49,18 +50,20 @@ object PistonTraits {
     }
 }
 
-abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt, PistonTraits.ExtendAware {
+abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo, PistonTraits.ExtendAware {
     override val node = Network.newNode(this, Visibility.Network)!!
         .withComponent("piston")
         .withConnector()
         .create()
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "Piston upgrade",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "Displacer II+"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     open val isSticky: Boolean = false
 

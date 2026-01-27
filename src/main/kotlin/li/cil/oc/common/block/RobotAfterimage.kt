@@ -7,7 +7,6 @@ import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.Robot as TERobot
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.integration.util.ItemBlacklist
-import li.cil.oc.itemInfo
 import li.cil.oc.util.Rarity
 import net.minecraft.block.state.IBlockState
 import net.minecraft.entity.player.EntityPlayer
@@ -49,7 +48,7 @@ class RobotAfterimage : SimpleBlock() {
     override fun getBoundingBox(state: IBlockState, world: IBlockAccess, pos: BlockPos): AxisAlignedBB {
         val robot = findMovingRobot(world, pos)
         return if (robot != null) {
-            val block = robot.blockType as SimpleBlock
+            val block = robot.getBlockType() as SimpleBlock
             val bounds = block.getBoundingBox(state, world, robot.pos)
             val delta = robot.moveFrom?.let { vec ->
                 val blockPos = robot.pos
@@ -87,7 +86,7 @@ class RobotAfterimage : SimpleBlock() {
     override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, player: EntityPlayer, willHarvest: Boolean): Boolean {
         val robot = findMovingRobot(world, pos)
         return if (robot != null && robot.isAnimatingMove && robot.moveFrom?.equals(pos) == true) {
-            robot.proxy!!.blockType.removedByPlayer(state, world, pos, player, false)
+            robot.proxy.getBlockType().removedByPlayer(state, world, pos, player, false)
         } else super.removedByPlayer(state, world, pos, player, willHarvest) // Probably broken by the robot we represent.
     }
 

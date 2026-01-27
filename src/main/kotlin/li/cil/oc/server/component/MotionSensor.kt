@@ -2,7 +2,6 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -11,7 +10,6 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.util.SideTracker
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.nbt.NBTTagCompound
@@ -19,7 +17,7 @@ import net.minecraft.potion.Potion
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.Vec3d
 
-class MotionSensor(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class MotionSensor(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     override val node = newComponentConnector(Visibility.Network, "motion_sensor")
 
     private val radius = 8
@@ -28,13 +26,17 @@ class MotionSensor(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceIn
 
     private val trackedEntities = mutableMapOf<EntityLivingBase, Triple<Double, Double, Double>>()
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Motion sensor",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "Blinker M1K0",
-        DeviceAttribute.Capacity to radius.toString()
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Motion sensor",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Blinker M1K0",
+            DeviceAttribute.Capacity to radius.toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

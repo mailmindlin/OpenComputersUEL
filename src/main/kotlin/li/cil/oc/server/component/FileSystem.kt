@@ -16,7 +16,6 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.SaveHandler
 import li.cil.oc.util.setNewCompoundTag
@@ -35,7 +34,7 @@ class FileSystem(
     val host: EnvironmentHost?,
     val sound: String?,
     val speed: Int
-) : ManagedEnvironmentKt(), DeviceInfoKt {
+) : ManagedEnvironmentKt(), DeviceInfo {
 
     override val node = Network.newNode(this, Visibility.Network)!!
         .withComponent("filesystem", Visibility.Neighbors)
@@ -50,15 +49,19 @@ class FileSystem(
 
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Volume,
-        DeviceAttribute.Description to "Filesystem",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "MPFS.21.6",
-        DeviceAttribute.Capacity to (fileSystem.spaceTotal() * 1.024).toInt().toString(),
-        DeviceAttribute.Size to fileSystem.spaceTotal().toString(),
-        DeviceAttribute.Clock to "${(2000 / readCosts[speed]).toInt() / 100}/${(2000 / seekCosts[speed]).toInt() / 100}/${(2000 / writeCosts[speed]).toInt() / 100}"
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Volume,
+            DeviceAttribute.Description to "Filesystem",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "MPFS.21.6",
+            DeviceAttribute.Capacity to (fileSystem.spaceTotal() * 1.024).toInt().toString(),
+            DeviceAttribute.Size to fileSystem.spaceTotal().toString(),
+            DeviceAttribute.Clock to "${(2000 / readCosts[speed]).toInt() / 100}/${(2000 / seekCosts[speed]).toInt() / 100}/${(2000 / writeCosts[speed]).toInt() / 100}"
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

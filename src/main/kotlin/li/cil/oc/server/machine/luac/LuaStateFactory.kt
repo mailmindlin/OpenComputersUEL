@@ -39,6 +39,7 @@ abstract class LuaStateFactory {
         return lua52 || lua53 || lua54
       }
     val luajRequested: Boolean get() = Settings.get.forceLuaJ || Settings.get.registerLuaJArchitecture
+    /** Register LuaJ */
     val includeLuaJ: Boolean get() = !isAvailable || luajRequested
     val include52: Boolean get() = Lua52.isAvailable && !Settings.get.forceLuaJ
     val include53: Boolean get() = Lua53.isAvailable && Settings.get.enableLua53 && !Settings.get.forceLuaJ
@@ -65,16 +66,16 @@ abstract class LuaStateFactory {
   private var currentLib = ""
 
   private val libraryName = run {
-    val libExtension = {
-      if (SystemUtils.IS_OS_MAC) ".dylib"
-      else if (SystemUtils.IS_OS_WINDOWS) ".dll"
-      else ".so"
+    val libExtension = when {
+      SystemUtils.IS_OS_MAC -> ".dylib"
+      SystemUtils.IS_OS_WINDOWS -> ".dll"
+      else -> ".so"
     }
 
-    val platformName = {
+    val platformName = run {
       if (!Strings.isNullOrEmpty(Settings.get.forceNativeLibPlatform)) Settings.get.forceNativeLibPlatform
       else {
-        val systemName = run {
+        val systemName =
           if (SystemUtils.IS_OS_FREE_BSD) "freebsd"
           else if (SystemUtils.IS_OS_NET_BSD) "netbsd"
           else if (SystemUtils.IS_OS_OPEN_BSD) "openbsd"
@@ -83,15 +84,13 @@ abstract class LuaStateFactory {
           else if (SystemUtils.IS_OS_MAC) "darwin"
           else if (SystemUtils.IS_OS_WINDOWS) "windows"
           else "unknown"
-        }
 
-        val archName = run {
+        val archName =
           if (Architecture.IS_OS_ARM64) "aarch64"
           else if (Architecture.IS_OS_ARM) "arm"
           else if (Architecture.IS_OS_X64) "x86_64"
           else if (Architecture.IS_OS_X86) "x86"
           else "unknown"
-        }
 
         "$systemName-$archName"
       }
@@ -376,7 +375,7 @@ abstract class LuaStateFactory {
 
 
   object Lua52: LuaStateFactory() {
-    override val version: String = "52"
+    override val version: String get() = "52"
 
     override fun create(maxMemory: Int?) = maxMemory?.let { LuaState(it) } ?: LuaState()
 
@@ -394,7 +393,7 @@ abstract class LuaStateFactory {
   }
 
   object Lua53: LuaStateFactory() {
-    override val version: String = "53"
+    override val version: String get() = "53"
 
     override fun create(maxMemory: Int?) = maxMemory?.let { LuaStateFiveThree(it) } ?: LuaStateFiveThree()
 
@@ -412,7 +411,7 @@ abstract class LuaStateFactory {
   }
 
   object Lua54: LuaStateFactory() {
-    override val version: String = "54"
+    override val version: String get() = "54"
 
     override fun create(maxMemory: Int?) = maxMemory?.let { LuaStateFiveFour(it) } ?: LuaStateFiveFour()
 

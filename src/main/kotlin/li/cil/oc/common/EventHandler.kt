@@ -66,7 +66,6 @@ import net.minecraftforge.fml.common.network.FMLNetworkEvent.ClientConnectedToSe
 import java.util.*
 import kotlin.concurrent.thread
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.itemInfo
 
 object EventHandler {
     private var serverTicks = 0L

@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Microcontroller as InternalMicrocontroller
@@ -24,7 +25,6 @@ import li.cil.oc.common.tileentity.traits.Hub
 import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.result
 import li.cil.oc.util.*
 import net.minecraft.entity.player.EntityPlayer
@@ -39,7 +39,7 @@ import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.Hub as TraitHub
 import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
 
-class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventory, InternalMicrocontroller, DeviceInfoKt {
+class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventory, InternalMicrocontroller, DeviceInfo {
     @JvmField
     val info = MicrocontrollerData()
 
@@ -57,13 +57,13 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     val outputSides: Array<Boolean> = Array(6) { true }
 
     @JvmField
-    val snooperNode: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)!!
+    val snooperNode: ComponentConnector? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("microcontroller")
         .withConnector(Settings.get.bufferMicrocontroller)
         .create()
 
     @JvmField
-    val componentNodes: Array<Component> = Array(6) {
+    val componentNodes: Array<Component?> = Array(6) {
         ApiNetwork.newNode(this, Visibility.Network)!!
             .withComponent("microcontroller")
             .create()
@@ -81,13 +81,15 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     override val runSound: String? = null // Microcontrollers are silent.
 
-    override val deviceInfo: Map<String, String> = mapOf(
+    private val deviceInfo: Map<String, String> = mapOf(
         DeviceAttribute.Class to DeviceClass.System,
         DeviceAttribute.Description to "Microcontroller",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "Cubicle",
         DeviceAttribute.Capacity to sizeInventory.toString()
     )
+
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo
 
     private inline val facing: EnumFacing get() = facing()!!
 
@@ -110,7 +112,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> {
         super.onAnalyze(player, side, hitX, hitY, hitZ)
         return if (side != facing)
-            arrayOf(componentNodes[side.index])
+            arrayOf(componentNodes[side.index]!!)
         else
             arrayOf(machine!!.node()!!)
     }
@@ -170,7 +172,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
                 if (side != facing) {
                     val node = sidedNode(side)
                     if (node is Connector) {
-                        val demand = snooperNode.globalBufferSize() - snooperNode.globalBuffer()
+                        val demand = snooperNode!!.globalBufferSize() - snooperNode.globalBuffer()
                         val available = demand + node.changeBuffer(-demand)
                         snooperNode.changeBuffer(available)
                     }
@@ -191,7 +193,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)!!
+    override fun createNode(plug: Hub.Plug): Connector? = ApiNetwork.newNode(plug, Visibility.Network)!!
         .withConnector()
         .create()
 
@@ -204,9 +206,9 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
             connectComponents()
         }
         if (plug.isPrimary)
-            plug.node.connect(componentNodes[plug.side.ordinal])
+            plug.node!!.connect(componentNodes[plug.side.ordinal])
         else
-            componentNodes[plug.side.ordinal].remove()
+            componentNodes[plug.side.ordinal]!!.remove()
     }
 
     override fun onPlugDisconnect(plug: Hub.Plug, node: Node) {
@@ -214,19 +216,19 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         if (plug.isPrimary && node != plug.node)
             plug.node!!.connect(componentNodes[plug.side.ordinal])
         else
-            componentNodes[plug.side.ordinal].remove()
+            componentNodes[plug.side.ordinal]!!.remove()
         if (node == plug.node)
             disconnectComponents()
     }
 
     override fun onPlugMessage(plug: Hub.Plug, message: Message) {
-        if (message.name() == "network.message" && message.source().network() != snooperNode.network()) {
+        if (message.name() == "network.message" && message.source().network() != snooperNode!!.network()) {
             snooperNode.sendToReachable(message.name(), *message.data())
         }
     }
 
     override fun onMessage(message: Message) {
-        if (message.name() == "network.message" && message.source().network() == snooperNode.network()) {
+        if (message.name() == "network.message" && message.source().network() == snooperNode!!.network()) {
             for (side in EnumFacing.values()) {
                 if (outputSides[side.ordinal] && side != facing) {
                     sidedNode(side)?.sendToReachable(message.name(), *message.data())
@@ -251,10 +253,10 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
         nbt.getBooleanArray(OutputsTag)
         nbt.getTagList(ComponentNodesTag, NBT.TAG_COMPOUND).forEachIndexed { index, tag ->
             if (tag is NBTTagCompound && index < componentNodes.size) {
-                componentNodes[index].load(tag)
+                componentNodes[index]!!.load(tag)
             }
         }
-        snooperNode.load(nbt.getCompoundTag(SnooperTag))
+        snooperNode!!.load(nbt.getCompoundTag(SnooperTag))
         super.readFromNBTForServer(nbt)
         val machine = machine
         ApiNetwork.joinNewNetwork(machine!!.node())
@@ -270,7 +272,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
             node?.save(tag)
             tag
         })
-        nbt.setNewCompoundTag(SnooperTag) { snooperNode.save(it) }
+        nbt.setNewCompoundTag(SnooperTag) { snooperNode!!.save(it) }
     }
 
     @SideOnly(Side.CLIENT)

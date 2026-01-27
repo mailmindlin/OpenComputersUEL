@@ -31,6 +31,7 @@ import net.minecraft.world.World
 import net.minecraftforge.fml.common.Optional
 import java.util.EnumSet
 
+@Optional.Interface(iface = "appeng.api.networking.IGridHost", modid = Mods.IDs.AppliedEnergistics2)
 interface AppliedEnergistics2 : Common, IGridHost {
     private fun useAppliedEnergistics2Power(): Boolean = isServer && Mods.AppliedEnergistics2.isModAvailable
 

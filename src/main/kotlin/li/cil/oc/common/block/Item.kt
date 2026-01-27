@@ -7,7 +7,6 @@ import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.traits.Rotatable
-import li.cil.oc.itemInfo
 import li.cil.oc.common.tileentity.Keyboard as TEKeyboard
 import li.cil.oc.common.tileentity.RobotProxy as TERobotProxy
 import li.cil.oc.common.tileentity.traits.Rotatable as TERotatable

@@ -2,7 +2,7 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Rotatable
@@ -20,7 +20,7 @@ import li.cil.oc.util.BlockPosition
 import net.minecraft.nbt.NBTTagCompound
 import kotlin.math.abs
 
-class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     private val rotatable: Rotatable
         get() = host as Rotatable
 
@@ -31,13 +31,17 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     val data = NavigationUpgradeData()
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Navigation upgrade",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "PathFinder v3",
-        DeviceAttribute.Capacity to data.getSize(host.world()).toString()
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Navigation upgrade",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "PathFinder v3",
+            DeviceAttribute.Capacity to data.getSize(host.world()).toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

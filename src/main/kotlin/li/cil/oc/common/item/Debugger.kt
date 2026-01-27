@@ -37,8 +37,7 @@ class Debugger(parent: Delegator) : AbstractDelegate(parent) {
         return true
     }
     companion object DebuggerObject : Environment {
-        @JvmField
-        var node: Node? = Network.newNode(this, Visibility.Network)!!.create()
+        private val node: Node? by lazy { Network.newNode(this, Visibility.Network)!!.create() }
 
         override fun node(): Node? = node
 

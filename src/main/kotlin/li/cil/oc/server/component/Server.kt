@@ -3,6 +3,7 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.api.component.RackBusConnectable
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Rack
@@ -37,7 +38,7 @@ import li.cil.oc.api.Machine as MachineFactory
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.common.item.Server as ItemServer
 
-class Server(val rack: Rack, val slot: Int) : ServerInventory(), Environment, MachineHost, ComponentInventory, Analyzable, Server, ICapabilityProvider, DeviceInfoKt {
+class Server(val rack: Rack, val slot: Int) : ServerInventory(), Environment, MachineHost, ComponentInventory, Analyzable, Server, ICapabilityProvider, DeviceInfo {
     val machine: Machine = MachineFactory.create(this)!!
     override fun machine(): Machine = machine
     override fun rack(): Rack = rack
@@ -50,13 +51,17 @@ class Server(val rack: Rack, val slot: Int) : ServerInventory(), Environment, Ma
     var lastFileSystemAccess = 0L
     var lastNetworkActivity = 0L
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.System,
-        DeviceAttribute.Description to "Server",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "Blader",
-        DeviceAttribute.Capacity to sizeInventory.toString()
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.System,
+            DeviceAttribute.Description to "Server",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Blader",
+            DeviceAttribute.Capacity to sizeInventory.toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
     // Environment

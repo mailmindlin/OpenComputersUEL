@@ -2,6 +2,7 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.*
@@ -9,15 +10,17 @@ import li.cil.oc.util.getTileEntity
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 
-class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeBarcodeReader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     override val node = newComponentConnector(Visibility.Network, "barcode_reader")
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "Barcode reader upgrade",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "Readerizer Deluxe"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     override fun onMessage(message: Message) {
         super.onMessage(message)

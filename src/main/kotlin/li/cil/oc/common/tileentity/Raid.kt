@@ -35,9 +35,11 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
     override val inventoryDelegate: TraitInventory.Delegate = register(TraitInventory::Delegate)
 
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.None)!!.create()
+    val node: Node? = ApiNetwork
+        .newNode(this, Visibility.None)!!
+        .create()
 
-    override fun node(): Node = node
+    override fun node(): Node? = node
 
     @JvmField
     var filesystem: FileSystem? = null
@@ -117,7 +119,7 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
             (fs.node() as Component).setVisibility(Visibility.Network)
             // Ensure we're in a network before connecting the raid fs.
             ApiNetwork.joinNewNetwork(node)
-            node.connect(fs.node())
+            node!!.connect(fs.node())
             filesystem = fs
         }
     }
@@ -182,7 +184,7 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
     // ----------------------------------------------------------------------- //
 
     inner class RaidLabel : Label {
-        var label: String = "raid"
+        private var label: String = "raid"
 
         override fun getLabel(): String = label
 

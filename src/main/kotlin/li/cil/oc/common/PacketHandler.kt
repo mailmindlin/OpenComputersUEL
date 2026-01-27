@@ -4,9 +4,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.buffer.ByteBufInputStream
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
-import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.common.block.RobotAfterimage
-import li.cil.oc.itemInfo
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.entity.player.EntityPlayerMP
 import net.minecraft.item.ItemStack

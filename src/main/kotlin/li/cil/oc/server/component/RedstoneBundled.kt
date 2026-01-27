@@ -12,7 +12,7 @@ import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
 import net.minecraft.util.EnumFacing
 
 abstract class RedstoneBundled<T> : RedstoneVanilla<T>() where T : EnvironmentHost, T : BundledRedstoneAware {
-    override val deviceInfo: Map<String, String> by lazy {
+    private val bundledDeviceInfo by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Communication,
             DeviceAttribute.Description to "Advanced redstone controller",
@@ -22,6 +22,8 @@ abstract class RedstoneBundled<T> : RedstoneVanilla<T>() where T : EnvironmentHo
             DeviceAttribute.Width to "16"
         )
     }
+
+    override fun getDeviceInfo() = bundledDeviceInfo
 
     private val COLOR_RANGE = 0 until 16
 

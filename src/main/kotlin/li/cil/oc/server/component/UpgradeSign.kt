@@ -3,6 +3,7 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.event.SignChangeEvent
@@ -32,13 +33,15 @@ import net.minecraftforge.common.util.FakePlayerFactory
 import net.minecraftforge.event.world.BlockEvent
 import net.minecraftforge.fml.common.eventhandler.Event
 
-abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfoKt {
-    override val deviceInfo = mapOf(
+abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfo {
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "Sign upgrade",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "Labelizer Deluxe"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     abstract val host: EnvironmentHost
 

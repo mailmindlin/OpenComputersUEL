@@ -4,6 +4,7 @@ import com.google.common.net.InetAddresses
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -27,7 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Future
 
-class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
+class InternetCard: ManagedEnvironmentKt(), DeviceInfo {
   override val node = nodeFactory(Visibility.Network).withComponent("internet", Visibility.Neighbors).create()
 
   private var owner: Context? = null
@@ -36,12 +37,14 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfoKt {
 
   // ----------------------------------------------------------------------- //
 
-  override val deviceInfo = mapOf(
+  private val deviceInfo = mapOf(
     DeviceAttribute.Class to DeviceClass.Communication,
     DeviceAttribute.Description to "Internet modem",
     DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
     DeviceAttribute.Product to "SuperLink X-D4NK"
   )
+
+  override fun getDeviceInfo() = deviceInfo
 
   // ----------------------------------------------------------------------- //
 

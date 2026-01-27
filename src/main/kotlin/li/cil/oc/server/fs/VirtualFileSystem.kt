@@ -15,7 +15,7 @@ import java.io.InputStream
  * rooted at [root]. The entire filesystem state can be serialized to and deserialized from
  * NBT for persistence across game saves.
  */
-internal sealed class VirtualFileSystem : OutputStreamFileSystem() {
+internal open class VirtualFileSystem : OutputStreamFileSystem() {
     /** Root directory of the virtual filesystem tree */
     protected val root = VirtualDirectory()
 
@@ -114,7 +114,7 @@ internal sealed class VirtualFileSystem : OutputStreamFileSystem() {
     override fun openInputChannel(path: String): InputStreamFileSystem.InputChannel? {
         val obj = root.get(segments(path))
         val file = obj as? VirtualFile ?: return null
-        val stream = obj.openInputStream() ?: return null
+        val stream = file.openInputStream() ?: return null
         return InputStreamChannel(stream)
     }
 

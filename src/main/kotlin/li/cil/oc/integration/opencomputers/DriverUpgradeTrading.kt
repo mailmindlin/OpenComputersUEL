@@ -7,7 +7,6 @@ import li.cil.oc.api.driver.item.HostAware
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.Slot
 import li.cil.oc.common.Tier
-import li.cil.oc.itemInfo
 import li.cil.oc.server.component.UpgradeTrading
 import net.minecraft.item.ItemStack
 

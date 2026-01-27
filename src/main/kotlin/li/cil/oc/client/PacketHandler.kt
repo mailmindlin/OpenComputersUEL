@@ -532,7 +532,7 @@ object PacketHandler : CommonPacketHandler() {
 
     private fun onRobotSelectedSlotChange(p: PacketParser) {
         val t = p.readTileEntity<RobotProxy>() ?: return
-        t.robot.selectedSlot = p.readInt()
+        t.robot.setSelectedSlot(p.readInt())
     }
 
     private fun onRotatableState(p: PacketParser) {

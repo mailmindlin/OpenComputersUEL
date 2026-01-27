@@ -2,8 +2,8 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.component.RackBusConnectable
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Rack
@@ -17,7 +17,7 @@ import li.cil.oc.server.component.traits.WakeMessageHelper
 import net.minecraft.nbt.NBTTagCompound
 import li.cil.oc.server.PacketSender as ServerPacketSender
 
-open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), RackBusConnectable, DeviceInfoKt, WakeMessageAware {
+open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), RackBusConnectable, DeviceInfo, WakeMessageAware {
     protected val visibility: Visibility = when (host) {
         is Rack -> Visibility.Neighbors
         else -> Visibility.Network
@@ -36,16 +36,20 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
 
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Network,
-        DeviceAttribute.Description to "Ethernet controller",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "42i520 (MPN-01)",
-        DeviceAttribute.Version to "1.0",
-        DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString(),
-        DeviceAttribute.Size to maxOpenPorts.toString(),
-        DeviceAttribute.Width to Settings.get.maxNetworkPacketParts.toString()
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Network,
+            DeviceAttribute.Description to "Ethernet controller",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "42i520 (MPN-01)",
+            DeviceAttribute.Version to "1.0",
+            DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString(),
+            DeviceAttribute.Size to maxOpenPorts.toString(),
+            DeviceAttribute.Width to Settings.get.maxNetworkPacketParts.toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

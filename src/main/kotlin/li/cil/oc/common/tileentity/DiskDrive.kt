@@ -3,6 +3,7 @@ package li.cil.oc.common.tileentity
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -20,7 +21,6 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory
 import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.result
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.setNewCompoundTag
@@ -33,7 +33,7 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import li.cil.oc.common.tileentity.traits.Rotatable as TraitRotatable
 
-class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfoKt {
+class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitRotatable, Analyzable, DeviceInfo {
     // Used on client side to check whether to render disk activity indicators.
     @JvmField
     var lastAccess = 0L
@@ -48,24 +48,30 @@ class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, T
     override val items: Array<ItemStack>
         get() = TODO("Not yet implemented")
 
-    override val deviceInfo: Map<String, String> by lazy {
-        mapOf(
-            DeviceAttribute.Class to DeviceClass.Disk,
-            DeviceAttribute.Description to "Floppy disk drive",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "Spinner 520p1"
-        )
+    companion object {
+        private val deviceInfo: Map<String, String> by lazy {
+            mapOf(
+                DeviceAttribute.Class to DeviceClass.Disk,
+                DeviceAttribute.Description to "Floppy disk drive",
+                DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+                DeviceAttribute.Product to "Spinner 520p1"
+            )
+        }
+        private const val DiskTag = Settings.namespace + "disk"
     }
+
+    override fun getDeviceInfo() = Companion.deviceInfo
+
 
     // ----------------------------------------------------------------------- //
     // Environment
 
     @JvmField
-    val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
+    val node: Component? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("disk_drive")
         .create()
 
-    override fun node(): Node = node
+    override fun node() = node
 
     @Callback(doc = "function():boolean -- Checks whether some medium is currently in the drive.")
     fun isEmpty(context: Context, args: Arguments): Array<Any?> {
@@ -149,10 +155,6 @@ class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, T
 
     // ----------------------------------------------------------------------- //
     // TileEntity
-
-    companion object {
-        private const val DiskTag = Settings.namespace + "disk"
-    }
 
     @SideOnly(Side.CLIENT)
     override fun readFromNBTForClient(nbt: NBTTagCompound) {

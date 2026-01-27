@@ -18,11 +18,11 @@ import li.cil.oc.common.tileentity.Robot as TERobot
 
 object UpgradeTankController {
 
-    interface Common : DeviceInfoKt {
-        override val deviceInfo get() = Common.Companion.deviceInfo
+    interface Common : DeviceInfo {
+        override fun getDeviceInfo() = Common.Companion.deviceInfo
 
         companion object {
-            private val deviceInfo = mapOf(
+            val deviceInfo = mapOf(
                 DeviceAttribute.Class to DeviceClass.Generic,
                 DeviceAttribute.Description to "Tank controller",
                 DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
@@ -78,9 +78,9 @@ object UpgradeTankController {
         override val inventory get() = host.mainInventory
 
         override var selectedSlot: Int
-            get() = host.selectedSlot
+            get() = host.selectedSlot()
             set(value) {
-                host.selectedSlot = value
+                host.selectedSlot_ = value
             }
 
         override val tank get() = host.tank

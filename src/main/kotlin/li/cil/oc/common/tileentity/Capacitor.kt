@@ -11,18 +11,17 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.tileentity.traits.Environment
 import li.cil.oc.common.tileentity.traits.isServer
-import li.cil.oc.server.component.DeviceInfoKt
 import net.minecraft.util.EnumFacing
 
 open class Capacitor : TileEntityBase.TEEnvironmentBase(), Environment, DeviceInfo {
     // Start with maximum theoretical capacity, gets reduced after validation.
     // This is done so that we don't lose energy while loading.
     @JvmField
-    val node: Connector = Network.newNode(this, Visibility.Network)!!
+    val node: Connector? = Network.newNode(this, Visibility.Network)!!
         .withConnector(maxCapacity)
         .create()
 
-    override fun node(): Node = node
+    override fun node() = node
 
     override fun getDeviceInfo() = mapOf(
         DeviceAttribute.Class to DeviceClass.Power,
@@ -70,7 +69,7 @@ open class Capacitor : TileEntityBase.TEEnvironmentBase(), Environment, DeviceIn
             } ?: false
         }
 
-        node.setLocalBufferSize(
+        node!!.setLocalBufferSize(
             Settings.get.bufferCapacitor +
                 Settings.get.bufferCapacitorAdjacencyBonus * adjacentCapacitors +
                 Settings.get.bufferCapacitorAdjacencyBonus / 2 * indirectCapacitors

@@ -4,7 +4,6 @@ import li.cil.oc.Constants
 import li.cil.oc.api.Items
 import li.cil.oc.api.Network
 import li.cil.oc.common.block.property.PropertyRotatable
-import li.cil.oc.itemInfo
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.getRotation

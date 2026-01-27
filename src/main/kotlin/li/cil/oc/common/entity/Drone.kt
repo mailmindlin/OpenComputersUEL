@@ -156,6 +156,7 @@ class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.D
     }
     override fun tank(): MultiTank = tank
 
+    @JvmField
     var selectedTank = 0
     override fun selectedTank(): Int = selectedTank
 
@@ -311,6 +312,7 @@ class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.D
     }
 
     var isRunning: Boolean
+        @JvmName("getIsRunning")
         get() = dataManager.get(DataRunning)
         set(value) = dataManager.set(DataRunning, java.lang.Boolean.valueOf(value))
 
@@ -335,6 +337,7 @@ class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.D
 
     var selectedSlot: Int
         get() = dataManager.get(DataSelectedSlot) and 0xFF
+        @JvmName("_setSelectedSlot")
         set(value) = dataManager.set(DataSelectedSlot, Integer.valueOf(value.toByte().toInt()))
 
     override fun selectedSlot(): Int = selectedSlot

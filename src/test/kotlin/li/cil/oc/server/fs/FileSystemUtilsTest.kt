@@ -188,7 +188,7 @@ class FileSystemUtilsTest {
     fun `test isValidFilename with special but valid characters`() {
         assertTrue(FileSystem.isValidFilename("file+name.txt"))
         assertTrue(FileSystem.isValidFilename("file&name.txt"))
-        assertTrue(FileSystem.isValidFilename("file$name.txt"))
+        assertTrue(FileSystem.isValidFilename("file\$name.txt"))
         assertTrue(FileSystem.isValidFilename("file#name.txt"))
         assertTrue(FileSystem.isValidFilename("file@name.txt"))
         assertTrue(FileSystem.isValidFilename("file!name.txt"))

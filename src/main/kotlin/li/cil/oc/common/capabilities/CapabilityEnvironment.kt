@@ -40,8 +40,8 @@ object CapabilityEnvironment {
     }
 
     class DefaultImpl : Environment {
-        val node: Node = Network.newNode(this, Visibility.None)!!.create()
-        override fun node(): Node = node
+        val node: Node? = Network.newNode(this, Visibility.None)!!.create()
+        override fun node(): Node? = node
 
         override fun onMessage(message: Message) {}
 

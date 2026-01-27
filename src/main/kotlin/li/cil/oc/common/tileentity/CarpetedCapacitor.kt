@@ -21,7 +21,7 @@ class CarpetedCapacitor : Capacitor(), TraitTickable {
                 null
             )
             if (entity != null) {
-                node.changeBuffer(Settings.get.ocelotPower)
+                node!!.changeBuffer(Settings.get.ocelotPower)
             }
         }
     }

@@ -3,6 +3,7 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.event.GeolyzerEvent
@@ -29,16 +30,19 @@ import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.common.tileentity.Robot as EntityRobot
 import li.cil.oc.server.component.traits.WorldControl as TraitWorldControl
 
-class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfoKt, TraitWorldControl {
+class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfo, TraitWorldControl {
   override val node = newComponentConnector(Visibility.Network, "geolyzer")
 
-  override val deviceInfo = mapOf(
+  private val deviceInfo = mapOf(
     DeviceAttribute.Class to DeviceClass.Generic,
     DeviceAttribute.Description to "Geolyzer",
     DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
     DeviceAttribute.Product to "Terrain Analyzer MkII",
     DeviceAttribute.Capacity to Settings.get.geolyzerRange.toString()
   )
+
+  override fun getDeviceInfo() = deviceInfo
+
   // ----------------------------------------------------------------------- //
 
   override fun checkSideForAction(args: Arguments, n: Int): EnumFacing {

@@ -20,7 +20,7 @@ import net.minecraft.entity.item.EntityXPOrb
 import net.minecraft.init.Items
 import net.minecraft.nbt.NBTTagCompound
 
-class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     companion object {
         const val MaxLevel = 30
     }
@@ -36,13 +36,15 @@ class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
         .withConnector((30 * Settings.get.bufferPerLevel).toDouble())
         .create()
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "Knowledge database",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "ERSO (Event Recorder and Self-Optimizer)",
         DeviceAttribute.Capacity to "30"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     private val xpForNextLevel: Double
         get() = UpgradeExperience.xpForLevel(level + 1)

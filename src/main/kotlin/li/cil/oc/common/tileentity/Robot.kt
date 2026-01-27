@@ -2,7 +2,6 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.*
 import li.cil.oc.api.Driver
-import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.Network as ApiNetwork
 import li.cil.oc.api.driver.item.Container
 import li.cil.oc.api.driver.item.Inventory as DriverInventory
@@ -21,8 +20,6 @@ import li.cil.oc.common.Tier
 import li.cil.oc.common.block.RobotAfterimage
 import li.cil.oc.common.block.RobotProxy as RobotProxyBlock
 import li.cil.oc.common.inventory.InventoryProxy
-import li.cil.oc.common.inventory.InventorySelection
-import li.cil.oc.common.inventory.TankSelection
 import li.cil.oc.common.item.data.RobotData
 import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.PowerInformation
@@ -67,7 +64,7 @@ import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 // robot moves we only create a new proxy tile entity, hook the instance of this
 // class that was held by the old proxy to it and can then safely forget the
 // old proxy, which will be cleaned up by Minecraft like any other tile entity.
-class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandler, InternalRobot, InventorySelection, TankSelection {
+class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandler, InternalRobot {
     @JvmField
     var proxyRaw: RobotProxy? = null
     val proxy: RobotProxy get() = proxyRaw!!
@@ -124,11 +121,11 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     @JvmField
     var inventorySize: Int = -1
 
-    override var selectedSlot = 0
-    override fun selectedSlot(): Int = selectedSlot
+    var selectedSlot_ = 0
+    override fun selectedSlot(): Int = selectedSlot_
 
     override fun setSelectedSlot(index: Int) {
-        selectedSlot = index.coerceIn(0, mainInventory.getSizeInventory() - 1)
+        selectedSlot_ = index.coerceIn(0, mainInventory.getSizeInventory() - 1)
         if (world != null)
             ServerPacketSender.sendRobotSelectedSlotChange(this)
     }
@@ -140,7 +137,8 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     }
     override fun tank(): MultiTank = tank
 
-    override var selectedTank = 0
+    @JvmField
+    var selectedTank = 0
     override fun selectedTank(): Int = selectedTank
     override fun setSelectedTank(index: Int) {
         selectedTank = index.coerceIn(0, tankCount() - 1)
@@ -362,8 +360,8 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
     override fun shouldRenderInPass(pass: Int): Boolean = true
 
     override fun getRenderBoundingBox(): AxisAlignedBB =
-        if (blockType != null && world != null)
-            blockType.getCollisionBoundingBox(world.getBlockState(pos), world, pos)!!.grow(0.5, 0.5, 0.5).offset(pos)
+        if (getBlockType() != null && world != null)
+            getBlockType().getCollisionBoundingBox(world.getBlockState(pos), world, pos)!!.grow(0.5, 0.5, 0.5).offset(pos)
         else
             AxisAlignedBB(0.0, 0.0, 0.0, 1.0, 1.0, 1.0).offset(pos)
 
@@ -468,7 +466,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         if (nbt.hasKey(OwnerUUIDTag))
             ownerUUID = UUID.fromString(nbt.getString(OwnerUUIDTag))
         if (inventorySize > 0)
-            selectedSlot = nbt.getInteger(SelectedSlotTag).coerceIn(0 until mainInventory.sizeInventory)
+            selectedSlot_ = nbt.getInteger(SelectedSlotTag).coerceIn(0 until mainInventory.sizeInventory)
         selectedTank = nbt.getInteger(SelectedTankTag)
         animationTicksTotal = nbt.getInteger(AnimationTicksTotalTag)
         animationTicksLeft = nbt.getInteger(AnimationTicksLeftTag)
@@ -499,7 +497,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
             nbt.setNewCompoundTag(RobotTag) { bot!!.save(it) }
             nbt.setString(OwnerTag, ownerName)
             nbt.setString(OwnerUUIDTag, ownerUUID.toString())
-            nbt.setInteger(SelectedSlotTag, selectedSlot)
+            nbt.setInteger(SelectedSlotTag, selectedSlot_)
             nbt.setInteger(SelectedTankTag, selectedTank)
             if (isAnimatingMove || isAnimatingSwing || isAnimatingTurn) {
                 nbt.setInteger(AnimationTicksTotalTag, animationTicksTotal)
@@ -523,7 +521,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
 
         updateInventorySize()
 
-        selectedSlot = nbt.getInteger(SelectedSlotTag)
+        selectedSlot_ = nbt.getInteger(SelectedSlotTag)
         animationTicksTotal = nbt.getInteger(AnimationTicksTotalTag)
         animationTicksLeft = nbt.getInteger(AnimationTicksLeftTag)
         if (animationTicksLeft > 0) {
@@ -545,7 +543,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
             save(nbt)
             info.save(nbt)
 
-            nbt.setInteger(SelectedSlotTag, selectedSlot)
+            nbt.setInteger(SelectedSlotTag, selectedSlot_)
             if (isAnimatingMove || isAnimatingSwing || isAnimatingTurn) {
                 nbt.setInteger(AnimationTicksTotalTag, animationTicksTotal)
                 nbt.setInteger(AnimationTicksLeftTag, animationTicksLeft)
@@ -597,7 +595,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
             }
             if (isComponentSlot(slot, stack)) {
                 super.onItemAdded(slot, stack)
-                world.notifyBlocksOfNeighborChange(position, blockType, false)
+                world.notifyBlocksOfNeighborChange(position, getBlockType(), false)
             }
             if (isInventorySlot(slot)) {
                 machine!!.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
@@ -622,7 +620,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
                 machine!!.signal("inventory_changed", slot - equipmentInventory.sizeInventory + 1)
             }
             if (isComponentSlot(slot, stack)) {
-                world.notifyBlocksOfNeighborChange(position, blockType, false)
+                world.notifyBlocksOfNeighborChange(position, getBlockType(), false)
             }
         }
     }
@@ -722,7 +720,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
                 if (newInventorySize != inventorySize) {
                     inventorySize = newInventorySize
                     val realSize = equipmentInventory.sizeInventory + mainInventory.sizeInventory
-                    val oldSelected = selectedSlot
+                    val oldSelected = selectedSlot_
                     val removed = mutableListOf<ItemStack>()
                     for (slot in realSize until sizeInventory - componentCount()) {
                         val stack = getStackInSlot(slot)

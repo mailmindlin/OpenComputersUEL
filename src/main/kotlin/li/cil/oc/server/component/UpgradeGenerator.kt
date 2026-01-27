@@ -20,7 +20,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntityFurnace
 
-open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     private val agent: Agent
         get() = host as Agent
 
@@ -33,13 +33,15 @@ open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
 
     var remainingTicks = 0
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Power,
         DeviceAttribute.Description to "Generator",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "Portagen 2.0 (Rev. 3)",
         DeviceAttribute.Capacity to "1"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     // ----------------------------------------------------------------------- //
 

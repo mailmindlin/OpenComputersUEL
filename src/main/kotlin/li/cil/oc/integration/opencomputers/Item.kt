@@ -52,6 +52,7 @@ abstract class Item : DriverItem {
 
   companion object {
     @JvmStatic
+    @JvmName("dataTagStatic")
     fun dataTag(stack: ItemStack): NBTTagCompound {
       if (!stack.hasTagCompound()) {
         stack.tagCompound = NBTTagCompound()

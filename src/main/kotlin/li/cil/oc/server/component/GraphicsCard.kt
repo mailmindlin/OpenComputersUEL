@@ -3,6 +3,7 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.Localization
 import li.cil.oc.Settings
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.TextBuffer
@@ -36,7 +37,7 @@ import kotlin.math.pow
 // saved, but before the computer was saved, leading to mismatching states in
 // the save file - a Bad Thing (TM).
 
-open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
+open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
   override val node = nodeFactory(Visibility.Neighbors, component = "gpu")
     .withConnector()
     .create()
@@ -141,15 +142,19 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfoKt {
 
   // ----------------------------------------------------------------------- //
 
-  override val deviceInfo = mapOf(
-    DeviceAttribute.Class to DeviceClass.Display,
-    DeviceAttribute.Description to "Graphics controller",
-    DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product to ("MPG" + ((tier + 1) * 1000).toString() + " GTZ"),
-    DeviceAttribute.Capacity to capacityInfo,
-    DeviceAttribute.Width to widthInfo,
-    DeviceAttribute.Clock to clockInfo
-  )
+  private val deviceInfo_ by lazy {
+    mapOf(
+      DeviceAttribute.Class to DeviceClass.Display,
+      DeviceAttribute.Description to "Graphics controller",
+      DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+      DeviceAttribute.Product to ("MPG" + ((tier + 1) * 1000).toString() + " GTZ"),
+      DeviceAttribute.Capacity to capacityInfo,
+      DeviceAttribute.Width to widthInfo,
+      DeviceAttribute.Clock to clockInfo
+    )
+  }
+
+  override fun getDeviceInfo() = deviceInfo_
 
   protected val capacityInfo: String
     get() = maxResolution.pixels.toString()

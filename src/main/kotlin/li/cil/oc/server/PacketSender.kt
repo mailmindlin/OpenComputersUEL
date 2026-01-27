@@ -621,7 +621,7 @@ object PacketSender {
     val pb = SimplePacketBuilder(PacketType.RobotSelectedSlotChange)
 
     pb.writeTileEntity(t.proxy!!)
-    pb.writeInt(t.selectedSlot)
+    pb.writeInt(t.selectedSlot())
 
     pb.sendToPlayersNearTileEntity(t, Settings.get.maxNetworkClientEffectPacketDistance / 4.0)
   }

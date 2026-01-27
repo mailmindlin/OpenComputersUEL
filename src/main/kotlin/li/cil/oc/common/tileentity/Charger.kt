@@ -45,11 +45,11 @@ import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 
 class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRedstoneAware, TraitRotatable, TraitComponentInventory, TraitTickable, Analyzable, TraitStateAware, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.None)!!
+    val node: Connector? = ApiNetwork.newNode(this, Visibility.None)!!
         .withConnector(Settings.get.bufferConverter)
         .create()
 
-    override fun node(): Node = node
+    override fun node() = node
 
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
@@ -106,7 +106,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
 
     private fun chargeStack(stack: ItemStack, charge: Double) {
         if (!stack.isEmpty && charge > 0) {
-            val missing = node.changeBuffer(-charge)
+            val missing = node!!.changeBuffer(-charge)
             val surplus = ItemCharge.charge(stack, charge + missing) // missing is negative
             node.changeBuffer(surplus)
         }
@@ -126,10 +126,10 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
             // Charging of external devices.
             run {
                 val charge = Settings.get.chargeRateExternal * chargeSpeed * Settings.get.tickFrequency
-                canCharge = canCharge || (charge > 0 && node.globalBuffer() >= charge * 0.5)
+                canCharge = canCharge || (charge > 0 && node!!.globalBuffer() >= charge * 0.5)
                 if (canCharge) {
                     for (connector in connectors) {
-                        val missing = node.changeBuffer(-charge)
+                        val missing = node!!.changeBuffer(-charge)
                         val surplus = connector.changeBuffer(charge + missing) // missing is negative
                         node.changeBuffer(surplus)
                     }
@@ -139,7 +139,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
             // Charging of internal devices.
             run {
                 val charge = Settings.get.chargeRateTablet * chargeSpeed * Settings.get.tickFrequency
-                canCharge = canCharge || (charge > 0 && node.globalBuffer() >= charge * 0.5)
+                canCharge = canCharge || (charge > 0 && node!!.globalBuffer() >= charge * 0.5)
                 if (canCharge) {
                     for (slot in 0 until sizeInventory) {
                         chargeStack(getStackInSlot(slot), charge)
@@ -150,7 +150,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
             // Charging of equipment
             run {
                 val charge = Settings.get.chargeRateTablet * chargeSpeed * Settings.get.tickFrequency
-                canCharge = canCharge || (charge > 0 && node.globalBuffer() >= charge * 0.5)
+                canCharge = canCharge || (charge > 0 && node!!.globalBuffer() >= charge * 0.5)
                 if (canCharge) {
                     for (stack in equipment) {
                         chargeStack(stack, charge)
@@ -299,7 +299,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
         if (connectors.size != newConnectors.size || (connectors.isNotEmpty() && (connectors - newConnectors.toSet()).isNotEmpty())) {
             connectors.clear()
             connectors.addAll(newConnectors)
-            world.notifyNeighborsOfStateChange(pos, blockType, false)
+            world.notifyNeighborsOfStateChange(pos, getBlockType(), false)
         }
 
         // scan players for chargeable equipment

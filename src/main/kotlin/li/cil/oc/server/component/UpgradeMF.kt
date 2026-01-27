@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.driver.DriverBlock
@@ -27,7 +28,7 @@ class UpgradeMF(
     val host: EnvironmentHost,
     val coord: BlockPosition,
     val dir: EnumFacing
-) : ManagedEnvironmentKt(), ChangeListener, DeviceInfoKt {
+) : ManagedEnvironmentKt(), ChangeListener, DeviceInfo {
     override val node = nodeFactory(Visibility.None)
         .withConnector()
         .create()
@@ -38,12 +39,14 @@ class UpgradeMF(
 
     override fun canUpdate(): Boolean = true
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Bus,
         DeviceAttribute.Description to "Remote Adapter",
         DeviceAttribute.Vendor to Constants.DeviceInfo.Scummtech,
         DeviceAttribute.Product to "ERR NAME NOT FOUND"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     private fun otherNode(tile: TileEntity, f: (Node) -> Unit) {
         ServerNetwork.getNetworkNode(tile, dir)?.let { otherNode ->

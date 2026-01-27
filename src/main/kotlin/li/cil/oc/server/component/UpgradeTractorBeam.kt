@@ -2,7 +2,6 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -12,7 +11,6 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
 import net.minecraft.entity.item.EntityItem
@@ -22,19 +20,21 @@ import kotlin.math.floor
 
 object UpgradeTractorBeam {
 
-    abstract class Common : ManagedEnvironmentKt(), DeviceInfoKt {
+    abstract class Common : ManagedEnvironmentKt(), DeviceInfo {
         override val node = nodeFactory(Visibility.Network)
             .withComponent("tractor_beam")
             .create()
 
         private val pickupRadius = 3
-
-        override val deviceInfo = mapOf(
-            DeviceAttribute.Class to DeviceClass.Generic,
-            DeviceAttribute.Description to "Tractor beam",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "T313-K1N.3515"
-        )
+        companion object {
+            private val deviceInfo = mapOf(
+                DeviceAttribute.Class to DeviceClass.Generic,
+                DeviceAttribute.Description to "Tractor beam",
+                DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+                DeviceAttribute.Product to "T313-K1N.3515"
+            )
+        }
+        override fun getDeviceInfo() = Companion.deviceInfo
 
         protected abstract val position: BlockPosition
 

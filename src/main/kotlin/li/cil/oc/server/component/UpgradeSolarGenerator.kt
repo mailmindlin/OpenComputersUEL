@@ -3,6 +3,7 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.network.EnvironmentHost
@@ -10,7 +11,7 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.util.BlockPosition
 import net.minecraft.util.EnumFacing
 
-class UpgradeSolarGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeSolarGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     override val node = nodeFactory(Visibility.Network)
         .withConnector()
         .create()
@@ -18,7 +19,7 @@ class UpgradeSolarGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
     private var ticksUntilCheck = 0
     private var isSunShining = false
 
-    override val deviceInfo get() = Companion.deviceInfo
+    override fun getDeviceInfo() = Companion.deviceInfo
     companion object {
         val deviceInfo = mapOf(
             DeviceAttribute.Class to DeviceClass.Power,

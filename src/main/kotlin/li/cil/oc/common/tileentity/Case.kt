@@ -57,8 +57,8 @@ class Case @JvmOverloads constructor(
     @JvmField
     var lastNetworkActivity = 0L
 
-    override fun getDeviceInfo() = deviceInfo
-    private val deviceInfo: Map<String, String> by lazy {
+    override fun getDeviceInfo() = deviceInfo_
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.System,
             DeviceAttribute.Description to "Computer",

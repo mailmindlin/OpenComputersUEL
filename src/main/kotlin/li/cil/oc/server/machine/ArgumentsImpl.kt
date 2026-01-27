@@ -9,8 +9,13 @@ import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
 
 class ArgumentsImpl(val args: MutableList<Any?>): Arguments {
-  constructor(args: List<Any?>): this(args.toMutableList()) {}
   override fun iterator() = args.iterator()
+
+  companion object {
+    @JvmStatic
+    @JvmName("copyFromList")
+    operator fun invoke(args: List<Any?>) = ArgumentsImpl(args.toMutableList())
+  }
 
   override fun count() = args.size
 
@@ -22,7 +27,7 @@ class ArgumentsImpl(val args: MutableList<Any?>): Arguments {
     }
   }
 
-  override fun optAny(index: Int, default: Any) = {
+  override fun optAny(index: Int, default: Any) {
     if (!isDefined(index)) default
     else checkAny(index)
   }

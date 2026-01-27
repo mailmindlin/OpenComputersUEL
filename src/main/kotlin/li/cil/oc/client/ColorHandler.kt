@@ -2,7 +2,6 @@ package li.cil.oc.client
 
 import li.cil.oc.Constants
 import li.cil.oc.api.internal.Colored
-import li.cil.oc.itemInfo
 import li.cil.oc.util.Color
 import li.cil.oc.util.ItemColorizer
 import li.cil.oc.util.ItemUtils
@@ -90,13 +89,15 @@ object ColorHandler {
       Item.getItemFromBlock(Constants.BlockInfo.Robot.block())
     ) { stack, tintIndex -> tintIndex.toUInt() }
 
-    register(
+    //TODO
+    /*register(
       Constants.ItemInfo.HoverBoots.item()
     ) { stack, tintIndex ->
       if (tintIndex == 1) {
         if (ItemColorizer.hasColor(stack)) ItemColorizer.getColor(stack).toUInt() else 0x66DD55u
       } else 0xFFFFFFu
-    }
+    }*/
+    
   }
 
   fun register(vararg blocks: Block, handler: (IBlockState, IBlockAccess?, BlockPos?, Int) -> UInt) {

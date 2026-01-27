@@ -1,6 +1,7 @@
 package li.cil.oc.server.component
 
 import li.cil.oc.Constants
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Agent
@@ -21,10 +22,10 @@ import li.cil.oc.common.tileentity.Robot as RobotTileEntity
 
 object UpgradeInventoryController {
 
-    interface Common : DeviceInfoKt {
-        override val deviceInfo get() = Companion.deviceInfo
+    interface Common : DeviceInfo {
+        override fun getDeviceInfo() = Companion.deviceInfo
         companion object {
-            private val deviceInfo = mapOf(
+            val deviceInfo = mapOf(
                 DeviceAttribute.Class to DeviceClass.Generic,
                 DeviceAttribute.Description to "Inventory controller",
                 DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
@@ -78,9 +79,9 @@ object UpgradeInventoryController {
         override val inventory get() = host.mainInventory()
 
         override var selectedSlot: Int
-            get() = host.selectedSlot
+            get() = host.selectedSlot()
             set(value) {
-                host.selectedSlot = value
+                host.setSelectedSlot(value)
             }
 
         override fun checkSideForAction(args: Arguments, n: Int) = host.toGlobal(args.checkSideForAction(n))!!

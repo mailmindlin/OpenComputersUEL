@@ -2,6 +2,7 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Keyboard.UsabilityChecker
@@ -13,12 +14,12 @@ import net.minecraft.entity.player.EntityPlayer
 // TODO key up when screen is disconnected from which the key down came
 // TODO key up after load for anything that was pressed
 
-class Keyboard(val host: EnvironmentHost) : ManagedEnvironmentKt(), li.cil.oc.api.internal.Keyboard, DeviceInfoKt {
+class Keyboard(val host: EnvironmentHost) : ManagedEnvironmentKt(), li.cil.oc.api.internal.Keyboard, DeviceInfo {
     override val node = nodeFactory(Visibility.Network, "keyboard").create()
 
     val pressedKeys = mutableMapOf<EntityPlayer, MutableMap<Int, Char>>()
 
-    var usableOverride: UsabilityChecker? = null
+    private var usableOverride: UsabilityChecker? = null
 
     override fun setUsableOverride(callback: UsabilityChecker?) {
         usableOverride = callback
@@ -26,12 +27,16 @@ class Keyboard(val host: EnvironmentHost) : ManagedEnvironmentKt(), li.cil.oc.ap
 
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Input,
-        DeviceAttribute.Description to "Keyboard",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "Fancytyper MX-Stone"
-    )
+    override fun getDeviceInfo() = Companion.deviceInfo
+
+    companion object {
+        private val deviceInfo = mapOf(
+            DeviceAttribute.Class to DeviceClass.Input,
+            DeviceAttribute.Description to "Keyboard",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Fancytyper MX-Stone"
+        )
+    }
 
     // ----------------------------------------------------------------------- //
 

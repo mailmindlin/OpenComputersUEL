@@ -18,7 +18,6 @@ import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.tileentity.traits.*
 import li.cil.oc.common.tileentity.traits.RotatableTile
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.result
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.NBTTagCompound
@@ -27,22 +26,21 @@ import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.Vec3d
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.RotatableTile as TraitRotatableTile
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Hologram @JvmOverloads constructor(
     @JvmField var tier: Int = 0
-): TileEntityBase.TEEnvironmentBase(), SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfoKt {
+): TileEntityBase.TEEnvironmentBase(), SidedEnvironment, Analyzable, TraitRotatableTile, TraitTickable, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)!!
+    val node: Connector? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("hologram")
         .withConnector()
         .create()
+    override fun node() = node
 
     override val rotatableDelegate: RotatableTile.Delegate = register(RotatableTile::Delegate)
 
-    override fun node(): Node = node
 
     @JvmField
     val width = 3 * 16
@@ -50,7 +48,7 @@ class Hologram @JvmOverloads constructor(
     @JvmField
     val height = 2 * 16 // 32 bit in an int
 
-    override val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Display,
             DeviceAttribute.Description to "Holographic projector",
@@ -60,6 +58,8 @@ class Hologram @JvmOverloads constructor(
             DeviceAttribute.Width to colors.size.toString()
         )
     }
+
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 
@@ -172,7 +172,7 @@ class Hologram @JvmOverloads constructor(
     override fun sidedNode(side: EnumFacing): Node? = if (toLocal(side) == EnumFacing.DOWN) node else null
 
     // Override automatic analyzer implementation for sided environments.
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(node)
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node> = arrayOf(node!!)
 
     // ----------------------------------------------------------------------- //
 
@@ -465,7 +465,7 @@ class Hologram @JvmOverloads constructor(
 
                 val hadPower = hasPower
                 val neededPower = Settings.get.hologramCost * litRatio * scale * Settings.get.tickFrequency
-                hasPower = node.tryChangeBuffer(-neededPower)
+                hasPower = node!!.tryChangeBuffer(-neededPower)
                 if (hasPower != hadPower) {
                     ServerPacketSender.sendHologramPowerChange(this)
                 }
@@ -523,7 +523,7 @@ class Hologram @JvmOverloads constructor(
     // ----------------------------------------------------------------------- //
 
     private val dataPath: String
-        get() = node.address() + "_data"
+        get() = node!!.address() + "_data"
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         tier = maxOf(0, minOf(1, nbt.getByte(TierTag).toInt()))

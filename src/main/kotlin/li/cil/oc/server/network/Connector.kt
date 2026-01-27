@@ -9,17 +9,18 @@ import kotlin.math.max
 import kotlin.math.min
 
 interface Connector : NetConnector, Node {
-  var localBufferSize: Double
-  override fun localBufferSize(): Double = localBufferSize
-  var localBuffer: Double
-  override fun localBuffer(): Double = localBuffer
+  var localBufferSizeKt: Double
+  override fun localBufferSize(): Double = localBufferSizeKt
+  var localBufferKt: Double
+  override fun localBuffer(): Double = localBufferKt
+
   var distributor: Distributor?
 
   // ----------------------------------------------------------------------- //
 
-  override fun globalBuffer(): Double = distributor?.globalBuffer ?: localBuffer
+  override fun globalBuffer(): Double = distributor?.globalBuffer ?: localBufferKt
 
-  override fun globalBufferSize(): Double = distributor?.globalBufferSize ?: localBufferSize
+  override fun globalBufferSize(): Double = distributor?.globalBufferSize ?: localBufferSizeKt
 
   // ----------------------------------------------------------------------- //
 
@@ -41,24 +42,24 @@ interface Connector : NetConnector, Node {
   }
 
   private fun change(delta: Double): Double {
-    if (localBufferSize <= 0) return delta
-    val oldBuffer = localBuffer
-    localBuffer += delta
-    val remaining = if (localBuffer < 0) {
-      val rem = localBuffer
-      localBuffer = 0.0
+    if (localBufferSizeKt <= 0) return delta
+    val oldBuffer = localBufferKt
+    localBufferKt += delta
+    val remaining = if (localBufferKt < 0) {
+      val rem = localBufferKt
+      localBufferKt = 0.0
       rem
-    } else if (localBuffer > localBufferSize) {
-      val rem = localBuffer - localBufferSize
-      localBuffer = localBufferSize
+    } else if (localBufferKt > localBufferSizeKt) {
+      val rem = localBufferKt - localBufferSizeKt
+      localBufferKt = localBufferSizeKt
       rem
     } else {
       0.0
     }
-    if (localBuffer != oldBuffer) {
+    if (localBufferKt != oldBuffer) {
       val dist = distributor
       if (dist != null) {
-        dist.globalBuffer = max(0.0, min(dist.globalBufferSize, dist.globalBuffer - oldBuffer + localBuffer))
+        dist.globalBuffer = max(0.0, min(dist.globalBufferSize, dist.globalBuffer - oldBuffer + localBufferKt))
       }
     }
     return remaining
@@ -71,19 +72,19 @@ interface Connector : NetConnector, Node {
       val dist = distributor
       if (dist != null) {
         synchronized(dist) {
-          if (localBuffer > localBufferSize) {
-            dist.changeBuffer(localBuffer - localBufferSize)
-            localBuffer = localBufferSize
+          if (localBufferKt > localBufferSizeKt) {
+            dist.changeBuffer(localBufferKt - localBufferSizeKt)
+            localBufferKt = localBufferSizeKt
           }
           val newGlobalBuffer = globalBuffer() + delta
           (delta > 0 || newGlobalBuffer >= 0) && (delta < 0 || newGlobalBuffer <= globalBufferSize()) && dist.changeBuffer(delta) == 0.0
         }
       } else {
-        val newLocalBuffer = localBuffer + delta
-        if ((delta < 0 && newLocalBuffer < 0) || (delta > 0 && newLocalBuffer > localBufferSize)) {
+        val newLocalBuffer = localBufferKt + delta
+        if ((delta < 0 && newLocalBuffer < 0) || (delta > 0 && newLocalBuffer > localBufferSizeKt)) {
           false
         } else {
-          localBuffer = newLocalBuffer
+          localBufferKt = newLocalBuffer
           true
         }
       }
@@ -96,22 +97,22 @@ interface Connector : NetConnector, Node {
       val dist = distributor
       if (dist != null) {
         synchronized(dist) {
-          val oldSize = localBufferSize
+          val oldSize = localBufferSizeKt
           // Must apply new size before trying to register with distributor, else
           // we get ignored if our size is zero.
-          localBufferSize = clampedSize
+          localBufferSizeKt = clampedSize
           if (network != null) {
             if (oldSize <= 0 && clampedSize > 0) dist.addConnector(this)
             else if (oldSize > 0 && clampedSize == 0.0) dist.removeConnector(this)
             else dist.globalBufferSize = max(dist.globalBufferSize - oldSize + clampedSize, 0.0)
           }
-          val surplus = max(localBuffer - clampedSize, 0.0)
+          val surplus = max(localBufferKt - clampedSize, 0.0)
           changeBuffer(-surplus)
           dist.changeBuffer(surplus)
         }
       } else {
-        localBufferSize = clampedSize
-        localBuffer = min(localBuffer, localBufferSize)
+        localBufferSizeKt = clampedSize
+        localBufferKt = min(localBufferKt, localBufferSizeKt)
       }
     }
   }
@@ -131,11 +132,11 @@ interface Connector : NetConnector, Node {
 
   override fun load(nbt: NBTTagCompound) {
     super.load(nbt)
-    localBuffer = nbt.getDouble(NodeData.BufferTag)
+    localBufferKt = nbt.getDouble(NodeData.BufferTag)
   }
 
   override fun save(nbt: NBTTagCompound) {
     super.save(nbt)
-    nbt.setDouble(NodeData.BufferTag, min(localBuffer, localBufferSize))
+    nbt.setDouble(NodeData.BufferTag, min(localBufferKt, localBufferSizeKt))
   }
 }

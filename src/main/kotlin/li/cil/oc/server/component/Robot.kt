@@ -4,7 +4,6 @@ import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.FileSystem
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.machine.Arguments
@@ -24,7 +23,7 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.EnumParticleTypes
 import li.cil.oc.common.tileentity.Robot as TERobot
 
-class Robot(override val agent: TERobot): Agent(), DeviceInfoKt {
+class Robot(override val agent: TERobot): Agent(), DeviceInfo {
   override val node = nodeFactory(Visibility.Network).
     withComponent("robot").
     withConnector(Settings.get.bufferRobot).
@@ -32,13 +31,17 @@ class Robot(override val agent: TERobot): Agent(), DeviceInfoKt {
 
   private val romRobot: ManagedEnvironment? = FileSystem.asManagedEnvironment(FileSystem.fromClass(OpenComputers::class.java, Settings.resourceDomain, "lua/component/robot"), "robot")
 
-  override val deviceInfo = mapOf(
-    DeviceAttribute.Class to DeviceInfo.DeviceClass.System,
-    DeviceAttribute.Description to "Robot",
-    DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-    DeviceAttribute.Product to "Caterpillar",
-    DeviceAttribute.Capacity to agent.sizeInventory.toString()
-  )
+  private val deviceInfo_ by lazy {
+    mapOf(
+      DeviceAttribute.Class to DeviceInfo.DeviceClass.System,
+      DeviceAttribute.Description to "Robot",
+      DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+      DeviceAttribute.Product to "Caterpillar",
+      DeviceAttribute.Capacity to agent.sizeInventory.toString()
+    )
+  }
+
+  override fun getDeviceInfo() = deviceInfo_
 
   // ----------------------------------------------------------------------- //
 

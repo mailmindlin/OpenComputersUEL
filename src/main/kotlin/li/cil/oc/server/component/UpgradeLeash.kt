@@ -2,6 +2,7 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -9,32 +10,33 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.EventHandler
 import li.cil.oc.server.component.traits.WorldAware
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.checkSideAny
 import li.cil.oc.util.setNewStringList
-import li.cil.oc.util.setNewTagList
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLiving
 import net.minecraft.nbt.NBTTagCompound
-import net.minecraft.nbt.NBTTagString
 import net.minecraftforge.common.util.Constants as NBT
 import java.util.*
 
-class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
+class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, DeviceInfo {
     override val node = nodeFactory(Visibility.Network, "leash").create()
 
     val MaxLeashedEntities = 8
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Leash",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "FlockControl (FC-3LS)",
-        DeviceAttribute.Capacity to MaxLeashedEntities.toString()
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Leash",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "FlockControl (FC-3LS)",
+            DeviceAttribute.Capacity to MaxLeashedEntities.toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     val leashedEntities = mutableSetOf<UUID>()
 

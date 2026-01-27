@@ -2,6 +2,7 @@ package li.cil.oc.server.component
 
 import li.cil.oc.Constants
 import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Robot
@@ -15,18 +16,20 @@ import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.*
 import net.minecraft.item.crafting.CraftingManager
 
-class UpgradeCrafting(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeCrafting(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     private val robot: Robot
         get() = host as Robot
 
     override val node = nodeFactory(Visibility.Network, "crafting").create()
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "Assembly controller",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "MultiCombinator-9S"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     @Callback(doc = "function([count:number]):number -- Tries to craft the specified number of items in the top left area of the inventory.")
     fun craft(context: Context, args: Arguments): Array<Any?> {

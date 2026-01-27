@@ -17,24 +17,32 @@ import org.apache.logging.log4j.Logger
 @Mod(modid = OpenComputers.ID, name = OpenComputers.Name,
   version = OpenComputers.Version,
   modLanguage = "kotlin", useMetadata = true /*@MCVERSIONDEP@*/)
-object OpenComputers {
-  const val ID = "opencomputers"
+public class OpenComputers() {
 
-  const val Name = "OpenComputers"
+  companion object {
+    const val ID = "opencomputers"
 
-  const val McVersion = "1.12.2-forge"
+    const val Name = "OpenComputers"
 
-  const val Version = "@VERSION@"
+    const val McVersion = "1.12.2-forge"
 
-  private var logger: Logger? = null
-  val log: Logger
-    get() = logger ?: LogManager.getLogger(Name)
+    const val Version = "@VERSION@"
 
+    private var logger: Logger? = null
+    val log: Logger
+      get() = logger ?: LogManager.getLogger(Name)
+    @JvmStatic
+    fun log() = log
+    
+    @Mod.Instance(ID)
+    public lateinit var INSTANCE: OpenComputers
 
-  @SidedProxy(clientSide = "li.cil.oc.client.Proxy", serverSide = "li.cil.oc.server.Proxy")
-  lateinit var proxy: Proxy
+    @SidedProxy(clientSide = "li.cil.oc.client.Proxy", serverSide = "li.cil.oc.server.Proxy")
+    public lateinit var proxy: Proxy
 
-  lateinit var channel: FMLEventChannel
+    internal lateinit var channel: FMLEventChannel
+  }
+
 
   @EventHandler
   fun preInit(e: FMLPreInitializationEvent) {

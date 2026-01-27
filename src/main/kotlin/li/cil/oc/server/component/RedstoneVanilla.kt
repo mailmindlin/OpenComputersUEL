@@ -17,14 +17,14 @@ import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import net.minecraft.util.EnumFacing
 
-abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfoKt where T : EnvironmentHost, T : RedstoneAware {
+abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfo where T : EnvironmentHost, T : RedstoneAware {
     abstract val redstone: T
 
     override val node: Node
         get() = TODO("Not yet implemented")
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_ by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Communication,
             DeviceAttribute.Description to "Redstone controller",
@@ -34,6 +34,8 @@ abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfoKt where T : 
             DeviceAttribute.Width to "1"
         )
     }
+
+    override fun getDeviceInfo() = deviceInfo_
 
 
     protected val SIDE_RANGE: Array<EnumFacing> = EnumFacing.values()

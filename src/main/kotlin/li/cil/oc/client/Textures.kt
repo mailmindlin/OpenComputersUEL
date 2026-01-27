@@ -17,7 +17,7 @@ object Textures {
     val Aliased = L("chars_aliased")
     val AntiAliased = L("chars")
 
-    override val basePath = "textures/font/%s.png"
+    override val basePath get() = "textures/font/%s.png"
 
     override fun loader(map: TextureMap, loc: ResourceLocation) = Textures.bind(loc)
   }
@@ -63,7 +63,7 @@ object Textures {
     val UpgradeTab = L("upgrade_tab")
     val Waypoint = L("waypoint")
 
-    override val basePath = "textures/gui/%s.png"
+    override val basePath get() = "textures/gui/%s.png"
 
     override fun loader(map: TextureMap, loc: ResourceLocation) = Textures.bind(loc)
   }
@@ -76,7 +76,7 @@ object Textures {
 
     fun get(tier: Int): ResourceLocation? = ForTier[tier]
 
-    override val basePath = "textures/icons/%s.png"
+    override val basePath get() = "textures/icons/%s.png"
 
     override fun loader(map: TextureMap, loc: ResourceLocation) = Textures.bind(loc)
   }
@@ -89,7 +89,7 @@ object Textures {
     val Drone = L("drone")
     val Robot = L("robot")
 
-    override val basePath = "textures/model/%s.png"
+    override val basePath get() = "textures/model/%s.png"
 
     override fun loader(map: TextureMap, loc: ResourceLocation) = Textures.bind(loc)
   }
@@ -98,7 +98,7 @@ object Textures {
     val DroneItem = L("drone")
     val Robot = L("robot")
 
-    override val basePath = "items/%s"
+    override val basePath get() = "items/%s"
 
     override fun loader(map: TextureMap, loc: ResourceLocation) { map.registerSprite(loc) }
   }
@@ -528,7 +528,7 @@ object Textures {
 
     fun bind(): Unit = Textures.bind(TextureMap.LOCATION_BLOCKS_TEXTURE)
 
-    override val basePath = "blocks/%s"
+    override val basePath get() = "blocks/%s"
 
     override fun loader(map: TextureMap, loc: ResourceLocation): Unit {
       map.registerSprite(loc)

@@ -12,12 +12,10 @@ import li.cil.oc.api.network.Connector
 import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.util.StateAware
-import li.cil.oc.common.item.Tablet
 import li.cil.oc.common.template.AssemblerTemplates
 import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.result
 import li.cil.oc.util.notEmpty
 import li.cil.oc.util.setNewCompoundTag
@@ -37,7 +35,7 @@ import li.cil.oc.server.PacketSender as ServerPacketSender
 
 class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, SidedEnvironment, TraitStateAware, TraitTickable, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.Network)!!
+    val node: Connector? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("assembler")
         .withConnector(Settings.get.bufferConverter)
         .create()
@@ -154,7 +152,7 @@ class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitI
         val output = output
         if (output != null && Settings.get.isTickMultiple(world)) {
             val want = maxOf(1.0, minOf(requiredEnergy, Settings.get.assemblerTickAmount * Settings.get.tickFrequency))
-            val have = want + (if (Settings.get.ignorePower) 0.0 else node.changeBuffer(-want))
+            val have = want + (if (Settings.get.ignorePower) 0.0 else node!!.changeBuffer(-want))
             requiredEnergy -= have
             if (requiredEnergy <= 0) {
                 setInventorySlotContents(0, output)

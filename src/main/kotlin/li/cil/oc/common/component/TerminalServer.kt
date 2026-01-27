@@ -32,8 +32,8 @@ import li.cil.oc.api.internal.Rack as InternalRack
 import li.cil.oc.api.internal.TextBuffer as InternalTextBuffer
 
 class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, EnvironmentHost, Analyzable, RackMountable, Lifecycle, DeviceInfo {
-    val node: Node = ApiNetwork.newNode(this, Visibility.None)!!.create()
-    override fun node(): Node = node
+    val node: Node? = ApiNetwork.newNode(this, Visibility.None)!!.create()
+    override fun node(): Node? = node
 
     val buffer: InternalTextBuffer by lazy {
         val screenItem = Constants.BlockInfo.ScreenTier1.createItemStack(1)
@@ -86,7 +86,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     // ----------------------------------------------------------------------- //
     // DeviceInfo
 
-    private val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class.toString() to DeviceClass.Generic.toString(),
             DeviceAttribute.Description.toString() to "Terminal server",
@@ -94,7 +94,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
             DeviceAttribute.Product.toString() to "RemoteViewing EX"
         )
     }
-    override fun getDeviceInfo() = deviceInfo
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
     // Environment
@@ -134,7 +134,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     // RackMountable
 
     override fun getData(): NBTTagCompound {
-        if (node.address() == null) ApiNetwork.joinNewNetwork(node)
+        if (node!!.address() == null) ApiNetwork.joinNewNetwork(node)
 
         val nbt = NBTTagCompound()
         nbt.setNewStringList("keys", keys)
@@ -161,7 +161,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
                 }
                 keys.add(key)
                 heldItem.tagCompound!!.setString(Settings.namespace + "key", key)
-                heldItem.tagCompound!!.setString(Settings.namespace + "server", node.address())
+                heldItem.tagCompound!!.setString(Settings.namespace + "server", node!!.address())
                 rack.markChanged(slot)
                 player.inventory.markDirty()
             }
@@ -179,7 +179,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
 
     override fun load(nbt: NBTTagCompound) {
         if (!rack.world().isRemote) {
-            node.load(nbt)
+            node!!.load(nbt)
         }
         buffer.load(nbt.getCompoundTag(BufferTag))
         keyboard.load(nbt.getCompoundTag(KeyboardTag))
@@ -191,7 +191,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     }
 
     override fun save(nbt: NBTTagCompound) {
-        node.save(nbt)
+        node!!.save(nbt)
         nbt.setNewCompoundTag(BufferTag) { buffer.save(it) }
         nbt.setNewCompoundTag(KeyboardTag) { keyboard.save(it) }
         nbt.setNewStringList(KeysTag, keys)
@@ -203,7 +203,7 @@ class TerminalServer(val rack: InternalRack, val slot: Int) : Environment, Envir
     override fun canUpdate(): Boolean = true
 
     override fun update() {
-        if (world().isRemote || (node.address() != null && node.network() != null)) {
+        if (world().isRemote || (node!!.address() != null && node.network() != null)) {
             buffer.update()
         }
     }

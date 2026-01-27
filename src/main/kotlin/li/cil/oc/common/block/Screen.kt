@@ -9,7 +9,6 @@ import li.cil.oc.common.block.property.PropertyRotatable
 import li.cil.oc.common.block.property.PropertyTile
 import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.integration.util.Wrench
-import li.cil.oc.itemInfo
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.Rarity
 import li.cil.oc.util.Tooltip

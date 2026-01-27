@@ -34,8 +34,8 @@ import net.minecraftforge.common.util.Constants as NBTConstants
 
 class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, TraitTickable, TraitOpenSides, Analyzable, InternalAdapter, DeviceInfo {
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.Network)!!.create()
-    override fun node(): Node = node
+    val node: Node? = ApiNetwork.newNode(this, Visibility.Network)!!.create()
+    override fun node(): Node? = node
 
     override val sidesDelegate: OpenSides.Delegate = register(OpenSides::Delegate)
     override val componentInventoryDelegate: TraitComponentInventory.Delegate = register(TraitComponentInventory::Delegate)
@@ -45,7 +45,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
     private val updatingBlocks: MutableList<ManagedEnvironment> = mutableListOf()
     private val blocksData: Array<BlockData?> = arrayOfNulls(6)
 
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo
+    override fun getDeviceInfo(): Map<String, String> = Companion.deviceInfo
 
     override fun getDisplayName(): ITextComponent = super<TraitComponentInventory>.getDisplayName()
 
@@ -59,7 +59,7 @@ class Adapter : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, Tra
         if (isServer) {
             ServerPacketSender.sendAdapterState(this)
             world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
-            world.notifyNeighborsOfStateChange(pos, blockType, false)
+            world.notifyNeighborsOfStateChange(pos, getBlockType(), false)
             neighborChanged(side)
         } else {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)

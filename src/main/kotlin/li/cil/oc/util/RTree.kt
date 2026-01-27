@@ -4,15 +4,18 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
-class RTree<Data>(private val M: Int, private val coordinate: (Data) -> Triple<Double, Double, Double>) {
+class RTree<Data>(
+    private val maxEntries: Int,
+    private val coordinate: (Data) -> Triple<Double, Double, Double>
+) {
     init {
-        if (M < 2) throw IllegalArgumentException("maxEntries must be larger or equal to 2.")
+        if (maxEntries < 2) throw IllegalArgumentException("maxEntries must be larger or equal to 2.")
     }
 
     // Used for quick checks whether values are in the tree, e.g. for updates.
     private val entries = mutableMapOf<Data, Leaf>()
 
-    private val m = max(M / 2, 1)
+    private val m = max(maxEntries / 2, 1)
 
     private var root = NonLeaf()
 
@@ -93,7 +96,7 @@ class RTree<Data>(private val M: Int, private val coordinate: (Data) -> Triple<D
         override fun add(value: Node): Node {
             assert(value != this)
             uncheckedAdd(value)
-            return if (children.size > M) {
+            return if (children.size > maxEntries) {
                 split()
             } else {
                 bounds = bounds.including(value.bounds)
@@ -137,7 +140,7 @@ class RTree<Data>(private val M: Int, private val coordinate: (Data) -> Triple<D
                                 for (c in child.children) {
                                     uncheckedAdd(c)
                                 }
-                                if (children.size > M) {
+                                if (children.size > maxEntries) {
                                     // Escalate overflow.
                                     return setOf(split())
                                 }
@@ -160,7 +163,7 @@ class RTree<Data>(private val M: Int, private val coordinate: (Data) -> Triple<D
                             val changeNode = change.first()
                             assert(changeNode is NonLeaf)
                             uncheckedAdd(changeNode)
-                            return if (children.size > M) {
+                            return if (children.size > maxEntries) {
                                 // Escalate overflow.
                                 setOf(split())
                             } else {

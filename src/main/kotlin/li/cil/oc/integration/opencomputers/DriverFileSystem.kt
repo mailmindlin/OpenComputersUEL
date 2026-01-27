@@ -107,7 +107,7 @@ object DriverFileSystem : Item() {
     else java.util.UUID.randomUUID().toString()
 
   private class ReadWriteItemLabel(stack: ItemStack) : ItemLabel(stack) {
-    var label: String? = null
+    private var label: String? = null
 
     override fun getLabel(): String? = label
 

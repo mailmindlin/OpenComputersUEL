@@ -53,6 +53,11 @@ open class Proxy {
         Blocks.init()
         Items.init()
 
+        Item.REGISTRY.forEach { item ->
+            if (Item.REGISTRY.getNameForObject(item) == null)
+                OpenComputers.log.error("Missing resource for item $item")
+        }
+
         OpenComputers.log.debug("Initializing additional OreDict entries.")
 
         OreDictionary.registerOre("craftingPiston", net.minecraft.init.Blocks.PISTON)
@@ -61,7 +66,7 @@ open class Proxy {
         OreDictionary.registerOre("materialEnderPearl", net.minecraft.init.Items.ENDER_PEARL)
 
         // Make mods that use old wireless card name not have broken recipes
-        OreDictionary.registerOre("oc:wlanCard", Constants.ItemInfo.WirelessNetworkCardTier2.createItemStack(1))
+        OreDictionary.registerOre("oc:wlanCard", Items.get(Constants.ItemName.WirelessNetworkCardTier2)!!.createItemStack(1))
 
         tryRegisterNugget<DiamondChip>(Constants.ItemName.DiamondChip, "chipDiamond", net.minecraft.init.Items.DIAMOND, "gemDiamond")
 
@@ -85,23 +90,19 @@ open class Proxy {
         API.config = Settings.get.config
 
         if (LuaStateFactory.isAvailable) {
-            if (LuaStateFactory.include53) {
+            if (LuaStateFactory.include53)
                 Machine.add(NativeLua53Architecture::class.java)
-            }
-            if (LuaStateFactory.include54) {
+            if (LuaStateFactory.include54)
                 Machine.add(NativeLua54Architecture::class.java)
-            }
-            if (LuaStateFactory.include52) {
+            if (LuaStateFactory.include52)
                 Machine.add(NativeLua52Architecture::class.java)
-            }
         }
-        if (LuaStateFactory.includeLuaJ) {
+        if (LuaStateFactory.includeLuaJ)
             Machine.add(LuaJLuaArchitecture::class.java)
-        }
 
         Machine.LuaArchitecture =
             if (Settings.get.forceLuaJ) LuaJLuaArchitecture::class.java
-            else Machine.architectures().first()
+            else Machine.architectures().firstOrNull()
     }
 
     open fun init(e: FMLInitializationEvent) {
@@ -111,7 +112,7 @@ open class Proxy {
         Loot.init()
         Achievement.init()
 
-        EntityRegistry.registerModEntity(ResourceLocation(Settings.resourceDomain, "drone"), Drone::class.java, "Drone", 0, OpenComputers, 80, 1, true)
+        EntityRegistry.registerModEntity(ResourceLocation(Settings.resourceDomain, "drone"), Drone::class.java, "Drone", 0, OpenComputers.INSTANCE, 80, 1, true)
 
         OpenComputers.log.debug("Initializing mod integration.")
         Mods.init()

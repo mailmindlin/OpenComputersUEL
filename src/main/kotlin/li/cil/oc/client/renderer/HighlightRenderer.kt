@@ -12,7 +12,6 @@ import li.cil.oc.util.rotateTowards
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.getBlock
-import li.cil.oc.itemInfo
 import net.minecraft.client.renderer.BufferBuilder
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.OpenGlHelper

@@ -19,7 +19,7 @@ import li.cil.oc.server.network.QuantumNetwork
 import li.cil.oc.server.network.QuantumNode
 import net.minecraft.nbt.NBTTagCompound
 
-class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfoKt, WakeMessageAware {
+class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfo, WakeMessageAware {
     override val node = nodeFactory(Visibility.Network)
         .withComponent("tunnel", Visibility.Neighbors)
         .withConnector()
@@ -31,7 +31,7 @@ class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfoKt, WakeMessag
 
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Network,
         DeviceAttribute.Description to "Quantumnet controller",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
@@ -39,6 +39,8 @@ class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfoKt, WakeMessag
         DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString(),
         DeviceAttribute.Width to Settings.get.maxNetworkPacketParts.toString()
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     // ----------------------------------------------------------------------- //
 

@@ -5,7 +5,6 @@ import li.cil.oc.api.Items as ApiItems
 import li.cil.oc.api.event.RackMountableRenderEvent
 import li.cil.oc.client.Textures
 import li.cil.oc.client.renderer.tileentity.RenderUtil
-import li.cil.oc.itemInfo
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedWorld.extendedWorld
 import li.cil.oc.util.RenderState

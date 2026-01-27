@@ -20,18 +20,20 @@ import net.minecraft.entity.Entity
 import net.minecraftforge.common.ForgeChunkManager
 import net.minecraftforge.common.ForgeChunkManager.Ticket
 
-class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfoKt {
+class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceInfo {
     override val node = nodeFactory(Visibility.Network)
         .withComponent("chunkloader")
         .withConnector()
         .create()
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Generic,
         DeviceAttribute.Description to "World stabilizer",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "Realizer9001-CL"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     var ticket: Ticket? = null
 

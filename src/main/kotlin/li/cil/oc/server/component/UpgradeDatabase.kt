@@ -2,7 +2,7 @@ package li.cil.oc.server.component
 
 import com.google.common.hash.Hashing
 import li.cil.oc.Constants
-import li.cil.oc.api.Network
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Database
@@ -14,17 +14,21 @@ import li.cil.oc.util.*
 import net.minecraft.inventory.IInventory
 import net.minecraft.item.ItemStack
 
-class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, DeviceInfoKt {
+class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, DeviceInfo {
     override val node = nodeFactory(Visibility.Network, "database").create()
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Object catalogue",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "iCatalogue (patent pending)",
-        DeviceAttribute.Capacity to size().toString()
-    )
-    
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Object catalogue",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "iCatalogue (patent pending)",
+            DeviceAttribute.Capacity to size().toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
+
     override fun size(): Int = data.sizeInventory
 
     override fun getStackInSlot(slot: Int): ItemStack? = data.getStackInSlot(slot)?.notEmpty()?.copy()

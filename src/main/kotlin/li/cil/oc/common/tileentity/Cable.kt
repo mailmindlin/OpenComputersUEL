@@ -16,8 +16,8 @@ import net.minecraft.util.math.AxisAlignedBB
 
 class Cable : TileEntityBase.TEEnvironmentBase(), Environment, NotAnalyzable, ImmibisMicroblock, Colored {
     @JvmField
-    val node: Node = ApiNetwork.newNode(this, Visibility.None)!!.create()
-    override fun node(): Node = node
+    val node: Node? = ApiNetwork.newNode(this, Visibility.None)!!.create()
+    override fun node() = node
 
     @JvmField
     @Suppress("unused", "PropertyName", "SpellCheckingInspection")

@@ -61,10 +61,10 @@ object Redstone {
             get() = wirelessComponent.wirelessOutput
             set(value) { wirelessComponent.wirelessOutput = value }
 
-        override val deviceInfo = Companion.deviceInfo
+        override fun getDeviceInfo() = Companion.deviceInfo
 
         companion object {
-            val deviceInfo = mapOf(
+            private val deviceInfo = mapOf(
                 DeviceAttribute.Class to DeviceClass.Communication,
                 DeviceAttribute.Description to "Combined redstone controller",
                 DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,

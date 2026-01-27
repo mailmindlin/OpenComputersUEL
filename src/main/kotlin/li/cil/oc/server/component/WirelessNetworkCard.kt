@@ -148,16 +148,19 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
 
         // ----------------------------------------------------------------------- //
 
-        override val deviceInfo = mapOf(
-            DeviceAttribute.Class to DeviceClass.Network,
-            DeviceAttribute.Description to "Wireless ethernet controller",
-            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-            DeviceAttribute.Product to "39i110 (LPPW-01)",
-            DeviceAttribute.Version to "1.0",
-            DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString(),
-            DeviceAttribute.Size to maxOpenPorts.toString(),
-            DeviceAttribute.Width to maxWirelessRange.toString()
-        )
+        protected open val deviceInfo_ by lazy {
+            mapOf(
+                DeviceAttribute.Class to DeviceClass.Network,
+                DeviceAttribute.Description to "Wireless ethernet controller",
+                DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+                DeviceAttribute.Product to "39i110 (LPPW-01)",
+                DeviceAttribute.Version to "1.0",
+                DeviceAttribute.Capacity to Settings.get.maxNetworkPacketSize.toString(),
+                DeviceAttribute.Size to maxOpenPorts.toString(),
+                DeviceAttribute.Width to maxWirelessRange.toString()
+            )
+        }
+        override fun getDeviceInfo() = deviceInfo_
 
         override fun isPacketAccepted(packet: Packet, distance: Double): Boolean {
             return if (distance <= maxWirelessRange && (distance > 0 || shouldSendWiredTraffic)) {
@@ -183,7 +186,7 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
 
         // ----------------------------------------------------------------------- //
 
-        override val deviceInfo = mapOf(
+        override val deviceInfo_ = mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
             DeviceAttribute.Description to "Wireless ethernet controller",
             DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,

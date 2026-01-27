@@ -271,7 +271,7 @@ class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, T
 
     override fun canConnect(side: EnumFacing): Boolean = side != facing()
 
-    override fun sidedNode(side: EnumFacing): Node? = if (side != facing()) super.sidedNode(side) else null
+    override fun sidedNode(side: EnumFacing?): Node? = if (side != facing()) super.sidedNode(side) else null
 
     // ----------------------------------------------------------------------- //
     // power.Common
@@ -413,7 +413,7 @@ class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, T
                         hasChanged[slot] = false
                         lastData[slot] = component.data
                         ServerPacketSender.sendRackMountableData(this, slot)
-                        world.notifyNeighborsOfStateChange(pos, blockType, false)
+                        world.notifyNeighborsOfStateChange(pos, getBlockType(), false)
                         // These are working state dependent, so recompute them.
                         this.outputEnabled = hasRedstoneCard
                     }

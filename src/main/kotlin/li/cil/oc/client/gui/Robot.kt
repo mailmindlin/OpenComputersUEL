@@ -289,7 +289,7 @@ class Robot(
     }
 
     private fun drawSelection() {
-        val slot = robot.selectedSlot - inventoryOffset * 4
+        val slot = robot.selectedSlot() - inventoryOffset * 4
         if (slot >= 0 && slot < 16) {
             RenderState.makeItBlend()
             Textures.bind(Textures.GUI.RobotSelection)

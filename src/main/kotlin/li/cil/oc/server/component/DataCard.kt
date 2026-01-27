@@ -73,12 +73,16 @@ abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo
   }
 
   open class Tier1: DataCard() {
-    override val deviceInfo = mapOf(
-      DeviceAttribute.Class to DeviceClass.Processor,
-      DeviceAttribute.Description to "Data processor card",
-      DeviceAttribute.Vendor to "S.C. Ltd.",
-      DeviceAttribute.Product to "SC01D H45h3r"
-    )
+    companion object {
+      private val deviceInfo = mapOf(
+        DeviceAttribute.Class to DeviceClass.Processor,
+        DeviceAttribute.Description to "Data processor card",
+        DeviceAttribute.Vendor to "S.C. Ltd.",
+        DeviceAttribute.Product to "SC01D H45h3r"
+      )
+    }
+
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     // ----------------------------------------------------------------------- //
 
@@ -130,12 +134,15 @@ abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo
   }
 
   open class Tier2: Tier1() {
-    override val deviceInfo = mapOf(
-      DeviceAttribute.Class to DeviceClass.Processor,
-      DeviceAttribute.Description to "Data processor card",
-      DeviceAttribute.Vendor to "S.C. Ltd.",
-      DeviceAttribute.Product to "SC02D Cryptic"
-    )
+    companion object {
+      val deviceInfo = mapOf(
+        DeviceAttribute.Class to DeviceClass.Processor,
+        DeviceAttribute.Description to "Data processor card",
+        DeviceAttribute.Vendor to "S.C. Ltd.",
+        DeviceAttribute.Product to "SC02D Cryptic"
+      )
+    }
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     // ----------------------------------------------------------------------- //
 
@@ -207,12 +214,16 @@ abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo
   }
 
   class Tier3: Tier2() {
-    override val deviceInfo = mapOf(
-      DeviceAttribute.Class to DeviceClass.Processor,
-      DeviceAttribute.Description to "Data processor card",
-      DeviceAttribute.Vendor to "S.C. Ltd.",
-      DeviceAttribute.Product to "SC03D Signer"
-    )
+    companion object {
+      val deviceInfo = mapOf(
+        DeviceAttribute.Class to DeviceClass.Processor,
+        DeviceAttribute.Description to "Data processor card",
+        DeviceAttribute.Vendor to "S.C. Ltd.",
+        DeviceAttribute.Product to "SC03D Signer"
+      )
+    }
+
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     // ----------------------------------------------------------------------- //
 

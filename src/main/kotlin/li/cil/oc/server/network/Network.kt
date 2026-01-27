@@ -415,22 +415,22 @@ internal class Network private constructor(private val data: MutableMap<String, 
 
   override fun addConnector(connector: ApiConnector) {
     connector as Connector
-    if (connector.localBufferSize > 0) {
+    if (connector.localBufferSizeKt > 0) {
       assert(!connectors.contains(connector))
       connectors.add(connector)
-      globalBuffer += connector.localBuffer
-      globalBufferSize += connector.localBufferSize
+      globalBuffer += connector.localBufferKt
+      globalBufferSize += connector.localBufferSizeKt
     }
     connector.distributor = wrapper
   }
 
   override fun removeConnector(connector: ApiConnector) {
     connector as Connector
-    if (connector.localBufferSize > 0) {
+    if (connector.localBufferSizeKt > 0) {
       assert(connectors.contains(connector))
       connectors.remove(connector)
-      globalBuffer -= connector.localBuffer
-      globalBufferSize -= connector.localBufferSize
+      globalBuffer -= connector.localBufferKt
+      globalBufferSize -= connector.localBufferSizeKt
     }
   }
 
@@ -449,12 +449,12 @@ internal class Network private constructor(private val data: MutableMap<String, 
         var remaining = -delta
         for (connector in connectors) {
           if (remaining <= 0) break
-          if (connector.localBuffer > 0) {
-            if (connector.localBuffer < remaining) {
-              remaining -= connector.localBuffer
-              connector.localBuffer = 0.0
+          if (connector.localBufferKt > 0) {
+            if (connector.localBufferKt < remaining) {
+              remaining -= connector.localBufferKt
+              connector.localBufferKt = 0.0
             } else {
-              connector.localBuffer -= remaining
+              connector.localBufferKt -= remaining
               remaining = 0.0
             }
           }
@@ -464,13 +464,13 @@ internal class Network private constructor(private val data: MutableMap<String, 
         var remaining = delta
         for (connector in connectors) {
           if (remaining <= 0) break
-          if (connector.localBuffer < connector.localBufferSize) {
-            val space = connector.localBufferSize - connector.localBuffer
+          if (connector.localBufferKt < connector.localBufferSizeKt) {
+            val space = connector.localBufferSizeKt - connector.localBufferKt
             if (space < remaining) {
               remaining -= space
-              connector.localBuffer = connector.localBufferSize
+              connector.localBufferKt = connector.localBufferSizeKt
             } else {
-              connector.localBuffer += remaining
+              connector.localBufferKt += remaining
               remaining = 0.0
             }
           }
@@ -795,11 +795,11 @@ object NetworkObject : NetworkAPI {
         override var address: String? = null
         override var network: INetwork? = null
 
-        private val callbacks by lazy { Component.createCallbacks(host()) }
-        private val hosts by lazy { Component.createHosts(host(), callbacks) }
+        private val callbacks_ by lazy { Component.createCallbacks(host()) }
+        private val hosts_ by lazy { Component.createHosts(host(), callbacks_) }
 
-        override fun getCallbacks() = callbacks
-        override fun getHosts() = hosts
+        override fun getCallbacks() = callbacks_
+        override fun getHosts() = hosts_
 
         init {
           this.setVisibility(_visibility)
@@ -824,8 +824,8 @@ object NetworkObject : NetworkAPI {
         override fun reachability() = _reachability
         override var address: String? = null
         override var network: INetwork? = null
-        override var localBufferSize = _bufferSize
-        override var localBuffer = 0.0
+        override var localBufferSizeKt = _bufferSize
+        override var localBufferKt = 0.0
         override var distributor: Distributor? = null
       }
     } else null
@@ -846,16 +846,16 @@ object NetworkObject : NetworkAPI {
         override var _visibility = Visibility.None
         override var address: String? = null
         override var network: INetwork? = null
-        override var localBufferSize = _bufferSize
-        override var localBuffer = 0.0
+        override var localBufferSizeKt = _bufferSize
+        override var localBufferKt = 0.0
 
         override var distributor: Distributor? = null
 
-        private val callbacks by lazy { Component.createCallbacks(host()) }
-        private val hosts by lazy { Component.createHosts(host(), callbacks) }
+        private val callbacks_ by lazy { Component.createCallbacks(host()) }
+        private val hosts_ by lazy { Component.createHosts(host(), callbacks_) }
 
-        override fun getCallbacks() = callbacks
-        override fun getHosts() = hosts
+        override fun getCallbacks() = callbacks_
+        override fun getHosts() = hosts_
 
         init {
           setVisibility(_visibility)

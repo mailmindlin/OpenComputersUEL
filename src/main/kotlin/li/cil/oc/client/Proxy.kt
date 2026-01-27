@@ -56,15 +56,12 @@ internal class Proxy : CommonProxy() {
     API.manual = Manual
 
     CommandHandler.register()
-
     MinecraftForge.EVENT_BUS.register(Textures)
     MinecraftForge.EVENT_BUS.register(NetSplitterModel)
 
     ModelInitialization.preInit()
 
-    RenderingRegistry.registerEntityRenderingHandler(Drone::class.java, IRenderFactory<Drone> { manager ->
-      DroneRenderer(manager)
-    })
+    RenderingRegistry.registerEntityRenderingHandler(Drone::class.java, ::DroneRenderer)
   }
 
   override fun init(e: FMLInitializationEvent) {
@@ -107,7 +104,8 @@ internal class Proxy : CommonProxy() {
     MinecraftForge.EVENT_BUS.register(MFUTargetRenderer)
     MinecraftForge.EVENT_BUS.register(WirelessNetworkDebugRenderer)
 
-    NetworkRegistry.INSTANCE.registerGuiHandler(OpenComputers, GuiHandler)
+    //TODO
+    // NetworkRegistry.INSTANCE.registerGuiHandler(OpenComputers, GuiHandler)
 
     MinecraftForge.EVENT_BUS.register(Audio)
     MinecraftForge.EVENT_BUS.register(HologramRenderer)

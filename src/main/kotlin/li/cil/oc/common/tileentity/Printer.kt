@@ -2,6 +2,7 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -16,7 +17,6 @@ import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.isClient
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.result
 import li.cil.oc.util.notEmpty
 import li.cil.oc.util.setNewCompoundTag
@@ -35,7 +35,7 @@ import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
 import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 import li.cil.oc.server.PacketSender as ServerPacketSender
 
-class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfoKt {
+class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfo {
     @JvmField
     val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("printer3d")
@@ -72,7 +72,7 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
     val slotInk = 1
     val slotOutput = 2
 
-    override val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Printer,
             DeviceAttribute.Description to "3D Printer",
@@ -80,6 +80,8 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
             DeviceAttribute.Product to "Omni-Materializer T6.1"
         )
     }
+
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

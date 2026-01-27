@@ -108,7 +108,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         relativeLitArea = -1.0 // Recompute lit area, avoid screens blanking out until something changes.
     }
 
-    val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Display,
             DeviceAttribute.Description to "Text buffer",
@@ -118,7 +118,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
             DeviceAttribute.Width to arrayOf("1", "4", "8")[maxDepth.ordinal]
         )
     }
-    override fun getDeviceInfo(): Map<String, String> = deviceInfo
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

@@ -34,7 +34,7 @@ import net.minecraft.util.EnumHand
 class DiskDriveMountable(
     val rack: Rack,
     val slot: Int
-) : ManagedEnvironmentKt(), Inventory, ComponentInventory, RackMountable, Analyzable, DeviceInfoKt {
+) : ManagedEnvironmentKt(), Inventory, ComponentInventory, RackMountable, Analyzable, DeviceInfo {
     // Stored for filling data packet when queried.
     var lastAccess = 0L
 
@@ -44,12 +44,14 @@ class DiskDriveMountable(
     // ----------------------------------------------------------------------- //
     // DeviceInfo
 
-    override val deviceInfo = mapOf(
+    private val deviceInfo = mapOf(
         DeviceAttribute.Class to DeviceClass.Disk,
         DeviceAttribute.Description to "Floppy disk drive",
         DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
         DeviceAttribute.Product to "RackDrive 100 Rev. 2"
     )
+
+    override fun getDeviceInfo() = deviceInfo
 
     // ----------------------------------------------------------------------- //
     // Environment

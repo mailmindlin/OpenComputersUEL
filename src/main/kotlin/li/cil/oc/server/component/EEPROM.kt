@@ -14,7 +14,7 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import net.minecraft.nbt.NBTTagCompound
 
-class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
+class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
     override val node = nodeFactory(Visibility.Neighbors)
         .withComponent("eeprom", Visibility.Neighbors)
         .withConnector()
@@ -30,14 +30,7 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
 
     // ----------------------------------------------------------------------- //
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Memory,
-        DeviceAttribute.Description to "EEPROM",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "FlashStick2k",
-        DeviceAttribute.Capacity to Settings.get.eepromSize.toString(),
-        DeviceAttribute.Size to Settings.get.eepromSize.toString()
-    )
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     // ----------------------------------------------------------------------- //
 
@@ -128,6 +121,15 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfoKt {
         private const val LabelTag = Settings.namespace + "label"
         private const val ReadonlyTag = Settings.namespace + "readonly"
         private const val UserdataTag = Settings.namespace + "userdata"
+
+        private val deviceInfo = mapOf(
+            DeviceAttribute.Class to DeviceClass.Memory,
+            DeviceAttribute.Description to "EEPROM",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "FlashStick2k",
+            DeviceAttribute.Capacity to Settings.get.eepromSize.toString(),
+            DeviceAttribute.Size to Settings.get.eepromSize.toString()
+        )
     }
 
     override fun load(nbt: NBTTagCompound) {

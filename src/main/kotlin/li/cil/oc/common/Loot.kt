@@ -8,7 +8,6 @@ import li.cil.oc.api.FileSystem as ApiFileSystem
 import li.cil.oc.api.fs.FileSystem
 import li.cil.oc.common.init.Items
 import li.cil.oc.util.Color
-import li.cil.oc.itemInfo
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound

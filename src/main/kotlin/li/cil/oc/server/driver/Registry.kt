@@ -149,6 +149,7 @@ internal object Registry: DriverAPI {
     = this.mapArray { convertRecursively(it, IdentityHashMap()) }
 
   @Deprecated("use value.convert()", replaceWith = ReplaceWith("this.run { value.convert() }"))
+  @JvmName("convertOld")
   fun convert(value: Array<*>?): Array<Any?>?
     = value?.mapArray { convertRecursively(it, IdentityHashMap()) }
 

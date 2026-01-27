@@ -24,21 +24,21 @@ class PowerDistributor: TileEntityBase.TEEnvironmentBase(), TraitPowerBalancer, 
 
     override val powerDelegate: PowerBalancer.Delegate = PowerBalancer.Delegate(this)
 
-    private val nodes: Array<Connector> = Array(6) {
+    private val nodes: Array<Connector?> = Array(6) {
         Network.newNode(this, Visibility.None)!!
             .withConnector(Settings.get.bufferDistributor)
             .create()
     }
 
     override val isConnected: Boolean
-        get() = nodes.any { node -> node.address() != null && node.network() != null }
+        get() = nodes.any { node -> node!!.address() != null && node.network() != null }
 
     // ----------------------------------------------------------------------- //
 
     @SideOnly(Side.CLIENT)
     override fun canConnect(side: EnumFacing): Boolean = true
 
-    override fun sidedNode(side: EnumFacing): Connector = nodes[side.ordinal]
+    override fun sidedNode(side: EnumFacing): Connector = nodes[side.ordinal]!!
 
     // ----------------------------------------------------------------------- //
 
@@ -51,7 +51,7 @@ class PowerDistributor: TileEntityBase.TEEnvironmentBase(), TraitPowerBalancer, 
         this.powerDelegate.readFromNBTForServer(nbt)
         val tagList = nbt.getTagList(ConnectorTag, NBTConstants.NBT.TAG_COMPOUND)
         for (i in 0 until minOf(tagList.tagCount(), nodes.size)) {
-            nodes[i].load(tagList.getCompoundTagAt(i))
+            nodes[i]!!.load(tagList.getCompoundTagAt(i))
         }
     }
 
@@ -62,7 +62,7 @@ class PowerDistributor: TileEntityBase.TEEnvironmentBase(), TraitPowerBalancer, 
             val tagList = NBTTagList()
             for (connector in nodes) {
                 val connectorNbt = NBTTagCompound()
-                connector.save(connectorNbt)
+                connector!!.save(connectorNbt)
                 tagList.appendTag(connectorNbt)
             }
             nbt.setTag(ConnectorTag, tagList)

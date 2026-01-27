@@ -17,7 +17,6 @@ import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.ItemUtils
@@ -31,7 +30,6 @@ import net.minecraftforge.common.util.Constants as NBTConstants
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import java.util.EnumSet
-import li.cil.oc.common.tileentity.traits.Environment as TraitEnvironment
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.Inventory as TraitInventory
 import li.cil.oc.common.tileentity.traits.StateAware as TraitStateAware
@@ -40,11 +38,10 @@ import li.cil.oc.common.tileentity.traits.Tickable as TraitTickable
 
 class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitInventory, TraitStateAware, TraitPlayerInputAware, TraitTickable, DeviceInfo {
     @JvmField
-    val node: Connector = ApiNetwork.newNode(this, Visibility.None)!!
+    val node: Connector? = ApiNetwork.newNode(this, Visibility.None)!!
         .withConnector(Settings.get.bufferConverter)
         .create()
-
-    override fun node(): Node = node
+    override fun node() = node
 
     override val ic2Delegate: IndustrialCraft2Experimental.Delegate = register(IndustrialCraft2Experimental::Delegate)
     override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
@@ -79,11 +76,11 @@ class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, Tra
         if (value != isActive) {
             isActive = value
             ServerPacketSender.sendDisassemblerActive(this, isActive)
-            world.notifyNeighborsOfStateChange(pos, blockType, true)
+            world.notifyNeighborsOfStateChange(pos, getBlockType(), true)
         }
     }
 
-    private val deviceInfo: Map<String, String> by lazy {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Generic,
             DeviceAttribute.Description to "Disassembler",
@@ -92,7 +89,7 @@ class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, Tra
         )
     }
 
-    override fun getDeviceInfo() = deviceInfo
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 
@@ -123,7 +120,7 @@ class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, Tra
             } else {
                 if (buffer < Settings.get.disassemblerItemCost) {
                     val want = Settings.get.disassemblerTickAmount
-                    val success = node.tryChangeBuffer(-want)
+                    val success = node!!.tryChangeBuffer(-want)
                     setActive(success) // If energy is insufficient indicate it visually.
                     if (success) {
                         buffer += want

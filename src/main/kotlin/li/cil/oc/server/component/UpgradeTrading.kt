@@ -12,6 +12,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.common.tileentity.DiskDrive
+import li.cil.oc.common.tileentity.DiskDrive.Companion
 import li.cil.oc.server.component.traits.WorldAware
 import li.cil.oc.util.BlockPosition
 import net.minecraft.entity.Entity
@@ -19,17 +21,20 @@ import net.minecraft.entity.IMerchant
 import net.minecraft.util.math.Vec3d
 import java.util.*
 
-class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldAware, DeviceInfoKt {
+class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldAware, DeviceInfo {
     override val node = nodeFactory(Visibility.Network)
         .withComponent("trading")
         .create()
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Trading upgrade",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "Capitalism H.O. 1200T"
-    )
+    companion object {
+        private val deviceInfo = mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Trading upgrade",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Capitalism H.O. 1200T"
+        )
+    }
+    override fun getDeviceInfo() = Companion.deviceInfo
 
     override val position get() = BlockPosition(host)
 

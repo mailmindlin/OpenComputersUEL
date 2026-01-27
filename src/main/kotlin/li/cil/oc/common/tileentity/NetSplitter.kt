@@ -2,6 +2,7 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
+import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
@@ -13,7 +14,6 @@ import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.traits.*
-import li.cil.oc.server.component.DeviceInfoKt
 import li.cil.oc.server.component.result
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
@@ -26,8 +26,8 @@ import li.cil.oc.common.tileentity.traits.OpenSides as TraitOpenSides
 import li.cil.oc.common.tileentity.traits.RedstoneAware as TraitRedstoneAware
 import li.cil.oc.server.PacketSender as ServerPacketSender
 
-class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfoKt {
-    override val deviceInfo: Map<String, String> by lazy {
+class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRedstoneAware, SidedEnvironment, DeviceInfo {
+    private val deviceInfo_: Map<String, String> by lazy {
         mapOf(
             DeviceAttribute.Class to DeviceClass.Network,
             DeviceAttribute.Description to "Ethernet controller",
@@ -37,6 +37,8 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
             DeviceAttribute.Width to "6"
         )
     }
+
+    override fun getDeviceInfo(): Map<String, String> = deviceInfo_
     override val redstoneDelegate: TraitRedstoneAware.Delegate = register(TraitRedstoneAware::Delegate)
     override val sidesDelegate: TraitOpenSides.Delegate = register(TraitOpenSides::Delegate)
 
@@ -45,11 +47,11 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
     }
 
     @JvmField
-    val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
+    val node: Component? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("net_splitter", Visibility.Network)
         .create()
 
-    override fun node(): Node = node
+    override fun node() = node
 
     @JvmField
     var isInverted = false
@@ -62,11 +64,11 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
         if (previous == isSideOpen(side))
             return
         if (isServer) {
-            node.remove()
+            node!!.remove()
             ApiNetwork.joinOrCreateNetwork(this)
             ServerPacketSender.sendNetSplitterState(this)
             world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_EXTEND, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)
-            world.notifyNeighborsOfStateChange(pos, blockType, false)
+            world.notifyNeighborsOfStateChange(pos, getBlockType(), false)
         } else {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
         }
@@ -94,7 +96,7 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
         isInverted = args.newValue > 0
         if (isInverted != oldIsInverted) {
             if (isServer) {
-                node.remove()
+                node!!.remove()
                 ApiNetwork.joinOrCreateNetwork(this)
                 ServerPacketSender.sendNetSplitterState(this)
                 world.playSound(null, x + 0.5, y + 0.5, z + 0.5, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5f, world.rand.nextFloat() * 0.25f + 0.7f)

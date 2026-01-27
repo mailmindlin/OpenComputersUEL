@@ -6,13 +6,17 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 
 class APU(tier: Int) : GraphicsCard(tier) {
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Processor,
-        DeviceAttribute.Description to "APU",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "FlexiArch ${tier + 1} Processor (Builtin Graphics)",
-        DeviceAttribute.Capacity to capacityInfo,
-        DeviceAttribute.Width to widthInfo,
-        DeviceAttribute.Clock to "${(Settings.get.callBudgets[tier] * 1000).toInt()}+${clockInfo}"
-    )
+    private val apuDeviceInfo by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Processor,
+            DeviceAttribute.Description to "APU",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "FlexiArch ${tier + 1} Processor (Builtin Graphics)",
+            DeviceAttribute.Capacity to capacityInfo,
+            DeviceAttribute.Width to widthInfo,
+            DeviceAttribute.Clock to "${(Settings.get.callBudgets[tier] * 1000).toInt()}+${clockInfo}"
+        )
+    }
+
+    override fun getDeviceInfo() = apuDeviceInfo
 }

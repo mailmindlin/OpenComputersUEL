@@ -51,6 +51,12 @@ object Constants {
         @Suppress("FunctionName")
         fun Case(tier: Int): String = ItemUtils.caseNameWithTierSuffix("case", tier)
     }
+
+    /** Get item info for constant */
+    private fun itemInfo(name: String): ItemInfoT {
+        Items.get(name)?.let { return it }
+        throw IllegalStateException(if (li.cil.oc.api.API.items == null) "missing items api" else "unknown item $name")
+    }
     object BlockInfo {
         internal val Adapter: ItemInfoT by lazy { itemInfo(Constants.BlockName.Adapter) }
         internal val Assembler: ItemInfoT by lazy { itemInfo(Constants.BlockName.Assembler) }
@@ -358,6 +364,3 @@ object Constants {
         internal fun TabletCase(tier: Int): ItemInfoT = itemInfo(ItemName.TabletCase(tier))
     }
 }
-
-/** Get item info for constant */
-internal inline fun itemInfo(name: String): ItemInfoT = Items.get(name)!!

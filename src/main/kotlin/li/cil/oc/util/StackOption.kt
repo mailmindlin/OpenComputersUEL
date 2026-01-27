@@ -96,8 +96,6 @@ sealed class Either<out L, out R> {
 }
 
 fun ItemStack?.asStackOption(): StackOption = StackOption(this)
-fun ItemStack.asStackOption(): StackOption = SomeStack(this)
 
 fun ItemStack?.notEmpty(): ItemStack? = if (this == null || this.isEmpty) null else this
-fun ItemStack.notEmpty(): ItemStack? = if (this.isEmpty) null else this
 fun ItemStack?.isNullOrEmpty(): Boolean = this == null || this.isEmpty

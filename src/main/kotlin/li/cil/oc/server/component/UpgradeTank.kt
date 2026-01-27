@@ -1,30 +1,32 @@
 package li.cil.oc.server.component
 
 import li.cil.oc.Constants
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.internal.Agent
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fluids.FluidStack
 import net.minecraftforge.fluids.FluidTank
 import net.minecraftforge.fluids.FluidTankInfo
 import net.minecraftforge.fluids.IFluidTank
 
-class UpgradeTank(val owner: EnvironmentHost, val capacity: Int) : ManagedEnvironmentKt(), IFluidTank, DeviceInfoKt {
+class UpgradeTank(val owner: EnvironmentHost, capacity: Int) : ManagedEnvironmentKt(), IFluidTank, DeviceInfo {
     override val node = nodeFactory(Visibility.None).create()
 
-    override val deviceInfo = mapOf(
-        DeviceAttribute.Class to DeviceClass.Generic,
-        DeviceAttribute.Description to "Tank upgrade",
-        DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
-        DeviceAttribute.Product to "Superblubb V10",
-        DeviceAttribute.Capacity to capacity.toString()
-    )
+    private val deviceInfo_ by lazy {
+        mapOf(
+            DeviceAttribute.Class to DeviceClass.Generic,
+            DeviceAttribute.Description to "Tank upgrade",
+            DeviceAttribute.Vendor to Constants.DeviceInfo.DefaultVendor,
+            DeviceAttribute.Product to "Superblubb V10",
+            DeviceAttribute.Capacity to tank.capacity.toString()
+        )
+    }
+
+    override fun getDeviceInfo() = deviceInfo_
 
     // ----------------------------------------------------------------------- //
 

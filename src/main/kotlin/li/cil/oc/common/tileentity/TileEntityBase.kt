@@ -74,7 +74,7 @@ abstract class TileEntityBase : TileEntity(), TileEntityTrait {
 
         if (Settings.get.periodicallyForceLightUpdate &&
             world.totalWorldTime % 40 == 0L &&
-            blockType.getLightValue(world.getBlockState(pos), world, pos) > 0) {
+            getBlockType().getLightValue(world.getBlockState(pos), world, pos) > 0) {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3)
         }
     }
