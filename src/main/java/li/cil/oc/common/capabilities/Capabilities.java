@@ -9,7 +9,7 @@ import net.minecraftforge.common.capabilities.CapabilityManager;
 
 import java.util.concurrent.Callable;
 
-// Gotta be Java, @CapabilityInject don't werk for Scala ;_;
+// Gotta be Java, @CapabilityInject don't werk for Scala/Kotlin ;_;
 public final class Capabilities {
     @CapabilityInject(Colored.class)
     public static Capability<Colored> ColoredCapability;

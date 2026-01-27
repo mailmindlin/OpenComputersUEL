@@ -44,7 +44,7 @@ public class FontParserHex implements IGlyphProvider {
             long time = System.currentTimeMillis();
             int glyphCount = 0;
 
-            ResourceLocation loc = new ResourceLocation(Settings.resourceDomain(), "font.hex");
+            ResourceLocation loc = new ResourceLocation(Settings.resourceDomain, "font.hex");
             for (IResource resource : (List<IResource>) Minecraft.getMinecraft().getResourceManager().getAllResources(loc)) {
                 final InputStream font = resource.getInputStream();
                 try {
@@ -53,7 +53,7 @@ public class FontParserHex implements IGlyphProvider {
                     while ((line = input.readLine()) != null) {
                         final String info = line.substring(0, line.indexOf(':'));
                         final int charCode = Integer.parseInt(info, 16);
-                        if (charCode < 0 || charCode >= FontUtils.codepoint_limit()) {
+                        if (charCode < 0 || charCode >= FontUtils.CODEPOINT_LIMIT) {
                             OpenComputers.log().warn(String.format("Unicode font contained unexpected glyph: U+%04X, ignoring", charCode));
                             continue; // Out of bounds.
                         }
@@ -71,7 +71,7 @@ public class FontParserHex implements IGlyphProvider {
                                 glyphCount++;
                             }
                             glyphs.put(charCode, glyph);
-                        } else if (Settings.get().logHexFontErrors()) {
+                        } else if (Settings.get().getLogHexFontErrors()) {
                             OpenComputers.log().warn(String.format("Size of glyph for code point U+%04X (%s) in font (%d) does not match expected width (%d), ignoring.", charCode, String.valueOf((char) charCode), glyphWidth, expectedWidth));
                         }
                     }
