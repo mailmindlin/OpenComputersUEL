@@ -109,11 +109,7 @@ class ComputerAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
 
     lua.pushJavaFunction { lua ->
       val a = getArchitectures()
-      lua.pushList(
-        a,
-        a.withIndex().iterator(),
-        IdentityHashMap()
-      )
+      lua.pushList(a.asIterable())
       1
     }
     lua.setField(-2, "getArchitectures")
