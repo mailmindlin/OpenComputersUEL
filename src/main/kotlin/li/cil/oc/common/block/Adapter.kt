@@ -58,6 +58,6 @@ class Adapter : SimpleBlock(), GUI {
             }
             return false
         }
-        return super.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
+        return super<GUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
     }
 }
