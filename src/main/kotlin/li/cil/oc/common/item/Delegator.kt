@@ -9,6 +9,7 @@ import li.cil.oc.client.renderer.item.UpgradeRenderer
 import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.integration.opencomputers.Item as OpenComputersItem
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.notEmpty
 import net.minecraft.client.util.ITooltipFlag
 import net.minecraft.creativetab.CreativeTabs
 import net.minecraft.entity.Entity
@@ -49,7 +50,7 @@ open class Delegator : Item(), li.cil.oc.api.driver.item.UpgradeRenderer, Charge
         }
     }
 
-    val subItems: MutableList<Delegate> = mutableListOf()
+    private val subItems: MutableList<Delegate> = mutableListOf()
 
     fun add(subItem: Delegate): Int {
         val itemId = subItems.size
@@ -223,14 +224,10 @@ open class Delegator : Item(), li.cil.oc.api.driver.item.UpgradeRenderer, Charge
 
     companion object {
         @JvmStatic
-        fun subItem(stack: ItemStack): Delegate? {
-            if (!stack.isEmpty) {
-                val item = stack.item
-                if (item is Delegator) {
-                    return item.subItem(stack.itemDamage)
-                }
-            }
-            return null
+        internal fun subItem(stack: ItemStack): Delegate? {
+            stack.notEmpty() ?: return null;
+            val item = stack.item
+            return (item as? Delegator)?.subItem(stack.itemDamage)
         }
     }
 }
