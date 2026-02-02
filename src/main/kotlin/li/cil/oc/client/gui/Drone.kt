@@ -132,7 +132,7 @@ class Drone(
         GlStateManager.color(1f, 1f, 1f)
         Textures.bind(Textures.GUI.Drone)
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
-        power.level = drone.globalBuffer.toDouble() / maxOf(drone.globalBufferSize.toDouble(), 1.0)
+        power.level = drone.globalBuffer.toDouble() / drone.globalBufferSize.toDouble().coerceAtLeast(1.0)
         drawWidgets()
         if (drone.mainInventory.sizeInventory > 0) {
             drawSelection()
