@@ -19,6 +19,7 @@ import li.cil.oc.server.component.world
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
 import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Stack
 import li.cil.oc.util.ThreadPoolFactory
 import li.cil.oc.util.setNewCompoundTag
 import li.cil.oc.util.setNewStringList
@@ -29,12 +30,13 @@ import net.minecraft.server.integrated.IntegratedServer
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.common.FMLCommonHandler
 import java.util.concurrent.TimeUnit
+import kotlin.jvm.Throws
 import kotlin.math.max
 import kotlin.math.min
 import li.cil.oc.api.machine.Machine as APIMachine
 
 class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runnable, DeviceInfo {
-    override val node: ComponentConnector = nodeFactory(Visibility.Network)
+    override val node: ComponentConnector? = nodeFactory(Visibility.Network)
         .withComponent("computer", Visibility.Neighbors)
         .withConnector(Settings.get.bufferComputer)
         .create()
@@ -145,7 +147,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
         if (newArchitecture != architecture) {
             synchronized(this) {
                 architecture = newArchitecture
-                if (architecture != null && node.network() != null) architecture!!.onConnect()
+                if (architecture != null && node!!.network() != null) architecture!!.onConnect()
             }
         }
         hasMemory = architecture?.recomputeMemory(components) ?: false
@@ -209,7 +211,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
     override fun start(): Boolean = synchronized(state) {
         when (state.peek()) {
             State.Stopped -> {
-                if (node.network() != null) {
+                if (node!!.network() != null) {
                     onHostChanged()
                     processAddedComponents()
                     verifyComponents()
@@ -593,7 +595,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
                     } else {
                         verifyComponents() // In case we're resuming after loading.
                         state.pop()
-                        switchTo(state.peek()) // Trigger execution if necessary.
+                        switchTo(state.top) // Trigger execution if necessary.
                     }
                 }
                 // Perform a synchronized call (message sending).
@@ -676,7 +678,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
 
     override fun onConnect(node: Node) {
         if (node == this.node) {
-            _components[this.node.address()] = this.node.name()
+            _components[this.node.address()!!] = this.node.name()
             tmp?.let { this.node.connect(it.node()) }
             architecture?.onConnect()
         } else {
@@ -736,7 +738,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
     private fun verifyComponents() {
         val invalid = mutableSetOf<String>()
         for ((address, name) in _components) {
-            val component = node.network().node(address)
+            val component = node!!.network().node(address)
             if (component is Component && component.name() == name) {
                 // All is well.
             } else {
@@ -757,7 +759,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
 
     // ----------------------------------------------------------------------- //
 
-    private val tmpPath get() = node.address() + "_tmp"
+    private val tmpPath get() = node!!.address() + "_tmp"
     private val StateTag = "state"
     private val UsersTag = "users"
     private val MessageTag = "message"
@@ -951,6 +953,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
 
         // Connect the `/tmp` node to our owner. We're not in a network in
         // case we're loading, which is why we have to check it here.
+        val node = node!!
         if (node.network() != null) {
             tmp?.let { node.connect(it.node()) }
         }
@@ -967,6 +970,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
     fun tryClose(): Boolean = if (isExecuting()) false else {
         close()
         tmp?.node()?.remove() // To force deleting contents.
+        val node = node!!
         if (node.network() != null) {
             tmp?.let { node.connect(it.node()) }
         }
