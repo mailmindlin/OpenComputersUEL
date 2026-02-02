@@ -34,7 +34,7 @@ private inline fun <reified T> colorByTier(crossinline extract: T.() -> Int): (I
 object ColorHandler {
   @OptIn(ExperimentalStdlibApi::class)
   fun init() {
-    register(Constants.BlockInfo.Cable.block()) { state, world, pos, tintIndex ->
+    register(Constants.BlockInfo.Cable.block()!!) { state, world, pos, tintIndex ->
       when (val block = state.block) {
           is BlockCable -> block.colorMultiplierOverride?.toUInt() ?: 0xFFFFFFFFu
           else -> 0xFFFF_FFFFu
@@ -42,27 +42,27 @@ object ColorHandler {
     }
 
     register(
-      Constants.BlockInfo.CaseTier1.block(),
-      Constants.BlockInfo.CaseTier2.block(),
-      Constants.BlockInfo.CaseTier3.block(),
-      Constants.BlockInfo.CaseCreative.block(),
+      Constants.BlockInfo.CaseTier1.block()!!,
+      Constants.BlockInfo.CaseTier2.block()!!,
+      Constants.BlockInfo.CaseTier3.block()!!,
+      Constants.BlockInfo.CaseCreative.block()!!,
       handler = colorByTier<BlockCase>(BlockCase::tier)
     )
 
     register(
-      Constants.BlockInfo.ChameliumBlock.block()
+      Constants.BlockInfo.ChameliumBlock.block()!!
     ) { state, _, _, _ ->
       Color.rgbValues(Color.byOreName[Color.dyes[state.block.getMetaFromState(state).coerceIn(0..<Color.dyes.size)]]!!)
     }
 
     register(
-      Constants.BlockInfo.Print.block()
+      Constants.BlockInfo.Print.block()!!
     ) { _, _, _, tintIndex -> tintIndex.toUInt() }
 
     register(
-      Constants.BlockInfo.ScreenTier1.block(),
-      Constants.BlockInfo.ScreenTier2.block(),
-      Constants.BlockInfo.ScreenTier3.block(),
+      Constants.BlockInfo.ScreenTier1.block()!!,
+      Constants.BlockInfo.ScreenTier2.block()!!,
+      Constants.BlockInfo.ScreenTier3.block()!!,
       handler = colorByTier<BlockScreen>(BlockScreen::tier)
     )
 
