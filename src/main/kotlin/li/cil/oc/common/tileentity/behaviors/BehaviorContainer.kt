@@ -26,13 +26,7 @@ import kotlin.reflect.KClass
  * }
  * ```
  */
-class BehaviorContainer(private val owner: TileEntityBase) {
-
-    /**
-     * List of all registered behaviors in registration order.
-     */
-    private val behaviors = mutableListOf<Behavior>()
-
+internal class BehaviorContainer(private val owner: TileEntityBase) {
     private val nbtBehaviors = mutableListOf<NbtSeriailzable>()
     private val updateBehaviors = mutableListOf<BehaviorUpdate>()
     private val lifecycleBehaviors = mutableListOf<BehaviorLifecycle>()
@@ -60,7 +54,6 @@ class BehaviorContainer(private val owner: TileEntityBase) {
         if (initialized)
             throw IllegalStateException("Cannot register behaviors after initialization. Register all behaviors in configureBehaviors().")
 
-        behaviors.add(behavior)
         assert (behavior::class !in behaviorsByType) { "Duplicate behavior type ${behavior::class} in ${owner::class}" }
         behaviorsByType[behavior::class] = behavior
         if (behavior is NbtSeriailzable)
@@ -72,26 +65,6 @@ class BehaviorContainer(private val owner: TileEntityBase) {
         if (behavior is BehaviorCapability)
             capabilityBehaviors.add(behavior)
         return behavior
-    }
-
-    /**
-     * Get a behavior by type.
-     *
-     * @param T The behavior type to look up
-     * @return The behavior instance, or null if not registered
-     */
-    private inline fun <reified T : Behavior> get(): T? {
-        return behaviorsByType[T::class] as? T
-    }
-
-    /**
-     * Check if a behavior of the given type is registered.
-     *
-     * @param T The behavior type to check
-     * @return True if a behavior of this type is registered
-     */
-    private inline fun <reified T : Behavior> has(): Boolean {
-        return behaviorsByType.containsKey(T::class)
     }
 
     /**
@@ -113,7 +86,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.initialize()
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error initializing behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error initializing behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
     }
@@ -129,7 +102,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.update()
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error updating behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error updating behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
     }
@@ -147,7 +120,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.dispose()
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error disposing behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error disposing behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
 
@@ -167,7 +140,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.readFromNBTForServer(nbt)
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error reading NBT for behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error reading NBT for behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
     }
@@ -184,7 +157,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.writeToNBTForServer(nbt)
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error writing NBT for behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error writing NBT for behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
     }
@@ -201,7 +174,7 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.readFromNBTForClient(nbt)
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error reading client NBT for behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error reading client NBT for behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
     }
@@ -218,25 +191,10 @@ class BehaviorContainer(private val owner: TileEntityBase) {
                 behavior.writeToNBTForClient(nbt)
             } catch (e: Exception) {
                 // Log but continue - don't let one behavior break others
-                OpenComputers.log.error("Error writing client NBT for behavior ${behavior::class.simpleName} for ${owner::class.simpleName}", e)
+                OpenComputers.log.error("Error writing client NBT for behavior ${behavior::class.qualifiedName} for ${owner::class.simpleName}", e)
             }
         }
     }
-
-    /**
-     * Get the number of registered behaviors.
-     */
-    fun size(): Int = behaviors.size
-
-    /**
-     * Check if any behaviors are registered.
-     */
-    fun isEmpty(): Boolean = behaviors.isEmpty()
-
-    /**
-     * Check if behaviors are registered.
-     */
-    fun isNotEmpty(): Boolean = behaviors.isNotEmpty()
 
     fun hasCapability(capability: Capability<*>, facing: EnumFacing?) = capabilityBehaviors.any { it.hasCapability(capability, facing) }
     fun <T : Any?> getCapability(capability: Capability<T>, facing: EnumFacing?): T? = capabilityBehaviors.firstNotNullOfOrNull { it.getCapability(capability, facing) }
