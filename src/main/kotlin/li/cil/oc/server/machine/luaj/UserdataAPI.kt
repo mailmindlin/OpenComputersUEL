@@ -3,6 +3,7 @@ package li.cil.oc.server.machine.luaj
 import li.cil.oc.OpenComputers
 import li.cil.oc.api.machine.Value
 import li.cil.oc.server.driver.Registry
+import li.cil.oc.server.driver.Registry.convert
 import li.cil.oc.server.machine.ArgumentsImpl
 import li.cil.oc.server.machine.luaj.LuaClosure.Companion.toSimpleJavaObjects
 import li.cil.repack.org.luaj.vm2.LuaValue
@@ -17,7 +18,7 @@ internal class UserdataAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
     userdata.setClosure("apply") { args ->
       val value = args.checkValue(1)
       val params = toSimpleJavaObjects(args, 2)
-      owner.invoke { Registry.convert(arrayOf(value.apply(machine, ArgumentsImpl(params)))) }
+      owner.invoke { Registry.run { arrayOf(value.apply(machine, ArgumentsImpl(params))).convert() } }
     }
 
     userdata.setClosure("unapply") { args ->
@@ -33,7 +34,7 @@ internal class UserdataAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
       val value = args.checkValue(1)
       val params = toSimpleJavaObjects(args, 2)
       owner.invoke {
-        Registry.convert(value.call(machine, ArgumentsImpl(params)))
+        Registry.run { value.call(machine, ArgumentsImpl(params)).convert() }
       }
     }
 
