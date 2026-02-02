@@ -25,11 +25,10 @@ internal interface InputBuffer : DisplayBuffer {
     val hasKeyboard: Boolean
 
     val pressedKeys: MutableMap<Int, Char>
-
     var showKeyboardMissing: Long
 
-    fun initGuiInputBuffer() {
-        initGui()
+    override fun initGui() {
+        super.initGui()
         Keyboard.enableRepeatEvents(true)
     }
 
