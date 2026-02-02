@@ -6,6 +6,7 @@ import li.cil.oc.common.SaveHandler
 import li.cil.oc.common.tileentity.behaviors.Behavior
 import li.cil.oc.common.tileentity.behaviors.BehaviorContainer
 import li.cil.oc.common.tileentity.traits.Environment
+import li.cil.oc.common.tileentity.traits.Tickable
 import li.cil.oc.common.tileentity.traits.TileEntityTrait
 import li.cil.oc.common.tileentity.traits.isServer
 import net.minecraft.block.state.IBlockState
@@ -23,13 +24,12 @@ import net.minecraftforge.fml.relauncher.SideOnly
 internal inline fun <T: TileEntityBase, U: Behavior> T.register(f: (T) -> U): U
     = behaviors.register(f(this))
 
-abstract class TileEntityBase : TileEntity(), TileEntityTrait {
-
+abstract class TileEntityBase : TileEntity(), TileEntityTrait, Tickable {
     /**
      * Container for all behaviors registered by this tile entity.
      * Subclasses register behaviors in configureBehaviors().
      */
-    val behaviors = BehaviorContainer(this)
+    internal val behaviors = BehaviorContainer(this)
 
     override fun asTileEntity(): TileEntity = this
 
@@ -68,7 +68,11 @@ abstract class TileEntityBase : TileEntity(), TileEntityTrait {
         // Client-side sound cleanup is handled by subclasses or event handlers
     }
 
-    open fun updateEntity() {
+    final override fun update() {
+        updateEntity()
+    }
+
+    override fun updateEntity() {
         // Update all behaviors
         behaviors.update()
 
