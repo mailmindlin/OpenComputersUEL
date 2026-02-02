@@ -606,14 +606,13 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onTextBufferMultiColorChange(p: PacketParser, env: ApiTextBuffer) {
-        if (env is ApiTextBuffer) {
-            val foreground = p.readInt()
-            val foregroundIsPalette = p.readBoolean()
-            env.setForegroundColor(foreground, foregroundIsPalette)
-            val background = p.readInt()
-            val backgroundIsPalette = p.readBoolean()
-            env.setBackgroundColor(background, backgroundIsPalette)
-        }
+        if (env !is ApiTextBuffer) return
+        val foreground = p.readInt()
+        val foregroundIsPalette = p.readBoolean()
+        env.setForegroundColor(foreground, foregroundIsPalette)
+        val background = p.readInt()
+        val backgroundIsPalette = p.readBoolean()
+        env.setBackgroundColor(background, backgroundIsPalette)
     }
 
     private fun onTextBufferMultiCopy(p: PacketParser, buffer: ApiTextBuffer) {
