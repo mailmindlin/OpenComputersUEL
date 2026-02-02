@@ -36,6 +36,7 @@ internal object Mods {
   internal val Forestry = SimpleMod(IDs.Forestry, "@[5.2,)")
   internal val IndustrialCraft2 = SimpleMod(IDs.IndustrialCraft2)
   internal val Forge = SimpleMod(IDs.Forge)
+  internal val Gregtech = SimpleMod(IDs.Gregtech)
   internal val JustEnoughItems = SimpleMod(IDs.JustEnoughItems)
   internal val Mekanism = SimpleMod(IDs.Mekanism)
   internal val MekanismGas = SimpleMod(IDs.MekanismGas)
@@ -62,6 +63,7 @@ internal object Mods {
     li.cil.oc.integration.enderio.ModEnderIO,
     li.cil.oc.integration.forestry.ModForestry,
     li.cil.oc.integration.ic2.ModIndustrialCraft2,
+    li.cil.oc.integration.greg.ModGregtechCEU,
     li.cil.oc.integration.minecraftforge.ModMinecraftForge,
     li.cil.oc.integration.railcraft.ModRailcraft,
     li.cil.oc.integration.tis3d.ModTIS3D,
@@ -109,6 +111,7 @@ internal object Mods {
     const val Forestry = "forestry"
     const val Forge = "forge"
     const val IndustrialCraft2 = "ic2"
+    const val Gregtech = "gregtech"
     const val JustEnoughItems = "jei"
     const val Mekanism = "mekanism"
     const val MekanismGas = "MekanismAPI|gas"
