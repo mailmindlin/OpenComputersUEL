@@ -1,10 +1,7 @@
 package li.cil.oc.client.renderer.font
 
 import li.cil.oc.Settings
-import li.cil.oc.util.ExtendedUnicodeHelper
-import li.cil.oc.util.PackedColor
-import li.cil.oc.util.RenderState
-import li.cil.oc.util.TextBuffer
+import li.cil.oc.util.*
 import net.minecraft.client.renderer.GlStateManager
 import org.lwjgl.opengl.GL11
 import kotlin.math.min
@@ -131,7 +128,7 @@ abstract class TextureFontRenderer {
     }
 
     fun drawString(s: String, x: Int, y: Int) {
-        val sLength = ExtendedUnicodeHelper.length(s)
+        val sLength = s.unicodeLength
 
         GlStateManager.pushMatrix()
         RenderState.pushAttrib()
