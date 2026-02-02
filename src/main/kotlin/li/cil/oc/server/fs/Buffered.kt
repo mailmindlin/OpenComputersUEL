@@ -19,6 +19,8 @@ import java.util.concurrent.TimeoutException
 internal class Buffered(private val inner: OutputStreamFileSystem, protected val fileRoot: File) : li.cil.oc.api.fs.FileSystem by inner {
     companion object {
         private val fileSaveHandler: SafeThreadPool = ThreadPoolFactory.createSafePool("FileSystem", 1)
+        /** Noop to ensure this class was loaded */
+        internal fun ensureLoaded() {}
     }
 
     /** Files to delete (path -> deletion timestamp) */
