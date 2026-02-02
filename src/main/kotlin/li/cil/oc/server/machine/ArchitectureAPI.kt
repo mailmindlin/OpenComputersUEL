@@ -6,7 +6,7 @@ import net.minecraft.nbt.NBTTagCompound
 abstract class ArchitectureAPI(val machine: ApiMachine) {
   protected val node = machine.node()!!
 
-  protected val components = machine.components()
+  protected val components: Map<String, String> get() = machine.components()
 
   abstract fun initialize()
   open fun load(nbt: NBTTagCompound) {}
