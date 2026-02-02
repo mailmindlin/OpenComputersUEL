@@ -2,6 +2,7 @@ package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
 import li.cil.oc.client.Textures
+import li.cil.oc.client.gui.traits.LockedHotbar
 import li.cil.oc.client.PacketSender as ClientPacketSender
 import li.cil.oc.common.container.Server as ContainerServer
 import li.cil.oc.common.inventory.ServerInventory
@@ -11,15 +12,15 @@ import net.minecraft.client.gui.GuiButton
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.entity.player.InventoryPlayer
 
-class Server(
+internal class Server(
     playerInventory: InventoryPlayer,
     serverInventory: ServerInventory,
     val rack: TileEntityRack? = null,
     val slot: Int = 0
-) : DynamicGuiContainer<ContainerServer>(ContainerServer(playerInventory, serverInventory)), li.cil.oc.client.gui.traits.LockedHotbar {
+) : DynamicGuiContainer<ContainerServer>(ContainerServer(playerInventory, serverInventory)), LockedHotbar {
     private val serverInventory get() = inventoryContainer.otherInventory
 
-    protected var powerButton: ImageButton? = null
+    private var powerButton: ImageButton? = null
 
     override val lockedStack get() = serverInventory.container
 
@@ -74,4 +75,6 @@ class Server(
         Textures.bind(Textures.GUI.Server)
         drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
     }
+
+    override fun checkHotbarKeys(keyCode: Int): Boolean = super<LockedHotbar>.checkHotbarKeys(keyCode)
 }

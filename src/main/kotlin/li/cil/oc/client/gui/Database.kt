@@ -32,4 +32,6 @@ class Database(playerInventory: InventoryPlayer, val databaseInventory: Database
       drawTexturedModalRect(guiLeft, guiTop, 0, 0, xSize, ySize)
     }
   }
+
+  override fun checkHotbarKeys(keyCode: Int): Boolean = super<LockedHotbar>.checkHotbarKeys(keyCode)
 }

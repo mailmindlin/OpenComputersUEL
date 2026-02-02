@@ -7,7 +7,7 @@ import net.minecraft.item.ItemStack
 interface LockedHotbar {
     val lockedStack: ItemStack
 
-    fun handleMouseClickLocked(
+    fun handleMouseClick(
         slot: Slot?,
         slotId: Int,
         mouseButton: Int,
@@ -19,5 +19,5 @@ interface LockedHotbar {
         }
     }
 
-    fun checkHotbarKeysLocked(keyCode: Int): Boolean = false
+    fun checkHotbarKeys(keyCode: Int): Boolean = false
 }

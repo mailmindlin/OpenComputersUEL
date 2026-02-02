@@ -1,14 +1,15 @@
 package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
+import li.cil.oc.client.gui.traits.LockedHotbar
 import li.cil.oc.common.container.Tablet as ContainerTablet
 import li.cil.oc.common.item.TabletWrapper
 import net.minecraft.entity.player.InventoryPlayer
 
-class Tablet(
+internal class Tablet(
     playerInventory: InventoryPlayer,
     val tablet: TabletWrapper
-) : DynamicGuiContainer<ContainerTablet>(ContainerTablet(playerInventory, tablet)), li.cil.oc.client.gui.traits.LockedHotbar {
+) : DynamicGuiContainer<ContainerTablet>(ContainerTablet(playerInventory, tablet)), LockedHotbar {
 
     override val lockedStack get() = tablet.stack
 
@@ -19,4 +20,6 @@ class Tablet(
             8, 6, 0x404040
         )
     }
+
+    override fun checkHotbarKeys(keyCode: Int): Boolean = super<LockedHotbar>.checkHotbarKeys(keyCode)
 }
