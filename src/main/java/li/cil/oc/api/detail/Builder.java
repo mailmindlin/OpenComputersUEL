@@ -7,6 +7,8 @@ import li.cil.oc.api.network.Node;
 import li.cil.oc.api.network.Visibility;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
+
 /**
  * Used for building {@link Node}s via {@link li.cil.oc.api.Network#newNode}.
  *
@@ -21,7 +23,7 @@ public interface Builder<T extends Node> {
      *
      * @return the final node.
      */
-    T create();
+    @Nullable T create();
 
     /**
      * Builder for basic nodes. These nodes merely allow network access and

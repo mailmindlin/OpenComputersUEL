@@ -3,6 +3,7 @@ package li.cil.oc.api.network;
 import li.cil.oc.api.machine.Callback;
 import li.cil.oc.api.machine.Context;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 
 /**
@@ -87,7 +88,7 @@ public interface Component extends Node {
      * @param method the method to the the info for.
      * @return the annotation of the specified method or <tt>null</tt>.
      */
-    Callback annotation(String method);
+    @Nullable Callback annotation(String method);
 
     /**
      * Tries to call a function with the specified name on this component.
@@ -103,5 +104,5 @@ public interface Component extends Node {
      * @return the list of results, or <tt>null</tt> if there is no result.
      * @throws NoSuchMethodException if there is no method with that name.
      */
-    Object[] invoke(String method, Context context, Object... arguments) throws Exception;
+    @Nullable Object[] invoke(String method, Context context, Object... arguments) throws Exception;
 }

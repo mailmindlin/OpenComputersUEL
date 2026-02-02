@@ -4,6 +4,8 @@ import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 public interface ItemInfo {
     /**
      * The name of this item descriptor.
@@ -26,7 +28,7 @@ public interface ItemInfo {
      *
      * @return the block type of the represented block.
      */
-    Block block();
+    @Nullable  Block block();
 
     /**
      * Returns the item type of the represented item. In case the item is a
@@ -38,7 +40,7 @@ public interface ItemInfo {
      *
      * @return the item type of the represented item.
      */
-    Item item();
+    @Nullable  Item item();
 
     /**
      * Creates a new item stack of the item represended by this descriptor.

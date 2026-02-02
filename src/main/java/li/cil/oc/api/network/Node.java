@@ -4,6 +4,8 @@ import li.cil.oc.api.Persistable;
 import li.cil.oc.api.driver.DriverBlock;
 import li.cil.oc.api.driver.DriverItem;
 
+import javax.annotation.Nullable;
+
 /**
  * A single node in a {@link Network}.
  * <br>
@@ -69,7 +71,7 @@ public interface Node extends Persistable {
      * they have is to *not* have an address, which can be useful for "dummy"
      * nodes, such as cables. In that case they may ignore the address being set.
      */
-    String address();
+    @Nullable String address();
 
     /**
      * The network this node is currently in.

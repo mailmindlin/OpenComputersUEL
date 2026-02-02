@@ -1,5 +1,7 @@
 package li.cil.oc.api.machine;
 
+import javax.annotation.Nullable;
+
 /**
  * Used by the Machine to determine the result of a call to
  * {@link Architecture#runThreaded(boolean)}.
@@ -57,7 +59,7 @@ public abstract class ExecutionResult {
         /**
          * The error message.
          */
-        public final String message;
+        public final @Nullable String message;
 
         public Error(String message) {
             this.message = message;

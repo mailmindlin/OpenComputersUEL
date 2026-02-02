@@ -105,7 +105,7 @@ public @interface Callback {
      * recognized by OC's NEI component documentation plugin. If you use a
      * different format, the doc string will be used as-is.
      */
-    String doc() default "";
+    @Nullable String doc() default "";
 
     /**
      * Whether this callback should work like a getter.

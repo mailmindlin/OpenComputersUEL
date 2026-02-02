@@ -2,6 +2,9 @@ package li.cil.oc.api.network;
 
 import li.cil.oc.api.machine.Arguments;
 import li.cil.oc.api.machine.Context;
+import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nullable;
 
 /**
  * This interface can be used with an {@link li.cil.oc.api.network.Environment}
@@ -21,7 +24,7 @@ public interface ManagedPeripheral {
      *
      * @return the list of methods provided by the environment.
      */
-    String[] methods();
+    @Nullable String @NotNull [] methods();
 
     /**
      * Calls a method from the list provided by {@link #methods()}.
@@ -34,5 +37,5 @@ public interface ManagedPeripheral {
      * @throws java.lang.NoSuchMethodException if there is no method with the
      *                                         specified name.
      */
-    Object[] invoke(String method, Context context, Arguments args) throws Exception;
+    @Nullable  Object[] invoke(String method, Context context, Arguments args) throws Exception;
 }
