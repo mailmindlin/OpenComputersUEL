@@ -25,6 +25,7 @@ import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.EventHandler
 import li.cil.oc.server.component.Result
 import li.cil.oc.server.driver.Registry
+import li.cil.oc.server.driver.Registry.convert
 import li.cil.oc.util.*
 import li.cil.oc.util.ResultWrapper.result
 import net.minecraft.item.ItemStack
@@ -102,8 +103,8 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
 
   private fun getFilter(args: Arguments, index: Int): Map<Any?, Any?> {
     val hash = java.util.HashMap<Any?, Any?>()
-    Registry.convert(arrayOf(args.optTable(index, emptyMap<Any?, Any?>())))
-      ?.firstOrNull()?.let { converted ->
+    Registry.run { arrayOf(args.optTable(index, emptyMap<Any?, Any?>())).convert() }
+      .firstOrNull()?.let { converted ->
         when (converted) {
           is Map<*, *> -> converted.forEach { (key, value) ->
             hash[reduceLuaValue(key)] = reduceLuaValue(value)
@@ -126,8 +127,8 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     // I would prefer to move the convert code to the registry for IAEItemStack
     // but craftables need the device that crafts them
     val hash = java.util.HashMap<Any?, Any?>()
-    Registry.convert(arrayOf(aePotentialItem(aeItem).createItemStack()))
-      ?.firstOrNull()
+    Registry.run { arrayOf(aePotentialItem(aeItem).createItemStack()).convert() }
+      .firstOrNull()
       ?.let { it as? Map<*, *> }
       ?.forEach { (key, value) ->
         hash[key] = value

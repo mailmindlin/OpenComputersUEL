@@ -13,7 +13,7 @@ import li.cil.oc.util.ResultWrapper.result
 import net.minecraft.util.EnumFacing
 
 class RelayPeripheral(val relay: Relay) : IPeripheral {
-    private val methods = mapOf<String, (IComputerAccess, ILuaContext, Array<Any?>) -> Array<Any?>>(
+    private val methods = mapOf<String, (IComputerAccess, ILuaContext, Array<Any?>) -> Array<Any?>?>(
         // Generic modem methods.
         "open" to { computer, context, arguments ->
             val port = checkPort(arguments, 0)

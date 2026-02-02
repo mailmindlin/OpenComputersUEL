@@ -1,6 +1,5 @@
 package li.cil.oc.integration.jei
 
-import com.google.common.base.Strings
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.Driver
@@ -10,8 +9,9 @@ import mezz.jei.api.IModRegistry
 import mezz.jei.api.gui.IDrawable
 import mezz.jei.api.gui.IRecipeLayout
 import mezz.jei.api.ingredients.IIngredients
-import mezz.jei.api.recipe.BlankRecipeWrapper
+import mezz.jei.api.ingredients.VanillaTypes
 import mezz.jei.api.recipe.IRecipeCategory
+import mezz.jei.api.recipe.IRecipeWrapper
 import mezz.jei.api.recipe.IRecipeWrapperFactory
 import net.minecraft.client.Minecraft
 import net.minecraft.item.ItemStack
@@ -19,90 +19,81 @@ import net.minecraft.util.ResourceLocation
 import net.minecraft.util.text.TextFormatting
 import javax.annotation.Nonnull
 
-object CallbackDocHandler {
-
-    private val DocPattern = Regex("""(?s)^function(\(.*?\).*?) -- (.*)$""")
-
-    private val VexPattern = Regex("""(?s)^function(\(.*?\).*?); (.*)$""")
-
+/** Component callback recipes for JEI */
+internal object CallbackDocHandler {
     fun getRecipes(registry: IModRegistry): List<CallbackDocRecipe> {
-        return registry.ingredientRegistry.getIngredients(ItemStack::class.java)
-            .mapNotNull { stack ->
+        return registry.ingredientRegistry.getAllIngredients(VanillaTypes.ITEM)
+            .flatMap { stack: ItemStack ->
                 val callbacks = (Driver.environmentsFor(stack) ?: emptySet<Class<*>>())
-                    .flatMap(::getCallbacks)
-                    .toMutableList()
+                    .flatMapTo(mutableListOf(), ::getCallbacks)
+                if (callbacks.isEmpty())
+                    return emptyList()
 
-                if (callbacks.isNotEmpty()) {
-                    val pages = mutableListOf<String>()
-                    val sortedCallbacks = callbacks.sorted().toTypedArray()
-                    var lastPage = ""
+                val pages = mutableListOf<String>()
+                callbacks.sort()
+                var lastPage = ""
 
-                    for (doc in sortedCallbacks) {
-                        lastPage = if (lastPage.lines().count() + 2 + doc.lines().count() > 12) {
-                            // We've potentially got some pretty long documentation here, split it up first
-                            lastPage.lines().chunked(12).forEach { chunk ->
-                                pages.add(chunk.joinToString("\n"))
-                            }
-                            doc
-                        } else if (lastPage.isNotEmpty()) {
-                            "$lastPage\n\n$doc"
-                        } else {
-                            doc
+                for (doc in callbacks) {
+                    lastPage = if (lastPage.lines().count() + 2 + doc.lines().count() > 12) {
+                        // We've potentially got some pretty long documentation here, split it up first
+                        lastPage.lines().chunked(12).forEach { chunk ->
+                            pages.add(chunk.joinToString("\n"))
                         }
+                        doc
+                    } else if (lastPage.isNotEmpty()) {
+                        "$lastPage\n\n$doc"
+                    } else {
+                        doc
                     }
-                    // The last page may be too long as well.
-                    lastPage.lines().chunked(12).forEach { chunk ->
-                        pages.add(chunk.joinToString("\n"))
-                    }
-
-                    pages.map { page -> CallbackDocRecipe(stack, page) }
-                } else {
-                    null
                 }
+                // The last page may be too long as well.
+                lastPage.lines().chunked(12).forEach { chunk ->
+                    pages.add(chunk.joinToString("\n"))
+                }
+
+                pages.map { page -> CallbackDocRecipe(stack, page) }
             }
-            .flatten()
     }
 
+    private val DocPattern = Regex("""(?s)^function(\(.*?\).*?) -- (.*)$""")
+    private val VexPattern = Regex("""(?s)^function(\(.*?\).*?); (.*)$""")
+    /** Parse signature from docstring */
+    private fun splitDoc(name: String, doc: String): Pair<String, String> {
+        val match = DocPattern.matchEntire(doc) ?: VexPattern.matchEntire(doc) ?: return Pair(name, doc);
+        val (head, tail) = match.destructured
+        return Pair(name + head, tail)
+    }
+
+    /** Get callback names for class (formatted for JEI) */
     private fun getCallbacks(env: Class<*>?): Sequence<String> {
         if (env == null) return emptySequence()
 
-        return Callbacks.fromClass(env).asSequence().map { (name, callback) ->
-            val doc = callback.annotation.doc
-            if (Strings.isNullOrEmpty(doc)) {
-                name
-            } else {
-                val docMatch = DocPattern.matchEntire(doc)
-                val vexMatch = VexPattern.matchEntire(doc)
-                val (signature, documentation) = when {
-                    docMatch != null -> {
-                        val (head, tail) = docMatch.destructured
-                        Pair(name + head, tail)
-                    }
-                    vexMatch != null -> {
-                        val (head, tail) = vexMatch.destructured
-                        Pair(name + head, tail)
-                    }
-                    else -> Pair(name, doc)
-                }
-                wrap(signature, 160).joinToString("\n") { TextFormatting.BLACK.toString() + it } +
-                    TextFormatting.RESET + "\n" +
-                    wrap(documentation, 152).joinToString("\n") { "  $it" }
+        return Callbacks.fromClass(env)
+            .asSequence()
+            .map { (name, callback) ->
+                val doc = callback.annotation.doc
+                if (doc.isNullOrEmpty())
+                    return@map name
+                val (signatureRaw, documentationRaw) = splitDoc(name, doc)
+                val signature = wrap(signatureRaw, 160) { TextFormatting.BLACK.toString() + it }
+                val documentation = wrap(documentationRaw, 152) { "  $it" }
+
+                "$signature${TextFormatting.RESET}\n$documentation"
             }
-        }
     }
 
-    private fun wrap(line: String, width: Int): List<String> {
+    private fun wrap(line: String, width: Int, fmtLine: (String) -> String): String {
         return Minecraft.getMinecraft().fontRenderer.listFormattedStringToWidth(line, width)
+            .joinToString("\n", transform = fmtLine)
     }
 
     object CallbackDocRecipeHandler : IRecipeWrapperFactory<CallbackDocRecipe> {
         override fun getRecipeWrapper(recipe: CallbackDocRecipe): CallbackDocRecipe = recipe
     }
 
-    class CallbackDocRecipe(val stack: ItemStack, val page: String) : BlankRecipeWrapper() {
-
+    class CallbackDocRecipe(val stack: ItemStack, val page: String) : IRecipeWrapper {
         override fun getIngredients(ingredients: IIngredients) {
-            ingredients.setInputs(ItemStack::class.java, listOf(stack))
+            ingredients.setInputs(VanillaTypes.ITEM, listOf(stack))
         }
 
         override fun drawInfo(@Nonnull minecraft: Minecraft, recipeWidth: Int, recipeHeight: Int, mouseX: Int, mouseY: Int) {
@@ -113,13 +104,13 @@ object CallbackDocHandler {
     }
 
     object CallbackDocRecipeCategory : IRecipeCategory<CallbackDocRecipe> {
-        const val recipeWidth: Int = 160
-        const val recipeHeight: Int = 125
+        private const val RECIPE_WIDTH: Int = 160
+        private const val RECIPE_HEIGHT: Int = 125
         private var background: IDrawable? = null
         private var icon: IDrawable? = null
 
         fun initialize(guiHelper: IGuiHelper) {
-            background = guiHelper.createBlankDrawable(recipeWidth, recipeHeight)
+            background = guiHelper.createBlankDrawable(RECIPE_WIDTH, RECIPE_HEIGHT)
             icon = DrawableAnimatedIcon(
                 ResourceLocation(Settings.resourceDomain, "textures/items/tablet_on.png"),
                 0, 0, 16, 16, 16, 32,
@@ -132,8 +123,7 @@ object CallbackDocHandler {
 
         override fun getBackground(): IDrawable = background!!
 
-        override fun setRecipe(recipeLayout: IRecipeLayout, recipeWrapper: CallbackDocRecipe, ingredients: IIngredients) {
-        }
+        override fun setRecipe(recipeLayout: IRecipeLayout, recipeWrapper: CallbackDocRecipe, ingredients: IIngredients) {}
 
         override fun getTitle(): String = "OpenComputers API"
 

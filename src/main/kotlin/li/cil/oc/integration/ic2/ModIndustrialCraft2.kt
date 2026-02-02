@@ -7,6 +7,7 @@ import li.cil.oc.api.Driver
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ModProxy
 import li.cil.oc.integration.Mods
+import li.cil.oc.integration.driverFor
 import net.minecraftforge.common.MinecraftForge
 
 internal object ModIndustrialCraft2 : ModProxy {
@@ -37,7 +38,7 @@ internal object ModIndustrialCraft2 : ModProxy {
         tryAddDriver(DriverReactorRedstonePort())
         tryAddDriver(DriverMassFab())
 
-        Driver.add(DriverEnergyConductor())
+        Driver.add(driverFor(::EnergyConductorEnvironment))
         Driver.add(DriverEnergy())
         Driver.add(DriverReactor())
         Driver.add(DriverReactorChamber())
