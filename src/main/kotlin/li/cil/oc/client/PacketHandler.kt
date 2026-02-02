@@ -50,8 +50,8 @@ object PacketHandler : CommonPacketHandler() {
         onPacketData(e.manager.netHandler, e.packet.payload(), Minecraft.getMinecraft().player)
     }
 
-    override fun world(player: EntityPlayer, dimension: Int): World? {
-        val world = player.world
+    override fun world(player: EntityPlayer?, dimension: Int): World? {
+        val world = player!!.world
         return if (world.provider.dimension == dimension) world else null
     }
 
@@ -127,7 +127,7 @@ object PacketHandler : CommonPacketHandler() {
         val address = p.readUTF()
         if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) || Keyboard.isKeyDown(Keyboard.KEY_LCONTROL)) {
             GuiScreen.setClipboardString(address)
-            p.player.sendMessage(Localization.Analyzer.AddressCopied())
+            p.player!!.sendMessage(Localization.Analyzer.AddressCopied())
         }
     }
 
@@ -155,7 +155,7 @@ object PacketHandler : CommonPacketHandler() {
     private fun onMachineItemStateResponse(p: PacketParser) {
         val stack = p.readItemStack()
         val running = p.readBoolean()
-        val wrapper = Tablet.Client.get(stack, p.player)
+        val wrapper = Tablet.Client.get(stack, p.player!!)
 
         wrapper.data.isRunning = running
         wrapper.isDirty = false
@@ -175,7 +175,7 @@ object PacketHandler : CommonPacketHandler() {
 
     private fun onContainerUpdate(p: PacketParser) {
         val windowId = p.readUnsignedByte()
-        if (p.player.openContainer != null && p.player.openContainer.windowId == windowId) {
+        if (p.player?.openContainer?.windowId == windowId) {
             when (val container = p.player.openContainer) {
                 is ContainerPlayer<*> -> container.updateCustomData(p.readNBT()!!)
                 else -> {} // Invalid packet.
@@ -547,14 +547,14 @@ object PacketHandler : CommonPacketHandler() {
     }
 
     private fun onTextBufferPowerChange(p: PacketParser) {
-        val buffer = ComponentTracker.get(p.player.entityWorld, p.readUTF())
+        val buffer = ComponentTracker.get(p.player!!.entityWorld, p.readUTF())
         if (buffer is ApiTextBuffer) {
             buffer.setRenderingEnabled(p.readBoolean())
         }
     }
 
     private fun onTextBufferInit(p: PacketParser) {
-        val buffer = ComponentTracker.get(p.player.entityWorld, p.readUTF())
+        val buffer = ComponentTracker.get(p.player!!.entityWorld, p.readUTF())
         if (buffer is li.cil.oc.common.component.TextBuffer) {
             val nbt = p.readNBT()!!
             if (nbt.hasKey("maxWidth")) {
