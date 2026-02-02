@@ -226,7 +226,7 @@ class DiskDriveMountable(
         } else {
             val position = BlockPosition(rack)
             player.openGui(
-                OpenComputers, GuiType.DiskDriveMountableInRack.id, rack.world,
+                OpenComputers.INSTANCE, GuiType.DiskDriveMountableInRack.id, rack.world,
                 position.x, GuiType.embedSlot(position.y, slot), position.z
             )
             true

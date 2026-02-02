@@ -98,7 +98,7 @@ internal object ModOpenComputers : ModProxy {
     IMC.registerProgramDiskLabel("opl-flash", "openloader", "Lua 5.2", "Lua 5.3", "LuaJ")
     IMC.registerProgramDiskLabel("oppm", "oppm", "Lua 5.2", "Lua 5.3", "LuaJ")
 
-    ForgeChunkManager.setForcedChunkLoadingCallback(OpenComputers, ChunkloaderUpgradeHandler)
+    ForgeChunkManager.setForcedChunkLoadingCallback(OpenComputers.INSTANCE, ChunkloaderUpgradeHandler)
 
     MinecraftForge.EVENT_BUS.register(EventHandler)
     MinecraftForge.EVENT_BUS.register(NanomachinesHandler.Common)
