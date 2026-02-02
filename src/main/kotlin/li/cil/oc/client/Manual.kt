@@ -9,6 +9,7 @@ import li.cil.oc.api.manual.ImageRenderer
 import li.cil.oc.api.manual.PathProvider
 import li.cil.oc.api.manual.TabIconRenderer
 import li.cil.oc.common.GuiType
+import li.cil.oc.util.Stack
 import li.cil.oc.client.gui.Manual as GuiManual
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
@@ -31,7 +32,7 @@ object Manual: ManualAPI {
   private val contentProviders = mutableListOf<ContentProvider>()
   private val imageProviders = mutableListOf<Pair<String, ImageProvider>>()
 
-  val history = Stack<History>()
+  internal val history = Stack<History>()
 
   init { reset() }
 
@@ -104,7 +105,7 @@ object Manual: ManualAPI {
 
   override fun openFor(player: EntityPlayer) {
     if (player.entityWorld.isRemote) {
-      player.openGui(OpenComputers, GuiType.Manual.id, player.entityWorld, 0, 0, 0)
+      player.openGui(OpenComputers.INSTANCE, GuiType.Manual.id, player.entityWorld, 0, 0, 0)
     }
   }
 
@@ -149,19 +150,5 @@ object Manual: ManualAPI {
       }
     }
     return null
-  }
-
-  class Stack<T>(private val inner: MutableList<T> = mutableListOf()){
-    fun clear() {
-      this.inner.clear()
-    }
-    fun push(item: T) {
-      this.inner.add(item)
-    }
-    fun pop(): T = this.inner.removeLast()
-    val size: Int
-      get() = this.inner.size
-    val top: T
-      get() = this.inner.last()
   }
 }
