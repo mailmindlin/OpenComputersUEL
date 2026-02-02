@@ -4,6 +4,7 @@ import li.cil.oc.Constants
 import li.cil.oc.api.IMC
 import li.cil.oc.api.Items
 import li.cil.oc.common.item.data.NavigationUpgradeData
+import li.cil.oc.util.mapArray
 import net.minecraft.item.ItemStack
 
 object NavigationUpgradeTemplate {
@@ -13,9 +14,9 @@ object NavigationUpgradeTemplate {
     @JvmStatic
     fun disassemble(stack: ItemStack, ingredients: Array<ItemStack>): Array<ItemStack> {
         val info = NavigationUpgradeData(stack)
-        return ingredients.map { part ->
+        return ingredients.mapArray { part ->
             if (part.item == net.minecraft.init.Items.FILLED_MAP) info.map else part
-        }.toTypedArray()
+        }
     }
 
     @JvmStatic
