@@ -58,7 +58,7 @@ class LuaJLuaArchitecture(machine: ApiMachine): GenericLuaArchitecture(machine) 
     UserdataAPI(this),
   )
 
-  internal inline fun invoke(f: () -> Array<Any?>?): Varargs
+  internal inline fun invoke(f: () -> Array<out Any?>?): Varargs
     = invokeGeneric(f).toVarargs()
 
   internal inline fun documentation(f: () -> String?): Varargs

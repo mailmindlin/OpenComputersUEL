@@ -14,6 +14,7 @@ import li.cil.oc.api.network.Node as ImmutableNode
 import li.cil.oc.api.network.Connector as ApiConnector
 import li.cil.oc.common.capabilities.Capabilities
 import li.cil.oc.common.tileentity.traits.ImmibisMicroblock
+import li.cil.oc.server.machine.Callbacks
 import li.cil.oc.util.Color
 import li.cil.oc.util.SideTracker
 import net.minecraft.item.EnumDyeColor
@@ -640,7 +641,7 @@ object NetworkObject : NetworkAPI {
     }
   }
 
-  override fun joinNewNetwork(node: ImmutableNode) {
+  override fun joinNewNetwork(node: ImmutableNode?) {
     if (node is Node && node.network == null) {
       Network(node)
     }
@@ -792,6 +793,10 @@ object NetworkObject : NetworkAPI {
         override fun reachability() = _reachability
         override val name = _name
         override var _visibility = Visibility.None
+        /*DEBUG set(value) {
+          OpenComputers.log.info("Do set visibility -> $value")
+          field = value
+        }*/
         override var address: String? = null
         override var network: INetwork? = null
 
@@ -802,7 +807,7 @@ object NetworkObject : NetworkAPI {
         override fun getHosts() = hosts_
 
         init {
-          this.setVisibility(_visibility)
+          this.setVisibility(this@ComponentBuilder._visibility)
         }
       }
     } else null
@@ -844,6 +849,10 @@ object NetworkObject : NetworkAPI {
         override fun reachability() = _reachability
         override val name = _name
         override var _visibility = Visibility.None
+          /*DEBUG set(value) {
+            OpenComputers.log.info("${address()}._visibility = $value", Exception().fillInStackTrace())
+            field = value
+          }*/
         override var address: String? = null
         override var network: INetwork? = null
         override var localBufferSizeKt = _bufferSize
@@ -858,7 +867,7 @@ object NetworkObject : NetworkAPI {
         override fun getHosts() = hosts_
 
         init {
-          setVisibility(_visibility)
+          setVisibility(this@ComponentConnectorBuilder._visibility)
         }
       }
     } else null

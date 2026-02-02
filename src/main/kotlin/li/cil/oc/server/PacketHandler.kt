@@ -40,7 +40,7 @@ object PacketHandler : CommonPacketHandler() {
         onPacketData(e.manager.netHandler, e.packet.payload(), (e.handler as NetHandlerPlayServer).player)
     }
 
-    override fun world(player: EntityPlayer, dimension: Int): World? =
+    override fun world(player: EntityPlayer?, dimension: Int): World? =
         DimensionManager.getWorld(dimension)
 
     override fun dispatch(p: PacketParser) {
@@ -112,7 +112,7 @@ object PacketHandler : CommonPacketHandler() {
     fun onCopyToAnalyzer(p: PacketParser) {
         val text = p.readUTF()
         val line = p.readInt()
-        val buffer = ComponentTracker.get(p.player.world, text)
+        val buffer = ComponentTracker.get(p.player!!.world, text)
         if (buffer is TextBuffer) {
             buffer.copyToAnalyzer(line, p.player)
         }
@@ -177,7 +177,7 @@ object PacketHandler : CommonPacketHandler() {
         val address = p.readUTF()
         val key = p.readChar()
         val code = p.readInt()
-        val buffer = ComponentTracker.get(p.player.world, address)
+        val buffer = ComponentTracker.get(p.player!!.world, address)
         if (buffer is li.cil.oc.api.internal.TextBuffer) {
             buffer.keyDown(key, code, p.player)
         }
@@ -187,7 +187,7 @@ object PacketHandler : CommonPacketHandler() {
         val address = p.readUTF()
         val key = p.readChar()
         val code = p.readInt()
-        val buffer = ComponentTracker.get(p.player.world, address)
+        val buffer = ComponentTracker.get(p.player!!.world, address)
         if (buffer is li.cil.oc.api.internal.TextBuffer) {
             buffer.keyUp(key, code, p.player)
         }
@@ -196,7 +196,7 @@ object PacketHandler : CommonPacketHandler() {
     fun onClipboard(p: PacketParser) {
         val address = p.readUTF()
         val copy = p.readUTF()
-        val buffer = ComponentTracker.get(p.player.world, address)
+        val buffer = ComponentTracker.get(p.player!!.world, address)
         if (buffer is li.cil.oc.api.internal.TextBuffer) {
             buffer.clipboard(copy, p.player)
         }
@@ -208,7 +208,7 @@ object PacketHandler : CommonPacketHandler() {
         val y = p.readFloat()
         val dragging = p.readBoolean()
         val button = p.readByte()
-        val buffer = ComponentTracker.get(p.player.world, address)
+        val buffer = ComponentTracker.get(p.player!!.world, address)
         if (buffer is li.cil.oc.api.internal.TextBuffer) {
             val player = p.player
             val x = x.toDouble()
@@ -223,7 +223,7 @@ object PacketHandler : CommonPacketHandler() {
         val x = p.readFloat()
         val y = p.readFloat()
         val button = p.readByte()
-        val buffer = ComponentTracker.get(p.player.world, address)
+        val buffer = ComponentTracker.get(p.player!!.world, address)
         if (buffer is li.cil.oc.api.internal.TextBuffer) {
             val player = p.player
             buffer.mouseUp(x.toDouble(), y.toDouble(), button.toInt(), player)
@@ -235,7 +235,7 @@ object PacketHandler : CommonPacketHandler() {
         val x = p.readFloat()
         val y = p.readFloat()
         val button = p.readByte()
-        val buffer = ComponentTracker.get(p.player.world, address)
+        val buffer = ComponentTracker.get(p.player!!.world, address)
         if (buffer is li.cil.oc.api.internal.TextBuffer) {
             val player = p.player
             buffer.mouseScroll(x.toDouble(), y.toDouble(), button.toInt(), player)
@@ -289,11 +289,11 @@ object PacketHandler : CommonPacketHandler() {
     fun onRobotAssemblerStart(p: PacketParser) {
         val entity = p.readTileEntity<Assembler>()
         if (entity != null) {
-            val player = p.player
+            val player = p.player!!
             val isCreative = player is EntityPlayerMP && player.capabilities.isCreativeMode
             if (entity.start(isCreative)) {
                 entity.output?.let { stack ->
-                    Achievement.onAssemble(stack, p.player)
+                    Achievement.onAssemble(stack, player)
                 }
             }
         }
