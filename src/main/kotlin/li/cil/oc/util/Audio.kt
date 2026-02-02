@@ -36,7 +36,7 @@ object Audio {
         get() = Settings.get.beepAmplitude
 
     private val maxDistance: Float
-        get() = Settings.get.beepRadius.toFloat()
+        get() = Settings.get.beepRadius
 
     private val sources = mutableSetOf<Source>()
 
@@ -139,7 +139,7 @@ object Audio {
         }
     }
 
-    private class Source(val x: Float, y: Float, z: Float, val data: ByteBuffer, val gain: Float) {
+    private class Source(x: Float, y: Float, z: Float, data: ByteBuffer, gain: Float) {
         val source: Int
         val buffer: Int
 

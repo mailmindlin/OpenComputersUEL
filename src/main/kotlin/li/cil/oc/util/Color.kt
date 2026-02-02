@@ -4,7 +4,7 @@ import net.minecraft.item.EnumDyeColor
 import net.minecraft.item.ItemStack
 import net.minecraftforge.oredict.OreDictionary
 
-object Color {
+internal object Color {
     @JvmField
     val rgbValues: Map<EnumDyeColor, UInt> = mapOf(
         EnumDyeColor.BLACK to 0x444444u, // 0x1E1B1B
@@ -97,4 +97,4 @@ object Color {
     fun rgbValues(silver: EnumDyeColor): UInt = this.rgbValues[silver]!!
 }
 
-val EnumDyeColor.rgbValue: UInt get() = Color.rgbValues(this)
+internal val EnumDyeColor.rgbValue: UInt get() = Color.rgbValues(this)
