@@ -1,6 +1,7 @@
 package li.cil.oc.client.renderer.block
 
 import li.cil.oc.client.Textures
+import li.cil.oc.util.mapArray
 import net.minecraft.block.state.IBlockState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.block.model.*
@@ -60,29 +61,34 @@ open class SmartBlockModelBase : IBakedModel {
     protected val missingModel: IBakedModel
         get() = Minecraft.getMinecraft().renderItem.itemModelMesher.modelManager.missingModel
 
-    // Standard faces for a unit cube.
-    protected val UnitCube = arrayOf(
-        arrayOf(Vec3d(0.0, 0.0, 1.0), Vec3d(0.0, 0.0, 0.0), Vec3d(1.0, 0.0, 0.0), Vec3d(1.0, 0.0, 1.0)),
-        arrayOf(Vec3d(0.0, 1.0, 0.0), Vec3d(0.0, 1.0, 1.0), Vec3d(1.0, 1.0, 1.0), Vec3d(1.0, 1.0, 0.0)),
-        arrayOf(Vec3d(1.0, 1.0, 0.0), Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, 0.0, 0.0), Vec3d(0.0, 1.0, 0.0)),
-        arrayOf(Vec3d(0.0, 1.0, 1.0), Vec3d(0.0, 0.0, 1.0), Vec3d(1.0, 0.0, 1.0), Vec3d(1.0, 1.0, 1.0)),
-        arrayOf(Vec3d(0.0, 1.0, 0.0), Vec3d(0.0, 0.0, 0.0), Vec3d(0.0, 0.0, 1.0), Vec3d(0.0, 1.0, 1.0)),
-        arrayOf(Vec3d(1.0, 1.0, 1.0), Vec3d(1.0, 0.0, 1.0), Vec3d(1.0, 0.0, 0.0), Vec3d(1.0, 1.0, 0.0))
-    )
+    companion object {
+        /** Standard faces for a unit cube. */
+        private val UnitCube = arrayOf(
+            arrayOf(Vec3d(0.0, 0.0, 1.0), Vec3d(0.0, 0.0, 0.0), Vec3d(1.0, 0.0, 0.0), Vec3d(1.0, 0.0, 1.0)),
+            arrayOf(Vec3d(0.0, 1.0, 0.0), Vec3d(0.0, 1.0, 1.0), Vec3d(1.0, 1.0, 1.0), Vec3d(1.0, 1.0, 0.0)),
+            arrayOf(Vec3d(1.0, 1.0, 0.0), Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, 0.0, 0.0), Vec3d(0.0, 1.0, 0.0)),
+            arrayOf(Vec3d(0.0, 1.0, 1.0), Vec3d(0.0, 0.0, 1.0), Vec3d(1.0, 0.0, 1.0), Vec3d(1.0, 1.0, 1.0)),
+            arrayOf(Vec3d(0.0, 1.0, 0.0), Vec3d(0.0, 0.0, 0.0), Vec3d(0.0, 0.0, 1.0), Vec3d(0.0, 1.0, 1.0)),
+            arrayOf(Vec3d(1.0, 1.0, 1.0), Vec3d(1.0, 0.0, 1.0), Vec3d(1.0, 0.0, 0.0), Vec3d(1.0, 1.0, 0.0))
+        )
 
-    // Planes perpendicular to facings. Negative values mean we mirror along that,
-    // axis which is done to mirror back faces and the y axis (because up is
-    // positive but for our texture coordinates down is positive).
-    protected val Planes = arrayOf(
-        Pair(Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, 0.0, -1.0)),
-        Pair(Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, 0.0, 1.0)),
-        Pair(Vec3d(-1.0, 0.0, 0.0), Vec3d(0.0, -1.0, 0.0)),
-        Pair(Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, -1.0, 0.0)),
-        Pair(Vec3d(0.0, 0.0, 1.0), Vec3d(0.0, -1.0, 0.0)),
-        Pair(Vec3d(0.0, 0.0, -1.0), Vec3d(0.0, -1.0, 0.0))
-    )
+        /**
+         * Planes perpendicular to facings. Negative values mean we mirror along that,
+         * axis which is done to mirror back faces and the y axis (because up is
+         * positive but for our texture coordinates down is positive).
+         */
+        private val Planes = arrayOf(
+            Pair(Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, 0.0, -1.0)),
+            Pair(Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, 0.0, 1.0)),
+            Pair(Vec3d(-1.0, 0.0, 0.0), Vec3d(0.0, -1.0, 0.0)),
+            Pair(Vec3d(1.0, 0.0, 0.0), Vec3d(0.0, -1.0, 0.0)),
+            Pair(Vec3d(0.0, 0.0, 1.0), Vec3d(0.0, -1.0, 0.0)),
+            Pair(Vec3d(0.0, 0.0, -1.0), Vec3d(0.0, -1.0, 0.0))
+        )
 
-    protected val White = 0xFFFFFF
+        @JvmStatic
+        protected val White = 0xFFFFFF
+        }
 
     /**
      * Generates a list of arrays, each containing the four vertices making up a
@@ -95,15 +101,15 @@ open class SmartBlockModelBase : IBakedModel {
         val maxX = maxOf(from.x, to.x)
         val maxY = maxOf(from.y, to.y)
         val maxZ = maxOf(from.z, to.z)
-        return UnitCube.map { face ->
-            face.map { vertex ->
+        return UnitCube.mapArray { face ->
+            face.mapArray { vertex ->
                 Vec3d(
-                    maxOf(minX, minOf(maxX, vertex.x)),
-                    maxOf(minY, minOf(maxY, vertex.y)),
-                    maxOf(minZ, minOf(maxZ, vertex.z))
+                    vertex.x.coerceIn(minX, maxX),
+                    vertex.y.coerceIn(minY, maxY),
+                    vertex.z.coerceIn(minZ, maxZ),
                 )
-            }.toTypedArray()
-        }.toTypedArray()
+            }
+        }
     }
 
     protected fun rotateVector(v: Vec3d, angle: Double, axis: Vec3d): Vec3d {
@@ -117,11 +123,11 @@ open class SmartBlockModelBase : IBakedModel {
     }
 
     protected fun rotateFace(face: Array<Vec3d>, angle: Double, axis: Vec3d, around: Vec3d = Vec3d(0.5, 0.5, 0.5)): Array<Vec3d> {
-        return face.map { v -> rotateVector(v.subtract(around), angle, axis).add(around) }.toTypedArray()
+        return face.mapArray { v -> rotateVector(v.subtract(around), angle, axis).add(around) }
     }
 
     protected fun rotateBox(box: Array<Array<Vec3d>>, angle: Double, axis: Vec3d = Vec3d(0.0, 1.0, 0.0), around: Vec3d = Vec3d(0.5, 0.5, 0.5)): Array<Array<Vec3d>> {
-        return box.map { face -> rotateFace(face, angle, axis, around) }.toTypedArray()
+        return box.mapArray { face -> rotateFace(face, angle, axis, around) }
     }
 
     /**
@@ -140,12 +146,12 @@ open class SmartBlockModelBase : IBakedModel {
      * Usually used to generate the quads for a cube previously generated using makeBox().
      */
     protected fun bakeQuads(box: Array<Array<Vec3d>>, texture: Array<out Any>, colorRGB: Int): Array<BakedQuad> {
-        return EnumFacing.values().map { side ->
+        return EnumFacing.values().mapArray { side ->
             val vertices = box[side.index]
             val tex = texture[side.index] as TextureAtlasSprite
             val data = quadData(vertices, side, tex, colorRGB, 0)
             BakedQuad(data, -1, side, tex, true, DefaultVertexFormats.ITEM)
-        }.toTypedArray()
+        }
     }
 
     /**
