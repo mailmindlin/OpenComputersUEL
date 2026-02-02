@@ -68,7 +68,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
     override var showInItemList: Boolean = false
     override val itemId: Int = 0
 
-    override val maxStackSize: Int = 1
+    override val maxStackSize: Int get() = 1
 
     // ----------------------------------------------------------------------- //
 

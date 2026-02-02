@@ -1,7 +1,6 @@
 package li.cil.oc.common.item
 
 import li.cil.oc.Settings
-import li.cil.oc.common.item.traits.Delegate
 import li.cil.oc.common.item.traits.GPULike
 import li.cil.oc.common.item.traits.ItemTier
 import li.cil.oc.util.Rarity
@@ -27,7 +26,7 @@ class GraphicsCard(parent: Delegator, tier: Int) : AbstractTieredDelegate(parent
     override val gpuTier: Int get() = tier
 }
 class InkCartridgeEmpty(parent: Delegator) : AbstractDelegate(parent) {
-    override val maxStackSize: Int = 1
+    override val maxStackSize: Int get() = 1
 }
 class InternetCard(parent: Delegator) : AbstractDelegate(parent), ItemTier
 class Interweb(parent: Delegator) : AbstractDelegate(parent)
