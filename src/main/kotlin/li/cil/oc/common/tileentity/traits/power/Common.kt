@@ -48,12 +48,10 @@ interface Common: TileEntityTrait {
      */
     fun tryChangeBuffer(side: EnumFacing?, amount: Double, doReceive: Boolean = true): Double {
         if (isClient || Settings.get.ignorePower) return 0.0
-        val node = connector(side)
-        return if (node != null) {
-            val cappedAmount = maxOf(0.0, minOf(minOf(energyThroughput, amount), globalDemand(side)))
-            if (doReceive) cappedAmount - node.changeBuffer(cappedAmount)
-            else cappedAmount
-        } else 0.0
+        val node = connector(side) ?: return 0.0
+        val cappedAmount = minOf(globalDemand(side), amount).coerceIn(0.0, energyThroughput)
+        return if (doReceive) cappedAmount - node.changeBuffer(cappedAmount)
+        else cappedAmount
     }
 
     fun globalBuffer(side: EnumFacing?): Double {
@@ -68,5 +66,5 @@ interface Common: TileEntityTrait {
         return node?.globalBufferSize() ?: 0.0
     }
 
-    fun globalDemand(side: EnumFacing?): Double = maxOf(0.0, minOf(energyThroughput, globalBufferSize(side) - globalBuffer(side)))
+    fun globalDemand(side: EnumFacing?): Double = (globalBufferSize(side) - globalBuffer(side)).coerceIn(0.0, energyThroughput)
 }
