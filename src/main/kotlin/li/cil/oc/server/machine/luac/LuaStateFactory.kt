@@ -72,28 +72,29 @@ abstract class LuaStateFactory {
       else -> ".so"
     }
 
-    val platformName = run {
-      if (!Strings.isNullOrEmpty(Settings.get.forceNativeLibPlatform)) Settings.get.forceNativeLibPlatform
-      else {
-        val systemName =
-          if (SystemUtils.IS_OS_FREE_BSD) "freebsd"
-          else if (SystemUtils.IS_OS_NET_BSD) "netbsd"
-          else if (SystemUtils.IS_OS_OPEN_BSD) "openbsd"
-          else if (SystemUtils.IS_OS_SOLARIS) "solaris"
-          else if (SystemUtils.IS_OS_LINUX) "linux"
-          else if (SystemUtils.IS_OS_MAC) "darwin"
-          else if (SystemUtils.IS_OS_WINDOWS) "windows"
-          else "unknown"
-
-        val archName =
-          if (Architecture.IS_OS_ARM64) "aarch64"
-          else if (Architecture.IS_OS_ARM) "arm"
-          else if (Architecture.IS_OS_X64) "x86_64"
-          else if (Architecture.IS_OS_X86) "x86"
-          else "unknown"
-
-        "$systemName-$archName"
+    val platformName = if (Settings.get.forceNativeLibPlatform.isNullOrEmpty()) {
+      val systemName = when {
+        SystemUtils.IS_OS_FREE_BSD -> "freebsd"
+        SystemUtils.IS_OS_NET_BSD -> "netbsd"
+        SystemUtils.IS_OS_OPEN_BSD -> "openbsd"
+        SystemUtils.IS_OS_SOLARIS -> "solaris"
+        SystemUtils.IS_OS_LINUX -> "linux"
+        SystemUtils.IS_OS_MAC -> "darwin"
+        SystemUtils.IS_OS_WINDOWS -> "windows"
+        else -> "unknown"
       }
+
+      val archName = when {
+        Architecture.IS_OS_ARM64 -> "aarch64"
+        Architecture.IS_OS_ARM -> "arm"
+        Architecture.IS_OS_X64 -> "x86_64"
+        Architecture.IS_OS_X86 -> "x86"
+        else -> "unknown"
+      }
+
+      "$systemName-$archName"
+    } else {
+      Settings.get.forceNativeLibPlatform
     }
 
     "libjnlua$version-$platformName$libExtension"
