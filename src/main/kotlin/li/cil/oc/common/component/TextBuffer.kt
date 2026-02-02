@@ -71,24 +71,23 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
 
     private var syncCooldown = syncInterval
 
-    private val pendingCommands: PacketBuilder
-        get() {
-            var pb = _pendingCommands
-            if (pb == null) {
-                pb = CompressedPacketBuilder(PacketType.TextBufferMulti)
-                pb.writeUTF(node!!.address())
-                _pendingCommands = pb
-            }
-            return pb
+    private val pendingCommands: PacketBuilder get() {
+        var pb = _pendingCommands
+        if (pb == null) {
+            pb = CompressedPacketBuilder(PacketType.TextBufferMulti)
+            pb.writeUTF(node!!.address())
+            _pendingCommands = pb
         }
+        return pb
+    }
 
-    var fullyLitCost: Double = computeFullyLitCost()
+    private var fullyLitCost: Double = computeFullyLitCost()
 
     // This computes the energy cost (per tick) to keep the screen running if
     // every single "pixel" is lit. This cost increases with higher tiers as
     // their maximum resolution (pixel density) increases. For a basic screen
     // this is simply the configured cost.
-    fun computeFullyLitCost(): Double {
+    private fun computeFullyLitCost(): Double {
         val (w, h) = Settings.screenResolutionsByTier[0]
         val mw = maximumWidth
         val mh = maximumHeight
@@ -256,8 +255,9 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
     override fun getPowerState(): Boolean = isDisplaying
 
     override fun setMaximumResolution(width: Int, height: Int) {
-        if (width < 1) throw IllegalArgumentException("width must be larger or equal to one")
-        if (height < 1) throw IllegalArgumentException("height must be larger or equal to one")
+        check(width >= 1) { "width must be larger or equal to one" }
+        check(height >= 1) { "height must be larger or equal to one" }
+        OpenComputers.log.debug("setMaximumResolution($width, $height)")
         maxResolution = width by height
         fullyLitCost = computeFullyLitCost()
         proxy.onBufferMaxResolutionChange(width, width)
@@ -551,9 +551,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         }
     }
 
-    abstract class Proxy {
-        abstract val owner: TextBuffer
-
+    sealed class Proxy(protected val owner: TextBuffer) {
         var dirty = false
 
         var nodeAddress = ""
@@ -634,7 +632,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         abstract fun copyToAnalyzer(line: Int, player: EntityPlayer)
     }
 
-    class ClientProxy(override val owner: TextBuffer) : Proxy() {
+    class ClientProxy(owner: TextBuffer) : Proxy(owner) {
         val renderer = object : TextBufferRenderData {
             override var dirty: Boolean
                 get() = this@ClientProxy.dirty
@@ -748,7 +746,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         }
     }
 
-    class ServerProxy(override val owner: TextBuffer) : Proxy() {
+    class ServerProxy(owner: TextBuffer) : Proxy(owner) {
         override fun onBufferColorChange() {
             owner.host.markChanged()
             synchronized(owner) {
