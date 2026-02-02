@@ -52,7 +52,7 @@ class Terminal(parent: Delegator) : AbstractDelegate(parent), CustomModel {
             val server = stack.tagCompound!!.getString(Settings.namespace + "server")
             if (!key.isNullOrEmpty() && !server.isNullOrEmpty()) {
                 if (world.isRemote) {
-                    player.openGui(OpenComputers, GuiType.Terminal.id, world, 0, 0, 0)
+                    player.openGui(OpenComputers.INSTANCE, GuiType.Terminal.id, world, 0, 0, 0)
                 }
                 player.swingArm(EnumHand.MAIN_HAND)
             }

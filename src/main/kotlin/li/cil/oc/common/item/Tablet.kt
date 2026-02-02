@@ -200,7 +200,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                         val tablet = Tablet.Server.get(stack, entity)
                         tablet.machine!!.stop()
                         if (tablet.data.tier > Tier.One) {
-                            entity.openGui(OpenComputers, GuiType.TabletInner.id, world, 0, 0, 0)
+                            entity.openGui(OpenComputers.INSTANCE, GuiType.TabletInner.id, world, 0, 0, 0)
                         }
                     }
                 } else {
@@ -212,7 +212,7 @@ class Tablet(override val parent: Delegator) : Delegate, CustomModel, Chargeable
                             entity.sendMessage(Localization.Analyzer.LastError(lastError))
                         }
                     } else {
-                        entity.openGui(OpenComputers, GuiType.Tablet.id, world, 0, 0, 0)
+                        entity.openGui(OpenComputers.INSTANCE, GuiType.Tablet.id, world, 0, 0, 0)
                     }
                 }
             }
