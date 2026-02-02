@@ -18,11 +18,9 @@ import li.cil.oc.server.component.ManagedEnvironmentKt
 import li.cil.oc.server.component.world
 import li.cil.oc.server.driver.Registry
 import li.cil.oc.server.fs.FileSystem
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.*
+import li.cil.oc.util.Result
 import li.cil.oc.util.Stack
-import li.cil.oc.util.ThreadPoolFactory
-import li.cil.oc.util.setNewCompoundTag
-import li.cil.oc.util.setNewStringList
 import net.minecraft.client.Minecraft
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.nbt.*
@@ -156,12 +154,8 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
     override fun components(): MutableMap<String, String> = _components
 
     override fun componentCount(): Int {
-        val baseCount = _components.entries.fold(0.0) { acc, (_, name) ->
-            acc + (if (name != "filesystem") 1.0 else 0.25)
-        }
-        val addedCount = addedComponents.fold(0.0) { acc, component ->
-            acc + (if (component.name() != "filesystem") 1.0 else 0.25)
-        }
+        val baseCount = _components.values.sumOf { name -> if (name != "filesystem") 1.0 else 0.25 }
+        val addedCount = addedComponents.sumOf { component -> if (component.name() != "filesystem") 1.0 else 0.25 }
         return (baseCount + addedCount - 1).toInt() // -1 = this computer
     }
 
