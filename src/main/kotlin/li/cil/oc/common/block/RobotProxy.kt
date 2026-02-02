@@ -202,6 +202,7 @@ class RobotProxy : RedstoneAware(), StateAware {
                 if (tileEntity is TERobotProxy && tileEntity.robot.node()!!.network() != null) {
                     PacketSender.sendRobotSelectedSlotChange(tileEntity.robot)
                     player.openGui(OpenComputers, GuiType.Robot.id, world, pos.x, pos.y, pos.z)
+                    player.openGui(OpenComputers.INSTANCE, GuiType.Robot.id, world, pos.x, pos.y, pos.z)
                 }
             }
             return true

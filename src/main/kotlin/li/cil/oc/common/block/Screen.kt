@@ -89,7 +89,7 @@ class Screen(val tier: Int) : RedstoneAware() {
                 // if, but it is clearer this way (to trigger it from the server we
                 // would have to give screens a "container", which we do not want).
                 if (world.isRemote) {
-                    player.openGui(OpenComputers, GuiType.Screen.id, world, pos.x, pos.y, pos.z)
+                    player.openGui(OpenComputers.INSTANCE, GuiType.Screen.id, world, pos.x, pos.y, pos.z)
                 }
                 true
             }
