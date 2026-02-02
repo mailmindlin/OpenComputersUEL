@@ -521,6 +521,16 @@ class Settings(val config: Config) {
             @JvmStatic
             get() = settings!!
 
+        fun defaultsForTesting() {
+            val EOL = System.lineSeparator()
+            val configText = Settings::class.java.getResourceAsStream("/application.conf").use { inputStream ->
+                inputStream.bufferedReader(Charsets.UTF_8).lineSequence()
+                    .joinToString(separator = EOL, postfix = EOL)
+            }
+            val config = ConfigFactory.parseString(configText)
+            this.settings = Settings(config.getConfig("opencomputers"))
+        }
+
         @JvmStatic
         fun load(file: File) {
             val EOL = System.lineSeparator()
