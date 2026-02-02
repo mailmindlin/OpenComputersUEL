@@ -510,7 +510,7 @@ class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.D
                 start()
             }
         } else if (!world.isRemote) {
-            player.openGui(OpenComputers, GuiType.Drone.id, world, entityId, 0, 0)
+            player.openGui(OpenComputers.INSTANCE, GuiType.Drone.id, world, entityId, 0, 0)
         }
         return true
     }

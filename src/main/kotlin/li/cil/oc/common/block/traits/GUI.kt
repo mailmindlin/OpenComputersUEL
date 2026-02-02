@@ -12,10 +12,10 @@ import net.minecraft.world.World
 interface GUI {
     val guiType: GuiType
 
-    fun guiLocalOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
+    fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         if (!player.isSneaking) {
             if (!world.isRemote) {
-                player.openGui(OpenComputers, guiType.id, world, pos.x, pos.y, pos.z)
+                player.openGui(OpenComputers.INSTANCE, guiType.id, world, pos.x, pos.y, pos.z)
             }
             return true
         }
