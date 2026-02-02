@@ -39,12 +39,15 @@ import li.cil.oc.util.Audio
 import net.minecraft.block.Block
 import net.minecraft.client.renderer.entity.Render
 import net.minecraft.client.renderer.entity.RenderManager
+import net.minecraft.client.resources.I18n
 import net.minecraft.item.Item
+import net.minecraft.util.text.TextComponentTranslation
 import net.minecraftforge.common.MinecraftForge
 import net.minecraftforge.fml.client.registry.ClientRegistry
 import net.minecraftforge.fml.client.registry.IRenderFactory
 import net.minecraftforge.fml.client.registry.RenderingRegistry
 import net.minecraftforge.fml.common.event.FMLInitializationEvent
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent
 import net.minecraftforge.fml.common.network.NetworkRegistry
 import org.lwjgl.opengl.GLContext
@@ -104,8 +107,7 @@ internal class Proxy : CommonProxy() {
     MinecraftForge.EVENT_BUS.register(MFUTargetRenderer)
     MinecraftForge.EVENT_BUS.register(WirelessNetworkDebugRenderer)
 
-    //TODO
-    // NetworkRegistry.INSTANCE.registerGuiHandler(OpenComputers, GuiHandler)
+    NetworkRegistry.INSTANCE.registerGuiHandler(OpenComputers.INSTANCE, GuiHandler)
 
     MinecraftForge.EVENT_BUS.register(Audio)
     MinecraftForge.EVENT_BUS.register(HologramRenderer)
