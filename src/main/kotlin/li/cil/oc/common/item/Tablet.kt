@@ -499,8 +499,8 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
         if (!world.isRemote) {
             Network.joinNewNetwork(machine!!.node())
             val tablet = tablet!!
-            val charge = (data.energy - tablet.node().globalBuffer()).coerceAtLeast(0.0)
-            tablet.node().changeBuffer(charge)
+            val charge = (data.energy - tablet.node()!!.globalBuffer()).coerceAtLeast(0.0)
+            tablet.node()!!.changeBuffer(charge)
             writeToNBT()
         }
     }
@@ -640,8 +640,8 @@ class TabletWrapper(var stack: ItemStack, var player: EntityPlayer) : ComponentI
             machine.update()
             updateComponents()
             data.isRunning = machine.isRunning
-            data.energy = tablet!!.node().globalBuffer()
-            data.maxEnergy = tablet.node().globalBufferSize()
+            data.energy = tablet!!.node()!!.globalBuffer()
+            data.maxEnergy = tablet.node()!!.globalBufferSize()
 
             if (lastRunning != machine.isRunning) {
                 lastRunning = machine.isRunning
