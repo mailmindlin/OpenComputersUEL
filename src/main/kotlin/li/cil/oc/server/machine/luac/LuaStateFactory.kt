@@ -315,7 +315,7 @@ abstract class LuaStateFactory {
         // use the good old rand() from C. Which can be terrible, and isn't
         // necessarily thread-safe.
         val random = Random()
-        state.pushClosure { lua ->
+        state.pushJavaFunction { lua ->
           val r = random.nextDouble()
           when (lua.top) {
             0 -> lua.pushNumber(r)
@@ -336,7 +336,7 @@ abstract class LuaStateFactory {
         }
         state.setField(-2, "random")
 
-        state.pushClosure { lua ->
+        state.pushJavaFunction { lua ->
           random.setSeed(lua.checkInteger(1))
           0
         }

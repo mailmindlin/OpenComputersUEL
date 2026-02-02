@@ -6,7 +6,7 @@ import li.cil.repack.com.naef.jnlua.LuaType
 class SystemAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
   override fun initialize() {
     // Until we get to ingame screens we log to Java's stdout.
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       println(
         (1 .. lua.top)
         .map { i ->
@@ -29,21 +29,21 @@ class SystemAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.newTable()
 
     // Whether bytecode may be loaded directly.
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       lua.pushBoolean(Settings.get.allowBytecode)
       1
     }
     lua.setField(-2, "allowBytecode")
 
     // Whether custom __gc callbacks are allowed.
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       lua.pushBoolean(Settings.get.allowGC)
       1
     }
     lua.setField(-2, "allowGC")
 
     // How long programs may run without yielding before we stop them.
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       lua.pushNumber(Settings.get.timeout)
       1
     }

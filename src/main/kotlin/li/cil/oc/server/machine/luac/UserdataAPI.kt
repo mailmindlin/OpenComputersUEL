@@ -17,7 +17,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
   override fun initialize() {
     lua.newTable()
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val nbt = NBTTagCompound()
       val persistable = lua.toJavaObjectRaw(1) as Persistable
       lua.pushString(persistable.javaClass.name)
@@ -30,7 +30,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "save")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       try {
         val className = lua.toString(1)
         val clazz = Class.forName(className)
@@ -49,14 +49,14 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "load")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val args = lua.toSimpleJavaObjects(2)
       owner.invoke { Registry.run { arrayOf(value.apply(machine, ArgumentsImpl(args))).convert() } }
     }
     lua.setField(-2, "apply")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val args = lua.toSimpleJavaObjects(2)
       owner.invoke {
@@ -66,14 +66,14 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "unapply")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val args = lua.toSimpleJavaObjects(2)
       owner.invoke { Registry.run { value.call(machine, ArgumentsImpl(args)).convert() } }
     }
     lua.setField(-2, "call")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       try {
         value.dispose(machine)
@@ -84,14 +84,14 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "dispose")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
-      lua.pushValue(machine.methods(value).mapValues { (_, annotation) -> annotation.direct })
+      lua.pushTable(machine.methods(value).mapValues { (_, annotation) -> annotation.direct })
       1
     }
     lua.setField(-2, "methods")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val method = lua.checkString(2)
       val args = lua.toSimpleJavaObjects(3)
@@ -99,7 +99,7 @@ class UserdataAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "invoke")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val value = lua.toJavaObjectRaw(1) as Value
       val method = lua.checkString(2)
       owner.documentation { machine.methods(value)?.get(method)?.doc }

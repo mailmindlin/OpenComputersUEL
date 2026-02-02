@@ -45,38 +45,6 @@ sealed class NativeLuaArchitecture(machine: Machine): GenericLuaArchitecture(mac
     // Persistence has to go last to ensure all other APIs can go into the permanent value table.
     persistence)
 
-  private fun InvokeResult.pushLua(): Int {
-    val lua = lua!!
-    return when (this) {
-      // Success
-      InvokeResult.Void -> {
-        lua.pushBoolean(true)
-        1
-      }
-      is InvokeResult.Success -> {
-        lua.pushBoolean(true)
-        this.results.forEach(lua::pushValue)
-        1 + this.results.size
-      }
-      // Errors
-      InvokeResult.LimitReached -> 0
-      is InvokeResult.ErrorMessage -> {
-        if (!this.args3) {
-          lua.pushBoolean(false)
-          lua.pushString(this.message)
-          return 2
-        }
-        lua.pushBoolean(true)
-        lua.pushNil()
-        lua.pushString(this.message)
-        if (this.stackTrace == null)
-          return 3
-        lua.pushString(this.stackTrace)
-        return 4
-      }
-    }
-  }
-
   private fun DocumentationResult.pushLua(): Int {
     val lua = lua!!
     return when (this) {
@@ -97,7 +65,7 @@ sealed class NativeLuaArchitecture(machine: Machine): GenericLuaArchitecture(mac
   }
 
   internal fun invoke(f: () -> Array<out Any?>?): Int
-    = invokeGeneric(f).pushLua()
+    = invokeGeneric(f).pushLua(lua!!)
 
   internal fun documentation(f: () -> String?): Int
     = documentationGeneric(f).pushLua()
@@ -179,7 +147,7 @@ sealed class NativeLuaArchitecture(machine: Machine): GenericLuaArchitecture(mac
             null -> lua.resume(1, 0)
             else -> {
               lua.pushString(signal.name())
-              signal.args().forEach(lua::pushValue)
+              signal.args().forEach(lua::pushAny)
               lua.resume(1, 1 + signal.args().size)
             }
           }

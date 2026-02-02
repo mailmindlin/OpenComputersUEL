@@ -11,7 +11,7 @@ class PersistenceAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
 
   override fun initialize() {
     // Will be replaced by old value in load.
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       lua.pushString(persistKey)
       1
     }

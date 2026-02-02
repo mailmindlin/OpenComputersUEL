@@ -12,14 +12,14 @@ class OSAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
 
     // Custom os.clock() implementation returning the time the computer has
     // been actively running, instead of the native library...
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       lua.pushNumber(machine.cpuTime())
       1
     }
     lua.setField(-2, "clock")
 
     // Date formatting function.
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val format =
         if (lua.top > 0 && lua.isString(1)) lua.toString(1)
         else "%d/%m/%y %H:%M:%S"
@@ -62,7 +62,7 @@ class OSAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     lua.setField(-2, "date")
 
     // Return ingame time for os.time().
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       if (lua.isNoneOrNil(1)) {
         // Game time is in ticks, so that each day has 24000 ticks, meaning
         // one hour is game time divided by one thousand. Also, Minecraft

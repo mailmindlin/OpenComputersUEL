@@ -6,7 +6,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
   override fun initialize() {
     lua.newTable()
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       synchronized(components) {
         val filter = if (lua.isString(1)) lua.toString(1) else null
         val exact = if (lua.isBoolean(2)) lua.toBoolean(2) else true
@@ -24,7 +24,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "list")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       synchronized(components) {
         val name = components[lua.checkString(1)] ?: return@synchronized lua.luaError("no such component")
         lua.pushString(name)
@@ -33,7 +33,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "type")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       synchronized(components) {
         val address = lua.checkString(1)
         val name = components[address] ?: return@synchronized lua.luaError("no such component")
@@ -43,7 +43,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "slot")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       withComponent(lua.checkString(1)) { component ->
         lua.newTable()
         for ((name, annotation) in machine.methods(component.host())) {
@@ -62,7 +62,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "methods")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       val address = lua.checkString(1)
       val method = lua.checkString(2)
       val args = lua.toSimpleJavaObjects(3)
@@ -70,7 +70,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
     }
     lua.setField(-2, "invoke")
 
-    lua.pushClosure { lua ->
+    lua.pushJavaFunction { lua ->
       withComponent(lua.checkString(1)) { component ->
         val method = lua.checkString(2)
         val methods = machine.methods(component.host())
