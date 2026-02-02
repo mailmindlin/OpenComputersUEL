@@ -106,7 +106,7 @@ abstract class LuaStateFactory {
 
   // ----------------------------------------------------------------------- //
 
-  val isAvailable: Boolean = haveNativeLibrary
+  val isAvailable: Boolean get() = haveNativeLibrary
 
   // Since we use native libraries we have to do some work. This includes
   // figuring out what we're running on, so that we can load the proper shared
