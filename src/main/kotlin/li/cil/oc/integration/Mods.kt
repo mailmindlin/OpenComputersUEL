@@ -55,8 +55,7 @@ internal object Mods {
   // ----------------------------------------------------------------------- //
 
   private val Proxies: Array<ModProxy> = arrayOf(
-    //TODO
-    /*li.cil.oc.integration.appeng.ModAppEng,
+    li.cil.oc.integration.appeng.ModAppEng,
     li.cil.oc.integration.cofh.item.ModCoFHItem,
     li.cil.oc.integration.cofh.tileentity.ModCoFHTileEntity,
     li.cil.oc.integration.ec.ModExtraCells,
@@ -79,7 +78,7 @@ internal object Mods {
 
     // We go late to ensure all other mod integration is done, e.g. to
     // allow properly checking if wireless redstone is present.
-    li.cil.oc.integration.opencomputers.ModOpenComputers*/
+    li.cil.oc.integration.opencomputers.ModOpenComputers,
   )
 
   fun init() {
