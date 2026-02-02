@@ -289,7 +289,8 @@ class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.D
 
     fun initializeAfterPlacement(stack: ItemStack, player: EntityPlayer, position: Vec3d) {
         info.load(stack)
-        control!!.node().changeBuffer(info.storedEnergy - control.node().localBuffer())
+        val cNode = control!!.node()!!
+        cNode.changeBuffer(info.storedEnergy - cNode.localBuffer())
         wireThingsTogether()
         inventorySize = computeInventorySize()
         setPosition(position.x, position.y, position.z)
@@ -573,7 +574,7 @@ class Drone(world: World) : Entity(world), MachineHost, li.cil.oc.api.internal.D
         super.outOfWorld()
         if (!world.isRemote) {
             val stack = Constants.ItemInfo.Drone.createItemStack(1)
-            info.storedEnergy = control!!.node().localBuffer().toInt()
+            info.storedEnergy = control!!.node()!!.localBuffer().toInt()
             info.save(stack)
             val entity = EntityItem(world, posX, posY, posZ, stack)
             entity.setPickupDelay(15)

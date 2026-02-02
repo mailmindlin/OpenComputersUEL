@@ -169,7 +169,7 @@ object EventHandler {
         if (SideTracker.isServer()) {
             synchronized(pendingServer) {
                 pendingServer.add {
-                    if (rs.node().network() != null) {
+                    if (rs.node()!!.network() != null) {
                         WirelessRedstone.addReceiver(rs)
                         WirelessRedstone.updateOutput(rs)
                     }

@@ -76,7 +76,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
             var pb = _pendingCommands
             if (pb == null) {
                 pb = CompressedPacketBuilder(PacketType.TextBufferMulti)
-                pb.writeUTF(node.address())
+                pb.writeUTF(node!!.address())
                 _pendingCommands = pb
             }
             return pb
@@ -153,12 +153,12 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
                 }
                 relativeLitArea = acc / (w * h).toDouble()
             }
-            if (node != null) {
+            node?.let { node ->
                 val hadPower = hasPower
                 val neededPower = relativeLitArea * fullyLitCost * Settings.get.tickFrequency
                 hasPower = node.tryChangeBuffer(-neededPower)
                 if (hasPower != hadPower) {
-                    ServerPacketSender.sendTextBufferPowerChange(node.address(), isDisplaying && hasPower, host)
+                    ServerPacketSender.sendTextBufferPowerChange(node.address()!!, isDisplaying && hasPower, host)
                 }
             }
         }
@@ -206,12 +206,13 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         context.pause(0.25)
         return when (host) {
             is TEScreen -> {
-                arrayOf((host as TEScreen).screens.mapNotNull { it.node() }
+                arrayOf((host as TEScreen).screensReadonly
+                    .mapNotNull { it.node() }
                     .flatMap { it.neighbors().filter { n -> n.host() is Keyboard }.map { n -> n.address() } }
                     .toTypedArray())
             }
             else -> {
-                arrayOf(node.neighbors().filter { it.host() is Keyboard }.map { it.address() }.toTypedArray())
+                arrayOf(node!!.neighbors().filter { it.host() is Keyboard }.map { it.address() }.toTypedArray())
             }
         }
     }
@@ -246,9 +247,9 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
             isDisplaying = value
             if (isDisplaying) {
                 val neededPower = fullyLitCost * Settings.get.tickFrequency
-                hasPower = node.changeBuffer(-neededPower) == 0.0
+                hasPower = node!!.changeBuffer(-neededPower) == 0.0
             }
-            ServerPacketSender.sendTextBufferPowerChange(node.address(), isDisplaying && hasPower, host)
+            ServerPacketSender.sendTextBufferPowerChange(node!!.address()!!, isDisplaying && hasPower, host)
         }
     }
 
@@ -283,7 +284,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         val viewportChanged = setViewport(w, h)
         if (sizeChanged || viewportChanged) {
             if (!viewportChanged && node != null) {
-                node.sendToReachable("computer.signal", "screen_resized", Integer.valueOf(w), Integer.valueOf(h))
+                node!!.sendToReachable("computer.signal", "screen_resized", Integer.valueOf(w), Integer.valueOf(h))
             }
             return true
         }
@@ -299,9 +300,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         val (cw, ch) = viewport
         if (w != cw || h != ch) {
             viewport = ScreenResolution(w, h)
-            if (node != null) {
-                node.sendToReachable("computer.signal", "screen_resized", Integer.valueOf(w), Integer.valueOf(h))
-            }
+            node?.sendToReachable("computer.signal", "screen_resized", Integer.valueOf(w), Integer.valueOf(h))
             return true
         }
         return false
@@ -389,25 +388,25 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
     @SideOnly(Side.CLIENT)
     override fun isRenderingEnabled(): Boolean = isRendering
 
-    override fun keyDown(character: Char, code: Int, player: EntityPlayer) =
+    override fun keyDown(character: Char, code: Int, player: EntityPlayer?) =
         proxy.keyDown(character, code, player)
 
-    override fun keyUp(character: Char, code: Int, player: EntityPlayer) =
+    override fun keyUp(character: Char, code: Int, player: EntityPlayer?) =
         proxy.keyUp(character, code, player)
 
-    override fun clipboard(value: String, player: EntityPlayer) =
+    override fun clipboard(value: String, player: EntityPlayer?) =
         proxy.clipboard(value, player)
 
-    override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer) =
+    override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer?) =
         proxy.mouseDown(x, y, button, player)
 
-    override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer) =
+    override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer?) =
         proxy.mouseDrag(x, y, button, player)
 
-    override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer) =
+    override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer?) =
         proxy.mouseUp(x, y, button, player)
 
-    override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer) =
+    override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer?) =
         proxy.mouseScroll(x, y, delta, player)
 
     fun copyToAnalyzer(line: Int, player: EntityPlayer) {
@@ -419,7 +418,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
     override fun onConnect(node: Node) {
         super.onConnect(node)
         if (node == this.node) {
-            ServerComponentTracker.add(host.world(), node.address(), this)
+            ServerComponentTracker.add(host.world(), node.address()!!, this)
         }
     }
 
@@ -432,7 +431,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
 
     // ----------------------------------------------------------------------- //
 
-    private fun bufferPath() = node.address() + "_buffer"
+    private fun bufferPath() = node!!.address() + "_buffer"
     private val IsOnTag = Settings.namespace + "isOn"
     private val HasPowerTag = Settings.namespace + "hasPower"
     private val MaxWidthTag = Settings.namespace + "maxWidth"
@@ -450,7 +449,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         } else {
             if (nbt.hasKey(NodeData.BufferTag)) {
                 data.load(nbt.getCompoundTag(NodeData.BufferTag))
-            } else if (!Strings.isNullOrEmpty(node.address())) {
+            } else if (!Strings.isNullOrEmpty(node!!.address())) {
                 data.load(SaveHandler.loadNBT(nbt, bufferPath()))
             }
         }
@@ -479,7 +478,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
 
     // Null check for Waila (and other mods that may call this client side).
     override fun save(nbt: NBTTagCompound) {
-        if (node == null) return
+        val node = node ?: return
         super.save(nbt)
         // Happy thread synchronization hack! Here's the problem: GPUs allow direct
         // calls for modifying screens to give a more responsive experience. This
@@ -490,6 +489,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         // wait for all computers the screen is connected to to finish their current
         // execution and pausing them (which will make them resume in the next tick
         // when their update() runs).
+
         if (node.network() != null) {
             for (networkNode in node.network().nodes()) {
                 val host = networkNode.host()
@@ -617,19 +617,19 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
             owner.relativeLitArea = -1.0
         }
 
-        abstract fun keyDown(character: Char, code: Int, player: EntityPlayer)
+        abstract fun keyDown(character: Char, code: Int, player: EntityPlayer?)
 
-        abstract fun keyUp(character: Char, code: Int, player: EntityPlayer)
+        abstract fun keyUp(character: Char, code: Int, player: EntityPlayer?)
 
-        abstract fun clipboard(value: String, player: EntityPlayer)
+        abstract fun clipboard(value: String, player: EntityPlayer?)
 
-        abstract fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer)
+        abstract fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer?)
 
-        abstract fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer)
+        abstract fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer?)
 
-        abstract fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer)
+        abstract fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer?)
 
-        abstract fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer)
+        abstract fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer?)
 
         abstract fun copyToAnalyzer(line: Int, player: EntityPlayer)
     }
@@ -701,37 +701,37 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
             super.onBufferRamDestroy(ram)
         }
 
-        override fun keyDown(character: Char, code: Int, player: EntityPlayer) {
+        override fun keyDown(character: Char, code: Int, player: EntityPlayer?) {
             debug("{type = keyDown, char = $character, code = $code}")
             ClientPacketSender.sendKeyDown(nodeAddress, character, code)
         }
 
-        override fun keyUp(character: Char, code: Int, player: EntityPlayer) {
+        override fun keyUp(character: Char, code: Int, player: EntityPlayer?) {
             debug("{type = keyUp, char = $character, code = $code}")
             ClientPacketSender.sendKeyUp(nodeAddress, character, code)
         }
 
-        override fun clipboard(value: String, player: EntityPlayer) {
+        override fun clipboard(value: String, player: EntityPlayer?) {
             debug("{type = clipboard}")
             ClientPacketSender.sendClipboard(nodeAddress, value)
         }
 
-        override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer) {
+        override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer?) {
             debug("{type = mouseDown, x = $x, y = $y, button = $button}")
             ClientPacketSender.sendMouseClick(nodeAddress, x, y, false, button)
         }
 
-        override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer) {
+        override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer?) {
             debug("{type = mouseDrag, x = $x, y = $y, button = $button}")
             ClientPacketSender.sendMouseClick(nodeAddress, x, y, true, button)
         }
 
-        override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer) {
+        override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer?) {
             debug("{type = mouseUp, x = $x, y = $y, button = $button}")
             ClientPacketSender.sendMouseUp(nodeAddress, x, y, button)
         }
 
-        override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer) {
+        override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer?) {
             debug("{type = mouseScroll, x = $x, y = $y, delta = $delta}")
             ClientPacketSender.sendMouseScroll(nodeAddress, x, y, delta)
         }
@@ -803,7 +803,7 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
         }
 
         override fun onBufferMaxResolutionChange(w: Int, h: Int) {
-            if (owner.node.network() != null) {
+            if (owner.node!!.network() != null) {
                 super.onBufferMaxResolutionChange(w, h)
                 owner.host.markChanged()
                 synchronized(owner) {
@@ -870,32 +870,32 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
             }
         }
 
-        override fun keyDown(character: Char, code: Int, player: EntityPlayer) {
-            sendToKeyboards("keyboard.keyDown", player, Character.valueOf(character), Integer.valueOf(code))
+        override fun keyDown(character: Char, code: Int, player: EntityPlayer?) {
+            sendToKeyboards("keyboard.keyDown", player!!, Character.valueOf(character), Integer.valueOf(code))
         }
 
-        override fun keyUp(character: Char, code: Int, player: EntityPlayer) {
-            sendToKeyboards("keyboard.keyUp", player, Character.valueOf(character), Integer.valueOf(code))
+        override fun keyUp(character: Char, code: Int, player: EntityPlayer?) {
+            sendToKeyboards("keyboard.keyUp", player!!, Character.valueOf(character), Integer.valueOf(code))
         }
 
-        override fun clipboard(value: String, player: EntityPlayer) {
-            sendToKeyboards("keyboard.clipboard", player, value)
+        override fun clipboard(value: String, player: EntityPlayer?) {
+            sendToKeyboards("keyboard.clipboard", player!!, value)
         }
 
-        override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer) {
-            sendMouseEvent(player, "touch", x, y, button)
+        override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer?) {
+            sendMouseEvent(player!!, "touch", x, y, button)
         }
 
-        override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer) {
-            sendMouseEvent(player, "drag", x, y, button)
+        override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer?) {
+            sendMouseEvent(player!!, "drag", x, y, button)
         }
 
-        override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer) {
-            sendMouseEvent(player, "drop", x, y, button)
+        override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer?) {
+            sendMouseEvent(player!!, "drop", x, y, button)
         }
 
-        override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer) {
-            sendMouseEvent(player, "scroll", x, y, delta)
+        override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer?) {
+            sendMouseEvent(player!!, "scroll", x, y, delta)
         }
 
         override fun copyToAnalyzer(line: Int, player: EntityPlayer) {
@@ -936,16 +936,16 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
                 args.add(player.name)
             }
 
-            owner.node.sendToReachable("computer.checked_signal", *args.toTypedArray())
+            owner.node!!.sendToReachable("computer.checked_signal", *args.toTypedArray())
         }
 
         private fun sendToKeyboards(name: String, vararg values: Any?) {
             when (val host = owner.host) {
                 is TEScreen -> {
-                    host.screens.forEach { it.node()?.let { node -> node.sendToNeighbors(name, *values) } }
+                    host.screensReadonly.forEach { it.node()?.let { node -> node.sendToNeighbors(name, *values) } }
                 }
                 else -> {
-                    owner.node.sendToNeighbors(name, *values)
+                    owner.node!!.sendToNeighbors(name, *values)
                 }
             }
         }

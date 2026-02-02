@@ -22,7 +22,7 @@ object FileSystemAccessHandler {
             for (slot in 0 until tileEntity.sizeInventory) {
                 when (val mountable = tileEntity.getMountable(slot)) {
                     is Server -> {
-                        val containsNode = mountable.componentSlot(e.node.address()) >= 0
+                        val containsNode = mountable.componentSlot(e.node.address()!!) >= 0
                         if (containsNode) {
                             mountable.lastFileSystemAccess = System.currentTimeMillis()
                             tileEntity.markChanged(slot)

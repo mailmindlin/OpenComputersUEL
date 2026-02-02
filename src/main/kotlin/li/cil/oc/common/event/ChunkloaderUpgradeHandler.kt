@@ -91,7 +91,7 @@ object ChunkloaderUpgradeHandler : LoadingCallback {
                 ForgeChunkManager.forceChunk(ticket, chunk)
             }
 
-            ticket.modData.setString("address", loader.node().address())
+            ticket.modData.setString("address", loader.node()!!.address())
             ticket.modData.setInteger("x", centerChunk.x)
             ticket.modData.setInteger("z", centerChunk.z)
         }

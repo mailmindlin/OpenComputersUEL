@@ -15,7 +15,7 @@ object NetworkActivityHandler {
             for (slot in 0 until tileEntity.sizeInventory) {
                 val mountable = tileEntity.getMountable(slot)
                 if (mountable is Server) {
-                    val containsNode = mountable.componentSlot(e.node.address()) >= 0
+                    val containsNode = mountable.componentSlot(e.node.address()!!) >= 0
                     if (containsNode) {
                         mountable.lastNetworkActivity = System.currentTimeMillis()
                         tileEntity.markChanged(slot)
