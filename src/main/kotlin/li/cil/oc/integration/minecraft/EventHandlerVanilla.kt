@@ -36,9 +36,6 @@ object EventHandlerVanilla {
             for (rz in e.minZ..e.maxZ) {
                 for (rx in e.minX..e.maxX) {
                     val pos = blockPos.toBlockPos().add(rx, ry, rz)
-                    val x = blockPos.x + rx
-                    val y = blockPos.y + ry
-                    val z = blockPos.z + rz
                     val index = (rx - e.minX) + ((rz - e.minZ) + (ry - e.minY) * d) * w
                     if (world.isBlockLoaded(pos) && !world.isAirBlock(pos)) {
                         val blockState = world.getBlockState(pos)
