@@ -8,65 +8,71 @@ import li.cil.repack.com.naef.jnlua.LuaState
 import li.cil.repack.com.naef.jnlua.LuaType
 import java.util.IdentityHashMap
 
-internal fun LuaState.pushClosure(f: (LuaState) -> Int) {
-    pushJavaFunction(JavaFunction { state -> f(state) })
-}
-
 internal fun LuaState.luaError(message: String): Int {
     this.pushNil()
     this.pushString(message)
     return 2
 }
 
-fun LuaState.pushValue(value: Any?, memo: IdentityHashMap<Any, Int> = IdentityHashMap()) {
+internal fun LuaState.pushAny(value: Any?, memo: IdentityHashMap<Any, Int> = IdentityHashMap()) {
+    val cached = memo[value]
+    if (cached != null) {
+        pushValue(cached)
+        return
+    }
+
     val recursive = memo.size > 0
     val oldTop = top
-    if (memo.containsKey(value)) {
-        pushValue(memo[value]!!)
-    } else {
-        val normalizedValue: Any? = when (value) {
-            is Number -> value
-            is Any -> value
-            null -> null
-            else -> value
+
+    val value: Any? = when (value) {
+        is Number -> value
+        is Any -> value
+        null -> null
+        else -> value
+    }
+
+    when (value) {
+        null, Unit -> pushNil()
+        is Boolean -> pushBoolean(value)
+        // pushInteger
+        is Byte -> pushInteger(value.toLong())
+        is Short -> pushInteger(value.toLong())
+        is Int -> pushInteger(value.toLong())
+        is Long -> pushInteger(value)
+        // pushNumber
+        is Float -> pushNumber(value.toDouble())
+        is Double -> pushNumber(value)
+        // pushString
+        is Char -> pushString(value.toString())
+        is String -> pushString(value)
+        is ByteArray -> pushByteArray(value)
+        is Array<*> -> pushList(value, value.asIterable(), memo)
+        is Value -> if (Settings.get.allowUserdata) {
+            pushJavaObjectRaw(value)
+        } else pushNil()
+        is Iterable<*> -> pushList(value, value, memo)
+        is Map<*, *> -> pushTable(value, value, memo)
+        else -> {
+            OpenComputers.log.warn("Tried to push an unsupported value of type to Lua: " + value.javaClass.name + ".")
+            pushNil()
         }
-        when (normalizedValue) {
-            null, Unit -> pushNil()
-            is Boolean -> pushBoolean(normalizedValue)
-            is Byte -> pushInteger(normalizedValue.toLong())
-            is Char -> pushString(normalizedValue.toString())
-            is Short -> pushInteger(normalizedValue.toLong())
-            is Int -> pushInteger(normalizedValue.toLong())
-            is Long -> pushInteger(normalizedValue)
-            is Float -> pushNumber(normalizedValue.toDouble())
-            is Double -> pushNumber(normalizedValue)
-            is String -> pushString(normalizedValue)
-            is ByteArray -> pushByteArray(normalizedValue)
-            is Array<*> -> pushList(normalizedValue, normalizedValue.withIndex().iterator(), memo)
-            is Value -> if (Settings.get.allowUserdata) pushJavaObjectRaw(normalizedValue) else pushNil()
-            is Iterable<*> -> pushList(normalizedValue, normalizedValue.withIndex().iterator(), memo)
-            is Map<*, *> -> pushTable(normalizedValue, normalizedValue, memo)
-            else -> {
-                OpenComputers.log.warn("Tried to push an unsupported value of type to Lua: " + normalizedValue.javaClass.name + ".")
-                pushNil()
-            }
-        }
-        // Remove values kept on the stack for memoization if this is the
-        // original call (not a recursive one, where we might need the memo
-        // info even after returning).
-        if (!recursive) {
-            setTop(oldTop + 1)
-        }
+    }
+    // Remove values kept on the stack for memoization if this is the
+    // original call (not a recursive one, where we might need the memo
+    // info even after returning).
+    if (!recursive) {
+        this.top = oldTop + 1
     }
 }
 
-fun LuaState.pushList(obj: Any, list: Iterator<IndexedValue<Any?>>, memo: IdentityHashMap<Any, Int>) {
+internal fun LuaState.pushList(list: Iterable<Any?>) = pushList(list, list, IdentityHashMap())
+private fun LuaState.pushList(obj: Any, list: Iterable<Any?>, memo: IdentityHashMap<Any, Int>) {
     newTable()
     val tableIndex = top
     memo[obj] = tableIndex
     var count = 0
-    list.forEach { (index, value) ->
-        pushValue(value, memo)
+    list.forEachIndexed { index, value ->
+        pushAny(value, memo)
         rawSet(tableIndex, index + 1)
         count++
     }
@@ -74,15 +80,16 @@ fun LuaState.pushList(obj: Any, list: Iterator<IndexedValue<Any?>>, memo: Identi
     pushValue(tableIndex)
 }
 
-fun LuaState.pushTable(obj: Any, map: Map<*, *>, memo: IdentityHashMap<Any, Int>) {
+internal fun LuaState.pushTable(map: Map<*, *>, memo: IdentityHashMap<Any, Int> = IdentityHashMap()) = pushTable(map, map, memo)
+private fun LuaState.pushTable(obj: Any, map: Map<*, *>, memo: IdentityHashMap<Any, Int>) {
     newTable(0, map.size)
     val tableIndex = top
     memo[obj] = tableIndex
     for ((key, value) in map) {
         if (key != null && key != Unit) {
-            pushValue(key, memo)
+            pushAny(key, memo)
             val keyIndex = top
-            pushValue(value, memo)
+            pushAny(value, memo)
             // Bring key to front, in case of memo from value push.
             // Cannot actually move because that might shift memo info.
             pushValue(keyIndex)
@@ -94,7 +101,7 @@ fun LuaState.pushTable(obj: Any, map: Map<*, *>, memo: IdentityHashMap<Any, Int>
     pushValue(tableIndex)
 }
 
-fun LuaState.toSimpleJavaObject(index: Int): Any? = when (type(index)) {
+private fun LuaState.toSimpleJavaObject(index: Int): Any? = when (type(index)) {
     LuaType.BOOLEAN -> toBoolean(index)
     LuaType.NUMBER -> if (isInteger(index)) toInteger(index) else toNumber(index)
     LuaType.STRING -> toByteArray(index)
@@ -103,5 +110,5 @@ fun LuaState.toSimpleJavaObject(index: Int): Any? = when (type(index)) {
     else -> null
 }
 
-fun LuaState.toSimpleJavaObjects(start: Int): List<Any?> =
+internal fun LuaState.toSimpleJavaObjects(start: Int): List<Any?> =
     (start..top).map { toSimpleJavaObject(it) }

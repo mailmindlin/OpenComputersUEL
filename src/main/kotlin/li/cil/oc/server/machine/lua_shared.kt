@@ -10,22 +10,56 @@ import li.cil.oc.api.driver.item.Memory
 import li.cil.oc.api.machine.Architecture
 import li.cil.oc.api.machine.LimitReachedException
 import li.cil.oc.api.machine.Machine
+import li.cil.oc.server.machine.luac.pushAny
 import li.cil.oc.util.notEmpty
+import li.cil.repack.com.naef.jnlua.LuaState
 import net.minecraft.item.ItemStack
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStream
 
 internal sealed interface InvokeResult {
-    object LimitReached: InvokeResult
-    object Void: InvokeResult
-    class Success(val results: Array<out Any?>): InvokeResult
+    fun pushLua(lua: LuaState): Int
+
+    object Void: InvokeResult {
+        override fun pushLua(lua: LuaState): Int {
+            lua.pushBoolean(true)
+            return 1
+        }
+    }
+    object LimitReached: InvokeResult {
+        override fun pushLua(lua: LuaState): Int = 0
+    }
+    class Success(val results: Array<out Any?>): InvokeResult {
+        override fun pushLua(lua: LuaState): Int {
+            lua.pushBoolean(true)
+            for (result in this.results) {
+                lua.pushAny(result)
+            }
+            return 1 + this.results.size
+        }
+    }
     data class ErrorMessage(val message: String, val args3: Boolean, val stackTrace: String? = null): InvokeResult {
         companion object {
             @JvmStatic
             fun error2(message: String): ErrorMessage = ErrorMessage(message, false)
             @JvmStatic
             fun error3(message: String): ErrorMessage = ErrorMessage(message, true)
+        }
+
+        override fun pushLua(lua: LuaState): Int {
+            if (!this.args3) {
+                lua.pushBoolean(false)
+                lua.pushString(this.message)
+                return 2
+            }
+            lua.pushBoolean(true)
+            lua.pushNil()
+            lua.pushString(this.message)
+            if (this.stackTrace == null)
+                return 3
+            lua.pushString(this.stackTrace)
+            return 4
         }
     }
 }
