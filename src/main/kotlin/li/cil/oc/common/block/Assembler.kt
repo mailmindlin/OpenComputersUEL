@@ -29,5 +29,12 @@ class Assembler : SimpleBlock(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
 
     override val guiType = GuiType.Assembler
 
+    override fun localOnBlockActivated(
+        world: World, pos: BlockPos,
+        player: EntityPlayer, hand: EnumHand, heldItem: ItemStack,
+        side: EnumFacing,
+        hitX: Float, hitY: Float, hitZ: Float)
+    : Boolean = super<GUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
+
     override fun createNewTileEntity(world: World, metadata: Int) = TEAssembler()
 }

@@ -55,7 +55,7 @@ class Charger : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
             }
             return false
         }
-        return super.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
+        return super<TraitGUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
     }
 
     override fun neighborChanged(state: IBlockState, world: World, pos: BlockPos, block: Block, fromPos: BlockPos) {

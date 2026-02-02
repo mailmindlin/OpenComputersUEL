@@ -5,7 +5,11 @@ import li.cil.oc.common.GuiType
 import li.cil.oc.common.tileentity.Disassembler as TEDisassembler
 import li.cil.oc.util.Tooltip
 import net.minecraft.client.util.ITooltipFlag
+import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
+import net.minecraft.util.EnumFacing
+import net.minecraft.util.EnumHand
+import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import li.cil.oc.common.block.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.block.traits.StateAware as TraitStateAware
@@ -23,4 +27,11 @@ class Disassembler : SimpleBlock(), TraitPowerAcceptor, TraitStateAware, TraitGU
     override val guiType = GuiType.Disassembler
 
     override fun createNewTileEntity(world: World, metadata: Int) = TEDisassembler()
+
+    override fun localOnBlockActivated(
+        world: World, pos: BlockPos,
+        player: EntityPlayer, hand: EnumHand, heldItem: ItemStack,
+        side: EnumFacing,
+        hitX: Float, hitY: Float, hitZ: Float)
+            : Boolean = super<TraitGUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
 }

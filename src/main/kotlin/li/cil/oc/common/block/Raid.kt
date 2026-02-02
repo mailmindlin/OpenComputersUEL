@@ -15,6 +15,7 @@ import net.minecraft.entity.EntityLivingBase
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
+import net.minecraft.util.EnumHand
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import kotlin.reflect.KClass
@@ -41,6 +42,13 @@ class Raid(protected val tileTag: KClass<TERaid> = TERaid::class) : SimpleBlock(
     // ----------------------------------------------------------------------- //
 
     override val guiType = GuiType.Raid
+
+    override fun localOnBlockActivated(
+        world: World, pos: BlockPos,
+        player: EntityPlayer, hand: EnumHand, heldItem: ItemStack,
+        side: EnumFacing,
+        hitX: Float, hitY: Float, hitZ: Float)
+            : Boolean = super<GUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
 
     override val tileClass: Class<TERaid> get() = TERaid::class.java
     override fun createNewTileEntity(world: World, metadata: Int) = TERaid()

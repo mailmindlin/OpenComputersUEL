@@ -124,7 +124,7 @@ class Rack : RedstoneAware(), TraitPowerAcceptor, TraitStateAware, TraitGUI {
                 }
             }
         }
-        return super.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
+        return super<TraitGUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
     }
 
     fun rotate(v: Vec3d, t: Float): Vec3d {

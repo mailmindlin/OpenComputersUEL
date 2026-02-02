@@ -73,6 +73,6 @@ class DiskDrive : SimpleBlock(), TraitGUI {
             }
             return false
         }
-        return super.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
+        return super<TraitGUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
     }
 }

@@ -63,7 +63,7 @@ class Case(val tier: Int) : RedstoneAware(), TraitPowerAcceptor, TraitStateAware
             }
             return true
         }
-        return super.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
+        return super<TraitGUI>.localOnBlockActivated(world, pos, player, hand, heldItem, side, hitX, hitY, hitZ)
     }
 
     override fun removedByPlayer(state: IBlockState, world: World, pos: BlockPos, player: EntityPlayer, willHarvest: Boolean): Boolean {
