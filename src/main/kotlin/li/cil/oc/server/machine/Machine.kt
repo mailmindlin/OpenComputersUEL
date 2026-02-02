@@ -56,7 +56,7 @@ class Machine(val host: MachineHost) : ManagedEnvironmentKt(), APIMachine, Runna
 
     var architecture: Architecture? = null
 
-    internal val state = java.util.ArrayDeque<State>()
+    internal val state = Stack<State>()
 
     private val _components = mutableMapOf<String, String>()
 
