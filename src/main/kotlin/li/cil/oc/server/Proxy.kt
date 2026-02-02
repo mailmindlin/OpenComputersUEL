@@ -9,6 +9,6 @@ private class Proxy: CommonProxy() {
   override fun init(e: FMLInitializationEvent) {
     super.init(e)
 
-    NetworkRegistry.INSTANCE.registerGuiHandler(OpenComputers, GuiHandler)
+    NetworkRegistry.INSTANCE.registerGuiHandler(OpenComputers.INSTANCE, GuiHandler)
   }
 }
