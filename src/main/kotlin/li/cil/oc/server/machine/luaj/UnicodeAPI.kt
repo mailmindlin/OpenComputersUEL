@@ -2,6 +2,7 @@ package li.cil.oc.server.machine.luaj
 
 import li.cil.oc.server.machine.UnicodeApi
 import li.cil.oc.util.ExtendedUnicodeHelper
+import li.cil.oc.util.unicodeReversed
 import li.cil.repack.org.luaj.vm2.LuaValue
 
 /** Provide some better Unicode support. */
@@ -20,7 +21,7 @@ class UnicodeAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
       LuaValue.valueOf(s.codePointCount(0, s.length))
     }
 
-    unicode.setClosure("reverse") { args -> LuaValue.valueOf(ExtendedUnicodeHelper.reverse(args.checkjstring(1))) }
+    unicode.setClosure("reverse") { args -> LuaValue.valueOf(args.checkjstring(1).unicodeReversed()) }
 
     unicode.setClosure("sub") { args ->
       val string = args.checkjstring(1)

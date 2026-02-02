@@ -8,6 +8,7 @@ import li.cil.oc.api.machine.Machine
 import li.cil.oc.api.network.Connector
 import li.cil.oc.util.ExtendedUnicodeHelper
 import li.cil.oc.util.FontUtils
+import li.cil.oc.util.unicodeLength
 import java.util.function.IntUnaryOperator
 import kotlin.math.max
 import kotlin.math.min
@@ -88,7 +89,7 @@ object UnicodeApi {
         return builder.toString()
     }
     fun sub(string: String, i: Int, j: Int?): String {
-        val sLength = ExtendedUnicodeHelper.length(string)
+        val sLength = string.unicodeLength
         val start = when {
             i < 0 -> string.offsetByCodePoints(string.length, max(i, -sLength))
             i == 0 -> 0

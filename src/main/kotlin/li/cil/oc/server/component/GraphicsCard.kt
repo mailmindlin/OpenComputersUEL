@@ -17,8 +17,10 @@ import li.cil.oc.common.component.traits.VideoRamDevice
 import li.cil.oc.common.component.traits.VideoRamDevice.Companion.RESERVED_SCREEN_INDEX
 import li.cil.oc.common.component.traits.VideoRamRasterizer
 import li.cil.oc.server.machine.Machine
-import li.cil.oc.util.ExtendedUnicodeHelper
 import li.cil.oc.util.PackedColor
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
+import li.cil.oc.util.unicodeLength
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.nbt.NBTTagList
 import kotlin.math.max
@@ -206,7 +208,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
       return result(Unit, "not enough video memory")
     val node = node ?: return result(Unit, "graphics card appears disconnected")
     val format: PackedColor.ColorFormat = PackedColor.Depth.format(Settings.screenDepthsByTier[tier])
-    val buffer = li.cil.oc.util.TextBuffer(width, height, format)
+    val buffer = li.cil.oc.util.TextBufferData(width, height, format)
     val page = GpuTextBuffer.wrap(node.address()!!, device.nextAvailableBufferIndex(), buffer)
     device.addBuffer(page)
     return result(page.id)
@@ -571,7 +573,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
     val w = args.checkInteger(2).coerceAtLeast(0)
     val h = args.checkInteger(3).coerceAtLeast(0)
     val value = args.checkString(4)
-    if (ExtendedUnicodeHelper.length(value) != 1)
+    if (value.unicodeLength != 1)
       throw Exception("invalid fill value")
     return screen { s ->
       val c = value.codePointAt(0)

@@ -1,9 +1,9 @@
 package li.cil.oc.common.component.traits
 
-import li.cil.oc.util.TextBuffer as UtilTextBuffer
+import li.cil.oc.util.TextBufferData as UtilTextBuffer
 import li.cil.oc.api.internal.TextBuffer
-import li.cil.oc.util.ExtendedUnicodeHelper
 import li.cil.oc.util.PackedColor
+import li.cil.oc.util.unicodeLength
 
 interface TextBufferProxy: TextBuffer {
     val data: UtilTextBuffer
@@ -102,7 +102,7 @@ interface TextBufferProxy: TextBuffer {
     }
 
     override fun set(col: Int, row: Int, s: String, vertical: Boolean) {
-        val sLength = ExtendedUnicodeHelper.length(s)
+        val sLength = s.unicodeLength
         if (col < data.width && (col >= 0 || -col < sLength)) {
             // Make sure the string isn't longer than it needs to be, in particular to
             // avoid sending too much data to our clients.
