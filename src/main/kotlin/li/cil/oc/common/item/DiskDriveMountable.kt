@@ -17,7 +17,7 @@ class DiskDriveMountable(parent: Delegator) : AbstractDelegate(parent) {
         // Open the GUI immediately on the client, too, to avoid the player
         // changing the current slot before it actually opens, which can lead to
         // desynchronization of the player inventory.
-        player.openGui(OpenComputers, GuiType.DiskDriveMountable.id, world, 0, 0, 0)
+        player.openGui(OpenComputers.INSTANCE, GuiType.DiskDriveMountable.id, world, 0, 0, 0)
         player.swingArm(EnumHand.MAIN_HAND)
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)
     }
