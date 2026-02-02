@@ -121,22 +121,22 @@ object Callbacks {
 
   // ----------------------------------------------------------------------- //
 
-  sealed class Callback(val annotation: MachineCallback) {
-    abstract operator fun invoke(instance: Any, context: Context, args: Arguments): Array<*>
+  sealed class Callback(internal val annotation: CallbackAnnotation) {
+    abstract operator fun invoke(instance: Any, context: Context, args: Arguments): Array<out Any?>?
   }
 
-  class ComponentCallback(val method: Method, annotation: MachineCallback): Callback(annotation) {
-    val callWrapper = CallbackWrapper.createCallbackWrapper(method)
+  internal class ComponentCallback(method: Method, annotation: CallbackAnnotation): Callback(annotation) {
+    private val callWrapper = CallbackWrapper.createCallbackWrapper(method)
+    /** The class that declared this callback */
+    val declaringClass: Class<*> = method.declaringClass
 
     override fun invoke(instance: Any, context: Context, args: Arguments) = callWrapper.call(instance, context, args)
   }
 
-  class PeripheralCallback(private val name: String): Callback(PeripheralAnnotation(name)) {
-    override fun invoke(instance: Any, context: Context, args: Arguments): Array<*> {
-      return when (instance) {
-        is ManagedPeripheral -> instance.invoke(name, context, args)
-        else -> throw NoSuchMethodException()
-      }
+  internal class PeripheralCallback(val name: String): Callback(PeripheralAnnotation(name)) {
+    override fun invoke(instance: Any, context: Context, args: Arguments): Array<out Any?>? {
+      val peripheral = (instance as? ManagedPeripheral) ?: throw NoSuchMethodException("instance must be ManagedPeripheral")
+      return peripheral.invoke(name, context, args)
     }
   }
 
