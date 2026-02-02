@@ -17,8 +17,7 @@ import kotlin.math.min
  * relatively fast updates, given a smart algorithm (using copy()/fill()
  * instead of set()ing everything).
  */
-@OptIn(ExperimentalStdlibApi::class)
-class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.ColorFormat) {
+internal class TextBufferData(var width: Int, var height: Int, initialFormat: PackedColor.ColorFormat) {
     constructor(size: ScreenResolution, format: PackedColor.ColorFormat) : this(size.width, size.height, format)
 
     private var _format: PackedColor.ColorFormat = initialFormat
@@ -106,7 +105,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
 
     /** String based fill starting at a specified location. */
     fun set(col: Int, row: Int, s: String, vertical: Boolean): Boolean {
-        val sLength = ExtendedUnicodeHelper.length(s)
+        val sLength = s.unicodeLength
         return if (vertical) {
             if (col < 0 || col >= width) false
             else {
@@ -224,7 +223,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
     }
 
     // copy a portion of another buffer into this buffer
-    fun rawcopy(col: Int, row: Int, w: Int, h: Int, src: TextBuffer, fromCol: Int, fromRow: Int): Boolean {
+    fun rawcopy(col: Int, row: Int, w: Int, h: Int, src: TextBufferData, fromCol: Int, fromRow: Int): Boolean {
         var changed = false
         val colIndex = col - 1
         val rowIndex = row - 1
@@ -286,7 +285,7 @@ class TextBuffer(var width: Int, var height: Int, initialFormat: PackedColor.Col
             }
         }
 
-        val depth = ColorDepth.values()[nbt.getInteger("depth").coerceIn(0..< ColorDepth.values().size - 1)]
+        val depth = ColorDepth.values()[nbt.getInteger("depth").coerceIn(ColorDepth.values().indices)]
         _format = PackedColor.Depth.format(depth)
         _format.load(nbt)
         foreground = PackedColor.Color(nbt.getInteger("foreground").toUInt(), nbt.getBoolean("foregroundIsPalette"))

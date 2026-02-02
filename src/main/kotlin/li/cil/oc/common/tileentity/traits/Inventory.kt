@@ -18,7 +18,7 @@ interface Inventory : TileEntityTrait, InventoryInterface {
     // ----------------------------------------------------------------------- //
 
     class Delegate(val tile: Inventory): NbtSeriailzable {
-        val items: Array<ItemStack> = Array(tile.sizeInventory) { ItemStack.EMPTY }
+        val items: Array<ItemStack> by lazy { Array(tile.sizeInventory) { ItemStack.EMPTY } }
         override fun readFromNBTForServer(nbt: NBTTagCompound) {
             tile.load(nbt)
         }
