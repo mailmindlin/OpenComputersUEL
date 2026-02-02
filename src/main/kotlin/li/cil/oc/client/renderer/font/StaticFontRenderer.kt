@@ -47,11 +47,10 @@ class StaticFontRenderer : TextureFontRenderer() {
     override val textureCount = 1
 
     override fun bindTexture(index: Int) {
-        if (Settings.get.textAntiAlias) {
-            Textures.bind(Textures.Font.AntiAliased)
-        } else {
-            Textures.bind(Textures.Font.Aliased)
-        }
+        Textures.bind(
+            if (Settings.get.textAntiAlias) Textures.Font.AntiAliased
+            else Textures.Font.Aliased
+        )
     }
 
     override fun drawChar(tx: Float, ty: Float, char: Int) {
