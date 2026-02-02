@@ -20,10 +20,9 @@ import org.lwjgl.opengl.GL15
 import java.nio.IntBuffer
 import java.util.concurrent.Callable
 import java.util.concurrent.TimeUnit
-import kotlin.random.Random
 
-object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, RemovalListener<TileEntity, Int> {
-    private val random = Random.Default
+internal object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, RemovalListener<TileEntity, Int> {
+    private val random = java.util.Random()
 
     /** We cache the VBOs for the projectors we render for performance. */
     private val cache = CacheBuilder.newBuilder()
@@ -110,9 +109,8 @@ object HologramRenderer : TileEntitySpecialRenderer<Hologram>(), Callable<Int>, 
 
         // Do a bit of flickering, because that's what holograms do!
         if (Settings.get.hologramFlickerFrequency > 0 && random.nextDouble() < Settings.get.hologramFlickerFrequency) {
-            val rand = java.util.Random()
-            GlStateManager.scale(1 + rand.nextGaussian() * 0.01, 1 + rand.nextGaussian() * 0.001, 1 + rand.nextGaussian() * 0.01)
-            GlStateManager.translate(rand.nextGaussian() * 0.01, rand.nextGaussian() * 0.01, rand.nextGaussian() * 0.01)
+            GlStateManager.scale(1 + random.nextGaussian() * 0.01, 1 + random.nextGaussian() * 0.001, 1 + random.nextGaussian() * 0.01)
+            GlStateManager.translate(random.nextGaussian() * 0.01, random.nextGaussian() * 0.01, random.nextGaussian() * 0.01)
         }
 
         // After the below scaling, hologram is drawn inside a [0..48]x[0..32]x[0..48] box
