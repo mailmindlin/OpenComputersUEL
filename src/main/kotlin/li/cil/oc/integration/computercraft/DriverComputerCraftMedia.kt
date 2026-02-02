@@ -55,7 +55,7 @@ object DriverComputerCraftMedia : Item() {
     class ComputerCraftLabel(val stack: ItemStack) : Label {
         val media = stack.item as IMedia
 
-        override fun getLabel(): String? = media.getLabel(stack)
+        override fun getLabel(): String? = media.getLabel(stack as ItemStack)
 
         override fun setLabel(value: String?) {
             media.setLabel(stack, value)
