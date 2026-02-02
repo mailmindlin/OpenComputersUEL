@@ -178,7 +178,7 @@ abstract class Computer : TileEntityBase.TEEnvironmentBase(), ComponentInventory
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
+        super.writeToNBTForServer(nbt)
         machine?.let { machine ->
             nbt.setNewCompoundTag(ComputerTag) { machine.save(it) }
         }

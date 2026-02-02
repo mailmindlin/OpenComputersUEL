@@ -47,9 +47,6 @@ class Disassembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, Tra
     override val ae2Delegate: AppliedEnergistics2.Delegate = register(AppliedEnergistics2::Delegate)
     override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
 
-    override val items: Array<ItemStack>
-        get() = TODO("Not yet implemented")
-
     override fun getDisplayName(): ITextComponent = super<Inventory>.getDisplayName()
 
     @JvmField

@@ -99,27 +99,21 @@ class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, T
 
     @Callback(doc = "function(): string -- Return the internal floppy disk address")
     fun media(context: Context, args: Arguments): Array<Any?> {
-        val fsNode = filesystemNode
-        return if (fsNode == null) {
-            result(Unit, "drive is empty")
-        } else {
-            result(fsNode.address())
-        }
+        val fsNode = filesystemNode ?: return result(Unit, "drive is empty")
+        return result(fsNode.address())
     }
 
     // ----------------------------------------------------------------------- //
     // Analyzable
 
-    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node>? {
-        val fsNode = filesystemNode
-        return if (fsNode != null) arrayOf(fsNode) else null
-    }
+    override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node>?
+        = filesystemNode?.let { arrayOf(it) }
 
     // ----------------------------------------------------------------------- //
     // IInventory
 
     override fun getDisplayName(): ITextComponent
-            = super<ComponentInventory>.getDisplayName()
+        = super<ComponentInventory>.getDisplayName()
 
     override fun getSizeInventory(): Int = 1
 

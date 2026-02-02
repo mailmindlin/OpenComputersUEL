@@ -226,7 +226,7 @@ class Charger : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitRed
     }
 
     override fun writeToNBTForServer(nbt: NBTTagCompound) {
-        super<TEEnvironmentBase>.writeToNBTForServer(nbt)
+        super.writeToNBTForServer(nbt)
         nbt.setDouble(ChargeSpeedTag, chargeSpeed)
         nbt.setBoolean(HasPowerTag, hasPower)
         nbt.setBoolean(InvertSignalTag, invertSignal)

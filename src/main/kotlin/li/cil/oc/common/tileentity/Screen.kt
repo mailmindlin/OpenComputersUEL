@@ -202,7 +202,7 @@ class Screen(var tier: Int = 0) : TileEntityBase.TEEnvironmentBase(), TraitTextB
     internal val buffer get() = textBufferDelegate.buffer
 
     override fun updateEntity() {
-        super<TEEnvironmentBase>.updateEntity()
+        super.updateEntity()
         if (shouldCheckForMultiBlock && ((isClient && isClientReadyForMultiBlockCheck()) || (isServer && isConnected))) {
             // Make sure we merge in a deterministic order, to avoid getting
             // different results on server and client due to the update order

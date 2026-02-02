@@ -288,9 +288,6 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     // ----------------------------------------------------------------------- //
 
-    override val items: Array<ItemStack>
-        get() = super.items
-
     override fun updateItems(slot: Int, stack: ItemStack?) {
         info.components[slot] = stack ?: ItemStack.EMPTY
     }
