@@ -59,13 +59,13 @@ class GpuTextBuffer(val owner: String, val id: Int, override val data: UtilTextB
     override fun renderHeight(): Int = 0
     override fun setRenderingEnabled(enabled: Boolean) {}
     override fun isRenderingEnabled(): Boolean = false
-    override fun keyDown(character: Char, code: Int, player: EntityPlayer) {}
-    override fun keyUp(character: Char, code: Int, player: EntityPlayer) {}
-    override fun clipboard(value: String, player: EntityPlayer) {}
-    override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer) {}
-    override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer) {}
-    override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer) {}
-    override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer) {}
+    override fun keyDown(character: Char, code: Int, player: EntityPlayer?) {}
+    override fun keyUp(character: Char, code: Int, player: EntityPlayer?) {}
+    override fun clipboard(value: String, player: EntityPlayer?) {}
+    override fun mouseDown(x: Double, y: Double, button: Int, player: EntityPlayer?) {}
+    override fun mouseDrag(x: Double, y: Double, button: Int, player: EntityPlayer?) {}
+    override fun mouseUp(x: Double, y: Double, button: Int, player: EntityPlayer?) {}
+    override fun mouseScroll(x: Double, y: Double, delta: Int, player: EntityPlayer?) {}
     override fun canUpdate(): Boolean = false
     override fun update() {}
     override fun onConnect(node: Node) {}
