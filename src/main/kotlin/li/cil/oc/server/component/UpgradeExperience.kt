@@ -114,7 +114,7 @@ class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
     private fun updateClient() {
         if (host is Robot) {
             val robot = host as Robot
-            robot.synchronizeSlot(robot.componentSlot(node.address()))
+            robot.synchronizeSlot(robot.componentSlot(node!!.address()))
         }
     }
 

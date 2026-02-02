@@ -109,13 +109,13 @@ class MotionSensor(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceIn
 
     private fun sendSignal(entity: EntityLivingBase) {
         if (Settings.get.inputUsername) {
-            node.sendToReachable(
+            node!!.sendToReachable(
                 "computer.signal", "motion",
                 entity.posX - (x + 0.5), entity.posY - (y + 0.5), entity.posZ - (z + 0.5),
                 entity.name
             )
         } else {
-            node.sendToReachable(
+            node!!.sendToReachable(
                 "computer.signal", "motion",
                 entity.posX - (x + 0.5), entity.posY - (y + 0.5), entity.posZ - (z + 0.5)
             )

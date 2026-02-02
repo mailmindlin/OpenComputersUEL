@@ -12,7 +12,7 @@ import li.cil.oc.api.network.Visibility
 // Note-to-self: this has a component to allow the robot telling it has the
 // upgrade.
 class UpgradeAngel : ManagedEnvironmentKt(), DeviceInfo {
-    override val node: Node = nodeFactory(Visibility.Network)
+    override val node: Node? = nodeFactory(Visibility.Network)
         .create()
 
     override fun getDeviceInfo() = Companion.deviceInfo

@@ -97,7 +97,7 @@ class Robot(override val agent: TERobot): Agent(), DeviceInfo {
       return result(Unit, what)
     }
 
-    if (!node.tryChangeBuffer(-Settings.get.robotMoveCost))
+    if (!node!!.tryChangeBuffer(-Settings.get.robotMoveCost))
       return result(Unit, "not enough energy")
 
     if (!agent.move(direction)) {
@@ -114,7 +114,7 @@ class Robot(override val agent: TERobot): Agent(), DeviceInfo {
   @Callback(doc = "function(clockwise:boolean):boolean -- Rotate in the specified direction.")
   fun turn(context: Context, args: Arguments): Result {
     val clockwise = args.checkBoolean(0)
-    if (!node.tryChangeBuffer(-Settings.get.robotTurnCost))
+    if (!node!!.tryChangeBuffer(-Settings.get.robotTurnCost))
       return result(Unit, "not enough energy")
 
     agent.rotate(if (clockwise) EnumFacing.UP else EnumFacing.DOWN)

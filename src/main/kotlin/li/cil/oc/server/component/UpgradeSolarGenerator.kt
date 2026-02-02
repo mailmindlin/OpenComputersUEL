@@ -42,7 +42,7 @@ class UpgradeSolarGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
             isSunShining = isSunVisible
         }
         if (isSunShining) {
-            node.changeBuffer(Settings.get.solarGeneratorEfficiency)
+            node!!.changeBuffer(Settings.get.solarGeneratorEfficiency)
         }
     }
 

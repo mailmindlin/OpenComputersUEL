@@ -94,7 +94,7 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
                 fs.fileSystem.close()
                 fs.fileSystem.list("/")!!.forEach { fs.fileSystem.delete(it) }
                 fs.save(NBTTagCompound()) // Flush buffered fs.
-                fs.node().remove()
+                fs.node()!!.remove()
                 filesystem = null
             }
         }
@@ -115,7 +115,7 @@ class Raid : TileEntityBase.TEEnvironmentBase(), TraitEnvironment, TraitInventor
             ) as FileSystem
             val nbtToSetAddress = NBTTagCompound()
             nbtToSetAddress.setString(NodeData.AddressTag, id)
-            fs.node().load(nbtToSetAddress)
+            fs.node()!!.load(nbtToSetAddress)
             (fs.node() as Component).setVisibility(Visibility.Network)
             // Ensure we're in a network before connecting the raid fs.
             ApiNetwork.joinNewNetwork(node)

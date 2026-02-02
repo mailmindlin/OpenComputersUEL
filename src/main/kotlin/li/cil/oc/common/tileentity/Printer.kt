@@ -37,11 +37,11 @@ import li.cil.oc.server.PacketSender as ServerPacketSender
 
 class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatable, SidedEnvironment, TraitStateAware, TraitTickable, ISidedInventory, DeviceInfo {
     @JvmField
-    val node: ComponentConnector = ApiNetwork.newNode(this, Visibility.Network)!!
+    val node: ComponentConnector? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("printer3d")
         .withConnector(Settings.get.bufferConverter)
         .create()
-    override fun node(): Node = node
+    override fun node(): Node? = node
 
     override val inventoryDelegate: Inventory.Delegate = register(Inventory::Delegate)
     override val rotatableDelegate: Rotatable.RotatableDelegate = register(Rotatable::RotatableDelegate)
@@ -306,7 +306,7 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
         if (output != null) {
             val want = requiredEnergy.coerceIn(1.0 .. Settings.get.printerTickAmount)
-            val have = want + (if (Settings.get.ignorePower) 0.0 else node.changeBuffer(-want))
+            val have = want + (if (Settings.get.ignorePower) 0.0 else node!!.changeBuffer(-want))
             requiredEnergy -= have
             if (requiredEnergy <= 0) {
                 val result = getStackInSlot(slotOutput)

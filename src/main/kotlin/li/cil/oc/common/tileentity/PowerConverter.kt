@@ -41,7 +41,7 @@ class PowerConverter : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, T
 
     @SideOnly(Side.CLIENT)
     override fun hasConnector(side: EnumFacing?): Boolean = true
-    override fun connector(side: EnumFacing?): Connector = node
+    override fun connector(side: EnumFacing?): Connector? = node
 
     override val energyThroughput: Double
         get() = Settings.get.powerConverterRate

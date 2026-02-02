@@ -43,7 +43,7 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
         val dbAddress = args.checkString(1)
         val localStack = inventory.getStackInSlot(localSlot)
 
-        return DatabaseAccess.withDatabase(node, dbAddress) { database ->
+        return DatabaseAccess.withDatabase(node!!, dbAddress) { database ->
             val dbSlot = args.checkSlot(database.data, 2)
             val nonEmpty = database.getStackInSlot(dbSlot) != ItemStack.EMPTY // zero size stacks!
             database.setStackInSlot(dbSlot, localStack.copy())
@@ -57,7 +57,7 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
         val dbAddress = args.checkString(1)
         val localStack = inventory.getStackInSlot(localSlot)
 
-        return DatabaseAccess.withDatabase(node, dbAddress) { database ->
+        return DatabaseAccess.withDatabase(node!!, dbAddress) { database ->
             val dbSlot = args.checkSlot(database.data, 2)
             val dbStack = database.getStackInSlot(dbSlot)
             result(InventoryUtils.haveSameItemType(localStack, dbStack ?: ItemStack.EMPTY, args.optBoolean(3, false)))

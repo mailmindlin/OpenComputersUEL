@@ -3,7 +3,6 @@ package li.cil.oc.server.component
 import li.cil.oc.Constants
 import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
-import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
@@ -42,7 +41,7 @@ class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), De
     override fun update() {
         super.update()
         if (Settings.get.isTickMultiple(host.world) && ticket != null) {
-            if (!node.tryChangeBuffer(-Settings.get.chunkloaderCost * Settings.get.tickFrequency)) {
+            if (!node!!.tryChangeBuffer(-Settings.get.chunkloaderCost * Settings.get.tickFrequency)) {
                 ticket?.let { t ->
                     try {
                         ForgeChunkManager.releaseTicket(t)

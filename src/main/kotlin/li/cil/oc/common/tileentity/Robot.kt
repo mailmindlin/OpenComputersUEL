@@ -379,13 +379,14 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         super.updateEntity()
         if (isServer) {
             if (Settings.get.isTickMultiple(world)) {
+                val botNode = bot!!.node!!
                 if (info.tier == 3) {
-                    bot!!.node.changeBuffer(Double.POSITIVE_INFINITY)
+                    botNode.changeBuffer(Double.POSITIVE_INFINITY)
                 }
-                globalBuffer = bot!!.node.globalBuffer()
-                globalBufferSize = bot.node.globalBufferSize()
+                globalBuffer = botNode.globalBuffer()
+                globalBufferSize = botNode.globalBufferSize()
                 info.totalEnergy = globalBuffer.toInt()
-                info.robotEnergy = bot.node.localBuffer().toInt()
+                info.robotEnergy = botNode.localBuffer().toInt()
                 powerDelegate.updatePowerInformation()
             }
             if (!appliedToolEnchantments) {
@@ -572,7 +573,7 @@ class Robot : Computer(), TraitPowerInformation, TraitRotatableTile, IFluidHandl
         super.onDisconnect(node)
         if (node == this.node()) {
             node.remove()
-            bot!!.node().remove()
+            bot!!.node()!!.remove()
             for (slot in componentSlots) {
                 getComponentInSlot(slot)?.node()?.remove()
             }

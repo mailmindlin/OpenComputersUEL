@@ -65,7 +65,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
         withScreen(RESERVED_SCREEN_INDEX) { s ->
           // addon mod screen type that is not video ram aware
           if (s !is VideoRamRasterizer) return@withScreen true
-          return@withScreen s.removeBuffer(node.address(), id)
+          return@withScreen s.removeBuffer(node!!.address()!!, id)
         }
       }
       if (id == bufferIndex)
@@ -204,11 +204,10 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
       return result(Unit, "invalid page dimensions: must be greater than zero")
     if (size > (totalVRAM - device.calculateUsedMemory()))
       return result(Unit, "not enough video memory")
-    if (node == null)
-      return result(Unit, "graphics card appears disconnected")
+    val node = node ?: return result(Unit, "graphics card appears disconnected")
     val format: PackedColor.ColorFormat = PackedColor.Depth.format(Settings.screenDepthsByTier[tier])
     val buffer = li.cil.oc.util.TextBuffer(width, height, format)
-    val page = GpuTextBuffer.wrap(node.address(), device.nextAvailableBufferIndex(), buffer)
+    val page = GpuTextBuffer.wrap(node.address()!!, device.nextAvailableBufferIndex(), buffer)
     device.addBuffer(page)
     return result(page.id)
   }
@@ -316,7 +315,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
   fun bind(context: Context, args: Arguments): Result {
     val address = args.checkString(0)
     val reset = args.optBoolean(1, true)
-    val host = (node.network().node(address)
+    val host = (node!!.network().node(address)
       ?: return result(Unit, "invalid address"))
       .host() as? TextBuffer
       ?: return result(Unit, "not a screen");
@@ -542,7 +541,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
     val vertical = args.optBoolean(3, false)
 
     return screen { s ->
-      if (!resolveInvokeCosts(bufferIndex, context, costs.set, ExtendedUnicodeHelper.length(value), Settings.get.gpuSetCost))
+      if (!resolveInvokeCosts(bufferIndex, context, costs.set, value.unicodeLength, Settings.get.gpuSetCost))
         return result(Unit, "not enough energy")
       s.set(x, y, value, vertical)
       return result(true)
@@ -580,27 +579,26 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
       if (resolveInvokeCosts(bufferIndex, context, costs.fill, w * h, cost)) {
         s.fill(x, y, w, h, c)
         result(true)
-      }
-      else {
+      } else {
         result(Unit, "not enough energy")
       }
     }
   }
 
-  private fun consumePower(n: Double, cost: Double) = node.tryChangeBuffer(-n * cost)
+  private fun consumePower(n: Double, cost: Double) = node!!.tryChangeBuffer(-n * cost)
 
   // ----------------------------------------------------------------------- //
 
   override fun onMessage(message: Message) {
     super.onMessage(message)
-    if (node.isNeighborOf(message.source())) {
+    if (node!!.isNeighborOf(message.source())) {
       if (message.name() == "computer.stopped" || message.name() == "computer.started") {
         bufferIndex = RESERVED_SCREEN_INDEX
         device.removeAllBuffers()
       }
     }
 
-    if (message.name() == "computer.stopped" && node.isNeighborOf(message.source())) {
+    if (message.name() == "computer.stopped" && node!!.isNeighborOf(message.source())) {
       screen { s ->
         val (gmw, gmh) = maxResolution
         val smw = s.maximumWidth
@@ -698,7 +696,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
         val nbtPage = nbtPages.getCompoundTagAt(i)
         val idx: Int = nbtPage.getInteger(NBT_PAGE_IDX)
         val data = nbtPage.getCompoundTag(NBT_PAGE_DATA)
-        device.loadBuffer(node.address(), idx, data)
+        device.loadBuffer(node!!.address()!!, idx, data)
       }
     }
   }

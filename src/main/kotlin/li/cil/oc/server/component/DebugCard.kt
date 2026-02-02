@@ -64,7 +64,7 @@ import net.minecraftforge.fml.common.Loader
 import net.minecraftforge.fml.common.ModAPIManager
 
 class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
-    override val node: ComponentConnector = Network.newNode(this, Visibility.Neighbors)!!
+    override val node: ComponentConnector? = Network.newNode(this, Visibility.Neighbors)!!
         .withComponent("debug")
         .withConnector()
         .create()
@@ -103,7 +103,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     @Callback(doc = """function(value:number):number -- Changes the component network's energy buffer by the specified delta.""")
     fun changeBuffer(context: Context, args: Arguments): Array<Any?> {
         checkAccess()
-        return result(node.changeBuffer(args.checkDouble(0)))
+        return result(node!!.changeBuffer(args.checkDouble(0)))
     }
 
     @Callback(doc = """function():number -- Get the container's X position in the world.""")
@@ -238,10 +238,10 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         val z = args.checkInteger(2)
         val other = findNode(BlockPosition(x, y, z))
         return if (other != null) {
-            remoteNode?.let { node.disconnect(it) }
+            remoteNode?.let { node!!.disconnect(it) }
             remoteNode = other
             remoteNodePosition = Triple(x, y, z)
-            node.connect(other)
+            node!!.connect(other)
             result(true)
         } else {
             result(Unit, "no node found at this position")
@@ -289,7 +289,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         DebugNetwork.getEndpoint(destination)
             ?.firstOrNull { it != this@DebugCard }
             ?.let { endpoint ->
-                val packet = Network.newPacket(node.address(), destination, 0, args.drop(1))!!
+                val packet = Network.newPacket(node!!.address(), destination, 0, args.drop(1))!!
                 endpoint.receivePacket(packet)
             }
         return result()
@@ -297,7 +297,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
 
     override fun receivePacket(packet: Packet) {
         val distance = 0
-        node.sendToReachable(
+        node!!.sendToReachable(
             "computer.signal",
             "debug_message",
             packet.source(),

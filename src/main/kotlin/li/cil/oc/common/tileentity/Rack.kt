@@ -85,7 +85,7 @@ class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, T
     val nodeMapping: Array<Array<EnumFacing?>> = Array(sizeInventory) { arrayOfNulls<EnumFacing>(4) }
 
     @JvmField
-    val snifferNodes: Array<Array<Node>> = Array(sizeInventory) {
+    val snifferNodes: Array<Array<Node?>> = Array(sizeInventory) {
         Array(3) { ApiNetwork.newNode(this, Visibility.Neighbors)!!.create() }
     }
 
@@ -108,7 +108,7 @@ class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, T
                     node.disconnect(plug)
                 }
             } else if (connectableIndex >= 0) {
-                snifferNodes[slot][connectableIndex].remove()
+                snifferNodes[slot][connectableIndex]!!.remove()
             }
         }
 
@@ -204,7 +204,7 @@ class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, T
         reconnect(plug.side)
     }
 
-    override fun createNode(plug: Hub.Plug): Node = ApiNetwork.newNode(plug, Visibility.Network)!!
+    override fun createNode(plug: Hub.Plug): Connector? = ApiNetwork.newNode(plug, Visibility.Network)!!
         .withConnector(Settings.get.bufferDistributor)
         .create()
 
@@ -257,7 +257,7 @@ class Rack : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitHub, T
                         if (side == sourceSide && connectableIndex < mountable.connectableCount) {
                             val connectable = mountable.getConnectableAt(connectableIndex)
                             if (connectable != null && connectable.node() != message.source()) {
-                                snifferNodes[slot][connectableIndex].sendToNeighbors("network.message", packet)
+                                snifferNodes[slot][connectableIndex]!!.sendToNeighbors("network.message", packet)
                             }
                         }
                     }

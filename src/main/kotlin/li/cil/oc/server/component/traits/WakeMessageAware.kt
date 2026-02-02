@@ -35,7 +35,7 @@ interface WakeMessageAware : NetworkAware {
     fun isPacketAccepted(packet: Packet, distance: Double): Boolean = true
 
     fun receivePacket(packet: Packet, distance: Double, host: EnvironmentHost?) {
-        wakeMessageHelper.receivePacket(packet, distance, host, node, ::isPacketAccepted)
+        wakeMessageHelper.receivePacket(packet, distance, host, node!!, ::isPacketAccepted)
     }
 
     fun loadWakeMessage(nbt: NBTTagCompound) {

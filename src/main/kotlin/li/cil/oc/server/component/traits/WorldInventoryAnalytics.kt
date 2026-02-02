@@ -62,7 +62,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
             val dbAddress = args.checkString(2)
             val stack = inventory.getStackInSlot(slot)
 
-            DatabaseAccess.withDatabase(node, dbAddress) { database ->
+            DatabaseAccess.withDatabase(node!!, dbAddress) { database ->
                 val dbSlot = args.checkSlot(database.data, 3)
                 val dbStack = database.getStackInSlot(dbSlot)
                 val checkNBT = args.optBoolean(4, false)
@@ -150,7 +150,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
         val dbAddress = args.checkString(2)
 
         fun store(stack: ItemStack): Array<Any?> {
-            return DatabaseAccess.withDatabase(node, dbAddress) { database ->
+            return DatabaseAccess.withDatabase(node!!, dbAddress) { database ->
                 val dbSlot = args.checkSlot(database.data, 3)
                 val nonEmpty = database.getStackInSlot(dbSlot) != ItemStack.EMPTY // zero size stacks
                 database.setStackInSlot(dbSlot, stack.copy())

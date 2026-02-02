@@ -37,7 +37,7 @@ class Drive(
         .create()
 
     private val savePath: File
-        get() = File(DimensionManager.getCurrentSaveRootDirectory(), Settings.savePath + node.address() + ".bin")
+        get() = File(DimensionManager.getCurrentSaveRootDirectory(), Settings.savePath + node!!.address() + ".bin")
 
     private val sectorSize = 512
     private val data = ByteArray(capacity)
@@ -148,7 +148,7 @@ class Drive(
     override fun load(nbt: NBTTagCompound) {
         super.load(nbt)
 
-        if (node.address() != null) {
+        if (node!!.address() != null) {
             try {
                 val path = savePath
                 if (path.exists()) {
@@ -176,7 +176,7 @@ class Drive(
     override fun save(nbt: NBTTagCompound) {
         super.save(nbt)
 
-        if (node.address() != null) {
+        if (node!!.address() != null) {
             try {
                 val path = savePath
                 path.parentFile.mkdirs()
@@ -228,7 +228,7 @@ class Drive(
 
     private fun diskActivity() {
         if (sound != null && host != null) {
-            ServerPacketSender.sendFileSystemActivity(node, host, sound)
+            ServerPacketSender.sendFileSystemActivity(node!!, host, sound)
         }
     }
 }

@@ -90,7 +90,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
     override var tunnel: String = "creative"
 
     @JvmField
-    val componentNodes: Array<Component> = Array(6) {
+    val componentNodes: Array<Component?> = Array(6) {
         ApiNetwork.newNode(this, Visibility.Network)!!
             .withComponent("relay")
             .create()
@@ -127,7 +127,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
     override fun onAnalyze(player: EntityPlayer, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Array<Node>? {
         return if (isWirelessEnabled) {
             player.sendMessage(Localization.Analyzer.WirelessStrength(strength))
-            arrayOf(componentNodes[side.index])
+            arrayOf(componentNodes[side.index]!!)
         } else null
     }
 
@@ -236,7 +236,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
 
     // ----------------------------------------------------------------------- //
 
-    override fun createNode(plug: Hub.Plug): Connector = ApiNetwork.newNode(plug, Visibility.Network)!!
+    override fun createNode(plug: Hub.Plug): Connector? = ApiNetwork.newNode(plug, Visibility.Network)!!
         .withConnector(Math.round(Settings.get.bufferAccessPoint).toDouble())
         .create()
 
@@ -246,9 +246,9 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
             ApiNetwork.joinWirelessNetwork(this)
         }
         if (plug.isPrimary)
-            plug.node.connect(componentNodes[plug.side.ordinal])
+            plug.node!!.connect(componentNodes[plug.side.ordinal])
         else
-            componentNodes[plug.side.ordinal].remove()
+            componentNodes[plug.side.ordinal]!!.remove()
     }
 
     override fun onPlugDisconnect(plug: Hub.Plug, node: Node) {
@@ -257,9 +257,9 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
             ApiNetwork.leaveWirelessNetwork(this)
         }
         if (plug.isPrimary && node != plug.node)
-            plug.node.connect(componentNodes[plug.side.ordinal])
+            plug.node!!.connect(componentNodes[plug.side.ordinal])
         else
-            componentNodes[plug.side.ordinal].remove()
+            componentNodes[plug.side.ordinal]!!.remove()
     }
 
     // ----------------------------------------------------------------------- //
@@ -354,7 +354,7 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
         }
         nbt.getTagList(ComponentNodesTag, NBT.TAG_COMPOUND).forEachIndexed { index, tag ->
             if (tag is NBTTagCompound && index < componentNodes.size) {
-                componentNodes[index].load(tag)
+                componentNodes[index]!!.load(tag)
             }
         }
     }

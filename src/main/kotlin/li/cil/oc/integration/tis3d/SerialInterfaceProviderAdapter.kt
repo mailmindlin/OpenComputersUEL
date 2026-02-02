@@ -6,6 +6,7 @@ import li.cil.oc.api.internal.Adapter
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
@@ -56,8 +57,8 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
 
         // -----------------------------------------------------------------------
 
-        override fun node(): Node = node
-        val node: Node = Network.newNode(this, Visibility.Network)!!.withComponent("serial_port").create()
+        override fun node() = node
+        val node: Component? = Network.newNode(this, Visibility.Network)!!.withComponent("serial_port").create()
 
         override fun onMessage(message: Message) {}
 
@@ -130,13 +131,13 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
                 synchronized(writeBuffer) {
                     readBuffer.clear()
                     writeBuffer.clear()
-                    node.remove()
+                    node!!.remove()
                 }
             }
         }
 
         override fun readFromNBT(nbt: NBTTagCompound) {
-            node.load(nbt)
+            node!!.load(nbt)
 
             writeBuffer.clear()
             writeBuffer.addAll(nbt.getIntArray("writeBuffer").map { it.toShort() })
@@ -146,7 +147,7 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
         }
 
         override fun writeToNBT(nbt: NBTTagCompound) {
-            node.save(nbt)
+            node!!.save(nbt)
 
             nbt.setIntArray("writeBuffer", writeBuffer.map { it.toInt() }.toIntArray())
             nbt.setIntArray("readBuffer", readBuffer.map { it.toInt() }.toIntArray())
@@ -154,7 +155,7 @@ object SerialInterfaceProviderAdapter : SerialInterfaceProvider {
         }
 
         private fun ensureConnected() {
-            if (tileEntity.node()!!.network() != node.network()) {
+            if (tileEntity.node()!!.network() != node!!.network()) {
                 tileEntity.node()!!.connect(node)
             }
         }

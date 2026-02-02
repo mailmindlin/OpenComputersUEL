@@ -83,7 +83,7 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
         }
 
         return if (args.count() > 2) {
-            DatabaseAccess.withDatabase(node, args.checkString(2)) { database ->
+            DatabaseAccess.withDatabase(node!!, args.checkString(2)) { database ->
                 set(database.data)
             }
         } else {
@@ -93,7 +93,7 @@ class UpgradeDatabase(val data: IInventory) : ManagedEnvironmentKt(), Database, 
 
     @Callback(doc = "function(address:string):number -- Copies the data stored in this database to another database with the specified address.")
     fun clone(context: Context, args: Arguments): Result {
-        return DatabaseAccess.withDatabase(node, args.checkString(0)) { database ->
+        return DatabaseAccess.withDatabase(node!!, args.checkString(0)) { database ->
             val numberToCopy = minOf(data.sizeInventory, database.data.sizeInventory)
             for (slot in 0 until numberToCopy) {
                 database.data.setInventorySlotContents(slot, data.getStackInSlot(slot).copy())

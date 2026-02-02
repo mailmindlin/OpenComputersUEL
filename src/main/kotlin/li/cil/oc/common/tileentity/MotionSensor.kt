@@ -11,7 +11,7 @@ class MotionSensor : TileEntityBase.TEEnvironmentBase(), TraitTickable {
     @JvmField
     val motionSensor = MotionSensorComponent(this)
 
-    override fun node(): Node = motionSensor.node()
+    override fun node() = motionSensor.node()
 
     override fun updateEntity() {
         super.updateEntity()

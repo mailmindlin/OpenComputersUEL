@@ -68,13 +68,13 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
     @Callback(doc = "function():number -- Get the operational range of the navigation upgrade.")
     fun getRange(context: Context, args: Arguments): Array<Any?> = result(data.getSize(host.world) / 2)
 
-    @Suppress("unused", "unused_parameter")
+    @Suppress("unused")
     @Callback(doc = "function(range:number):table -- Find waypoints in the specified range.")
     fun findWaypoints(context: Context, args: Arguments): Array<Any?> {
         val range = args.checkDouble(0).coerceIn(0.0, Settings.get.maxWirelessRange[Tier.Two])
         if (range <= 0)
             return result(emptyArray<Any>())
-        if (!node.tryChangeBuffer(-range * Settings.get.wirelessCostPerRange[Tier.Two] * 0.25))
+        if (!node!!.tryChangeBuffer(-range * Settings.get.wirelessCostPerRange[Tier.Two] * 0.25))
             return result(Unit, "not enough energy")
         context.pause(0.5)
         val position = BlockPosition(host)
@@ -88,7 +88,7 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
                 "position" to arrayOf(delta.x, delta.y, delta.z),
                 "redstone" to waypoint.maxInput,
                 "label" to waypoint.label,
-                "address" to waypoint.node.address()
+                "address" to waypoint.node!!.address()
             )
         }.toTypedArray())
     }

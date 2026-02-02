@@ -55,7 +55,7 @@ class UpgradeTank(val owner: EnvironmentHost, capacity: Int) : ManagedEnvironmen
     override fun fill(stack: FluidStack?, doFill: Boolean): Int {
         val amount = tank.fill(stack, doFill)
         if (doFill && amount > 0) {
-            node.sendToVisible("computer.signal", "tank_changed", tankIndex, amount)
+            node!!.sendToVisible("computer.signal", "tank_changed", tankIndex, amount)
         }
         return amount
     }
@@ -63,7 +63,7 @@ class UpgradeTank(val owner: EnvironmentHost, capacity: Int) : ManagedEnvironmen
     override fun drain(maxDrain: Int, doDrain: Boolean): FluidStack? {
         val amount = tank.drain(maxDrain, doDrain)
         if (doDrain && amount != null && amount.amount > 0) {
-            node.sendToVisible("computer.signal", "tank_changed", tankIndex, -amount.amount)
+            node!!.sendToVisible("computer.signal", "tank_changed", tankIndex, -amount.amount)
         }
         return amount
     }

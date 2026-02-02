@@ -4,6 +4,7 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
@@ -11,7 +12,7 @@ import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import net.minecraft.nbt.NBTTagCompound
 
 abstract class RedstoneSignaller : ManagedEnvironmentKt() {
-    override val node: Node = nodeFactory(Visibility.Network)
+    override val node: Component? = nodeFactory(Visibility.Network)
         .withComponent("redstone", Visibility.Neighbors)
         .create()
 
@@ -39,12 +40,12 @@ abstract class RedstoneSignaller : ManagedEnvironmentKt() {
         if (args.color >= 0) {
             flatArgs.add(args.color)
         }
-        node().sendToReachable("computer.signal", *flatArgs.toTypedArray())
+        node!!.sendToReachable("computer.signal", *flatArgs.toTypedArray())
         if (args.oldValue < wakeThreshold && args.newValue >= wakeThreshold) {
             if (wakeNeighborsOnly)
-                node().sendToNeighbors("computer.start")
+                node!!.sendToNeighbors("computer.start")
             else
-                node().sendToReachable("computer.start")
+                node!!.sendToReachable("computer.start")
         }
     }
 

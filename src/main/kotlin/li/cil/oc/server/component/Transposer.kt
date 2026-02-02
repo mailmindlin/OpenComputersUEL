@@ -34,7 +34,7 @@ object Transposer {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
 
         override fun onTransferContents(): String? {
-            return if (node.tryChangeBuffer(-Settings.get.transposerCost)) {
+            return if (node!!.tryChangeBuffer(-Settings.get.transposerCost)) {
                 null
             } else {
                 "not enough energy"
@@ -57,7 +57,7 @@ object Transposer {
 
     class Upgrade(val host: EnvironmentHost) : Common() {
         init {
-            node.setVisibility(Visibility.Neighbors)
+            node!!.setVisibility(Visibility.Neighbors)
         }
 
         override val position: BlockPosition

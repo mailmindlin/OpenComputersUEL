@@ -121,6 +121,6 @@ class Keyboard(val host: EnvironmentHost) : ManagedEnvironmentKt(), li.cil.oc.ap
     }
 
     protected fun signal(vararg args: Any?) {
-        node.sendToReachable("computer.checked_signal", *args)
+        node!!.sendToReachable("computer.checked_signal", *args)
     }
 }

@@ -7,7 +7,7 @@ import net.minecraft.nbt.NBTTagCompound
 class Transposer : TileEntityBase.TEEnvironmentBase() {
     private val transposer = ComponentTransposer.Block(this)
 
-    override fun node(): Node = transposer.node
+    override fun node() = transposer.node
 
     // Used on client side to check whether to render activity indicators.
     @JvmField

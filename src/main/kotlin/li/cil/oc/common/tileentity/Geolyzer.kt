@@ -8,7 +8,7 @@ class Geolyzer: TileEntityBase.TEEnvironmentBase() {
     @JvmField
     val geolyzer = ComponentGeolyzer(this)
 
-    override fun node(): Node = geolyzer.node
+    override fun node() = geolyzer.node
 
     override fun readFromNBTForServer(nbt: NBTTagCompound) {
         super.readFromNBTForServer(nbt)

@@ -41,13 +41,13 @@ abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo
     val data = args.checkByteArray(0)
     if (data.size > Settings.get.dataCardHardLimit) throw IllegalArgumentException("data size limit exceeded")
     val cost = baseCost + data.size * byteCost
-    if (!node.tryChangeBuffer(-cost)) throw Exception("not enough energy")
+    if (!node!!.tryChangeBuffer(-cost)) throw Exception("not enough energy")
     if (data.size > Settings.get.dataCardSoftLimit) context.pause(Settings.get.dataCardTimeout)
     return data
   }
 
   protected fun checkCost(baseCost: Double) {
-    if (!node.tryChangeBuffer(-baseCost)) throw Exception("not enough energy")
+    if (!node!!.tryChangeBuffer(-baseCost)) throw Exception("not enough energy")
   }
 
   protected fun trivialCost(context: Context, args: Arguments) =

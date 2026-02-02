@@ -23,7 +23,7 @@ class Drone(override val agent: EntityDrone): Agent(), DeviceInfo {
   override val node = nodeFactory(Visibility.Network, "drone")
     .withConnector(Settings.get.bufferDrone)
     .create()
-  override fun node(): ComponentConnector = node
+  override fun node(): ComponentConnector? = node
 
   private val deviceInfo_ by lazy {
     mapOf(

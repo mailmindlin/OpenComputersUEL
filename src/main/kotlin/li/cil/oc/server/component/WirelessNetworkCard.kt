@@ -86,7 +86,7 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
     private fun checkPower() {
         val cost = wirelessCostPerRange
         if (cost > 0 && !Settings.get.ignorePower) {
-            if (!node.tryChangeBuffer(-strength * cost)) {
+            if (!node!!.tryChangeBuffer(-strength * cost)) {
                 throw IOException("not enough energy")
             }
         }

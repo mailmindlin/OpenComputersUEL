@@ -18,7 +18,7 @@ class Tablet(val tablet: TabletWrapper): ManagedEnvironmentKt(), DeviceInfo {
     .withConnector(Settings.get.bufferTablet)
     .create()
 
-  override fun node(): ComponentConnector = node
+  override fun node() = node
 
   private val deviceInfo_ by lazy {
     mapOf(

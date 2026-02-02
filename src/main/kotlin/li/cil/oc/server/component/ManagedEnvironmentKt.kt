@@ -12,8 +12,8 @@ import li.cil.oc.api.prefab.AbstractManagedEnvironment
 abstract class ManagedEnvironmentKt: AbstractManagedEnvironment() {
     protected inline fun nodeFactory(visibility: Visibility = Visibility.Neighbors): NodeBuilder = NetworkFactory.newNode(this, visibility)!!
     protected inline fun nodeFactory(visibility: Visibility, component: String): ComponentBuilder = nodeFactory(visibility).withComponent(component)
-    protected inline fun newComponentConnector(visibility: Visibility, component: String): ComponentConnector = nodeFactory(visibility).withComponent(component).withConnector().create()
+    protected inline fun newComponentConnector(visibility: Visibility, component: String): ComponentConnector? = nodeFactory(visibility).withComponent(component).withConnector().create()
 
-    internal abstract val node: Node
-    override fun node(): Node = this.node
+    internal abstract val node: Node?
+    override fun node(): Node? = this.node
 }

@@ -304,7 +304,7 @@ class InternetCard: ManagedEnvironmentKt(), DeviceInfo {
           channel.close()
           return@add
         }
-        owner.node.sendToVisible("computer.signal", "internet_ready", id.toString())
+        owner.node!!.sendToVisible("computer.signal", "internet_ready", id.toString())
       }
     }
 

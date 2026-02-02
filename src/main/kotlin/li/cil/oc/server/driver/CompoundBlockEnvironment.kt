@@ -17,12 +17,12 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
     // Block drivers with visibility < network usually won't make much sense,
     // but let's play it safe and use the least possible visibility based on
     // the drivers we encapsulate.
-    private val _node: Component = ApiNetwork.newNode(this,
+    private val _node: Component? = ApiNetwork.newNode(this,
         environments.mapNotNull { it.second.node()?.reachability() }.maxOrNull() ?: Visibility.None)!!
         .withComponent(name)
         .create()
 
-    override fun node(): Component = _node
+    override fun node() = _node
 
     val updatingEnvironments: List<ManagedEnvironment> = environments.map { it.second }.filter { it.canUpdate() }
 
@@ -72,7 +72,7 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
     override fun load(nbt: NBTTagCompound) {
         // Ignore existing data if the underlying type is different.
         if (nbt.hasKey(TypeHashTag) && nbt.getLong(TypeHashTag) != typeHash) return
-        node().load(nbt)
+        node()!!.load(nbt)
         for ((driver, environment) in environments) {
             if (nbt.hasKey(driver)) {
                 try {
@@ -86,7 +86,7 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
 
     override fun save(nbt: NBTTagCompound) {
         nbt.setLong(TypeHashTag, typeHash)
-        node().save(nbt)
+        node()!!.save(nbt)
         for ((driver, environment) in environments) {
             try {
                 nbt.setNewCompoundTag(driver, environment::save)

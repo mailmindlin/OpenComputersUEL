@@ -177,14 +177,14 @@ open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
             if (remainingTicks == 0 && inventory == null) {
                 updateClient()
             }
-            node.changeBuffer(Settings.get.generatorEfficiency)
+            node!!.changeBuffer(Settings.get.generatorEfficiency)
         }
     }
 
     private fun updateClient() {
         if (host is li.cil.oc.api.internal.Robot) {
             val robot = host as li.cil.oc.api.internal.Robot
-            robot.synchronizeSlot(robot.componentSlot(node.address()))
+            robot.synchronizeSlot(robot.componentSlot(node!!.address()))
         }
     }
 

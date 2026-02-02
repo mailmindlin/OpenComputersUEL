@@ -131,11 +131,11 @@ class UpgradeMF(
 
     private fun disconnect() {
         (otherEnv as? TileEntity)?.let { envTile ->
-            otherNode(envTile) { node.disconnect(it) }
+            otherNode(envTile) { node!!.disconnect(it) }
         }
         otherEnv = null
         otherDrv?.let { (environment, _) ->
-            node.disconnect(environment.node())
+            node!!.disconnect(environment.node())
             blockData?.let { environment.save(it.data) }
             environment.node()?.remove()
         }
@@ -155,7 +155,7 @@ class UpgradeMF(
         }
         if (Settings.get.isTickMultiple(host.world)) {
             val distance = coord.toVec3().distanceTo(Vec3d(host.xPosition(), host.yPosition(), host.zPosition()))
-            if (!node.tryChangeBuffer(-Settings.get.mfuCost * Settings.get.tickFrequency * distance)) {
+            if (!node!!.tryChangeBuffer(-Settings.get.mfuCost * Settings.get.tickFrequency * distance)) {
                 disconnect()
             }
         }

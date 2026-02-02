@@ -43,7 +43,7 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
         if (readonly) {
             return result(null, "storage is readonly")
         }
-        if (!node.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
+        if (!node!!.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
             return result(null, "not enough energy")
         }
         val newData = args.optByteArray(0, ByteArray(0))
@@ -102,7 +102,7 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
     @Suppress("unused")
     @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
     fun setData(context: Context, args: Arguments): Result? {
-        if (!node.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
+        if (!node!!.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
             return result(null, "not enough energy")
         }
         val newData = args.optByteArray(0, ByteArray(0))

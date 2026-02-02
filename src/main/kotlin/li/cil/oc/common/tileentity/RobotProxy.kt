@@ -49,10 +49,10 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
         return super.getCapability(capability, facing)
     }
 
-    private val node: Component = ApiNetwork.newNode(this, Visibility.Network)!!
+    private val node: Component? = ApiNetwork.newNode(this, Visibility.Network)!!
         .withComponent("robot", Visibility.Neighbors)
         .create()
-    override fun node(): Node? = node
+    override fun node() = node
 
     override fun machine(): Machine = robot.machine()!!
 
@@ -157,7 +157,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
             // Use the same address we use internally on the outside.
             val nbt = NBTTagCompound()
             nbt.setString("address", robot.node()!!.address())
-            node.load(nbt)
+            node!!.load(nbt)
         }
     }
 

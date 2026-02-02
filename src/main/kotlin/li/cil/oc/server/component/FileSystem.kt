@@ -2,6 +2,7 @@ package li.cil.oc.server.component
 
 import com.google.common.io.Files
 import li.cil.oc.Constants
+import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.Network
 import li.cil.oc.api.driver.DeviceInfo
@@ -181,10 +182,10 @@ class FileSystem(
         val mode = args.optString(1, "r")
         val handle = fileSystem.open(clean(path), parseMode(mode))
         if (handle > 0) {
-            owners.getOrPut(context.node().address()) { mutableSetOf() }.add(handle)
+            owners.getOrPut(context.node().address()!!) { mutableSetOf() }.add(handle)
         }
         diskActivity()
-        return result(HandleValue(node.address(), handle))
+        return result(HandleValue(node!!.address()!!, handle))
     }
 
     @Callback(direct = true, limit = 15, doc = """function(handle:userdata, count:number):string or nil -- Reads up to the specified amount of data from an open file descriptor with the specified handle. Returns nil when EOF is reached.""")
@@ -192,7 +193,7 @@ class FileSystem(
     fun read(context: Context, args: Arguments): Array<Any?> {
         context.consumeCallBudget(readCosts[speed])
         val handle = checkHandle(args, 0)
-        val n = minOf(Settings.get.maxReadBuffer, maxOf(0, args.checkInteger(1)))
+        val n = args.checkInteger(1).coerceIn(0, Settings.get.maxReadBuffer)
         checkOwner(context.node().address(), handle)
 
         val file = fileSystem.getHandle(handle)
@@ -201,20 +202,19 @@ class FileSystem(
         // Limit size of read buffer to avoid crazy allocations.
         val buffer = ByteArray(n)
         val read = file.read(buffer)
-        return if (read >= 0) {
-            val bytes = if (read == buffer.size) {
-                buffer
-            } else {
-                buffer.copyOf(read)
-            }
-            if (!node.tryChangeBuffer(-Settings.get.hddReadCost * bytes.size)) {
-                throw IOException("not enough energy")
-            }
-            diskActivity()
-            result(bytes)
-        } else {
-            result(null)
+        if (read < 0) {
+            return result(null)
         }
+        val bytes = if (read == buffer.size) {
+            buffer
+        } else {
+            buffer.copyOf(read)
+        }
+        if (!node!!.tryChangeBuffer(-Settings.get.hddReadCost * bytes.size)) {
+            throw IOException("not enough energy")
+        }
+        diskActivity()
+        return result(bytes)
     }
 
     @Callback(direct = true, doc = """function(handle:userdata, whence:string, offset:number):number -- Seeks in an open file descriptor with the specified handle. Returns the new pointer position.""")
@@ -244,7 +244,7 @@ class FileSystem(
         context.consumeCallBudget(writeCosts[speed])
         val handle = checkHandle(args, 0)
         val value = args.checkByteArray(1)
-        if (!node.tryChangeBuffer(-Settings.get.hddWriteCost * value.size)) {
+        if (!node!!.tryChangeBuffer(-Settings.get.hddWriteCost * value.size)) {
             throw IOException("not enough energy")
         }
         checkOwner(context.node().address(), handle)
@@ -271,7 +271,7 @@ class FileSystem(
             else -> {
                 when (val handle = args.checkAny(index)) {
                     is HandleValue -> handle.handle
-                    else -> throw IOException("bad file descriptor")
+                    else -> throw IOException("bad file descriptor $handle")
                 }
             }
         }
@@ -373,7 +373,7 @@ class FileSystem(
         }
     }
 
-    private fun checkOwner(owner: String, handle: Int) {
+    private fun checkOwner(owner: String?, handle: Int) {
         if (!owners.containsKey(owner) || !owners[owner]!!.contains(handle)) {
             throw IOException("bad file descriptor")
         }
@@ -381,7 +381,7 @@ class FileSystem(
 
     private fun diskActivity() {
         if (sound != null && host != null) {
-            ServerPacketSender.sendFileSystemActivity(node, host, sound)
+            ServerPacketSender.sendFileSystemActivity(node!!, host, sound)
         }
     }
 }

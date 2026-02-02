@@ -107,7 +107,7 @@ class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfo, T
       throw IllegalArgumentException("location out of bounds")
     }
 
-    if (!node.tryChangeBuffer(-Settings.get.geolyzerScanCost))
+    if (!node!!.tryChangeBuffer(-Settings.get.geolyzerScanCost))
       return result(Unit, "not enough energy")
 
     val event = GeolyzerEvent.Scan(host, options, minX, minY, minZ, maxX, maxY, maxZ)
@@ -151,7 +151,7 @@ class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfo, T
 
     val options = args.optTable(1, emptyMap<Any?, Any?>())
 
-    if (!node.tryChangeBuffer(-Settings.get.geolyzerScanCost))
+    if (!node!!.tryChangeBuffer(-Settings.get.geolyzerScanCost))
       return result(Unit, "not enough energy")
 
     val globalPos = BlockPosition(host).offset(globalSide)
@@ -169,7 +169,7 @@ class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfo, T
       else -> side
     }
 
-    if (!node.tryChangeBuffer(-Settings.get.geolyzerScanCost))
+    if (!node!!.tryChangeBuffer(-Settings.get.geolyzerScanCost))
       return result(Unit, "not enough energy")
 
     val blockPos = BlockPosition(host).offset(globalSide)
@@ -190,7 +190,7 @@ class Geolyzer(val host: EnvironmentHost): ManagedEnvironmentKt(), DeviceInfo, T
     super.onMessage(message)
     val message = TabletUseMessage.tryParse(message) ?: return
 
-    if (!node.tryChangeBuffer(-Settings.get.geolyzerScanCost)) return
+    if (!node!!.tryChangeBuffer(-Settings.get.geolyzerScanCost)) return
 
     val event = Analyze(host, emptyMap<Any?, Any?>(), message.blockPos.toBlockPos())
     MinecraftForge.EVENT_BUS.post(event)
