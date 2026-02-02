@@ -37,7 +37,7 @@ import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 import li.cil.oc.common.tileentity.traits.Hub as TraitHub
-import li.cil.oc.common.tileentity.traits.Computer as TraitComputer
+import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
 class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventory, InternalMicrocontroller, DeviceInfo {
     @JvmField
@@ -164,7 +164,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
     // ----------------------------------------------------------------------- //
 
     override fun updateEntity() {
-        super<Computer>.updateEntity()
+        super.updateEntity()
 
         // Pump energy into the internal network.
         if (isServer && Settings.get.isTickMultiple(world)) {
@@ -314,7 +314,7 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     // For hotswapping EEPROMs.
     fun changeEEPROM(newEeprom: ItemStack): ItemStack? {
-        val oldEepromIndex = info.components.indexOfFirst { ApiItems.get(it) == Constants.ItemInfo.EEPROM }
+        val oldEepromIndex = info.components.indexOfFirst { Items.get(it) == Constants.ItemInfo.EEPROM }
         return if (oldEepromIndex >= 0) {
             val oldEeprom = info.components[oldEepromIndex]
             super.setInventorySlotContents(oldEepromIndex, newEeprom)
