@@ -8,7 +8,7 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.ResourceLocation
 
-class ArgumentsImpl(val args: MutableList<Any?>): Arguments {
+class ArgumentsImpl(private val args: MutableList<Any?>): Arguments {
   override fun iterator() = args.iterator()
 
   companion object {
@@ -19,9 +19,9 @@ class ArgumentsImpl(val args: MutableList<Any?>): Arguments {
 
   override fun count() = args.size
 
-  override fun checkAny(index: Int): Any? = {
+  override fun checkAny(index: Int): Any? {
     checkIndex(index, "value")
-    when (val arg = args[index]) {
+    return when (val arg = args[index]) {
       Unit, null -> null
       else -> arg
     }
