@@ -32,15 +32,15 @@ import java.util.*
  * the computer, but may also provide context-free functions.
  */
 internal object Registry: DriverAPI {
-  val sidedBlocks = mutableListOf<DriverBlock>()
+  private val sidedBlocks = mutableListOf<DriverBlock>()
 
   private val items = mutableListOf<DriverItem>()
 
-  val converters = mutableListOf<Converter>()
+  private val converters = mutableListOf<Converter>()
 
-  val environmentProviders = mutableListOf<EnvironmentProvider>()
+  private val environmentProviders = mutableListOf<EnvironmentProvider>()
 
-  val inventoryProviders = mutableListOf<InventoryProvider>()
+  private val inventoryProviders = mutableListOf<InventoryProvider>()
 
   private val blacklistInner = mutableListOf<Pair<ItemStack, MutableSet<Class<*>>>>()
 
