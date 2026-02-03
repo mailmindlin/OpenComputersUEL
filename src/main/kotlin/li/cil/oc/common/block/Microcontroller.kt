@@ -110,14 +110,15 @@ class Microcontroller(protected val tileTag: KClass<TEMicrocontroller> = TEMicro
         super.doCustomInit(tileEntity, player, stack)
         if (!tileEntity.world.isRemote) {
             tileEntity.info.load(stack)
-            tileEntity.snooperNode.changeBuffer(tileEntity.info.storedEnergy - tileEntity.snooperNode.localBuffer())
+            val node = tileEntity.snooperNode!!
+            node.changeBuffer(tileEntity.info.storedEnergy - node.localBuffer())
         }
     }
 
     override fun doCustomDrops(tileEntity: TEMicrocontroller, player: EntityPlayer, willHarvest: Boolean) {
         super.doCustomDrops(tileEntity, player, willHarvest)
         tileEntity.saveComponents()
-        tileEntity.info.storedEnergy = tileEntity.snooperNode.localBuffer().toInt()
+        tileEntity.info.storedEnergy = tileEntity.snooperNode!!.localBuffer().toInt()
         Block.spawnAsEntity(tileEntity.world, tileEntity.pos, tileEntity.info.createItemStack())
     }
 
