@@ -183,7 +183,7 @@ public final class FileSystem {
      * @param speed       the speed multiplier for this file system.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label, @Nullable final EnvironmentHost host, @Nullable final String accessSound, int speed) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label, @Nullable final EnvironmentHost host, @Nullable final String accessSound, int speed) {
         if (API.fileSystem != null)
             return API.fileSystem.asManagedEnvironment(fileSystem, label, host, accessSound, speed);
         return null;
@@ -205,7 +205,7 @@ public final class FileSystem {
      *                    <tt>opencomputers:floppy_access</tt>.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final Label label, final EnvironmentHost host, final String accessSound) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final Label label, final EnvironmentHost host, final String accessSound) {
         return asManagedEnvironment(fileSystem, label, host, accessSound, 1);
     }
 
@@ -225,7 +225,7 @@ public final class FileSystem {
      *                    <tt>opencomputers:floppy_access</tt>.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label, final EnvironmentHost host, final String accessSound) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label, final EnvironmentHost host, final String accessSound) {
         return asManagedEnvironment(fileSystem, label, host, accessSound, 1);
     }
 
@@ -240,7 +240,7 @@ public final class FileSystem {
      * @param label      the label of the file system.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final Label label) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final Label label) {
         return asManagedEnvironment(fileSystem, label, null, null, 1);
     }
 
@@ -255,7 +255,7 @@ public final class FileSystem {
      * @param label      the read-only label of the file system.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem, final String label) {
         return asManagedEnvironment(fileSystem, label, null, null, 1);
     }
 
@@ -270,7 +270,7 @@ public final class FileSystem {
      * @param fileSystem the file system to wrap.
      * @return the network node wrapping the file system.
      */
-    public static ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem) {
+    public static @Nullable ManagedEnvironment asManagedEnvironment(final li.cil.oc.api.fs.FileSystem fileSystem) {
         return asManagedEnvironment(fileSystem, (Label) null, null, null, 1);
     }
 

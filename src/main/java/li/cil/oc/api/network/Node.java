@@ -83,7 +83,7 @@ public interface Node extends Persistable {
      * This will always be set automatically by the network manager. Do not
      * change this value and do not return anything that it wasn't set to.
      */
-    Network network();
+    @Nullable Network network();
 
     // ----------------------------------------------------------------------- //
 

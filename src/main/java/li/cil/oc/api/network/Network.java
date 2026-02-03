@@ -1,5 +1,7 @@
 package li.cil.oc.api.network;
 
+import javax.annotation.Nullable;
+
 /**
  * Interface for interacting with networks.
  * <br>
@@ -93,7 +95,7 @@ public interface Network {
      * @param address the address of the node to get.
      * @return the node with that address.
      */
-    Node node(String address);
+    @Nullable Node node(String address);
 
     /**
      * The list of all nodes in this network.

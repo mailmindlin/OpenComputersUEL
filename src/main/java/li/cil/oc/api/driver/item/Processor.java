@@ -4,6 +4,8 @@ import li.cil.oc.api.driver.DriverItem;
 import li.cil.oc.api.machine.Architecture;
 import net.minecraft.item.ItemStack;
 
+import javax.annotation.Nullable;
+
 /**
  * Use this interface to implement item drivers extending the number of
  * components a server can control.
@@ -33,5 +35,5 @@ public interface Processor extends DriverItem {
      * @param stack the stack representing the CPU to get the architecture for.
      * @return the type of this CPU's architecture.
      */
-    Class<? extends Architecture> architecture(ItemStack stack);
+    @Nullable Class<? extends Architecture> architecture(ItemStack stack);
 }
