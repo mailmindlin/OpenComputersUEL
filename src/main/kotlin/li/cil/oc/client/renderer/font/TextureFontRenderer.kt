@@ -39,7 +39,7 @@ abstract class TextureFontRenderer {
         }
     }
 
-    fun drawBuffer(buffer: TextBuffer, viewportWidth: Int, viewportHeight: Int) {
+    fun drawBuffer(buffer: TextBufferData, viewportWidth: Int, viewportHeight: Int) {
         val format = buffer.format
 
         GlStateManager.pushMatrix()
