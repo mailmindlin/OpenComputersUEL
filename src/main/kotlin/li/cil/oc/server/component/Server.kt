@@ -198,7 +198,7 @@ class Server(val rack: Rack, val slot: Int) : ServerInventory(), Environment, Ma
                 }
             } else {
                 val position = BlockPosition(rack)
-                player.openGui(OpenComputers, GuiType.ServerInRack.id, world(), position.x, GuiType.embedSlot(position.y, slot), position.z)
+                player.openGui(OpenComputers.INSTANCE, GuiType.ServerInRack.id, world(), position.x, GuiType.embedSlot(position.y, slot), position.z)
             }
         }
         return true
