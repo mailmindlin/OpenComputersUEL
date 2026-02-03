@@ -48,10 +48,13 @@ import li.cil.oc.common.tileentity.Screen as TEScreen
 import li.cil.oc.common.tileentity.Transposer as TETransposer
 import li.cil.oc.common.tileentity.traits.Computer as TEComputer
 
-private fun SimplePacketBuilder.writeTileEntity(t: TileEntityTrait) = this.writeTileEntity(t.asTileEntity())
-private fun SimplePacketBuilder.sendToPlayersNearTileEntity(t: TileEntityTrait) = this.sendToPlayersNearTileEntity(t.asTileEntity())
 
 object PacketSender {
+  private fun SimplePacketBuilder.writeTileEntity(t: TileEntityTrait)
+    = this.writeTileEntity(t.asTileEntity())
+  private fun SimplePacketBuilder.sendToPlayersNearTileEntity(t: TileEntityTrait)
+    = this.sendToPlayersNearTileEntity(t.asTileEntity())
+
   fun sendAdapterState(t: TEAdapter) {
     val pb = SimplePacketBuilder(PacketType.AdapterState)
 
