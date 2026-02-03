@@ -11,6 +11,7 @@ import li.cil.oc.util.Result
 import li.cil.oc.util.result
 import mods.railcraft.common.blocks.machine.worldspike.TileWorldspike
 import mods.railcraft.common.blocks.machine.worldspike.WorldspikeVariant
+import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
@@ -56,7 +57,7 @@ object DriverWorldspike : DriverSidedTileEntity() {
         @Callback(doc = "function():table -- Get the anchor fuel slot's contents.")
         fun getFuelSlotContents(context: Context, args: Arguments): Result =
             if (tile.needsFuel()) {
-                result(tile.getStackInSlot(0))
+                result(tile.getStackInSlot(0) as ItemStack)
             } else {
                 result()
             }
