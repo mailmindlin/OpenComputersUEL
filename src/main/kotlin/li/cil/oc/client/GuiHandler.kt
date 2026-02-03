@@ -2,6 +2,7 @@ package li.cil.oc.client
 
 import com.google.common.base.Strings
 import li.cil.oc.Localization
+import li.cil.oc.OpenComputers
 import li.cil.oc.Settings
 import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.common.GuiType
@@ -25,65 +26,66 @@ object GuiHandler : CommonGuiHandler() {
     return when (GuiType.Categories[id]) {
       GuiType.Category.Block -> {
         val t = world.getTileEntity(BlockPosition(x, GuiType.extractY(y), z)) ?: return null
+        OpenComputers.log.info("Client GUI $id for tile $t")
         when (t) {
-          is li.cil.oc.common.tileentity.Adapter -> if (id == GuiType.Adapter.id) li.cil.oc.client.gui.Adapter(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.Assembler -> if (id == GuiType.Assembler.id) li.cil.oc.client.gui.Assembler(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.Case -> if (id == GuiType.Case.id) li.cil.oc.client.gui.Case(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.Charger -> if (id == GuiType.Charger.id) li.cil.oc.client.gui.Charger(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.Disassembler -> if (id == GuiType.Disassembler.id) li.cil.oc.client.gui.Disassembler(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.DiskDrive -> if (id == GuiType.DiskDrive.id) li.cil.oc.client.gui.DiskDrive(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.Printer -> if (id == GuiType.Printer.id) li.cil.oc.client.gui.Printer(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Adapter -> if (id == GuiType.Adapter.id) Adapter(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Assembler -> if (id == GuiType.Assembler.id) Assembler(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Case -> if (id == GuiType.Case.id) Case(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Charger -> if (id == GuiType.Charger.id) Charger(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Disassembler -> if (id == GuiType.Disassembler.id) Disassembler(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.DiskDrive -> if (id == GuiType.DiskDrive.id) DiskDrive(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Printer -> if (id == GuiType.Printer.id) Printer(player.inventory, t) else null
           is li.cil.oc.common.tileentity.Rack -> when (id) {
-            GuiType.Rack.id -> li.cil.oc.client.gui.Rack(player.inventory, t)
+            GuiType.Rack.id -> Rack(player.inventory, t)
             GuiType.ServerInRack.id -> {
               val slot = GuiType.extractSlot(y)
-              li.cil.oc.client.gui.Server(player.inventory, object : ServerInventory() {
+              Server(player.inventory, object : ServerInventory() {
                 override val container: ItemStack get() = t.getStackInSlot(slot)
                 override fun isUsableByPlayer(player: EntityPlayer) = t.isUsableByPlayer(player)
               }, t, slot)
             }
             GuiType.DiskDriveMountableInRack.id -> {
               val slot = GuiType.extractSlot(y)
-              li.cil.oc.client.gui.DiskDrive(player.inventory, object : DiskDriveMountableInventory() {
+              DiskDrive(player.inventory, object : DiskDriveMountableInventory() {
                 override val container: ItemStack get() = t.getStackInSlot(slot)
                 override fun isUsableByPlayer(player: EntityPlayer): Boolean = t.isUsableByPlayer(player)
               })
             }
             else -> null
           }
-          is li.cil.oc.common.tileentity.Raid -> if (id == GuiType.Raid.id) li.cil.oc.client.gui.Raid(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.Relay -> if (id == GuiType.Relay.id) li.cil.oc.client.gui.Relay(player.inventory, t) else null
-          is li.cil.oc.common.tileentity.RobotProxy -> if (id == GuiType.Robot.id) li.cil.oc.client.gui.Robot(player.inventory, t.robot) else null
+          is li.cil.oc.common.tileentity.Raid -> if (id == GuiType.Raid.id) Raid(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.Relay -> if (id == GuiType.Relay.id) Relay(player.inventory, t) else null
+          is li.cil.oc.common.tileentity.RobotProxy -> if (id == GuiType.Robot.id) Robot(player.inventory, t.robot) else null
           is li.cil.oc.common.tileentity.Screen -> if (id == GuiType.Screen.id) {
-            Screen(t.origin.buffer, t.tier > 0, { t.origin.hasKeyboard() }, { t.origin.buffer.isRenderingEnabled })
+            Screen(t.origin.buffer, t.tier.canTouch, { t.origin.hasKeyboard() }, { t.origin.buffer.isRenderingEnabled })
           } else null
-          is li.cil.oc.common.tileentity.Waypoint -> if (id == GuiType.Waypoint.id) li.cil.oc.client.gui.Waypoint(t) else null
+          is li.cil.oc.common.tileentity.Waypoint -> if (id == GuiType.Waypoint.id) Waypoint(t) else null
           else -> null
         }
       }
       GuiType.Category.Entity -> {
         when (val entity = world.getEntityByID(x)) {
-          is li.cil.oc.common.entity.Drone -> if (id == GuiType.Drone.id) li.cil.oc.client.gui.Drone(player.inventory, entity) else null
+          is li.cil.oc.common.entity.Drone -> if (id == GuiType.Drone.id) Drone(player.inventory, entity) else null
           else -> null
         }
       }
       GuiType.Category.Item -> {
         val itemStackInUse = getItemStackInUse(id, player)
         when (val subItem = Delegator.subItem(itemStackInUse)) {
-          is li.cil.oc.common.item.traits.FileSystemLike -> if (id == GuiType.Drive.id) li.cil.oc.client.gui.Drive(player.inventory) { itemStackInUse } else null
+          is li.cil.oc.common.item.traits.FileSystemLike -> if (id == GuiType.Drive.id) Drive(player.inventory) { itemStackInUse } else null
           is li.cil.oc.common.item.UpgradeDatabase -> if (id == GuiType.Database.id) {
-            li.cil.oc.client.gui.Database(player.inventory, object : DatabaseInventory() {
+            Database(player.inventory, object : DatabaseInventory() {
               override val container get() = itemStackInUse
               override fun isUsableByPlayer(player: EntityPlayer) = true
             })
           } else null
           is li.cil.oc.common.item.Server -> if (id == GuiType.Server.id) {
-            li.cil.oc.client.gui.Server(player.inventory, object : ServerInventory() {
+            Server(player.inventory, object : ServerInventory() {
               override val container get() = itemStackInUse
               override fun isUsableByPlayer(player: EntityPlayer) = true
             }, null, 0)
           } else null
-          is li.cil.oc.common.item.Tablet -> when (id) {
+          is Tablet -> when (id) {
             GuiType.Tablet.id -> {
               val stack = itemStackInUse
               if (stack.hasTagCompound()) {
@@ -97,13 +99,13 @@ object GuiHandler : CommonGuiHandler() {
             GuiType.TabletInner.id -> {
               val stack = itemStackInUse
               if (stack.hasTagCompound()) {
-                li.cil.oc.client.gui.Tablet(player.inventory, li.cil.oc.common.item.Tablet.get(stack, player))
+                Tablet(player.inventory, Tablet.get(stack, player))
               } else null
             }
             else -> null
           }
           is li.cil.oc.common.item.DiskDriveMountable -> if (id == GuiType.DiskDriveMountable.id) {
-            li.cil.oc.client.gui.DiskDrive(player.inventory, object : DiskDriveMountableInventory() {
+            DiskDrive(player.inventory, object : DiskDriveMountableInventory() {
               override val container get() = itemStackInUse
               override fun isUsableByPlayer(activePlayer: EntityPlayer): Boolean = activePlayer == player
             })
@@ -115,7 +117,7 @@ object GuiHandler : CommonGuiHandler() {
               val key = stack.tagCompound!!.getString(Settings.namespace + "key")
               if (!Strings.isNullOrEmpty(key) && !Strings.isNullOrEmpty(address)) {
                 val term = li.cil.oc.common.component.TerminalServer.loaded.find(address)
-                if (term != null && term.rack != null) {
+                if (term?.rack != null) {
                   val rack = term.rack
                   if (rack is TileEntity && rack is li.cil.oc.api.internal.Rack) {
                     fun inRange() = player.isEntityAlive && !rack.isInvalid && rack.getDistanceSq(player.posX, player.posY, player.posZ) < term.range * term.range
@@ -149,7 +151,7 @@ object GuiHandler : CommonGuiHandler() {
           else -> null
         }
       }
-      GuiType.Category.None -> if (id == GuiType.Manual.id) li.cil.oc.client.gui.Manual() else null
+      GuiType.Category.None -> if (id == GuiType.Manual.id) Manual() else null
       else -> null
     }
   }
