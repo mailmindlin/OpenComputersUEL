@@ -6,7 +6,7 @@ import net.minecraft.client.gui.Gui
 import net.minecraft.client.gui.ScaledResolution
 import net.minecraft.util.ResourceLocation
 
-interface Window {
+internal interface Window: AsGuiScreen {
     val windowState: State
 
     val windowWidth: Int
@@ -17,11 +17,8 @@ interface Window {
 
     val backgroundImage: ResourceLocation
 
-    fun <T> add(list: MutableList<T>, value: T) {
-        list.add(value)
-    }
-
-    fun initGuiWindow(mc: Minecraft) {
+    fun initGui() {
+        val mc = asGuiScreen().mc
         val screenSize = ScaledResolution(mc)
         val guiSize = OldScaledResolution(mc, windowWidth, windowHeight)
         val midX = screenSize.scaledWidth / 2
@@ -33,7 +30,7 @@ interface Window {
         state.ySize = guiSize.scaledHeight
     }
 
-    fun drawScreenWindow(mc: Minecraft, mouseX: Int, mouseY: Int, dt: Float) {
+    fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         mc.renderEngine.bindTexture(backgroundImage)
         val state = windowState
         Gui.drawModalRectWithCustomSizedTexture(state.guiLeft, state.guiTop, 0f, 0f, state.xSize, state.ySize, windowWidth.toFloat(), windowHeight.toFloat())

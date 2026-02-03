@@ -5,13 +5,13 @@ import li.cil.oc.util.RenderState
 import net.minecraft.client.Minecraft
 import net.minecraft.client.renderer.GlStateManager
 
-interface DisplayBuffer {
 /**
  * A trait for GUI components that display a text buffer (e.g., screens, terminals).
  *
  * This interface provides common functionality for rendering text buffers in OpenComputers GUIs,
  * including state management, buffer positioning, and rendering coordination.
  */
+internal interface DisplayBuffer: AsGuiScreen {
     /** The X position of the buffer within the GUI. */
     val bufferX: Int
 
@@ -54,7 +54,7 @@ interface DisplayBuffer {
         val oldHeight = displayBufferState.currentHeight
         displayBufferState.currentWidth = bufferColumns
         displayBufferState.currentHeight = bufferRows
-        displayBufferState.scale = changeSize(displayBufferState.currentWidth.toDouble(), displayBufferState.currentHeight.toDouble(),
+        displayBufferState.scale = changeSize(displayBufferState.currentWidth, displayBufferState.currentHeight,
             displayBufferState.guiSizeChanged || oldWidth != displayBufferState.currentWidth || oldHeight != displayBufferState.currentHeight)
 
         RenderState.checkError(this.javaClass.name + ".drawBufferLayer: entering (aka: wasntme)")
@@ -75,7 +75,6 @@ interface DisplayBuffer {
      */
     fun drawBuffer()
 
-    fun changeSize(w: Double, h: Double, recompile: Boolean): Double
     /**
      * Handles buffer size changes and calculates the appropriate scale factor.
      *
@@ -84,6 +83,7 @@ interface DisplayBuffer {
      * @param recompile Whether the buffer needs to be recompiled (true if size changed or GUI was resized)
      * @return The scale factor to apply for rendering the buffer
      */
+    fun changeSize(w: Int, h: Int, recompile: Boolean): Double
 
     /**
      * State container for the display buffer.

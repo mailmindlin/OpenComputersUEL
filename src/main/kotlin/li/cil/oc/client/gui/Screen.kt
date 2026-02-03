@@ -1,5 +1,6 @@
 package li.cil.oc.client.gui
 
+import li.cil.oc.OpenComputers
 import li.cil.oc.api.internal.TextBuffer
 import li.cil.oc.client.gui.traits.DisplayBuffer
 import li.cil.oc.client.gui.traits.InputBuffer
@@ -12,13 +13,13 @@ import org.lwjgl.input.Mouse
 import kotlin.math.min
 import kotlin.math.sign
 
-class Screen(
+internal class Screen(
     private val _buffer: TextBuffer,
-    val hasMouse: Boolean,
+    private val hasMouse: Boolean,
     val hasKeyboardCallback: () -> Boolean,
     val hasPower: () -> Boolean
 ) : GuiScreen(), InputBuffer {
-
+    override fun asGuiScreen() = this
     override fun doesGuiPauseGame(): Boolean = false
 
     override val buffer: TextBuffer get() = _buffer
@@ -47,7 +48,7 @@ class Screen(
 
     override fun initGui() {
         super<GuiScreen>.initGui()
-        initGuiInputBuffer()
+        super<InputBuffer>.initGui()
     }
 
     override fun handleMouseInput() {
@@ -62,12 +63,12 @@ class Screen(
         }
     }
 
-    override fun mouseClicked(mouseX: Int, mouseY: Int, button: Int) {
-        super.mouseClicked(mouseX, mouseY, button)
-        mouseClickedInputBuffer(mouseX, mouseY, button)
+    override fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        super<GuiScreen>.mouseClicked(mouseX, mouseY, mouseButton)
+        super<InputBuffer>.mouseClicked(mouseX, mouseY, mouseButton)
         if (hasMouse) {
-            if (button == 0 || button == 1) {
-                clickOrDrag(mouseX, mouseY, button)
+            if (mouseButton == 0 || mouseButton == 1) {
+                clickOrDrag(mouseX, mouseY, mouseButton)
             }
         }
     }
@@ -96,13 +97,13 @@ class Screen(
     }
 
     override fun handleKeyboardInput() {
-        super.handleKeyboardInput()
-        handleKeyboardInputBuffer(this)
+        super<GuiScreen>.handleKeyboardInput()
+        super<InputBuffer>.handleKeyboardInput()
     }
 
     override fun onGuiClosed() {
-        super.onGuiClosed()
-        onGuiClosedInputBuffer()
+        super<GuiScreen>.onGuiClosed()
+        super<InputBuffer>.onGuiClosed()
     }
 
     private fun clickOrDrag(mouseX: Int, mouseY: Int, button: Int) {
@@ -130,7 +131,7 @@ class Screen(
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
         this.drawDefaultBackground()
         super.drawScreen(mouseX, mouseY, dt)
-        drawBufferLayerWithInput()
+        drawBufferLayer()
     }
 
     override fun drawBuffer() {
@@ -145,7 +146,7 @@ class Screen(
         }
     }
 
-    override fun changeSize(w: Double, h: Double, recompile: Boolean): Double {
+    override fun changeSize(w: Int, h: Int, recompile: Boolean): Double {
         val bw = _buffer.renderWidth()
         val bh = _buffer.renderHeight()
         val scaleX = min(width / (bw + bufferMargin * 2.0), 1.0)

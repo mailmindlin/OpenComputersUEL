@@ -12,15 +12,16 @@ import li.cil.oc.common.entity.Drone as EntityDrone
 import li.cil.oc.util.PackedColor
 import li.cil.oc.util.RenderState
 import li.cil.oc.util.ScreenResolution
-import li.cil.oc.util.TextBuffer
+import li.cil.oc.util.TextBufferData
 import net.minecraft.client.gui.GuiButton
+import net.minecraft.client.gui.GuiScreen
 import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.client.renderer.Tessellator
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats
 import net.minecraft.entity.player.InventoryPlayer
 import org.lwjgl.opengl.GL11
 
-class Drone(
+internal class Drone(
     playerInventory: InventoryPlayer,
     val drone: EntityDrone
 ) : DynamicGuiContainer<ContainerDrone>(ContainerDrone(playerInventory, drone)), DisplayBuffer {
@@ -29,6 +30,8 @@ class Drone(
         xSize = 176
         ySize = 148
     }
+
+    override fun asGuiScreen(): GuiScreen = this
 
     protected var powerButton: ImageButton? = null
 

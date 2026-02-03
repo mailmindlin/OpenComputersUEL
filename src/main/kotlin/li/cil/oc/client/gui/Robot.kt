@@ -28,11 +28,11 @@ import kotlin.math.max
 import kotlin.math.round
 import kotlin.math.sign
 
-class Robot(
+internal class Robot(
     playerInventory: InventoryPlayer,
     val robot: TileEntityRobot
 ) : DynamicGuiContainer<ContainerRobot>(ContainerRobot(playerInventory, robot)), InputBuffer {
-
+    override fun asGuiScreen() = this
     override val buffer: TextBuffer? = robot.components
         .filterNotNull()
         .filterIsInstance<TextBuffer>()
@@ -203,9 +203,10 @@ class Robot(
         }
     }
 
-    override fun mouseClicked(mouseX: Int, mouseY: Int, button: Int) {
-        super.mouseClicked(mouseX, mouseY, button)
-        if (canScroll && button == 0 && isCoordinateOverScrollBar(mouseX - guiLeft, mouseY - guiTop)) {
+    override fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        super<DynamicGuiContainer>.mouseClicked(mouseX, mouseY, mouseButton)
+        super<InputBuffer>.mouseClicked(mouseX, mouseY, mouseButton)
+        if (canScroll && mouseButton == 0 && isCoordinateOverScrollBar(mouseX - guiLeft, mouseY - guiTop)) {
             isDragging = true
             scrollMouse(mouseY)
         }
@@ -277,7 +278,7 @@ class Robot(
         }
     }
 
-    override fun changeSize(w: Double, h: Double, recompile: Boolean): Double {
+    override fun changeSize(w: Int, h: Int, recompile: Boolean): Double {
         val bw = w * TextBufferRenderCache.renderer.charRenderWidth
         val bh = h * TextBufferRenderCache.renderer.charRenderHeight
         val scaleX = min(bufferRenderWidth / bw, 1.0)
@@ -307,5 +308,15 @@ class Robot(
             r.pos((x + selectionSize).toDouble(), y.toDouble(), zLevel.toDouble()).tex(1.0, offsetV).endVertex()
             t.draw()
         }
+    }
+
+    override fun onGuiClosed() {
+        super<DynamicGuiContainer>.onGuiClosed()
+        super<InputBuffer>.onGuiClosed()
+    }
+
+    override fun handleKeyboardInput() {
+        super<DynamicGuiContainer>.handleKeyboardInput()
+        super<InputBuffer>.handleKeyboardInput()
     }
 }

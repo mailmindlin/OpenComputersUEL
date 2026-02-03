@@ -10,10 +10,11 @@ import net.minecraft.client.gui.GuiScreen
 import net.minecraft.entity.player.InventoryPlayer
 import net.minecraft.item.ItemStack
 
-class Drive(
+internal class Drive(
     private val playerInventory: InventoryPlayer,
     val driveStack: () -> ItemStack
 ) : GuiScreen(), Window {
+    override fun asGuiScreen() = this
     override var windowState: Window.State = Window.State()
     override val windowHeight = 120
 
@@ -50,7 +51,9 @@ class Drive(
     }
 
     override fun initGui() {
-        super.initGui()
+        super<GuiScreen>.initGui()
+        super<Window>.initGui()
+
         val state = this.windowState
         val guiLeft = state.guiLeft
         val guiTop = state.guiTop
@@ -76,14 +79,14 @@ class Drive(
             textColor = 0x608060,
             canToggle = true
         )
-        add(buttonList, managedButton!!)
-        add(buttonList, unmanagedButton!!)
-        add(buttonList, lockedButton!!)
+        buttonList.add(managedButton!!)
+        buttonList.add(unmanagedButton!!)
+        buttonList.add(lockedButton!!)
         updateButtonStates()
     }
 
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
-        super.drawScreen(mouseX, mouseY, dt)
+        super<Window>.drawScreen(mouseX, mouseY, dt)
 
         val state = this.windowState
         val guiLeft = state.guiLeft

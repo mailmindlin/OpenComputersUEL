@@ -1,6 +1,7 @@
 package li.cil.oc.client.gui
 
 import li.cil.oc.Localization
+import li.cil.oc.OpenComputers
 import li.cil.oc.client.Textures
 import li.cil.oc.client.gui.traits.Window
 import li.cil.oc.client.renderer.markdown.Document
@@ -14,7 +15,7 @@ import net.minecraft.client.renderer.GlStateManager
 import net.minecraft.util.ResourceLocation
 import org.lwjgl.input.Mouse
 
-class Manual : GuiScreen(), Window {
+internal class Manual : GuiScreen(), Window {
     companion object {
         const val documentMaxWidth = 230
         const val documentMaxHeight = 176
@@ -28,6 +29,8 @@ class Manual : GuiScreen(), Window {
         const val tabHeight = 26
         const val maxTabsPerSide = 7
     }
+
+    override fun asGuiScreen(): GuiScreen = this
 
     override val windowWidth: Int
         get() = 256
@@ -63,7 +66,7 @@ class Manual : GuiScreen(), Window {
             else path
         }
 
-    fun refreshPage() {
+    private fun refreshPage() {
         val content = ManualAPI.contentFor(ManualAPI.history.top.path)
             ?: listOf("Document not found: ${ManualAPI.history.top.path}")
         val document = Document.parse(content)
@@ -95,26 +98,28 @@ class Manual : GuiScreen(), Window {
     }
 
     override fun initGui() {
-        super.initGui()
+        super<GuiScreen>.initGui()
+        super<Window>.initGui()
 
         val state = this.windowState
 
-        for ((i, tab) in ManualAPI.tabs.withIndex()) {
+        for (i in ManualAPI.tabs.indices) {
             if (i < maxTabsPerSide) {
                 val x = state.guiLeft + tabPosX
                 val y = state.guiTop + tabPosY + i * (tabHeight - 1)
-                add(buttonList, ImageButton(i, x, y, tabWidth, tabHeight, Textures.GUI.ManualTab))
+                buttonList.add(ImageButton(i, x, y, tabWidth, tabHeight, Textures.GUI.ManualTab))
             }
         }
 
         scrollButton = ImageButton(-1, state.guiLeft + scrollPosX, state.guiTop + scrollPosY, 6, 13, Textures.GUI.ButtonScroll)
-        add(buttonList, scrollButton!!)
+        buttonList.add(scrollButton!!)
 
         refreshPage()
     }
 
     override fun drawScreen(mouseX: Int, mouseY: Int, dt: Float) {
-        super.drawScreen(mouseX, mouseY, dt)
+//        super<GuiScreen>.drawScreen(mouseX, mouseY, dt)
+        super<Window>.drawScreen(mouseX, mouseY, dt)
 
         scrollButton?.enabled = canScroll
         scrollButton?.hoverOverride = isDragging
@@ -212,7 +217,9 @@ class Manual : GuiScreen(), Window {
     private fun scrollDown() = scrollTo(offset + Document.lineHeight(fontRenderer) * 3)
 
     private fun scrollTo(row: Int) {
-        ManualAPI.history.top.offset = row.coerceIn(0, maxOffset)
+        ManualAPI.history.top.offset = row
+            // These are split up because sometimes maxOffset = 0
+            .coerceAtLeast(0).coerceAtMost(maxOffset)
         val yMin = this.windowState.guiTop + scrollPosY
         scrollButton!!.y = if (maxOffset > 0) {
             yMin + (scrollHeight - 13) * offset / maxOffset
