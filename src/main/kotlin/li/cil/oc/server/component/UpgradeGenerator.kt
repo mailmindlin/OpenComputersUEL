@@ -13,7 +13,9 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.util.Result
 import li.cil.oc.util.StackOption
+import li.cil.oc.util.result
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.item.ItemStack
@@ -46,7 +48,7 @@ open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
     // ----------------------------------------------------------------------- //
 
     @Callback(doc = "function([count:number]):boolean -- Tries to insert fuel from the selected slot into the generator's queue.")
-    fun insert(context: Context, args: Arguments): Array<Any?> {
+    fun insert(context: Context, args: Arguments): Result {
         val count = args.optInteger(0, 64)
         val stack = agent.mainInventory().getStackInSlot(agent.selectedSlot())
         if (stack.isEmpty) return result(Unit, "selected slot is empty")
@@ -96,14 +98,14 @@ open class UpgradeGenerator(val host: EnvironmentHost) : ManagedEnvironmentKt(),
     }
 
     @Callback(doc = "function():number -- Get the size of the item stack in the generator's queue.")
-    fun count(context: Context, args: Arguments): Array<Any?> {
+    fun count(context: Context, args: Arguments): Result {
         return inventory?.let { stack ->
             result(stack.count, stack.item.getItemStackDisplayName(stack))
         } ?: result(0)
     }
 
     @Callback(doc = "function([count:number]):boolean -- Tries to remove items from the generator's queue.")
-    fun remove(context: Context, args: Arguments): Array<Any?> {
+    fun remove(context: Context, args: Arguments): Result {
         val count = args.optInteger(0, Int.MAX_VALUE)
         if (count <= 0) {
             return result(true) // it is allowed to remove zero

@@ -19,14 +19,10 @@ import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.server.PacketSender
 import li.cil.oc.server.network.DebugNetwork
 import li.cil.oc.server.network.DebugNode
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.*
 import li.cil.oc.util.ExtendedBlock.extendedBlock
-import li.cil.oc.util.ExtendedNBT
 import li.cil.oc.util.ExtendedWorld.extendedWorld
-import li.cil.oc.util.extendedNBT
-import li.cil.oc.util.toTypedMap
-import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Result
 import net.minecraft.block.Block
 import net.minecraft.command.CommandResultStats
 import net.minecraft.entity.Entity
@@ -101,31 +97,31 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     }
 
     @Callback(doc = """function(value:number):number -- Changes the component network's energy buffer by the specified delta.""")
-    fun changeBuffer(context: Context, args: Arguments): Array<Any?> {
+    fun changeBuffer(context: Context, args: Arguments): Result {
         checkAccess()
         return result(node!!.changeBuffer(args.checkDouble(0)))
     }
 
     @Callback(doc = """function():number -- Get the container's X position in the world.""")
-    fun getX(context: Context, args: Arguments): Array<Any?> {
+    fun getX(context: Context, args: Arguments): Result {
         checkAccess()
         return result(host.xPosition())
     }
 
     @Callback(doc = """function():number -- Get the container's Y position in the world.""")
-    fun getY(context: Context, args: Arguments): Array<Any?> {
+    fun getY(context: Context, args: Arguments): Result {
         checkAccess()
         return result(host.yPosition())
     }
 
     @Callback(doc = """function():number -- Get the container's Z position in the world.""")
-    fun getZ(context: Context, args: Arguments): Array<Any?> {
+    fun getZ(context: Context, args: Arguments): Result {
         checkAccess()
         return result(host.zPosition())
     }
 
     @Callback(doc = """function([id:number]):userdata -- Get the world object for the specified dimension ID, or the container's.""")
-    fun getWorld(context: Context, args: Arguments): Array<Any?> {
+    fun getWorld(context: Context, args: Arguments): Result {
         checkAccess()
         return if (args.count() > 0) {
             result(WorldValue(DimensionManager.getWorld(args.checkInteger(0)), access))
@@ -135,31 +131,31 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     }
 
     @Callback(doc = """function():table -- Get a list of all world IDs, loaded and unloaded.""")
-    fun getWorlds(context: Context, args: Arguments): Array<Any?> {
+    fun getWorlds(context: Context, args: Arguments): Result {
         checkAccess()
         return result(DimensionManager.getStaticDimensionIDs())
     }
 
     @Callback(doc = """function(name:string):userdata -- Get the entity of a player.""")
-    fun getPlayer(context: Context, args: Arguments): Array<Any?> {
+    fun getPlayer(context: Context, args: Arguments): Result {
         checkAccess()
         return result(PlayerValue(args.checkString(0), access))
     }
 
     @Callback(doc = """function():table -- Get a list of currently logged-in players.""")
-    fun getPlayers(context: Context, args: Arguments): Array<Any?> {
+    fun getPlayers(context: Context, args: Arguments): Result {
         checkAccess()
         return result(FMLCommonHandler.instance().minecraftServerInstance.onlinePlayerNames)
     }
 
     @Callback(doc = """function():userdata -- Get the scoreboard object for the world""")
-    fun getScoreboard(context: Context, args: Arguments): Array<Any?> {
+    fun getScoreboard(context: Context, args: Arguments): Result {
         checkAccess()
         return result(ScoreboardValue(host.world(), access))
     }
 
     @Callback(doc = "function(x: number, y: number, z: number[, worldId: number]):boolean, string, table -- returns contents at the location in world by id (default host world)")
-    fun scanContentsAt(context: Context, args: Arguments): Array<Any?> {
+    fun scanContentsAt(context: Context, args: Arguments): Result {
         checkAccess()
         val x = args.checkInteger(0)
         val y = args.checkInteger(1)
@@ -202,14 +198,14 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     }
 
     @Callback(doc = """function(name:string):boolean -- Get whether a mod or API is loaded.""")
-    fun isModLoaded(context: Context, args: Arguments): Array<Any?> {
+    fun isModLoaded(context: Context, args: Arguments): Result {
         checkAccess()
         val name = args.checkString(0)
         return result(Loader.isModLoaded(name) || ModAPIManager.INSTANCE.hasAPI(name))
     }
 
     @Callback(doc = """function(command:string):number -- Runs an arbitrary command using a fake player.""")
-    fun runCommand(context: Context, args: Arguments): Array<Any?> {
+    fun runCommand(context: Context, args: Arguments): Result {
         checkAccess()
         val commands: Iterable<Any?> = if (args.isTable(0)) {
             args.checkTable(0).values
@@ -231,7 +227,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     }
 
     @Callback(doc = """function(x:number, y:number, z:number):boolean -- Add a component block at the specified coordinates to the computer network.""")
-    fun connectToBlock(context: Context, args: Arguments): Array<Any?> {
+    fun connectToBlock(context: Context, args: Arguments): Result {
         checkAccess()
         val x = args.checkInteger(0)
         val y = args.checkInteger(1)
@@ -258,7 +254,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     }
 
     @Callback(doc = """function():userdata -- Test method for user-data and general value conversion.""")
-    fun test(context: Context, args: Arguments): Array<Any?> {
+    fun test(context: Context, args: Arguments): Result {
         checkAccess()
 
         val v1 = mutableMapOf<Any, Any>("a" to true, "b" to "test")
@@ -271,7 +267,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     // ----------------------------------------------------------------------- //
 
     @Callback(doc = """function(player:string, text:string) -- Sends text to the specified player's clipboard if possible.""")
-    fun sendToClipboard(context: Context, args: Arguments): Array<Any?> {
+    fun sendToClipboard(context: Context, args: Arguments): Result {
         checkAccess()
         val player = FMLCommonHandler.instance().minecraftServerInstance.playerList.getPlayerByUsername(args.checkString(0))
         return if (player != null) {
@@ -283,7 +279,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
     }
 
     @Callback(doc = """function(address:string, data...) -- Sends data to the debug card with the specified address.""")
-    fun sendToDebugCard(context: Context, args: Arguments): Array<Any?> {
+    fun sendToDebugCard(context: Context, args: Arguments): Result {
         checkAccess()
         val destination = args.checkString(0)
         DebugNetwork.getEndpoint(destination)
@@ -419,15 +415,15 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function():userdata -- Get the player's world object.""")
-        fun getWorld(context: Context, args: Arguments): Array<Any?> =
+        fun getWorld(context: Context, args: Arguments): Result =
             withPlayer { player -> result(WorldValue(player.entityWorld, ctx)) }
 
         @Callback(doc = """function():string -- Get the player's game type.""")
-        fun getGameType(context: Context, args: Arguments): Array<Any?> =
+        fun getGameType(context: Context, args: Arguments): Result =
             withPlayer { player -> result(player.interactionManager.gameType.name) }
 
         @Callback(doc = """function(gametype:string) -- Set the player's game type (survival, creative, adventure).""")
-        fun setGameType(context: Context, args: Arguments): Array<Any?>? =
+        fun setGameType(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 val gametype = args.checkString(0)
                 player.setGameType(GameType.values().find { it.name == gametype } ?: GameType.SURVIVAL)
@@ -435,62 +431,62 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
             }
 
         @Callback(doc = """function():number, number, number -- Get the player's position.""")
-        fun getPosition(context: Context, args: Arguments): Array<Any?> =
+        fun getPosition(context: Context, args: Arguments): Result =
             withPlayer { player -> result(player.posX, player.posY, player.posZ) }
 
         @Callback(doc = """function(x:number, y:number, z:number) -- Set the player's position.""")
-        fun setPosition(context: Context, args: Arguments): Array<Any?>? =
+        fun setPosition(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 player.setPositionAndUpdate(args.checkDouble(0), args.checkDouble(1), args.checkDouble(2))
                 null
             }
 
         @Callback(doc = """function():number -- Get the player's health.""")
-        fun getHealth(context: Context, args: Arguments): Array<Any?> =
+        fun getHealth(context: Context, args: Arguments): Result =
             withPlayer { player -> result(player.health) }
 
         @Callback(doc = """function():number -- Get the player's max health.""")
-        fun getMaxHealth(context: Context, args: Arguments): Array<Any?> =
+        fun getMaxHealth(context: Context, args: Arguments): Result =
             withPlayer { player -> result(player.maxHealth) }
 
         @Callback(doc = """function(health:number) -- Set the player's health.""")
-        fun setHealth(context: Context, args: Arguments): Array<Any?>? =
+        fun setHealth(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 player.health = args.checkDouble(0).toFloat()
                 null
             }
 
         @Callback(doc = """function():number -- Get the player's level""")
-        fun getLevel(context: Context, args: Arguments): Array<Any?> =
+        fun getLevel(context: Context, args: Arguments): Result =
             withPlayer { player -> result(player.experienceLevel) }
 
         @Callback(doc = """function():number -- Get the player's total experience""")
-        fun getExperienceTotal(context: Context, args: Arguments): Array<Any?> =
+        fun getExperienceTotal(context: Context, args: Arguments): Result =
             withPlayer { player -> result(player.experienceTotal) }
 
         @Callback(doc = """function(level:number) -- Add a level to the player's experience level""")
-        fun addExperienceLevel(context: Context, args: Arguments): Array<Any?>? =
+        fun addExperienceLevel(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 player.addExperienceLevel(args.checkInteger(0))
                 null
             }
 
         @Callback(doc = """function(level:number) -- Remove a level from the player's experience level""")
-        fun removeExperienceLevel(context: Context, args: Arguments): Array<Any?>? =
+        fun removeExperienceLevel(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 player.addExperienceLevel(-args.checkInteger(0))
                 null
             }
 
         @Callback(doc = """function() -- Clear the players inventory""")
-        fun clearInventory(context: Context, args: Arguments): Array<Any?>? =
+        fun clearInventory(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 player.inventory.clear()
                 null
             }
 
         @Callback(doc = """function(id:string, amount:number, meta:number[, nbt:string]):number -- Adds the item stack to the players inventory""")
-        fun insertItem(context: Context, args: Arguments): Array<Any?>? =
+        fun insertItem(context: Context, args: Arguments): Result? =
             withPlayer { player ->
                 val item = Item.REGISTRY.getObject(ResourceLocation(args.checkString(0)))
                     ?: throw IllegalArgumentException("invalid item id")
@@ -543,7 +539,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(team:string) - Add a team to the scoreboard""")
-        fun addTeam(context: Context, args: Arguments): Array<Any?> {
+        fun addTeam(context: Context, args: Arguments): Result {
             checkAccess()
             val team = args.checkString(0)
             scoreboard?.createTeam(team)
@@ -551,7 +547,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(teamName: string) - Remove a team from the scoreboard""")
-        fun removeTeam(context: Context, args: Arguments): Array<Any?> {
+        fun removeTeam(context: Context, args: Arguments): Result {
             checkAccess()
             val teamName = args.checkString(0)
             val team = scoreboard?.getTeam(teamName)
@@ -560,7 +556,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(player:string, team:string):boolean - Add a player to a team""")
-        fun addPlayerToTeam(context: Context, args: Arguments): Array<Any?> {
+        fun addPlayerToTeam(context: Context, args: Arguments): Result {
             checkAccess()
             val player = args.checkString(0)
             val team = args.checkString(1)
@@ -568,14 +564,14 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(player:string):boolean - Remove a player from their team""")
-        fun removePlayerFromTeams(context: Context, args: Arguments): Array<Any?> {
+        fun removePlayerFromTeams(context: Context, args: Arguments): Result {
             checkAccess()
             val player = args.checkString(0)
             return result(scoreboard?.removePlayerFromTeams(player) ?: false)
         }
 
         @Callback(doc = """function(player:string, team:string):boolean - Remove a player from a specific team""")
-        fun removePlayerFromTeam(context: Context, args: Arguments): Array<Any?> {
+        fun removePlayerFromTeam(context: Context, args: Arguments): Result {
             checkAccess()
             val player = args.checkString(0)
             val teamName = args.checkString(1)
@@ -585,7 +581,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(objectiveName:string, objectiveCriteria:string) - Create a new objective for the scoreboard""")
-        fun addObjective(context: Context, args: Arguments): Array<Any?> {
+        fun addObjective(context: Context, args: Arguments): Result {
             checkAccess()
             val objName = args.checkString(0)
             val objType = args.checkString(1)
@@ -595,7 +591,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(objectiveName:string) - Remove an objective from the scoreboard""")
-        fun removeObjective(context: Context, args: Arguments): Array<Any?> {
+        fun removeObjective(context: Context, args: Arguments): Result {
             checkAccess()
             val objName = args.checkString(0)
             val objective = scoreboard?.getObjective(objName)
@@ -604,7 +600,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(playerName:string, objectiveName:string, score:int) - Sets the score of a player for a certain objective""")
-        fun setPlayerScore(context: Context, args: Arguments): Array<Any?> {
+        fun setPlayerScore(context: Context, args: Arguments): Result {
             checkAccess()
             val name = args.checkString(0)
             val objective = scoreboard?.getObjective(args.checkString(1))
@@ -617,7 +613,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(playerName:string, objectiveName:string):int - Gets the score of a player for a certain objective""")
-        fun getPlayerScore(context: Context, args: Arguments): Array<Any?> {
+        fun getPlayerScore(context: Context, args: Arguments): Result {
             checkAccess()
             val name = args.checkString(0)
             val objective = scoreboard?.getObjective(args.checkString(1))
@@ -630,7 +626,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(playerName:string, objectiveName:string, score:int) - Increases the score of a player for a certain objective""")
-        fun increasePlayerScore(context: Context, args: Arguments): Array<Any?> {
+        fun increasePlayerScore(context: Context, args: Arguments): Result {
             checkAccess()
             val name = args.checkString(0)
             val objective = scoreboard?.getObjective(args.checkString(1))
@@ -643,7 +639,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(playerName:string, objectiveName:string, score:int) - Decrease the score of a player for a certain objective""")
-        fun decreasePlayerScore(context: Context, args: Arguments): Array<Any?> {
+        fun decreasePlayerScore(context: Context, args: Arguments): Result {
             checkAccess()
             val name = args.checkString(0)
             val objective = scoreboard?.getObjective(args.checkString(1))
@@ -696,78 +692,78 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         // ----------------------------------------------------------------------- //
 
         @Callback(doc = """function():number -- Gets the numeric id of the current dimension.""")
-        fun getDimensionId(context: Context, args: Arguments): Array<Any?> {
+        fun getDimensionId(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.provider?.dimension ?: 0)
         }
 
         @Callback(doc = """function():string -- Gets the name of the current dimension.""")
-        fun getDimensionName(context: Context, args: Arguments): Array<Any?> {
+        fun getDimensionName(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.provider?.dimensionType?.name ?: "")
         }
 
         @Callback(doc = """function():number -- Gets the seed of the world.""")
-        fun getSeed(context: Context, args: Arguments): Array<Any?> {
+        fun getSeed(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.seed ?: 0L)
         }
 
         @Callback(doc = """function():boolean -- Returns whether it is currently raining.""")
-        fun isRaining(context: Context, args: Arguments): Array<Any?> {
+        fun isRaining(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.isRaining ?: false)
         }
 
         @Callback(doc = """function(value:boolean) -- Sets whether it is currently raining.""")
-        fun setRaining(context: Context, args: Arguments): Array<Any?> {
+        fun setRaining(context: Context, args: Arguments): Result {
             checkAccess()
             world?.worldInfo?.isRaining = args.checkBoolean(0)
             return result()
         }
 
         @Callback(doc = """function():boolean -- Returns whether it is currently thundering.""")
-        fun isThundering(context: Context, args: Arguments): Array<Any?> {
+        fun isThundering(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.isThundering ?: false)
         }
 
         @Callback(doc = """function(value:boolean) -- Sets whether it is currently thundering.""")
-        fun setThundering(context: Context, args: Arguments): Array<Any?> {
+        fun setThundering(context: Context, args: Arguments): Result {
             checkAccess()
             world?.worldInfo?.isThundering = args.checkBoolean(0)
             return result()
         }
 
         @Callback(doc = """function():number -- Get the current world time.""")
-        fun getTime(context: Context, args: Arguments): Array<Any?> {
+        fun getTime(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.worldTime ?: 0L)
         }
 
         @Callback(doc = """function(value:number) -- Set the current world time.""")
-        fun setTime(context: Context, args: Arguments): Array<Any?> {
+        fun setTime(context: Context, args: Arguments): Result {
             checkAccess()
             world?.worldTime = args.checkDouble(0).toLong()
             return result()
         }
 
         @Callback(doc = """function():number, number, number -- Get the current spawn point coordinates.""")
-        fun getSpawnPoint(context: Context, args: Arguments): Array<Any?> {
+        fun getSpawnPoint(context: Context, args: Arguments): Result {
             checkAccess()
             val info = world?.worldInfo
             return result(info?.spawnX ?: 0, info?.spawnY ?: 0, info?.spawnZ ?: 0)
         }
 
         @Callback(doc = """function(x:number, y:number, z:number) -- Set the spawn point coordinates.""")
-        fun setSpawnPoint(context: Context, args: Arguments): Array<Any?> {
+        fun setSpawnPoint(context: Context, args: Arguments): Result {
             checkAccess()
             world?.worldInfo?.setSpawn(BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2)))
             return result()
         }
 
         @Callback(doc = """function(x:number, y:number, z:number, sound:string, range:number) -- Play a sound at the specified coordinates.""")
-        fun playSoundAt(context: Context, args: Arguments): Array<Any?> {
+        fun playSoundAt(context: Context, args: Arguments): Result {
             checkAccess()
             val (x, y, z) = Triple(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val sound = args.checkString(3)
@@ -779,14 +775,14 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         // ----------------------------------------------------------------------- //
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Get the ID of the block at the specified coordinates.""")
-        fun getBlockId(context: Context, args: Arguments): Array<Any?> {
+        fun getBlockId(context: Context, args: Arguments): Result {
             checkAccess()
             val pos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             return result(Block.getIdFromBlock(world?.getBlockState(pos)?.block))
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Get the metadata of the block at the specified coordinates.""")
-        fun getMetadata(context: Context, args: Arguments): Array<Any?> {
+        fun getMetadata(context: Context, args: Arguments): Result {
             checkAccess()
             val pos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val state = world?.getBlockState(pos)
@@ -794,7 +790,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x:number, y:number, z:number[, actualState:boolean=false]) - gets the block state for the block at the specified position, optionally getting additional display related data""")
-        fun getBlockState(context: Context, args: Arguments): Array<Any?> {
+        fun getBlockState(context: Context, args: Arguments): Result {
             checkAccess()
             val pos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             var state = world?.getBlockState(pos)
@@ -805,13 +801,13 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Check whether the block at the specified coordinates is loaded.""")
-        fun isLoaded(context: Context, args: Arguments): Array<Any?> {
+        fun isLoaded(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.isBlockLoaded(BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))) ?: false)
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Check whether the block at the specified coordinates has a tile entity.""")
-        fun hasTileEntity(context: Context, args: Arguments): Array<Any?> {
+        fun hasTileEntity(context: Context, args: Arguments): Result {
             checkAccess()
             val blockPos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val state = world?.getBlockState(blockPos)
@@ -819,7 +815,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):table -- Get the NBT of the block at the specified coordinates.""")
-        fun getTileNBT(context: Context, args: Arguments): Array<Any?> {
+        fun getTileNBT(context: Context, args: Arguments): Result {
             checkAccess()
             val blockPos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val tileEntity = world?.getTileEntity(blockPos)
@@ -833,7 +829,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x:number, y:number, z:number, nbt:table):boolean -- Set the NBT of the block at the specified coordinates.""")
-        fun setTileNBT(context: Context, args: Arguments): Array<Any?> {
+        fun setTileNBT(context: Context, args: Arguments): Result {
             checkAccess()
             val blockPos = BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val tileEntity = world?.getTileEntity(blockPos)
@@ -854,25 +850,25 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Get the light opacity of the block at the specified coordinates.""")
-        fun getLightOpacity(context: Context, args: Arguments): Array<Any?> {
+        fun getLightOpacity(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.getBlockLightOpacity(BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))) ?: 0)
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Get the light value (emission) of the block at the specified coordinates.""")
-        fun getLightValue(context: Context, args: Arguments): Array<Any?> {
+        fun getLightValue(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.getLight(BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2)), false) ?: 0)
         }
 
         @Callback(doc = """function(x:number, y:number, z:number):number -- Get whether the block at the specified coordinates is directly under the sky.""")
-        fun canSeeSky(context: Context, args: Arguments): Array<Any?> {
+        fun canSeeSky(context: Context, args: Arguments): Result {
             checkAccess()
             return result(world?.canBlockSeeSky(BlockPos(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))) ?: false)
         }
 
         @Callback(doc = """function(x:number, y:number, z:number, id:number or string, meta:number):number -- Set the block at the specified coordinates.""")
-        fun setBlock(context: Context, args: Arguments): Array<Any?> {
+        fun setBlock(context: Context, args: Arguments): Result {
             checkAccess()
             val block = if (args.isInteger(3))
                 Block.getBlockById(args.checkInteger(3))
@@ -885,7 +881,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x1:number, y1:number, z1:number, x2:number, y2:number, z2:number, id:number or string, meta:number):number -- Set all blocks in the area defined by the two corner points (x1, y1, z1) and (x2, y2, z2).""")
-        fun setBlocks(context: Context, args: Arguments): Array<Any?> {
+        fun setBlocks(context: Context, args: Arguments): Result {
             checkAccess()
             val (xMin, yMin, zMin) = Triple(args.checkInteger(0), args.checkInteger(1), args.checkInteger(2))
             val (xMax, yMax, zMax) = Triple(args.checkInteger(3), args.checkInteger(4), args.checkInteger(5))
@@ -905,7 +901,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         // ----------------------------------------------------------------------- //
 
         @Callback(doc = """function(id:string, count:number, damage:number, nbt:string, x:number, y:number, z:number, side:number):boolean - Insert an item stack into the inventory at the specified location. NBT tag is expected in JSON format.""")
-        fun insertItem(context: Context, args: Arguments): Array<Any?> {
+        fun insertItem(context: Context, args: Arguments): Result {
             checkAccess()
             val item = Item.REGISTRY.getObject(ResourceLocation(args.checkString(0)))
                 ?: throw IllegalArgumentException("invalid item id")
@@ -926,7 +922,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(x:number, y:number, z:number, slot:number[, count:number]):number - Reduce the size of an item stack in the inventory at the specified location.""")
-        fun removeItem(context: Context, args: Arguments): Array<Any?> {
+        fun removeItem(context: Context, args: Arguments): Result {
             checkAccess()
             val position = BlockPosition(args.checkDouble(0), args.checkDouble(1), args.checkDouble(2), world)
             val inventory = InventoryUtils.anyInventoryAt(position)
@@ -944,7 +940,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(id:string, amount:number, x:number, y:number, z:number, side:number):boolean - Insert some fluid into the tank at the specified location.""")
-        fun insertFluid(context: Context, args: Arguments): Array<Any?> {
+        fun insertFluid(context: Context, args: Arguments): Result {
             checkAccess()
             val fluid = FluidRegistry.getFluid(args.checkString(0))
                 ?: throw IllegalArgumentException("invalid fluid id")
@@ -959,7 +955,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
         }
 
         @Callback(doc = """function(amount:number, x:number, y:number, z:number, side:number):boolean - Remove some fluid from a tank at the specified location.""")
-        fun removeFluid(context: Context, args: Arguments): Array<Any?> {
+        fun removeFluid(context: Context, args: Arguments): Result {
             checkAccess()
             val amount = args.checkInteger(0)
             val position = BlockPosition(args.checkDouble(1), args.checkDouble(2), args.checkDouble(3), world)
@@ -1054,7 +1050,7 @@ class DebugCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), DebugNode {
             value = arguments.checkString(1)
         }
 
-        override fun call(context: Context, arguments: Arguments): Array<Any?> {
+        override fun call(context: Context, arguments: Arguments): Result {
             OpenComputers.log.info("TestValue.call(${arguments.toArray().joinToString(", ")})")
             return result(*arguments.toArray())
         }

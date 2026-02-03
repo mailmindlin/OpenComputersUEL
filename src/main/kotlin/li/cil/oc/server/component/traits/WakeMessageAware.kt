@@ -6,19 +6,20 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Packet
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 
 interface WakeMessageAware : NetworkAware {
     val wakeMessageHelper: WakeMessageHelper
 
     @Callback(direct = true, doc = """function():string, boolean -- Get the current wake-up message.""")
-    fun getWakeMessage(context: Context, args: Arguments): Array<Any?> {
+    fun getWakeMessage(context: Context, args: Arguments): Result {
         return result(wakeMessageHelper.wakeMessage, wakeMessageHelper.wakeMessageFuzzy)
     }
 
     @Callback(doc = """function(message:string[, fuzzy:boolean]):string -- Set the wake-up message and whether to ignore additional data/parameters.""")
-    fun setWakeMessage(context: Context, args: Arguments): Array<Any?> {
+    fun setWakeMessage(context: Context, args: Arguments): Result {
         val oldMessage = wakeMessageHelper.wakeMessage
         val oldFuzzy = wakeMessageHelper.wakeMessageFuzzy
 

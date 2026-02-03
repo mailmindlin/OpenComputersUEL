@@ -5,7 +5,8 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.prefab.ItemStackArrayValue
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.*
 import net.minecraft.block.Block
 import net.minecraft.item.ItemStack
@@ -16,7 +17,7 @@ import net.minecraftforge.oredict.OreDictionary
 
 interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     @Callback(doc = """function(side:number):number -- Get the number of slots in the inventory on the specified side of the device.""")
-    fun getInventorySize(context: Context, args: Arguments): Array<Any?> {
+    fun getInventorySize(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             result(inventory.slots)
@@ -24,7 +25,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slot:number):number -- Get number of items in the specified slot of the inventory on the specified side of the device.""")
-    fun getSlotStackSize(context: Context, args: Arguments): Array<Any?> {
+    fun getSlotStackSize(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val slot = args.checkSlot(inventory, 1)
@@ -34,7 +35,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slot:number):number -- Get the maximum number of items in the specified slot of the inventory on the specified side of the device.""")
-    fun getSlotMaxStackSize(context: Context, args: Arguments): Array<Any?> {
+    fun getSlotMaxStackSize(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val slot = args.checkSlot(inventory, 1)
@@ -44,7 +45,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slotA:number, slotB:number[, checkNBT:boolean=false]):boolean -- Get whether the items in the two specified slots of the inventory on the specified side of the device are of the same type.""")
-    fun compareStacks(context: Context, args: Arguments): Array<Any?> {
+    fun compareStacks(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val stackA = inventory.getStackInSlot(args.checkSlot(inventory, 1))
@@ -55,7 +56,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slot:number, dbAddress:string, dbSlot:number[, checkNBT:boolean=false]):boolean -- Compare an item in the specified slot in the inventory on the specified side with one in the database with the specified address.""")
-    fun compareStackToDatabase(context: Context, args: Arguments): Array<Any?> {
+    fun compareStackToDatabase(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val slot = args.checkSlot(inventory, 1)
@@ -72,7 +73,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slotA:number, slotB:number):boolean -- Get whether the items in the two specified slots of the inventory on the specified side of the device are equivalent (have shared OreDictionary IDs).""")
-    fun areStacksEquivalent(context: Context, args: Arguments): Array<Any?> {
+    fun areStacksEquivalent(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         return withInventory(facing) { inventory ->
             val stackA = inventory.getStackInSlot(args.checkSlot(inventory, 1))
@@ -145,11 +146,11 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slot:number, dbAddress:string, dbSlot:number):boolean -- Store an item stack description in the specified slot of the database with the specified address.""")
-    fun store(context: Context, args: Arguments): Array<Any?> {
+    fun store(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val dbAddress = args.checkString(2)
 
-        fun store(stack: ItemStack): Array<Any?> {
+        fun store(stack: ItemStack): Result {
             return DatabaseAccess.withDatabase(node!!, dbAddress) { database ->
                 val dbSlot = args.checkSlot(database.data, 3)
                 val nonEmpty = database.getStackInSlot(dbSlot) != ItemStack.EMPTY // zero size stacks
@@ -164,7 +165,7 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
         }
     }
 
-    fun withInventorySource(side: EnumFacing, f: (InventorySource) -> Array<Any?>): Array<Any?> {
+    fun withInventorySource(side: EnumFacing, f: (InventorySource) -> Result): Result {
         val inventorySource = InventoryUtils.inventorySourceAt(position.offset(side), side.opposite)
         return if (inventorySource != null && mayInteract(inventorySource)) {
             f(inventorySource)
@@ -173,7 +174,6 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
         }
     }
 
-    fun withInventory(side: EnumFacing, f: (IItemHandler) -> Array<Any?>): Array<Any?> {
         return withInventorySource(side) { inventorySource ->
             f(inventorySource.inventory)
         }

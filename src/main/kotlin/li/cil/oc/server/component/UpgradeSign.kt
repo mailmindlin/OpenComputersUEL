@@ -19,8 +19,10 @@ import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.Result
 import li.cil.oc.util.checkSideAny
 import li.cil.oc.util.getTileEntity
+import li.cil.oc.util.result
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -45,7 +47,7 @@ abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfo {
 
     abstract val host: EnvironmentHost
 
-    protected fun getValue(tileEntity: TileEntitySign?): Array<Any?> {
+    protected fun getValue(tileEntity: TileEntitySign?): Result {
         return if (tileEntity != null) {
             result(tileEntity.signText.joinToString("\n") { it.unformattedText })
         } else {
@@ -53,7 +55,7 @@ abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfo {
         }
     }
 
-    protected fun setValue(tileEntity: TileEntitySign?, text: String): Array<Any?> {
+    protected fun setValue(tileEntity: TileEntitySign?, text: String): Result {
         return if (tileEntity != null) {
             val player = when (host) {
                 is InternalRobot -> (host as InternalRobot).player()
@@ -129,12 +131,12 @@ abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfo {
 
         @Suppress("unused", "unused_parameter")
         @Callback(doc = "function(side:number):string -- Get the text on the sign on the specified side of the adapter.")
-        fun getValue(context: Context, args: Arguments): Array<Any?> =
+        fun getValue(context: Context, args: Arguments): Result =
             super.getValue(findSign(args.checkSideAny(0)))
 
         @Suppress("unused", "unused_parameter")
         @Callback(doc = "function(side:number, value:string):string -- Set the text on the sign on the specified side of the adapter.")
-        fun setValue(context: Context, args: Arguments): Array<Any?> =
+        fun setValue(context: Context, args: Arguments): Result =
             super.setValue(findSign(args.checkSideAny(0)), args.checkString(1))
     }
 
@@ -154,12 +156,12 @@ abstract class UpgradeSign : ManagedEnvironmentKt(), DeviceInfo {
 
         @Suppress("unused", "unused_parameter")
         @Callback(doc = "function():string -- Get the text on the sign in front of the host.")
-        fun getValue(context: Context, args: Arguments): Array<Any?> =
+        fun getValue(context: Context, args: Arguments): Result =
             super.getValue(findSign(rotatable.facing()))
 
         @Suppress("unused", "unused_parameter")
         @Callback(doc = "function(value:string):string -- Set the text on the sign in front of the host.")
-        fun setValue(context: Context, args: Arguments): Array<Any?> =
+        fun setValue(context: Context, args: Arguments): Result =
             super.setValue(findSign(rotatable.facing()), args.checkString(0))
     }
 }

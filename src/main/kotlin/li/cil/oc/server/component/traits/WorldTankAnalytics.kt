@@ -4,14 +4,15 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.FluidUtils
 import li.cil.oc.util.optTankProperties
 import net.minecraftforge.fluids.capability.IFluidTankProperties
 
 interface WorldTankAnalytics : WorldAware, SideRestricted {
     @Callback(doc = """function(side:number [, tank:number]):number -- Get the amount of fluid in the tank on the specified side.""")
-    fun getTankLevel(context: Context, args: Arguments): Array<Any?> {
+    fun getTankLevel(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
@@ -29,7 +30,7 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
     }
 
     @Callback(doc = """function(side:number [, tank:number]):number -- Get the capacity of the tank on the specified side.""")
-    fun getTankCapacity(context: Context, args: Arguments): Array<Any?> {
+    fun getTankCapacity(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
@@ -68,7 +69,7 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
     }
 
     @Callback(doc = """function(side:number):number -- Get the number of tanks available on the specified side.""")
-    fun getTankCount(context: Context, args: Arguments): Array<Any?> {
+    fun getTankCount(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)

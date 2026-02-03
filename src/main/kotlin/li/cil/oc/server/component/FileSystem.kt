@@ -19,6 +19,8 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.SaveHandler
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.setNewCompoundTag
 import li.cil.oc.server.PacketSender as ServerPacketSender
 import net.minecraft.nbt.NBTTagCompound
@@ -68,13 +70,13 @@ class FileSystem(
 
     @Callback(direct = true, doc = """function():string -- Get the current label of the drive.""")
     @Synchronized
-    fun getLabel(context: Context, args: Arguments): Array<Any?>? {
+    fun getLabel(context: Context, args: Arguments): Result? {
         return if (label != null) result(label!!.label) else null
     }
 
     @Callback(doc = """function(value:string):string -- Sets the label of the drive. Returns the new value, which may be truncated.""")
     @Synchronized
-    fun setLabel(context: Context, args: Arguments): Array<Any?> {
+    fun setLabel(context: Context, args: Arguments): Result {
         if (label == null) throw Exception("drive does not support labeling")
         if (args.checkAny(0) == null) label!!.setLabel(null) else label!!.setLabel(args.checkString(0))
         return result(label!!.label)
@@ -82,50 +84,50 @@ class FileSystem(
 
     @Callback(direct = true, doc = """function():boolean -- Returns whether the file system is read-only.""")
     @Synchronized
-    fun isReadOnly(context: Context, args: Arguments): Array<Any?> = result(fileSystem.isReadOnly)
+    fun isReadOnly(context: Context, args: Arguments): Result = result(fileSystem.isReadOnly)
 
     @Callback(direct = true, doc = """function():number -- The overall capacity of the file system, in bytes.""")
     @Synchronized
-    fun spaceTotal(context: Context, args: Arguments): Array<Any?> {
+    fun spaceTotal(context: Context, args: Arguments): Result {
         val space = fileSystem.spaceTotal()
         return if (space < 0) result(Double.POSITIVE_INFINITY) else result(space)
     }
 
     @Callback(direct = true, doc = """function():number -- The currently used capacity of the file system, in bytes.""")
     @Synchronized
-    fun spaceUsed(context: Context, args: Arguments): Array<Any?> = result(fileSystem.spaceUsed())
+    fun spaceUsed(context: Context, args: Arguments): Result = result(fileSystem.spaceUsed())
 
     @Callback(direct = true, doc = """function(path:string):boolean -- Returns whether an object exists at the specified absolute path in the file system.""")
     @Synchronized
-    fun exists(context: Context, args: Arguments): Array<Any?> {
+    fun exists(context: Context, args: Arguments): Result {
         diskActivity()
         return result(fileSystem.exists(clean(args.checkString(0))))
     }
 
     @Callback(direct = true, doc = """function(path:string):number -- Returns the size of the object at the specified absolute path in the file system.""")
     @Synchronized
-    fun size(context: Context, args: Arguments): Array<Any?> {
+    fun size(context: Context, args: Arguments): Result {
         diskActivity()
         return result(fileSystem.size(clean(args.checkString(0))))
     }
 
     @Callback(direct = true, doc = """function(path:string):boolean -- Returns whether the object at the specified absolute path in the file system is a directory.""")
     @Synchronized
-    fun isDirectory(context: Context, args: Arguments): Array<Any?> {
+    fun isDirectory(context: Context, args: Arguments): Result {
         diskActivity()
         return result(fileSystem.isDirectory(clean(args.checkString(0))))
     }
 
     @Callback(direct = true, doc = """function(path:string):number -- Returns the (real world) timestamp of when the object at the specified absolute path in the file system was modified.""")
     @Synchronized
-    fun lastModified(context: Context, args: Arguments): Array<Any?> {
+    fun lastModified(context: Context, args: Arguments): Result {
         diskActivity()
         return result(fileSystem.lastModified(clean(args.checkString(0))))
     }
 
     @Callback(doc = """function(path:string):table -- Returns a list of names of objects in the directory at the specified absolute path in the file system.""")
     @Synchronized
-    fun list(context: Context, args: Arguments): Array<Any?>? {
+    fun list(context: Context, args: Arguments): Result? {
         val list = fileSystem.list(clean(args.checkString(0)))
         return if (list != null) {
             diskActivity()
@@ -135,7 +137,7 @@ class FileSystem(
 
     @Callback(doc = """function(path:string):boolean -- Creates a directory at the specified absolute path in the file system. Creates parent directories, if necessary.""")
     @Synchronized
-    fun makeDirectory(context: Context, args: Arguments): Array<Any?> {
+    fun makeDirectory(context: Context, args: Arguments): Result {
         fun recurse(path: String): Boolean {
             return !fileSystem.exists(path) && (fileSystem.makeDirectory(path) ||
                 (recurse(path.split("/").dropLast(1).joinToString("/")) && fileSystem.makeDirectory(path)))
@@ -147,7 +149,7 @@ class FileSystem(
 
     @Callback(doc = """function(path:string):boolean -- Removes the object at the specified absolute path in the file system.""")
     @Synchronized
-    fun remove(context: Context, args: Arguments): Array<Any?> {
+    fun remove(context: Context, args: Arguments): Result {
         fun recurse(parent: String): Boolean {
             return (!fileSystem.isDirectory(parent) ||
                 fileSystem.list(parent)?.all { child -> recurse("$parent/$child") } == true) && fileSystem.delete(parent)
@@ -159,7 +161,7 @@ class FileSystem(
 
     @Callback(doc = """function(from:string, to:string):boolean -- Renames/moves an object from the first specified absolute path in the file system to the second.""")
     @Synchronized
-    fun rename(context: Context, args: Arguments): Array<Any?> {
+    fun rename(context: Context, args: Arguments): Result {
         val success = fileSystem.rename(clean(args.checkString(0)), clean(args.checkString(1)))
         diskActivity()
         return result(success)
@@ -167,19 +169,20 @@ class FileSystem(
 
     @Callback(direct = true, doc = """function(handle:userdata) -- Closes an open file descriptor with the specified handle.""")
     @Synchronized
-    fun close(context: Context, args: Arguments): Array<Any?>? {
+    fun close(context: Context, args: Arguments): Result? {
         close(context, checkHandle(args, 0))
         return null
     }
 
     @Callback(direct = true, limit = 4, doc = """function(path:string[, mode:string='r']):userdata -- Opens a new file descriptor and returns its handle.""")
     @Synchronized
-    fun open(context: Context, args: Arguments): Array<Any?> {
+    fun open(context: Context, args: Arguments): Result {
         if (owners[context.node().address()]?.size ?: 0 >= Settings.get.maxHandles) {
             throw IOException("too many open handles")
         }
         val path = args.checkString(0)
         val mode = args.optString(1, "r")
+        OpenComputers.log.info("FS open($path, $mode) -> $fileSystem")
         val handle = fileSystem.open(clean(path), parseMode(mode))
         if (handle > 0) {
             owners.getOrPut(context.node().address()!!) { mutableSetOf() }.add(handle)
@@ -190,7 +193,7 @@ class FileSystem(
 
     @Callback(direct = true, limit = 15, doc = """function(handle:userdata, count:number):string or nil -- Reads up to the specified amount of data from an open file descriptor with the specified handle. Returns nil when EOF is reached.""")
     @Synchronized
-    fun read(context: Context, args: Arguments): Array<Any?> {
+    fun read(context: Context, args: Arguments): Result {
         context.consumeCallBudget(readCosts[speed])
         val handle = checkHandle(args, 0)
         val n = args.checkInteger(1).coerceIn(0, Settings.get.maxReadBuffer)
@@ -219,7 +222,7 @@ class FileSystem(
 
     @Callback(direct = true, doc = """function(handle:userdata, whence:string, offset:number):number -- Seeks in an open file descriptor with the specified handle. Returns the new pointer position.""")
     @Synchronized
-    fun seek(context: Context, args: Arguments): Array<Any?> {
+    fun seek(context: Context, args: Arguments): Result {
         context.consumeCallBudget(seekCosts[speed])
         val handle = checkHandle(args, 0)
         val whence = args.checkString(1)
@@ -240,7 +243,7 @@ class FileSystem(
 
     @Callback(direct = true, doc = """function(handle:userdata, value:string):boolean -- Writes the specified data to an open file descriptor with the specified handle.""")
     @Synchronized
-    fun write(context: Context, args: Arguments): Array<Any?> {
+    fun write(context: Context, args: Arguments): Result {
         context.consumeCallBudget(writeCosts[speed])
         val handle = checkHandle(args, 0)
         val value = args.checkByteArray(1)

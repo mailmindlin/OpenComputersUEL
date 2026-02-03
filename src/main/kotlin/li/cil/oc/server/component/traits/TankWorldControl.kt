@@ -3,7 +3,8 @@ package li.cil.oc.server.component.traits
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.FluidUtils
 import li.cil.oc.util.optFluidCount
 import li.cil.oc.util.optTankProperties
@@ -12,7 +13,7 @@ import net.minecraftforge.fluids.capability.IFluidTankProperties
 
 interface TankWorldControl : TankAware, WorldAware, SideRestricted {
     @Callback(doc = "function(side:number [, tank:number]):boolean -- Compare the fluid in the selected tank with the fluid in the specified tank on the specified side. Returns true if equal.")
-    fun compareFluid(context: Context, args: Arguments): Array<Any?> {
+    fun compareFluid(context: Context, args: Arguments): Result {
         val side = checkSideForAction(args, 0)
         val stack = fluidInTank(selectedTank)
 
@@ -37,7 +38,7 @@ interface TankWorldControl : TankAware, WorldAware, SideRestricted {
     }
 
     @Callback(doc = "function(side:boolean[, amount:number=1000]):boolean, number or string -- Drains the specified amount of fluid from the specified side. Returns the amount drained, or an error message.")
-    fun drain(context: Context, args: Arguments): Array<Any?> {
+    fun drain(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val count = maxOf(args.optFluidCount(1), 0)
         val selectedTankInstance = getTank(selectedTank)
@@ -74,7 +75,7 @@ interface TankWorldControl : TankAware, WorldAware, SideRestricted {
     }
 
     @Callback(doc = "function(side:number[, amount:number=1000]):boolean, number of string -- Eject the specified amount of fluid to the specified side. Returns the amount ejected or an error message.")
-    fun fill(context: Context, args: Arguments): Array<Any?> {
+    fun fill(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val count = maxOf(args.optFluidCount(1), 0)
         val selectedTankInstance = getTank(selectedTank)

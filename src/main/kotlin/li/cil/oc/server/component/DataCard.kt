@@ -21,6 +21,8 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractValue
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 import org.apache.commons.codec.binary.Base64
 import org.apache.commons.io.output.ByteArrayOutputStream
@@ -28,7 +30,6 @@ import org.apache.commons.io.output.ByteArrayOutputStream
 import java.security.*
 import kotlin.jvm.Throws
 
-internal typealias Result = Array<Any?>
 abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo {
   override val node = nodeFactory()
     .withComponent("data", Visibility.Neighbors)
@@ -66,7 +67,7 @@ abstract class DataCard: ManagedEnvironmentKt(), li.cil.oc.api.driver.DeviceInfo
 
   @Suppress("unused", "unused_parameter")
   @Callback(direct = true, doc = """function():number -- The maximum size of data that can be passed to other functions of the card.""")
-  fun getLimit(context: Context, args: Arguments): Array<Any?> = result(Settings.get.dataCardHardLimit)
+  fun getLimit(context: Context, args: Arguments): Result = result(Settings.get.dataCardHardLimit)
 
   companion object {
     val SecureRandomInstance: ThreadLocal<SecureRandom> = ThreadLocal.withInitial { SecureRandom.getInstance("SHA1PRNG") }

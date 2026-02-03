@@ -12,6 +12,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.*
 import net.minecraft.item.crafting.CraftingManager
@@ -32,7 +34,7 @@ class UpgradeCrafting(val host: EnvironmentHost) : ManagedEnvironmentKt(), Devic
     override fun getDeviceInfo() = deviceInfo
 
     @Callback(doc = "function([count:number]):number -- Tries to craft the specified number of items in the top left area of the inventory.")
-    fun craft(context: Context, args: Arguments): Array<Any?> {
+    fun craft(context: Context, args: Arguments): Result {
         val count = args.optInteger(0, 64).coerceIn(0, 64)
         return result(*CraftingInventory().craft(count).toTypedArray())
     }

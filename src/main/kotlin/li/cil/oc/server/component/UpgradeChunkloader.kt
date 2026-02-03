@@ -15,6 +15,8 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.event.ChunkloaderUpgradeHandler
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.entity.Entity
 import net.minecraftforge.common.ForgeChunkManager
 import net.minecraftforge.common.ForgeChunkManager.Ticket
@@ -57,10 +59,10 @@ class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), De
     }
 
     @Callback(doc = "function():boolean -- Gets whether the chunkloader is currently active.")
-    fun isActive(context: Context, args: Arguments): Array<Any?> = result(ticket != null)
+    fun isActive(context: Context, args: Arguments): Result = result(ticket != null)
 
     @Callback(doc = "function(enabled:boolean):boolean -- Enables or disables the chunkloader, returns true if active changed")
-    fun setActive(context: Context, args: Arguments): Array<Any?> =
+    fun setActive(context: Context, args: Arguments): Result =
         result(setActive(args.checkBoolean(0), throwIfBlocked = true))
 
     override fun onConnect(node: Node) {

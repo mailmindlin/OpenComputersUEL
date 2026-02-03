@@ -16,6 +16,8 @@ import li.cil.oc.common.tileentity.DiskDrive
 import li.cil.oc.common.tileentity.DiskDrive.Companion
 import li.cil.oc.server.component.traits.WorldAware
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.entity.Entity
 import net.minecraft.entity.IMerchant
 import net.minecraft.util.math.Vec3d
@@ -45,7 +47,7 @@ class UpgradeTrading(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldA
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():table -- Returns a table of trades in range as userdata objects.")
-    fun getTrades(context: Context, args: Arguments): Array<Any?> {
+    fun getTrades(context: Context, args: Arguments): Result {
         val merchants = entitiesInBounds(Entity::class.java, position.bounds.grow(maxRange, maxRange, maxRange))
             .filter { isInRange(it) }
             .filterIsInstance<IMerchant>()

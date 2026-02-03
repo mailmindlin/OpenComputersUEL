@@ -4,7 +4,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.*
 
 interface InventoryTransfer : WorldAware, SideRestricted {
@@ -12,7 +13,7 @@ interface InventoryTransfer : WorldAware, SideRestricted {
     fun onTransferContents(): String?
 
     @Callback(doc = """function(sourceSide:number, sinkSide:number[, count:number[, sourceSlot:number[, sinkSlot:number]]]):boolean -- Transfer some items between two inventories.""")
-    fun transferItem(context: Context, args: Arguments): Array<Any?> {
+    fun transferItem(context: Context, args: Arguments): Result {
         val sourceSide = checkSideForAction(args, 0)
         val sourcePos = position.offset(sourceSide)
         val sinkSide = checkSideForAction(args, 1)
@@ -20,7 +21,7 @@ interface InventoryTransfer : WorldAware, SideRestricted {
         val count = args.optItemCount(2)
 
         onTransferContents()?.let { reason ->
-            return result(null, reason)
+            return result(Unit, reason)
         }
 
         val extractor = if (args.count() > 3) {
@@ -59,7 +60,7 @@ interface InventoryTransfer : WorldAware, SideRestricted {
     }
 
     @Callback(doc = """function(sourceSide:number, sinkSide:number[, count:number [, sourceTank:number]]):boolean, number -- Transfer some fluid between two tanks. Returns operation result and filled amount""")
-    fun transferFluid(context: Context, args: Arguments): Array<Any?> {
+    fun transferFluid(context: Context, args: Arguments): Result {
         val sourceSide = checkSideForAction(args, 0)
         val sourcePos = position.offset(sourceSide)
         val sinkSide = checkSideForAction(args, 1)
@@ -68,7 +69,7 @@ interface InventoryTransfer : WorldAware, SideRestricted {
         val sourceTank = args.optInteger(3, -1)
 
         onTransferContents()?.let { reason ->
-            return result(null, reason)
+            return result(Unit, reason)
         }
 
         val moved = FluidUtils.transferBetweenFluidHandlersAt(

@@ -4,7 +4,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.DatabaseAccess
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.checkSlot
@@ -13,17 +14,17 @@ import net.minecraftforge.oredict.OreDictionary
 
 interface InventoryAnalytics : InventoryAware, NetworkAware {
     @Callback(doc = """function([slot:number]):table -- Get a description of the stack in the specified slot or the selected slot.""")
-    fun getStackInInternalSlot(context: Context, args: Arguments): Array<Any?> {
         return if (Settings.get.allowItemStackInspection) {
             val slot = args.optSlot(0)
             result(inventory.getStackInSlot(slot))
         } else {
             result(null, "not enabled in config")
         }
+    fun getStackInInternalSlot(context: Context, args: Arguments): Result {
     }
 
     @Callback(doc = """function(otherSlot:number):boolean -- Get whether the stack in the selected slot is equivalent to the item in the specified slot (have shared OreDictionary IDs).""")
-    fun isEquivalentTo(context: Context, args: Arguments): Array<Any?> {
+    fun isEquivalentTo(context: Context, args: Arguments): Result {
         val slot = args.checkSlot(inventory, 0)
 
         val stackA = stackInSlot(selectedSlot)
@@ -38,7 +39,7 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
     }
 
     @Callback(doc = """function(slot:number, dbAddress:string, dbSlot:number):boolean -- Store an item stack description in the specified slot of the database with the specified address.""")
-    fun storeInternal(context: Context, args: Arguments): Array<Any?> {
+    fun storeInternal(context: Context, args: Arguments): Result {
         val localSlot = args.checkSlot(inventory, 0)
         val dbAddress = args.checkString(1)
         val localStack = inventory.getStackInSlot(localSlot)
@@ -52,7 +53,7 @@ interface InventoryAnalytics : InventoryAware, NetworkAware {
     }
 
     @Callback(doc = """function(slot:number, dbAddress:string, dbSlot:number[, checkNBT:boolean=false]):boolean -- Compare an item in the specified slot with one in the database with the specified address.""")
-    fun compareToDatabase(context: Context, args: Arguments): Array<Any?> {
+    fun compareToDatabase(context: Context, args: Arguments): Result {
         val localSlot = args.checkSlot(inventory, 0)
         val dbAddress = args.checkString(1)
         val localStack = inventory.getStackInSlot(localSlot)

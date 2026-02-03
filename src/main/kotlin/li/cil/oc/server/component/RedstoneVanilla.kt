@@ -8,6 +8,7 @@ import li.cil.oc.api.driver.DeviceInfo.DeviceClass
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
+import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
@@ -15,6 +16,8 @@ import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedWorld.extendedWorld
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.util.EnumFacing
 
 abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfo where T : EnvironmentHost, T : RedstoneAware {
@@ -43,7 +46,7 @@ abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfo where T : En
     // ----------------------------------------------------------------------- //
 
     @Callback(direct = true, doc = "function([side:number]):number or table -- Get the redstone input (all sides, or optionally on the specified side)")
-    fun getInput(context: Context, args: Arguments): Array<Any?> {
+    fun getInput(context: Context, args: Arguments): Result {
         val side = getOptionalSide(args)
         return if (side != null) {
             result(redstone.getInput(side))
@@ -53,7 +56,7 @@ abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfo where T : En
     }
 
     @Callback(direct = true, doc = "function([side:number]):number or table -- Get the redstone output (all sides, or optionally on the specified side)")
-    fun getOutput(context: Context, args: Arguments): Array<Any?> {
+    fun getOutput(context: Context, args: Arguments): Result {
         val side = getOptionalSide(args)
         return if (side != null) {
             result(redstone.getOutput(side))
@@ -63,7 +66,7 @@ abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfo where T : En
     }
 
     @Callback(doc = "function([side:number, ]value:number or table):number or table --  Set the redstone output (all sides, or optionally on the specified side). Returns previous values")
-    fun setOutput(context: Context, args: Arguments): Array<Any?> {
+    fun setOutput(context: Context, args: Arguments): Result {
         var ret: Any? = null
         val changed = when (val assignment = getAssignment(args)) {
             is SideValueAssignment -> {
@@ -82,7 +85,7 @@ abstract class RedstoneVanilla<T> : RedstoneSignaller(), DeviceInfo where T : En
     }
 
     @Callback(direct = true, doc = "function(side:number):number -- Get the comparator input on the specified side.")
-    fun getComparatorInput(context: Context, args: Arguments): Array<Any?> {
+    fun getComparatorInput(context: Context, args: Arguments): Result {
         val side = checkSide(args, 0)
         val world = redstone.world() ?: return result(0)
         val blockPos = BlockPosition(redstone).offset(side)

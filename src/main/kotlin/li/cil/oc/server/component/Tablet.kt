@@ -11,6 +11,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ComponentConnector
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.item.TabletWrapper
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 
 class Tablet(val tablet: TabletWrapper): ManagedEnvironmentKt(), DeviceInfo {
   override val node = nodeFactory(Visibility.Network)

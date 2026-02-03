@@ -17,6 +17,8 @@ import li.cil.oc.common.item.data.NavigationUpgradeData
 import li.cil.oc.common.tileentity.traits.position
 import li.cil.oc.server.network.Waypoints
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 import kotlin.math.abs
 
@@ -47,7 +49,7 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number, number, number -- Get the current relative position of the robot.")
-    fun getPosition(context: Context, args: Arguments): Array<Any?> {
+    fun getPosition(context: Context, args: Arguments): Result {
         val info = data.mapData(host.world())!!
         val size = data.getSize(host.world())
         val relativeX = host.xPosition() - info.xCenter
@@ -62,15 +64,15 @@ class UpgradeNavigation(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number -- Get the current orientation of the robot.")
-    fun getFacing(context: Context, args: Arguments): Array<Any?> = result(rotatable.facing().ordinal)
+    fun getFacing(context: Context, args: Arguments): Result = result(rotatable.facing().ordinal)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number -- Get the operational range of the navigation upgrade.")
-    fun getRange(context: Context, args: Arguments): Array<Any?> = result(data.getSize(host.world) / 2)
+    fun getRange(context: Context, args: Arguments): Result = result(data.getSize(host.world) / 2)
 
     @Suppress("unused")
     @Callback(doc = "function(range:number):table -- Find waypoints in the specified range.")
-    fun findWaypoints(context: Context, args: Arguments): Array<Any?> {
+    fun findWaypoints(context: Context, args: Arguments): Result {
         val range = args.checkDouble(0).coerceIn(0.0, Settings.get.maxWirelessRange[Tier.Two])
         if (range <= 0)
             return result(emptyArray<Any>())

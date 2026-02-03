@@ -4,7 +4,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.optItemCount
 import net.minecraft.entity.item.EntityItem
@@ -17,7 +18,7 @@ import net.minecraftforge.fml.common.eventhandler.Event
 
 interface InventoryWorldControl : InventoryAware, WorldAware, SideRestricted {
     @Callback(doc = "function(side:number[, fuzzy:boolean=false]):boolean -- Compare the block on the specified side with the one in the selected slot. Returns true if equal.")
-    fun compare(context: Context, args: Arguments): Array<Any?> {
+    fun compare(context: Context, args: Arguments): Result {
         val side = checkSideForAction(args, 0)
 
         val stack = stackInSlot(selectedSlot) ?: return result(false)
@@ -33,7 +34,7 @@ interface InventoryWorldControl : InventoryAware, WorldAware, SideRestricted {
     }
 
     @Callback(doc = "function(side:number[, count:number=64]):boolean -- Drops items from the selected slot towards the specified side.")
-    fun drop(context: Context, args: Arguments): Array<Any?> {
+    fun drop(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val count = args.optItemCount(1)
         val stack = inventory.getStackInSlot(selectedSlot)
@@ -98,7 +99,7 @@ interface InventoryWorldControl : InventoryAware, WorldAware, SideRestricted {
     }
 
     @Callback(doc = "function(side:number[, count:number=64]):boolean -- Suck up items from the specified side.")
-    fun suck(context: Context, args: Arguments): Array<Any?> {
+    fun suck(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val count = args.optItemCount(1)
 

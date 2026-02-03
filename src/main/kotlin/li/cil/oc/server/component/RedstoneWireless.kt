@@ -17,6 +17,8 @@ import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.util.WirelessRedstone
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.fml.common.Optional
@@ -52,16 +54,16 @@ abstract class RedstoneWireless : RedstoneSignaller(), DeviceInfo, WirelessRecei
     // ----------------------------------------------------------------------- //
 
     @Callback(doc = """function():number -- Get the wireless redstone input.""")
-    fun getWirelessInput(context: Context, args: Arguments): Array<Any?> {
+    fun getWirelessInput(context: Context, args: Arguments): Result {
         wirelessInput = WirelessRedstone.getInput(this)
         return result(wirelessInput)
     }
 
     @Callback(direct = true, doc = """function():boolean -- Get the wireless redstone output.""")
-    fun getWirelessOutput(context: Context, args: Arguments): Array<Any?> = result(wirelessOutput)
+    fun getWirelessOutput(context: Context, args: Arguments): Result = result(wirelessOutput)
 
     @Callback(doc = """function(value:boolean):boolean -- Set the wireless redstone output.""")
-    fun setWirelessOutput(context: Context, args: Arguments): Array<Any?> {
+    fun setWirelessOutput(context: Context, args: Arguments): Result {
         val oldValue = wirelessOutput
         val newValue = args.checkBoolean(0)
 
@@ -79,10 +81,10 @@ abstract class RedstoneWireless : RedstoneSignaller(), DeviceInfo, WirelessRecei
     }
 
     @Callback(direct = true, doc = """function():number -- Get the currently set wireless redstone frequency.""")
-    fun getWirelessFrequency(context: Context, args: Arguments): Array<Any?> = result(wirelessFrequency)
+    fun getWirelessFrequency(context: Context, args: Arguments): Result = result(wirelessFrequency)
 
     @Callback(doc = """function(frequency:number):number -- Set the wireless redstone frequency to use.""")
-    fun setWirelessFrequency(context: Context, args: Arguments): Array<Any?> {
+    fun setWirelessFrequency(context: Context, args: Arguments): Result {
         val oldValue = wirelessFrequency
         val newValue = args.checkInteger(0)
 

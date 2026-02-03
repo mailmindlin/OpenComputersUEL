@@ -26,7 +26,7 @@ object DatabaseAccess {
     }
 
     @JvmStatic
-    fun withDatabase(node: Node, address: String, f: (UpgradeDatabase) -> Array<Any?>): Array<Any?> {
+    fun withDatabase(node: Node, address: String, f: (UpgradeDatabase) -> Result): Result {
         return f(database(node, address))
     }
 }

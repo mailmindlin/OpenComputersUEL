@@ -4,22 +4,23 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
 import li.cil.oc.util.FluidUtils
 import li.cil.oc.util.optFluidCount
+import li.cil.oc.util.*
+import li.cil.oc.util.Result
 import net.minecraft.item.ItemStack
 import net.minecraftforge.fluids.FluidStack
 
 interface TankInventoryControl : WorldAware, InventoryAware, TankAware {
     @Callback(doc = """function([slot:number]):number -- Get the amount of fluid in the tank item in the specified slot or the selected slot.""")
-    fun getTankLevelInSlot(context: Context, args: Arguments): Array<Any?> {
+    fun getTankLevelInSlot(context: Context, args: Arguments): Result {
         return withFluidInfo(args.optSlot(0)) { fluid, _ ->
             result(fluid?.amount ?: 0)
         }
     }
 
     @Callback(doc = """function([slot:number]):number -- Get the capacity of the tank item in the specified slot of the robot or the selected slot.""")
-    fun getTankCapacityInSlot(context: Context, args: Arguments): Array<Any?> {
+    fun getTankCapacityInSlot(context: Context, args: Arguments): Result {
         return withFluidInfo(args.optSlot(0)) { _, capacity ->
             result(capacity)
         }
@@ -47,7 +48,7 @@ interface TankInventoryControl : WorldAware, InventoryAware, TankAware {
     }
 
     @Callback(doc = """function([amount:number]):boolean -- Transfers fluid from a tank in the selected inventory slot to the selected tank.""")
-    fun drain(context: Context, args: Arguments): Array<Any?> {
+    fun drain(context: Context, args: Arguments): Result {
         val amount = args.optFluidCount(0)
         val into = getTank(selectedTank)
 
@@ -77,7 +78,7 @@ interface TankInventoryControl : WorldAware, InventoryAware, TankAware {
     }
 
     @Callback(doc = """function([amount:number]):boolean -- Transfers fluid from the selected tank to a tank in the selected inventory slot.""")
-    fun fill(context: Context, args: Arguments): Array<Any?> {
+    fun fill(context: Context, args: Arguments): Result {
         val amount = args.optFluidCount(0)
         val from = getTank(selectedTank)
 
@@ -106,7 +107,7 @@ interface TankInventoryControl : WorldAware, InventoryAware, TankAware {
         return result(null, "no tank")
     }
 
-    fun withFluidInfo(slot: Int, f: (FluidStack?, Int) -> Array<Any?>): Array<Any?> {
+    fun withFluidInfo(slot: Int, f: (FluidStack?, Int) -> Result): Result {
         fun fluidInfo(stack: ItemStack): Pair<FluidStack?, Int>? {
             val handler = FluidUtils.fluidHandlerOf(stack)
             if (handler != null && handler.tankProperties.isNotEmpty()) {

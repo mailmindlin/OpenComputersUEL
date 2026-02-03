@@ -13,7 +13,9 @@ import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
 import li.cil.oc.server.component.traits.WorldAware
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.Result
 import li.cil.oc.util.checkSideAny
+import li.cil.oc.util.result
 import li.cil.oc.util.setNewStringList
 import net.minecraft.entity.Entity
 import net.minecraft.entity.EntityLiving
@@ -43,7 +45,7 @@ class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, Devic
     override val position: BlockPosition get() = BlockPosition(host)
 
     @Callback(doc = "function(side:number):boolean -- Tries to put an entity on the specified side of the device onto a leash.")
-    fun leash(context: Context, args: Arguments): Array<Any?>? {
+    fun leash(context: Context, args: Arguments): Result? {
         if (leashedEntities.size >= MaxLeashedEntities) return result(Unit, "too many leashed entities")
         val side = args.checkSideAny(0)
         val nearBounds = position.bounds
@@ -61,7 +63,7 @@ class UpgradeLeash(val host: Entity) : ManagedEnvironmentKt(), WorldAware, Devic
     }
 
     @Callback(doc = "function() -- Unleashes all currently leashed entities.")
-    fun unleash(context: Context, args: Arguments): Array<Any?>? {
+    fun unleash(context: Context, args: Arguments): Result? {
         unleashAll()
         return null
     }

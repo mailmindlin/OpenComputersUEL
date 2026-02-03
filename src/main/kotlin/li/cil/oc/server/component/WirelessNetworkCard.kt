@@ -11,7 +11,9 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.*
 import li.cil.oc.common.Tier
 import li.cil.oc.util.BlockPosition
+import li.cil.oc.util.Result
 import li.cil.oc.util.isBlockLoaded
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 import java.io.IOException
 import kotlin.math.sqrt
@@ -51,17 +53,17 @@ abstract class WirelessNetworkCard(host: EnvironmentHost) : NetworkCard(host), W
     // ----------------------------------------------------------------------- //
 
     @Callback(direct = true, doc = "function():number -- Get the signal strength (range) used when sending messages.")
-    fun getStrength(context: Context, args: Arguments): Array<Any?> = result(strength)
+    fun getStrength(context: Context, args: Arguments): Result = result(strength)
 
     @Callback(doc = "function(strength:number):number -- Set the signal strength (range) used when sending messages.")
-    fun setStrength(context: Context, args: Arguments): Array<Any?> {
+    fun setStrength(context: Context, args: Arguments): Result {
         strength = args.checkDouble(0).coerceIn(0.0, maxWirelessRange)
         return result(strength)
     }
 
-    override fun isWireless(context: Context, args: Arguments): Array<Any?> = result(true)
+    override fun isWireless(context: Context, args: Arguments): Result = result(true)
 
-    override fun isWired(context: Context, args: Arguments): Array<Any?> = result(shouldSendWiredTraffic)
+    override fun isWired(context: Context, args: Arguments): Result = result(shouldSendWiredTraffic)
 
     override fun doSend(packet: Packet) {
         if (strength > 0) {

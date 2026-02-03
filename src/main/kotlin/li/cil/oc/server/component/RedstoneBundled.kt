@@ -9,6 +9,8 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.common.tileentity.traits.BundledRedstoneAware
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.util.EnumFacing
 
 abstract class RedstoneBundled<T> : RedstoneVanilla<T>() where T : EnvironmentHost, T : BundledRedstoneAware {
@@ -60,7 +62,7 @@ abstract class RedstoneBundled<T> : RedstoneVanilla<T>() where T : EnvironmentHo
     }
 
     @Callback(direct = true, doc = "function([side:number[, color:number]]):number or table -- Fewer params returns set of inputs")
-    fun getBundledInput(context: Context, args: Arguments): Array<Any?> {
+    fun getBundledInput(context: Context, args: Arguments): Result {
         val (side, color) = getBundleKey(args)
 
         return when {
@@ -71,7 +73,7 @@ abstract class RedstoneBundled<T> : RedstoneVanilla<T>() where T : EnvironmentHo
     }
 
     @Callback(direct = true, doc = "function([side:number[, color:number]]):number or table -- Fewer params returns set of outputs")
-    fun getBundledOutput(context: Context, args: Arguments): Array<Any?> {
+    fun getBundledOutput(context: Context, args: Arguments): Result {
         val (side, color) = getBundleKey(args)
 
         return when {
@@ -82,7 +84,7 @@ abstract class RedstoneBundled<T> : RedstoneVanilla<T>() where T : EnvironmentHo
     }
 
     @Callback(doc = "function([side:number[, color:number,]] value:number or table):number or table --  Fewer params to assign set of outputs. Returns previous values")
-    fun setBundledOutput(context: Context, args: Arguments): Array<Any?> {
+    fun setBundledOutput(context: Context, args: Arguments): Result {
         var ret: Any? = null
         val changed = when (val assignment = getBundleAssignment(args)) {
             is SideColorValueAssignment -> {

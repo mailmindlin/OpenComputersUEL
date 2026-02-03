@@ -10,7 +10,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 
 interface CallbackCall {
-  fun call(instance: Any, context: Context, args: Arguments): Array<Any>
+  fun call(instance: Any, context: Context, args: Arguments): Array<out Any?>?
 }
 
 internal object CallbackWrapper {
@@ -26,7 +26,7 @@ internal object CallbackWrapper {
     }
   }
 
-  private fun createWrapper(m: Method, interfaces: Array<String>, emitCode: (Method, ClassWriter) -> Unit): Any {
+  private fun createWrapper(m: Method, interfaces: Array<out String>, emitCode: (Method, ClassWriter) -> Unit): Any {
     val className = "generated.li.cil.oc.CallWrapper_" + generateId(m)
     if (!GeneratedClassLoader.containsClass(className)) {
       val cw = ClassWriter(ClassWriter.COMPUTE_FRAMES or ClassWriter.COMPUTE_MAXS)

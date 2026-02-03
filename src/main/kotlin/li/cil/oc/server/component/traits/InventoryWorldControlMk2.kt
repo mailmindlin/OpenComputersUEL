@@ -4,7 +4,8 @@ import li.cil.oc.Settings
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.*
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
@@ -12,7 +13,7 @@ import net.minecraftforge.items.IItemHandler
 
 interface InventoryWorldControlMk2 : InventoryAware, WorldAware, SideRestricted {
     @Callback(doc = """function(facing:number, slot:number[, count:number[, fromSide:number]]):boolean -- Drops the selected item stack into the specified slot of an inventory.""")
-    fun dropIntoSlot(context: Context, args: Arguments): Array<Any?> {
+    fun dropIntoSlot(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val count = args.optItemCount(2)
         val fromSide = args.optSideAny(3, facing.opposite)
@@ -41,7 +42,7 @@ interface InventoryWorldControlMk2 : InventoryAware, WorldAware, SideRestricted 
     }
 
     @Callback(doc = """function(facing:number, slot:number[, count:number[, fromSide:number]]):boolean -- Sucks items from the specified slot of an inventory.""")
-    fun suckFromSlot(context: Context, args: Arguments): Array<Any?> {
+    fun suckFromSlot(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
         val count = args.optItemCount(2)
         val fromSide = args.optSideAny(3, facing.opposite)
@@ -71,7 +72,7 @@ interface InventoryWorldControlMk2 : InventoryAware, WorldAware, SideRestricted 
         }
     }
 
-    fun withInventory(blockPos: BlockPosition, fromSide: EnumFacing, f: (IItemHandler) -> Array<Any?>): Array<Any?> {
+    fun withInventory(blockPos: BlockPosition, fromSide: EnumFacing, f: (IItemHandler) -> Result): Result {
         val inventorySource = InventoryUtils.inventorySourceAt(blockPos, fromSide)
         return if (inventorySource != null && mayInteract(inventorySource)) {
             f(inventorySource.inventory)

@@ -12,14 +12,6 @@ import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
 
-/**
- * Extension function to create result arrays for component callbacks.
- * Replaces the Scala implicit conversion from package.scala.
- */
-fun result(arg: Boolean): Array<Any?> = arrayOf(arg)
-fun result(arg0: Unit, arg1: String): Array<Any?> = arrayOf(null, arg1)
-fun result(vararg args: Any?): Array<Any?> = ResultWrapper.result(*args)
-
 internal val EnvironmentHost.world: World inline get() = this.world()
 
 internal data class TabletUseMessage(

@@ -4,7 +4,8 @@ import li.cil.oc.api.Driver
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.InventoryUtils
 import li.cil.oc.util.checkSlot
 import li.cil.oc.util.optItemCount
@@ -13,14 +14,14 @@ import net.minecraftforge.items.IItemHandler
 
 interface ItemInventoryControl : InventoryAware {
     @Callback(doc = "function(slot:number):number -- The size of an item inventory in the specified slot.")
-    fun getItemInventorySize(context: Context, args: Arguments): Array<Any?> {
+    fun getItemInventorySize(context: Context, args: Arguments): Result {
         return withItemInventory(args.checkSlot(inventory, 0)) { itemInventory ->
             result(itemInventory.slots)
         }
     }
 
     @Callback(doc = "function(inventorySlot:number, slot:number[, count:number=64]):number -- Drops an item from the selected slot into the specified slot in the item inventory.")
-    fun dropIntoItemInventory(context: Context, args: Arguments): Array<Any?> {
+    fun dropIntoItemInventory(context: Context, args: Arguments): Result {
         return withItemInventory(args.checkSlot(inventory, 0)) { itemInventory ->
             val slot = args.checkSlot(itemInventory, 1)
             val count = args.optItemCount(2)
@@ -38,7 +39,7 @@ interface ItemInventoryControl : InventoryAware {
     }
 
     @Callback(doc = "function(inventorySlot:number, slot:number[, count:number=64]):number -- Sucks an item out of the specified slot in the item inventory.")
-    fun suckFromItemInventory(context: Context, args: Arguments): Array<Any?> {
+    fun suckFromItemInventory(context: Context, args: Arguments): Result {
         return withItemInventory(args.checkSlot(inventory, 0)) { itemInventory ->
             val slot = args.checkSlot(itemInventory, 1)
             val count = args.optItemCount(2)
@@ -59,7 +60,7 @@ interface ItemInventoryControl : InventoryAware {
         }
     }
 
-    fun withItemInventory(slot: Int, f: (IItemHandler) -> Array<Any?>): Array<Any?> {
+    fun withItemInventory(slot: Int, f: (IItemHandler) -> Result): Result {
         val stack = inventory.getStackInSlot(slot)
         if (stack is ItemStack) {
             val itemHandler = Driver.itemHandlerFor(stack, fakePlayer)

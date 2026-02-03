@@ -14,7 +14,9 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
+import li.cil.oc.util.Result
 import li.cil.oc.util.UpgradeExperience
+import li.cil.oc.util.result
 import net.minecraft.enchantment.EnchantmentHelper
 import net.minecraft.entity.item.EntityXPOrb
 import net.minecraft.init.Items
@@ -72,7 +74,7 @@ class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
             if (level != oldLevel) {
                 updateClient()
             }
-            node.setLocalBufferSize((Settings.get.bufferPerLevel * level).toDouble())
+            node.setLocalBufferSize(Settings.get.bufferPerLevel * level)
         }
     }
 
@@ -113,7 +115,7 @@ class UpgradeExperience(val host: EnvironmentHost) : ManagedEnvironmentKt(), Dev
 
     private fun updateClient() {
         if (host is Robot) {
-            val robot = host as Robot
+            val robot = host
             robot.synchronizeSlot(robot.componentSlot(node!!.address()))
         }
     }

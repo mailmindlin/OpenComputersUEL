@@ -14,6 +14,8 @@ import li.cil.oc.api.network.*
 import li.cil.oc.common.Tier
 import li.cil.oc.server.component.traits.WakeMessageAware
 import li.cil.oc.server.component.traits.WakeMessageHelper
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 import li.cil.oc.server.PacketSender as ServerPacketSender
 
@@ -55,7 +57,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(port:number):boolean -- Opens the specified port. Returns true if the port was opened.""")
-    fun open(context: Context, args: Arguments): Array<Any?> {
+    fun open(context: Context, args: Arguments): Result {
         val port = checkPort(args.checkInteger(0))
         return if (openPorts.contains(port)) {
             result(false)
@@ -68,7 +70,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function([port:number]):boolean -- Closes the specified port (default: all ports). Returns true if ports were closed.""")
-    fun close(context: Context, args: Arguments): Array<Any?> {
+    fun close(context: Context, args: Arguments): Result {
         return if (args.count() == 0) {
             val closed = openPorts.isNotEmpty()
             openPorts.clear()
@@ -81,22 +83,22 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function(port:number):boolean -- Whether the specified port is open.""")
-    fun isOpen(context: Context, args: Arguments): Array<Any?> {
+    fun isOpen(context: Context, args: Arguments): Result {
         val port = checkPort(args.checkInteger(0))
         return result(openPorts.contains(port))
     }
 
     @Suppress("unused")
     @Callback(direct = true, doc = """function():boolean -- Whether this card has wireless networking capability.""")
-    open fun isWireless(context: Context, args: Arguments): Array<Any?> = result(false)
+    open fun isWireless(context: Context, args: Arguments): Result = result(false)
 
     @Suppress("unused")
     @Callback(direct = true, doc = """function():boolean -- Whether this card has wired networking capability.""")
-    open fun isWired(context: Context, args: Arguments): Array<Any?> = result(true)
+    open fun isWired(context: Context, args: Arguments): Result = result(true)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(address:string, port:number, data...) -- Sends the specified data to the specified target.""")
-    fun send(context: Context, args: Arguments): Array<Any?> {
+    fun send(context: Context, args: Arguments): Result {
         val address = args.checkString(0)
         val port = checkPort(args.checkInteger(1))
         val packet = li.cil.oc.api.Network.newPacket(node!!.address(), address, port, args.drop(2))!!
@@ -107,7 +109,7 @@ open class NetworkCard(val host: EnvironmentHost) : ManagedEnvironmentKt(), Rack
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(port:number, data...) -- Broadcasts the specified data on the specified port.""")
-    fun broadcast(context: Context, args: Arguments): Array<Any?> {
+    fun broadcast(context: Context, args: Arguments): Result {
         val port = checkPort(args.checkInteger(0))
         val packet = li.cil.oc.api.Network.newPacket(node!!.address(), null, port, args.drop(1))!!
         doBroadcast(packet)

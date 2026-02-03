@@ -9,6 +9,8 @@ import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.api.prefab.AbstractManagedEnvironment
 import li.cil.oc.common.tileentity.traits.RedstoneChangedEventArgs
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 
 abstract class RedstoneSignaller : ManagedEnvironmentKt() {
@@ -23,10 +25,10 @@ abstract class RedstoneSignaller : ManagedEnvironmentKt() {
     // ----------------------------------------------------------------------- //
 
     @Callback(direct = true, doc = """function():number -- Get the current wake-up threshold.""")
-    fun getWakeThreshold(context: Context, args: Arguments): Array<Any?> = result(wakeThreshold)
+    fun getWakeThreshold(context: Context, args: Arguments): Result = result(wakeThreshold)
 
     @Callback(doc = """function(threshold:number):number -- Set the wake-up threshold.""")
-    fun setWakeThreshold(context: Context, args: Arguments): Array<Any?> {
+    fun setWakeThreshold(context: Context, args: Arguments): Result {
         val oldThreshold = wakeThreshold
         wakeThreshold = args.checkInteger(0)
         return result(oldThreshold)

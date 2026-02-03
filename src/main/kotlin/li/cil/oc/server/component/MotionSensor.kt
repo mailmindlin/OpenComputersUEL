@@ -10,7 +10,9 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.util.Result
 import li.cil.oc.util.SideTracker
+import li.cil.oc.util.result
 import net.minecraft.entity.EntityLivingBase
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.potion.Potion
@@ -125,10 +127,10 @@ class MotionSensor(val host: EnvironmentHost) : ManagedEnvironmentKt(), DeviceIn
     // ----------------------------------------------------------------------- //
 
     @Callback(direct = true, doc = "function():number -- Gets the current sensor sensitivity.")
-    fun getSensitivity(computer: Context, args: Arguments): Array<Any?> = result(sensitivity)
+    fun getSensitivity(computer: Context, args: Arguments): Result = result(sensitivity)
 
     @Callback(direct = true, doc = "function(value:number):number -- Sets the sensor's sensitivity. Returns the old value.")
-    fun setSensitivity(computer: Context, args: Arguments): Array<Any?> {
+    fun setSensitivity(computer: Context, args: Arguments): Result {
         val oldValue = sensitivity
         sensitivity = maxOf(0.2, args.checkDouble(0))
         return result(oldValue)

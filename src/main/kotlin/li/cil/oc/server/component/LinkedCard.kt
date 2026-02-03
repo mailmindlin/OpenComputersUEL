@@ -17,6 +17,8 @@ import li.cil.oc.server.component.traits.WakeMessageAware
 import li.cil.oc.server.component.traits.WakeMessageHelper
 import li.cil.oc.server.network.QuantumNetwork
 import li.cil.oc.server.network.QuantumNode
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 
 class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfo, WakeMessageAware {
@@ -45,25 +47,23 @@ class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfo, WakeMessageA
     // ----------------------------------------------------------------------- //
 
     @Callback(doc = """function(data...) -- Sends the specified data to the card this one is linked to.""")
-    fun send(context: Context, args: Arguments): Array<Any?> {
+    fun send(context: Context, args: Arguments): Result {
         val endpoints = QuantumNetwork.getEndpoints(tunnel).filter { it != this }
         // Convert args to array to use Scala's toArray instead of the Arguments' one (which converts byte arrays to Strings).
         val argsIterable = args as Iterable<*>
         val packet = Network.newPacket(node!!.address(), null, 0, argsIterable.toList().toTypedArray())!!
 
         val cost = -(packet.size() / 32.0 + Settings.get.wirelessCostPerRange[Tier.Two] * Settings.get.maxWirelessRange[Tier.Two] * 5)
-        return if (node.tryChangeBuffer(cost)) {
-            for (endpoint in endpoints) {
-                endpoint.receivePacket(packet)
-            }
-            result(true)
-        } else {
-            result(null, "not enough energy")
+        if (!node.tryChangeBuffer(cost))
+            return result(Unit, "not enough energy")
+        for (endpoint in endpoints) {
+            endpoint.receivePacket(packet)
         }
+        return result(true)
     }
 
     @Callback(direct = true, doc = "function():number -- Gets the maximum packet size (config setting).")
-    fun maxPacketSize(context: Context, args: Arguments): Array<Any?> {
+    fun maxPacketSize(context: Context, args: Arguments): Result {
         return result(Settings.get.maxNetworkPacketSize)
     }
 
@@ -72,7 +72,7 @@ class LinkedCard : ManagedEnvironmentKt(), QuantumNode, DeviceInfo, WakeMessageA
     }
 
     @Callback(direct = true, doc = "function():string -- Gets this link card's shared channel address")
-    fun getChannel(context: Context, args: Arguments): Array<Any?> {
+    fun getChannel(context: Context, args: Arguments): Result {
         return result(this.tunnel)
     }
 

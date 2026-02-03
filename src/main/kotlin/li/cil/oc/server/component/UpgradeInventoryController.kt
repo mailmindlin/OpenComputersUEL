@@ -87,7 +87,7 @@ object UpgradeInventoryController {
         override fun checkSideForAction(args: Arguments, n: Int) = host.toGlobal(args.checkSideForAction(n))!!
 
         @Callback(doc = "function():boolean -- Swaps the equipped tool with the content of the currently selected inventory slot.")
-        fun equip(context: Context, args: Arguments): Array<Any?> {
+        fun equip(context: Context, args: Arguments): Result {
             return if (inventory.sizeInventory > 0) {
                 val equipped = host.getStackInSlot(0)
                 val selected = inventory.getStackInSlot(selectedSlot)

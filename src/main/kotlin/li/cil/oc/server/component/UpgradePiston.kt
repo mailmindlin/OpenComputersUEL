@@ -10,9 +10,8 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.optSideAny
-import li.cil.oc.util.optSideForAction
+import li.cil.oc.util.*
+import li.cil.oc.util.Result
 import net.minecraft.block.BlockPistonBase
 import net.minecraft.block.material.EnumPushReaction
 import net.minecraft.init.SoundEvents
@@ -68,9 +67,9 @@ abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnviro
     open val isSticky: Boolean = false
 
     @Callback(doc = "function():boolean -- Returns true if the piston is sticky, i.e. it can also pull.")
-    fun isSticky(context: Context, args: Arguments): Array<Any?> = result(isSticky)
+    fun isSticky(context: Context, args: Arguments): Result = result(isSticky)
 
-    protected fun doPistonAction(context: Context, side: EnumFacing, extending: Boolean): Array<Any?> {
+    protected fun doPistonAction(context: Context, side: EnumFacing, extending: Boolean): Result {
         val sound = if (extending) SoundEvents.BLOCK_PISTON_EXTEND.registryName else SoundEvents.BLOCK_PISTON_CONTRACT.registryName
         val hostPos = pushOrigin(side).toBlockPos()
         val piston = BlockPistonBase(isSticky)
@@ -110,7 +109,7 @@ abstract class UpgradePiston(override val host: EnvironmentHost) : ManagedEnviro
     }
 
     @Callback(doc = "function([side:number]):boolean -- Tries to push the block on the specified side of the container of the upgrade. Defaults to front.")
-    fun push(context: Context, args: Arguments): Array<Any?> {
+    fun push(context: Context, args: Arguments): Result {
         val side = pushDirection(args, index = 0)
         return doPistonAction(context, side, true)
     }
@@ -125,7 +124,7 @@ abstract class UpgradeStickyPiston(host: EnvironmentHost) : UpgradePiston(host) 
     override val isSticky: Boolean = true
 
     @Callback(doc = "function([side:number]):boolean -- Tries to reach out to the side given (default front) and pull a block similar to a vanilla sticky piston.")
-    fun pull(context: Context, args: Arguments): Array<Any?> {
+    fun pull(context: Context, args: Arguments): Result {
         val side = pushDirection(args, index = 0)
         return doPistonAction(context, side, false)
     }

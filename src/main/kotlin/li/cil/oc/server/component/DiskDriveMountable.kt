@@ -24,7 +24,9 @@ import li.cil.oc.common.inventory.ItemStackInventory
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.ExtendedNBT.toNbt
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Result
 import li.cil.oc.util.ensureTagCompound
+import li.cil.oc.util.result
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -61,12 +63,12 @@ class DiskDriveMountable(
         .create() as Component
 
     @Callback(doc = "function():boolean -- Checks whether some medium is currently in the drive.")
-    fun isEmpty(context: Context, args: Arguments): Array<Any?> {
+    fun isEmpty(context: Context, args: Arguments): Result {
         return result(filesystemNode == null)
     }
 
     @Callback(doc = "function([velocity:number]):boolean -- Eject the currently present medium from the drive.")
-    fun eject(context: Context, args: Arguments): Array<Any?> {
+    fun eject(context: Context, args: Arguments): Result {
         val velocity = args.optDouble(0, 0.0).coerceIn(0.0, 1.0)
         val ejected = decrStackSize(0, 1)
         if (!ejected.isEmpty) {
@@ -84,7 +86,7 @@ class DiskDriveMountable(
     }
 
     @Callback(doc = "function(): string -- Return the internal floppy disk address")
-    fun media(context: Context, args: Arguments): Array<Any?> {
+    fun media(context: Context, args: Arguments): Result {
         return if (filesystemNode == null) {
             result(Unit, "drive is empty")
         } else {

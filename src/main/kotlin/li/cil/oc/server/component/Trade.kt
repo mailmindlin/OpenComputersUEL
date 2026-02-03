@@ -10,6 +10,8 @@ import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.RobotProxy
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.entity.Entity
 import net.minecraft.entity.IMerchant
 import net.minecraft.inventory.IInventory
@@ -54,12 +56,12 @@ class Trade(val info: TradeInfo) : AbstractValue() {
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():number -- Returns a sort index of the merchant that provides this trade")
-    fun getMerchantId(context: Context, arguments: Arguments): Array<Any?> =
+    fun getMerchantId(context: Context, arguments: Arguments): Result =
         result(info.merchantID)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():table, table -- Returns the items the merchant wants for this trade.")
-    fun getInput(context: Context, arguments: Arguments): Array<Any?> {
+    fun getInput(context: Context, arguments: Arguments): Result {
         val recipe = info.recipe
         return result(
             recipe?.itemToBuy?.copy(),
@@ -69,12 +71,12 @@ class Trade(val info: TradeInfo) : AbstractValue() {
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():table -- Returns the item the merchant offers for this trade.")
-    fun getOutput(context: Context, arguments: Arguments): Array<Any?> =
+    fun getOutput(context: Context, arguments: Arguments): Result =
         result(info.recipe?.itemToSell?.copy())
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():boolean -- Returns whether the merchant currently wants to trade this.")
-    fun isEnabled(context: Context, arguments: Arguments): Array<Any?> {
+    fun isEnabled(context: Context, arguments: Arguments): Result {
         val merchant = info.merchant.get()
         val recipe = info.recipe
         return result(merchant != null && recipe?.isRecipeDisabled != true) // Make sure merchant is neither dead/gone nor the recipe has been disabled.
@@ -82,7 +84,7 @@ class Trade(val info: TradeInfo) : AbstractValue() {
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function():boolean, string -- Returns true when trade succeeds and nil, error when not.")
-    fun trade(context: Context, arguments: Arguments): Array<Any?> {
+    fun trade(context: Context, arguments: Arguments): Result {
         // Make sure we can access an inventory.
         val inventory = info.inventory ?: return result(false, "trading requires an inventory upgrade to be installed")
 

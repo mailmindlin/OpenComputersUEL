@@ -13,6 +13,8 @@ import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.util.BlockPosition
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.entity.item.EntityItem
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.math.BlockPos
@@ -43,7 +45,7 @@ object UpgradeTractorBeam {
         private val world get() = position.world!!
 
         @Callback(doc = "function():boolean -- Tries to pick up a random item in the robots' vicinity.")
-        fun suck(context: Context, args: Arguments): Array<Any?> {
+        fun suck(context: Context, args: Arguments): Result {
             val items = world.getEntitiesWithinAABB(
                 EntityItem::class.java,
                 position.bounds.grow(pickupRadius.toDouble(), pickupRadius.toDouble(), pickupRadius.toDouble())

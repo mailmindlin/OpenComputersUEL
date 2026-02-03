@@ -13,6 +13,8 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.EnvironmentHost
 import li.cil.oc.api.network.Visibility
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraftforge.common.DimensionManager
 import java.io.ByteArrayInputStream
@@ -70,13 +72,13 @@ class Drive(
 
     @Callback(direct = true, doc = """function():string -- Get the current label of the drive.""")
     @Synchronized
-    fun getLabel(context: Context, args: Arguments): Array<Any?>? {
+    fun getLabel(context: Context, args: Arguments): Result? {
         return if (label != null) result(label.label) else null
     }
 
     @Callback(doc = """function(value:string):string -- Sets the label of the drive. Returns the new value, which may be truncated.""")
     @Synchronized
-    fun setLabel(context: Context, args: Arguments): Array<Any?> {
+    fun setLabel(context: Context, args: Arguments): Result {
         if (isLocked) throw Exception("drive is read only")
         if (label == null) throw Exception("drive does not support labeling")
         if (args.checkAny(0) == null) label.setLabel(null) else label.setLabel(args.checkString(0))
@@ -84,17 +86,17 @@ class Drive(
     }
 
     @Callback(direct = true, doc = """function():number -- Returns the total capacity of the drive, in bytes.""")
-    fun getCapacity(context: Context, args: Arguments): Array<Any?> = result(capacity)
+    fun getCapacity(context: Context, args: Arguments): Result = result(capacity)
 
     @Callback(direct = true, doc = """function():number -- Returns the size of a single sector on the drive, in bytes.""")
-    fun getSectorSize(context: Context, args: Arguments): Array<Any?> = result(sectorSize)
+    fun getSectorSize(context: Context, args: Arguments): Result = result(sectorSize)
 
     @Callback(direct = true, doc = """function():number -- Returns the number of platters in the drive.""")
-    fun getPlatterCount(context: Context, args: Arguments): Array<Any?> = result(platterCount)
+    fun getPlatterCount(context: Context, args: Arguments): Result = result(platterCount)
 
     @Callback(direct = true, doc = """function(sector:number):string -- Read the current contents of the specified sector.""")
     @Synchronized
-    fun readSector(context: Context, args: Arguments): Array<Any?> {
+    fun readSector(context: Context, args: Arguments): Result {
         context.consumeCallBudget(readSectorCosts[speed])
         val sector = moveToSector(context, checkSector(args, 0))
         diskActivity()
@@ -105,7 +107,7 @@ class Drive(
 
     @Callback(direct = true, doc = """function(sector:number, value:string) -- Write the specified contents to the specified sector.""")
     @Synchronized
-    fun writeSector(context: Context, args: Arguments): Array<Any?>? {
+    fun writeSector(context: Context, args: Arguments): Result? {
         if (isLocked) throw Exception("drive is read only")
         context.consumeCallBudget(writeSectorCosts[speed])
         val sectorData = args.checkByteArray(1)
@@ -117,7 +119,7 @@ class Drive(
 
     @Callback(direct = true, doc = """function(offset:number):number -- Read a single byte at the specified offset.""")
     @Synchronized
-    fun readByte(context: Context, args: Arguments): Array<Any?> {
+    fun readByte(context: Context, args: Arguments): Result {
         context.consumeCallBudget(readByteCosts[speed])
         val offset = args.checkInteger(0) - 1
         moveToSector(context, checkSector(offset))
@@ -127,7 +129,7 @@ class Drive(
 
     @Callback(direct = true, doc = """function(offset:number, value:number) -- Write a single byte to the specified offset.""")
     @Synchronized
-    fun writeByte(context: Context, args: Arguments): Array<Any?>? {
+    fun writeByte(context: Context, args: Arguments): Result? {
         if (isLocked) throw Exception("drive is read only")
         context.consumeCallBudget(writeByteCosts[speed])
         val offset = args.checkInteger(0) - 1
