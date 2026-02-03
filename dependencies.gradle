@@ -76,6 +76,8 @@ dependencies {
         transitive = false
     }
 
+    compileOnly("curse.maven:gregtech-ce-unofficial-557242:5519022")
+
     compileOnly("codechicken:ForgeMultipart:1.12.2-2.6.2.83:universal") {
         exclude module: "jei_1.12"
         exclude module: "CodeChickenLib"
