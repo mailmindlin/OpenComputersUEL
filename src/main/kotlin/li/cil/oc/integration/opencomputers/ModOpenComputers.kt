@@ -59,72 +59,7 @@ import net.minecraftforge.common.MinecraftForge
 internal object ModOpenComputers : ModProxy {
   override val mod: Mod = Mods.OpenComputers
 
-  override fun initialize() {
-    ItemBlacklist.apply()
-
-    DroneTemplate.register()
-    MicrocontrollerTemplate.register()
-    NavigationUpgradeTemplate.register()
-    RobotTemplate.register()
-    ServerTemplate.register()
-    TabletTemplate.register()
-    TemplateBlacklist.register()
-
-    IMC.registerWrenchTool("li.cil.oc.integration.opencomputers.ModOpenComputers.useWrench")
-    IMC.registerWrenchToolCheck("li.cil.oc.integration.opencomputers.ModOpenComputers.isWrench")
-    IMC.registerItemCharge(
-      "OpenComputers",
-      "li.cil.oc.integration.opencomputers.ModOpenComputers.canCharge",
-      "li.cil.oc.integration.opencomputers.ModOpenComputers.charge")
-
-    IMC.registerInkProvider("li.cil.oc.integration.opencomputers.ModOpenComputers.inkCartridgeInkProvider")
-    IMC.registerInkProvider("li.cil.oc.integration.opencomputers.ModOpenComputers.dyeInkProvider")
-
-    IMC.registerProgramDiskLabel("build", "builder", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("dig", "dig", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("base64", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("deflate", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("gpg", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("inflate", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("md5sum", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("sha256sum", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("refuel", "generator", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("irc", "irc", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("maze", "maze", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("arp", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("ifconfig", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("ping", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("route", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("opl-flash", "openloader", "Lua 5.2", "Lua 5.3", "LuaJ")
-    IMC.registerProgramDiskLabel("oppm", "oppm", "Lua 5.2", "Lua 5.3", "LuaJ")
-
-    ForgeChunkManager.setForcedChunkLoadingCallback(OpenComputers.INSTANCE, ChunkloaderUpgradeHandler)
-
-    MinecraftForge.EVENT_BUS.register(EventHandler)
-    MinecraftForge.EVENT_BUS.register(NanomachinesHandler.Common)
-    MinecraftForge.EVENT_BUS.register(SimpleComponentTickHandler.Instance)
-    MinecraftForge.EVENT_BUS.register(Tablet)
-
-    MinecraftForge.EVENT_BUS.register(Analyzer)
-    MinecraftForge.EVENT_BUS.register(AngelUpgradeHandler)
-    MinecraftForge.EVENT_BUS.register(BlockChangeHandler)
-    MinecraftForge.EVENT_BUS.register(ChunkloaderUpgradeHandler)
-    MinecraftForge.EVENT_BUS.register(EventHandler)
-    MinecraftForge.EVENT_BUS.register(ExperienceUpgradeHandler)
-    MinecraftForge.EVENT_BUS.register(FileSystemAccessHandler)
-    MinecraftForge.EVENT_BUS.register(HoverBootsHandler)
-    MinecraftForge.EVENT_BUS.register(Loot)
-    MinecraftForge.EVENT_BUS.register(NanomachinesHandler.Common)
-    MinecraftForge.EVENT_BUS.register(NetworkActivityHandler)
-    MinecraftForge.EVENT_BUS.register(RobotCommonHandler)
-    MinecraftForge.EVENT_BUS.register(SaveHandler)
-    MinecraftForge.EVENT_BUS.register(Tablet)
-    MinecraftForge.EVENT_BUS.register(Waypoints)
-    MinecraftForge.EVENT_BUS.register(WirelessNetwork)
-    MinecraftForge.EVENT_BUS.register(WirelessNetworkCardHandler)
-    MinecraftForge.EVENT_BUS.register(li.cil.oc.client.ComponentTracker)
-    MinecraftForge.EVENT_BUS.register(li.cil.oc.server.ComponentTracker)
-
+  internal fun initializeDrivers() {
     Driver.add(ConverterNanomachines)
     Driver.add(ConverterLinkedCard)
 
@@ -217,6 +152,74 @@ internal object ModOpenComputers : ModProxy {
 
     Driver.add(InventoryProviderDatabase)
     Driver.add(InventoryProviderServer)
+  }
+  override fun initialize() {
+    ItemBlacklist.apply()
+
+    DroneTemplate.register()
+    MicrocontrollerTemplate.register()
+    NavigationUpgradeTemplate.register()
+    RobotTemplate.register()
+    ServerTemplate.register()
+    TabletTemplate.register()
+    TemplateBlacklist.register()
+
+    IMC.registerWrenchTool("li.cil.oc.integration.opencomputers.ModOpenComputers.useWrench")
+    IMC.registerWrenchToolCheck("li.cil.oc.integration.opencomputers.ModOpenComputers.isWrench")
+    IMC.registerItemCharge(
+      "OpenComputers",
+      "li.cil.oc.integration.opencomputers.ModOpenComputers.canCharge",
+      "li.cil.oc.integration.opencomputers.ModOpenComputers.charge")
+
+    IMC.registerInkProvider("li.cil.oc.integration.opencomputers.ModOpenComputers.inkCartridgeInkProvider")
+    IMC.registerInkProvider("li.cil.oc.integration.opencomputers.ModOpenComputers.dyeInkProvider")
+
+    IMC.registerProgramDiskLabel("build", "builder", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("dig", "dig", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("base64", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("deflate", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("gpg", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("inflate", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("md5sum", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("sha256sum", "data", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("refuel", "generator", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("irc", "irc", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("maze", "maze", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("arp", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("ifconfig", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("ping", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("route", "network", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("opl-flash", "openloader", "Lua 5.2", "Lua 5.3", "LuaJ")
+    IMC.registerProgramDiskLabel("oppm", "oppm", "Lua 5.2", "Lua 5.3", "LuaJ")
+
+    ForgeChunkManager.setForcedChunkLoadingCallback(OpenComputers.INSTANCE, ChunkloaderUpgradeHandler)
+
+    MinecraftForge.EVENT_BUS.register(EventHandler)
+    MinecraftForge.EVENT_BUS.register(NanomachinesHandler.Common)
+    MinecraftForge.EVENT_BUS.register(SimpleComponentTickHandler.Instance)
+    MinecraftForge.EVENT_BUS.register(Tablet)
+
+    MinecraftForge.EVENT_BUS.register(Analyzer)
+    MinecraftForge.EVENT_BUS.register(AngelUpgradeHandler)
+    MinecraftForge.EVENT_BUS.register(BlockChangeHandler)
+    MinecraftForge.EVENT_BUS.register(ChunkloaderUpgradeHandler)
+    MinecraftForge.EVENT_BUS.register(EventHandler)
+    MinecraftForge.EVENT_BUS.register(ExperienceUpgradeHandler)
+    MinecraftForge.EVENT_BUS.register(FileSystemAccessHandler)
+    MinecraftForge.EVENT_BUS.register(HoverBootsHandler)
+    MinecraftForge.EVENT_BUS.register(Loot)
+    MinecraftForge.EVENT_BUS.register(NanomachinesHandler.Common)
+    MinecraftForge.EVENT_BUS.register(NetworkActivityHandler)
+    MinecraftForge.EVENT_BUS.register(RobotCommonHandler)
+    MinecraftForge.EVENT_BUS.register(SaveHandler)
+    MinecraftForge.EVENT_BUS.register(Tablet)
+    MinecraftForge.EVENT_BUS.register(Waypoints)
+    MinecraftForge.EVENT_BUS.register(WirelessNetwork)
+    MinecraftForge.EVENT_BUS.register(WirelessNetworkCardHandler)
+    MinecraftForge.EVENT_BUS.register(li.cil.oc.client.ComponentTracker)
+    MinecraftForge.EVENT_BUS.register(li.cil.oc.server.ComponentTracker)
+
+    initializeDrivers()
 
     blacklistHost(Adapter::class.java,
       Constants.BlockName.Geolyzer,
