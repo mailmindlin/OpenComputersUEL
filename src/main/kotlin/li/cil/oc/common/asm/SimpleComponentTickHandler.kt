@@ -38,7 +38,7 @@ class SimpleComponentTickHandler private constructor() {
         val Instance: SimpleComponentTickHandler = SimpleComponentTickHandler()
 
         @JvmStatic
-        fun schedule(tileEntity: TileEntity?) {
+        fun schedule(tileEntity: TileEntity) {
             if (SideTracker.isServer()) {
                 synchronized(pending) {
                     pending.add(
