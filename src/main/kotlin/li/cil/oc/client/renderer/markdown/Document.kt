@@ -24,14 +24,14 @@ import org.lwjgl.opengl.GL11
  * Formatting is done by accumulating formatting information over the parent
  * nodes, up to the root.
  */
-object Document {
+internal object Document {
     /**
      * Parses a plain text document into a list of segments.
      */
     fun parse(document: Iterable<String>): Segment {
-        var segments: Iterable<Segment> = document.map { line ->
-            TextSegment(null, line.trimEnd())
-        }
+        var segments = document
+            .asSequence()
+            .map { line -> TextSegment(null, line.trimEnd()) as Segment }
         for ((pattern, factory) in segmentTypes) {
             segments = segments.flatMap { it.refine(pattern, factory) }
         }
