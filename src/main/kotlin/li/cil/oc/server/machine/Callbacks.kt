@@ -12,6 +12,29 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.FilteredEnvironment
 import li.cil.oc.api.network.ManagedPeripheral
 import li.cil.oc.server.driver.CompoundBlockEnvironment
+import li.cil.oc.util.Stack
+
+private inline fun walkAncestors(start: Class<*>, f: (Class<*>) -> Unit) {
+  val encountered = mutableSetOf<Class<*>>(Any::class.java)
+  val queue = Stack<Class<*>>()
+  queue.push(start)
+
+  while (queue.isNotEmpty()) {
+    val current = queue.pop()
+    if (!encountered.add(current)) continue
+    f(current)
+
+    // Push super types
+    val superclass = current.superclass
+    if (superclass !in encountered)
+      queue.push(superclass)
+
+    for (iface in current.interfaces) {
+      if (iface !in encountered)
+        queue.push(superclass)
+    }
+  }
+}
 
 object Callbacks {
   private val cache = mutableMapOf<Class<*>, Map<String, Callback>>()
@@ -86,12 +109,9 @@ object Callbacks {
   }
 
   private fun staticAnalyze(seed: Class<*>, shouldAdd: ((String) -> Boolean)? = null, optCallbacks: MutableMap<String, Callback>? = null): Map<String, Callback> {
-    val callbacks = optCallbacks ?: mutableMapOf()
-    var c: Class<*>? = seed
-    while (c != null && c != Any::class.java) {
+    walkAncestors(seed) { c ->
       for (m in c.declaredMethods) {
-        if (!m.isAnnotationPresent(MachineCallback::class.java))
-          continue
+        val a = m.getAnnotation(CallbackAnnotation::class.java) ?: continue
 
         if (m.parameterTypes.size != 2 ||
           m.parameterTypes[0] != Context::class.java ||
@@ -108,13 +128,11 @@ object Callbacks {
           continue
         }
 
-        val a = m.getAnnotation(MachineCallback::class.java)
         val name = if (a.value != null && a.value.trim() != "") a.value else m.name
-        if (shouldAdd?.invoke(name) ?: true) {
+        if (shouldAdd?.invoke(name) != false) {
           callbacks[name] = ComponentCallback(m, a)
         }
       }
-      c = c.superclass
     }
     return callbacks
   }
