@@ -275,7 +275,7 @@ class Player(val agent: Agent) : FakePlayer(agent.world() as WorldServer, Player
         }
 
         val maxDuration = stack.maxItemUseDuration
-        val heldTicks = maxOf(0, minOf(maxDuration, (duration * 20).toInt()))
+        val heldTicks = (duration * 20).toInt().coerceIn(0, maxDuration)
         agent.machine().pause(heldTicks / 20.0)
 
         // setting the active hand will also set its initial duration
