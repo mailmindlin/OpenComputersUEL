@@ -43,7 +43,7 @@ class Waypoint : RedstoneAware() {
     override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         if (!player.isSneaking) {
             if (world.isRemote) {
-                player.openGui(OpenComputers, GuiType.Waypoint.id, world, pos.x, pos.y, pos.z)
+                player.openGui(OpenComputers.INSTANCE, GuiType.Waypoint.id, world, pos.x, pos.y, pos.z)
             }
             return true
         }

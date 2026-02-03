@@ -44,7 +44,7 @@ interface FileSystemLike : Delegate {
 
     override fun onItemRightClick(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         if (!player.isSneaking && (!stack.hasTagCompound() || !stack.tagCompound!!.hasKey(Settings.namespace + "lootFactory"))) {
-            player.openGui(OpenComputers, GuiType.Drive.id, world, 0, 0, 0)
+            player.openGui(OpenComputers.INSTANCE, GuiType.Drive.id, world, 0, 0, 0)
             player.swingArm(EnumHand.MAIN_HAND)
         }
         return ActionResult.newResult(EnumActionResult.SUCCESS, stack)

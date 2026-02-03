@@ -20,7 +20,7 @@ class UpgradeDatabase(parent: Delegator, tier: Int) : AbstractTieredDelegate(par
 
     override fun onItemRightClick(stack: ItemStack, world: World, player: EntityPlayer): ActionResult<ItemStack> {
         if (!player.isSneaking) {
-            player.openGui(OpenComputers, GuiType.Database.id, world, 0, 0, 0)
+            player.openGui(OpenComputers.INSTANCE, GuiType.Database.id, world, 0, 0, 0)
             player.swingArm(EnumHand.MAIN_HAND)
         } else if (stack.hasTagCompound() && stack.tagCompound!!.hasKey(Settings.namespace + "items")) {
             stack.tagCompound = null

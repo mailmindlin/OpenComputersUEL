@@ -155,7 +155,7 @@ class UpgradeChunkloader(val host: EnvironmentHost) : ManagedEnvironmentKt(), De
                 throw Exception("this dimension is blacklisted")
             }
         } else {
-            ticket = ForgeChunkManager.requestTicket(OpenComputers, host.world, ForgeChunkManager.Type.NORMAL)
+            ticket = ForgeChunkManager.requestTicket(OpenComputers.INSTANCE, host.world, ForgeChunkManager.Type.NORMAL)
             ChunkloaderUpgradeHandler.updateLoadedChunk(this)
         }
     }
