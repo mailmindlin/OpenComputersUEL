@@ -14,9 +14,9 @@ import li.cil.oc.api.network.Node as ImmutableNode
 import li.cil.oc.api.network.Connector as ApiConnector
 import li.cil.oc.common.capabilities.Capabilities
 import li.cil.oc.common.tileentity.traits.ImmibisMicroblock
-import li.cil.oc.server.machine.Callbacks
 import li.cil.oc.util.Color
 import li.cil.oc.util.SideTracker
+import li.cil.oc.util.serverOnly
 import net.minecraft.item.EnumDyeColor
 import net.minecraft.nbt.*
 import net.minecraft.tileentity.TileEntity
@@ -753,8 +753,6 @@ object NetworkObject : NetworkAPI {
     return Packet(source, destination, port, data, ttl)
   }
 
-  var isServer: () -> Boolean = SideTracker::isServer
-
   class NodeBuilder(private val _host: Environment, private val _reachability: Visibility) : Builder.NodeBuilder {
     override fun withComponent(name: String, visibility: Visibility): Builder.ComponentBuilder =
       ComponentBuilder(_host, _reachability, name, visibility)
@@ -766,14 +764,14 @@ object NetworkObject : NetworkAPI {
 
     override fun withConnector(): Builder.ConnectorBuilder = withConnector(0.0)
 
-    override fun create(): ImmutableNode? = if (isServer()) {
+    override fun create(): ImmutableNode? = SideTracker.serverOnly {
       object : Node, NodeVarargPart {
         override fun host() = _host
         override fun reachability() = _reachability
         override var address: String? = null
         override var network: INetwork? = null
       }
-    } else null
+    }
   }
 
   class ComponentBuilder(
@@ -787,30 +785,29 @@ object NetworkObject : NetworkAPI {
 
     override fun withConnector(): Builder.ComponentConnectorBuilder = withConnector(0.0)
 
-    override fun create(): li.cil.oc.api.network.Component? = if (isServer()) {
-      object : Component, NodeVarargPart {
-        override fun host() = _host
-        override fun reachability() = _reachability
-        override val name = _name
-        override var _visibility = Visibility.None
-        /*DEBUG set(value) {
-          OpenComputers.log.info("Do set visibility -> $value")
-          field = value
-        }*/
-        override var address: String? = null
-        override var network: INetwork? = null
+    private class Node(private val _host: Environment, private val _reachability: Visibility, override val name: String, _visibility: Visibility) : Component, NodeVarargPart {
+      override fun host() = _host
+      override fun reachability() = _reachability
+      override var _visibility = Visibility.None
+      /*DEBUG set(value) {
+        OpenComputers.log.info("Do set visibility -> $value")
+        field = value
+      }*/
+      override var address: String? = null
+      override var network: INetwork? = null
 
-        private val callbacks_ by lazy { Component.createCallbacks(host()) }
-        private val hosts_ by lazy { Component.createHosts(host(), callbacks_) }
+      private val callbacks_ by lazy { Component.createCallbacks(host()) }
+      private val hosts_ by lazy { Component.createHosts(host(), callbacks_) }
 
-        override fun getCallbacks() = callbacks_
-        override fun getHosts() = hosts_
+      override fun getCallbacks() = callbacks_
+      override fun getHosts() = hosts_
 
-        init {
-          this.setVisibility(this@ComponentBuilder._visibility)
-        }
+      init {
+        this.setVisibility(_visibility)
       }
-    } else null
+    }
+
+    override fun create(): li.cil.oc.api.network.Component? = SideTracker.serverOnly { Node(_host, _reachability, _name, _visibility) }
   }
 
   class ConnectorBuilder(
@@ -823,17 +820,17 @@ object NetworkObject : NetworkAPI {
 
     override fun withComponent(name: String): Builder.ComponentConnectorBuilder = withComponent(name, _reachability)
 
-    override fun create(): li.cil.oc.api.network.Connector? = if (isServer()) {
-      object : Connector, NodeVarargPart {
-        override fun host() = _host
-        override fun reachability() = _reachability
-        override var address: String? = null
-        override var network: INetwork? = null
-        override var localBufferSizeKt = _bufferSize
-        override var localBufferKt = 0.0
-        override var distributor: Distributor? = null
-      }
-    } else null
+    private class Node(private val _host: Environment, private val _reachability: Visibility, _bufferSize: Double) : Connector, NodeVarargPart {
+      override fun host() = _host
+      override fun reachability() = _reachability
+      override var address: String? = null
+      override var network: INetwork? = null
+      override var localBufferSizeKt = _bufferSize
+      override var localBufferKt = 0.0
+      override var distributor: Distributor? = null
+    }
+
+    override fun create(): li.cil.oc.api.network.Connector? = SideTracker.serverOnly { Node(_host, _reachability, _bufferSize) }
   }
 
   class ComponentConnectorBuilder(
@@ -843,34 +840,35 @@ object NetworkObject : NetworkAPI {
     private val _visibility: Visibility,
     private val _bufferSize: Double
   ) : Builder.ComponentConnectorBuilder {
-    override fun create(): li.cil.oc.api.network.ComponentConnector? = if (isServer()) {
-      object : ComponentConnector, NodeVarargPart {
-        override fun host() = _host
-        override fun reachability() = _reachability
-        override val name = _name
-        override var _visibility = Visibility.None
-          /*DEBUG set(value) {
-            OpenComputers.log.info("${address()}._visibility = $value", Exception().fillInStackTrace())
-            field = value
-          }*/
-        override var address: String? = null
-        override var network: INetwork? = null
-        override var localBufferSizeKt = _bufferSize
-        override var localBufferKt = 0.0
+    private class Node(private val _host: Environment, private val _reachability: Visibility, override val name: String, override var localBufferSizeKt: Double, _visibility: Visibility) : ComponentConnector, NodeVarargPart {
+      override fun host() = _host
+      override fun reachability() = _reachability
+      override var _visibility = Visibility.None
+      /*DEBUG set(value) {
+        OpenComputers.log.info("${address()}._visibility = $value", Exception().fillInStackTrace())
+        field = value
+      }*/
+      override var address: String? = null
+      override var network: INetwork? = null
+      override var localBufferKt = 0.0
 
-        override var distributor: Distributor? = null
+      override var distributor: Distributor? = null
 
-        private val callbacks_ by lazy { Component.createCallbacks(host()) }
-        private val hosts_ by lazy { Component.createHosts(host(), callbacks_) }
+      private val callbacks_ by lazy { Component.createCallbacks(host()) }
+      private val hosts_ by lazy { Component.createHosts(host(), callbacks_) }
 
-        override fun getCallbacks() = callbacks_
-        override fun getHosts() = hosts_
+      override fun getCallbacks() = callbacks_
+      override fun getHosts() = hosts_
 
-        init {
-          setVisibility(this@ComponentConnectorBuilder._visibility)
-        }
+      init {
+        setVisibility(_visibility)
       }
-    } else null
+
+      override fun toString(): String {
+        return "ComponentConnectorBuilderNode(address=${address()},visibility=${visibility()},host=${_host},network=${network})"
+      }
+    }
+    override fun create(): li.cil.oc.api.network.ComponentConnector? = SideTracker.serverOnly { Node(_host, _reachability, _name, _bufferSize, _visibility) }
   }
 
   // ----------------------------------------------------------------------- //
