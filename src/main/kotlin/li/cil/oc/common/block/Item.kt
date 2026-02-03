@@ -62,26 +62,24 @@ class Item(value: Block) : ItemBlock(value) {
         // in the different robots, to avoid interference of screens e.g.
         val needsCopying = player.capabilities.isCreativeMode && Items.get(stack) == Constants.BlockInfo.Robot
         val stackToUse = if (needsCopying) RobotData(stack).copyItemStack() else stack
-        if (super.placeBlockAt(stackToUse, player, world, pos, side, hitX, hitY, hitZ, newState)) {
-            // If it's a rotatable block try to make it face the player.
-            val tileEntity = world.getTileEntity(pos)
-            when (tileEntity) {
-                is TEKeyboard -> {
-                    tileEntity.setFromEntityPitchAndYaw(player)
-                    tileEntity.setFromFacing(side)
+        if (!super.placeBlockAt(stackToUse, player, world, pos, side, hitX, hitY, hitZ, newState))
+            return false
+        // If it's a rotatable block try to make it face the player.
+        when (val tileEntity = world.getTileEntity(pos)) {
+            is TEKeyboard -> {
+                tileEntity.setFromEntityPitchAndYaw(player)
+                tileEntity.setFromFacing(side)
+            }
+            is Rotatable -> {
+                tileEntity.setFromEntityPitchAndYaw(player)
+                if (!tileEntity.validFacings.contains(tileEntity.pitch)) {
+                    tileEntity.pitch = tileEntity.validFacings.firstOrNull() ?: EnumFacing.NORTH
                 }
-                is Rotatable -> {
-                    tileEntity.setFromEntityPitchAndYaw(player)
-                    if (!tileEntity.validFacings.contains(tileEntity.pitch)) {
-                        tileEntity.pitch = tileEntity.validFacings.firstOrNull() ?: EnumFacing.NORTH
-                    }
-                    if (tileEntity !is TERobotProxy) {
-                        tileEntity.invertRotation()
-                    }
+                if (tileEntity !is TERobotProxy) {
+                    tileEntity.invertRotation()
                 }
             }
-            return true
         }
-        return false
+        return true
     }
 }
