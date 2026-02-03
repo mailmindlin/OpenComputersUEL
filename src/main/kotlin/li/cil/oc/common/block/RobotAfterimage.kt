@@ -93,7 +93,7 @@ class RobotAfterimage : SimpleBlock() {
     override fun localOnBlockActivated(world: World, pos: BlockPos, player: EntityPlayer, hand: EnumHand, heldItem: ItemStack, side: EnumFacing, hitX: Float, hitY: Float, hitZ: Float): Boolean {
         val robot = findMovingRobot(world, pos)
         return if (robot != null) {
-            Constants.BlockInfo.Robot.block().onBlockActivated(world, robot.pos, world.getBlockState(robot.pos), player, hand, side, hitX, hitY, hitZ)
+            Constants.BlockInfo.Robot.block()!!.onBlockActivated(world, robot.pos, world.getBlockState(robot.pos), player, hand, side, hitX, hitY, hitZ)
         } else {
             world.setBlockToAir(pos)
             false
