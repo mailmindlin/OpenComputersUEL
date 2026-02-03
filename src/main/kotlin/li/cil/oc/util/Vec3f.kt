@@ -3,14 +3,19 @@ package li.cil.oc.util
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.Vec3i
 
 data class Vec3f(val x: Float, val y: Float, val z: Float) {
-    constructor(pos: BlockPos): this(pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
+    constructor(pos: Vec3i): this(pos.x.toFloat(), pos.y.toFloat(), pos.z.toFloat())
 
     fun scale(a: Float): Vec3f = Vec3f(a*x, a*y, a*z)
     fun axpy(m: Float, b: Float): Vec3f = Vec3f(m * x + b, m * y + b, m * z + b)
 
-    operator fun minus(pos: BlockPos): Vec3f
+    operator fun plus(pos: Vec3f): Vec3f
+        = Vec3f(this.x + pos.x, this.y + pos.y, this.z + pos.z)
+    operator fun minus(pos: Vec3f): Vec3f
+        = Vec3f(this.x - pos.x, this.y - pos.y, this.z - pos.z)
+    operator fun minus(pos: Vec3i): Vec3f
         = Vec3f(this.x - pos.x.toFloat(), this.y - pos.y.toFloat(), this.z - pos.z.toFloat())
 }
 
