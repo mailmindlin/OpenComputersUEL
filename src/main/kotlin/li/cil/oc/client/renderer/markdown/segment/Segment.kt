@@ -4,7 +4,7 @@ import li.cil.oc.client.renderer.markdown.MarkupFormat
 import net.minecraft.client.gui.FontRenderer
 import java.util.regex.Pattern
 
-interface Segment {
+sealed interface Segment {
     /**
      * Parent segment, i.e. the segment this segment was refined from.
      * Each line starts as a TextSegment that is refined based into segments

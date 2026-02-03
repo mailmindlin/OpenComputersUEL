@@ -4,7 +4,7 @@ import li.cil.oc.client.renderer.markdown.Document
 import li.cil.oc.client.renderer.markdown.MarkupFormat
 import net.minecraft.client.gui.FontRenderer
 
-internal interface BasicTextSegment : Segment {
+internal sealed interface BasicTextSegment : Segment {
     val breaks: Set<Char>
         get() = setOf(' ', '.', ',', ':', ';', '!', '?', '_', '=', '-', '+', '*', '/', '\\')
 
