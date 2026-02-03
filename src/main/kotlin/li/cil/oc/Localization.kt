@@ -133,7 +133,7 @@ object Localization {
         fun WarningProjectRed(): ITextComponent = TextComponentString("§aOpenComputers§f: ").appendSibling(localizeLater("gui.Chat.WarningProjectRed"))
 
         @JvmStatic
-        fun WarningFingerprint(event: FMLFingerprintViolationEvent): ITextComponent = TextComponentString("§aOpenComputers§f: ").appendSibling(localizeLater("gui.Chat.WarningFingerprint", event.expectedFingerprint, event.fingerprints.toTypedArray().joinToString(", ")))
+        fun WarningFingerprint(event: FMLFingerprintViolationEvent): ITextComponent = TextComponentString("§aOpenComputers§f: ").appendSibling(localizeLater("gui.Chat.WarningFingerprint", event.expectedFingerprint, event.fingerprints.joinToString(", ")))
 
         @JvmStatic
         fun WarningRecipes(): ITextComponent = TextComponentString("§aOpenComputers§f: ").appendSibling(localizeLater("gui.Chat.WarningRecipes"))
