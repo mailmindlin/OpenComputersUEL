@@ -94,8 +94,7 @@ object BlockDataProvider : IWailaDataProvider {
                     "addresses",
                     stringIterableToNbt(
                         tileEntity.componentNodes
-                            .filter { it.address() != null }
-                            .map { it.address() }
+                            .mapNotNull { it!!.address() }
                     )
                 )
             }
