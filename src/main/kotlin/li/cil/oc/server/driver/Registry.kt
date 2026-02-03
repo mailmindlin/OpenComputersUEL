@@ -150,8 +150,7 @@ internal object Registry: DriverAPI {
 
   @Deprecated("use value.convert()", replaceWith = ReplaceWith("this.run { value.convert() }"))
   @JvmName("convertOld")
-  fun convert(value: Array<*>?): Array<Any?>?
-    = value?.mapArray { convertRecursively(it, IdentityHashMap()) }
+  fun convert(value: Array<*>?): Array<out Any?>? = this.run { value?.convert() }
 
   fun convertRecursively(value: Any?, memo: IdentityHashMap<Any, Any>, force: Boolean = false): Any? {
     val valueRef = when (value) {
@@ -162,9 +161,9 @@ internal object Registry: DriverAPI {
       else -> value as Any
     }
 
-    return if (!force && memo.containsKey(valueRef)) {
-      memo[valueRef]
-    } else when (valueRef) {
+    if (!force && memo.containsKey(valueRef))
+      return memo[valueRef]
+    return when (valueRef) {
       null, Unit -> null
       is Boolean -> valueRef
       is Char, is String -> valueRef
@@ -176,12 +175,12 @@ internal object Registry: DriverAPI {
 //      is Array<String> -> arg
       is Value -> valueRef
 
-      is Array<*> -> convertList(valueRef, valueRef.withIndex().iterator(), memo)
+      is Array<*> -> convertList(valueRef, valueRef.asIterable(), memo)
 //      case arg: Product => convertList(arg, arg.productIterator.zipWithIndex, memo)
 //      case arg: Seq[_] => convertList(arg, arg.zipWithIndex.iterator, memo)
 
       is Map<*, *> -> convertMap(valueRef, valueRef, memo)
-      is Iterable<*> -> convertList(valueRef, valueRef.withIndex().iterator(), memo)
+      is Iterable<*> -> convertList(valueRef, valueRef, memo)
       else -> {
         val converted = hashMapOf<Any, Any>()
         memo[valueRef] = converted
@@ -189,7 +188,7 @@ internal object Registry: DriverAPI {
           try {
             converter.convert(valueRef, converted)
           } catch (e: Exception) {
-            OpenComputers.log.warn ("Type converter threw an exception.", e)
+            OpenComputers.log.warn("Type converter threw an exception.", e)
           }
         }
         if (converted.isEmpty()) {
@@ -219,10 +218,10 @@ internal object Registry: DriverAPI {
     }
   }
 
-  private fun convertList(obj: Any, list: Iterator<IndexedValue<Any?>>, memo: IdentityHashMap<Any, Any>): Array<Any?> {
+  private fun convertList(obj: Any, list: Iterable<Any?>, memo: IdentityHashMap<Any, Any>): Array<Any?> {
     val converted = mutableListOf<Any?>()
     memo[obj] = converted
-    for ((value, index) in list) {
+    for (value in list) {
       converted += convertRecursively(value, memo)
     }
     return converted.toTypedArray()
