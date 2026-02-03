@@ -6,6 +6,7 @@ import net.minecraft.block.state.IBlockState
 import net.minecraft.util.math.BlockPos
 import net.minecraft.world.World
 import java.util.Random
+import kotlin.math.roundToInt
 
 open class Capacitor : SimpleBlock() {
     init {
@@ -22,9 +23,9 @@ open class Capacitor : SimpleBlock() {
 
     override fun getComparatorInputOverride(state: IBlockState, world: World, pos: BlockPos): Int {
         val tileEntity = world.getTileEntity(pos)
-        return if (tileEntity is TECapacitor && !world.isRemote) {
-            Math.round(15 * tileEntity.node!!.localBuffer() / tileEntity.node.localBufferSize()).toInt()
-        } else 0
+        if (tileEntity !is TECapacitor || world.isRemote)
+            return 0
+        return (15 * tileEntity.node!!.localBuffer() / tileEntity.node.localBufferSize()).roundToInt()
     }
 
     override fun updateTick(world: World, pos: BlockPos, state: IBlockState, rand: Random) {
