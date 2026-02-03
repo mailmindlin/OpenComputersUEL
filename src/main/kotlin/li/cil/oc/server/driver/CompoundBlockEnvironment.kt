@@ -37,7 +37,7 @@ class CompoundBlockEnvironment(val name: String, val environments: List<Pair<Str
         }
     }
 
-    override fun canUpdate(): Boolean = environments.any { it.second.canUpdate() }
+    override fun canUpdate(): Boolean = environments.any { (_, env) -> env.canUpdate() }
 
     override fun update() {
         for (environment in updatingEnvironments) {

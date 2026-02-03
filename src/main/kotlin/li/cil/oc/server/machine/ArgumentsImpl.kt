@@ -1,6 +1,7 @@
 package li.cil.oc.server.machine
 
 import com.google.common.base.Charsets
+import li.cil.oc.OpenComputers
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.util.ItemUtils
 import net.minecraft.item.Item

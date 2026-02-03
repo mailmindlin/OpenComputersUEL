@@ -7,8 +7,13 @@ import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 import java.io.IOException
 import java.util.WeakHashMap
+import kotlin.jvm.Throws
 
 class Capacity(protected val wrapped: FileSystem, private val capacity: Long): FileSystem by wrapped {
+    class CapacityException(val capacity: Long, val used: Long, val space: Long): IOException("not enough space ($capacity, $used, $space)") {}
+    init {
+        check(capacity >= 0L) { "Capacity must not be negative" }
+    }
     private val openWriteHandles = mutableSetOf<Int>()
     private val writeHandleCache = WeakHashMap<Handle, CountingOutputHandle>()
 
@@ -24,9 +29,10 @@ class Capacity(protected val wrapped: FileSystem, private val capacity: Long): F
         used = (used + space).coerceAtLeast(0)
     }
 
+    @Throws(CapacityException::class)
     private fun assertCapacity(space: Long) {
         if (capacity - used < space && !ignoreCapacity)
-            throw IOException("not enough space")
+            throw CapacityException(capacity, used, space)
     }
 
     // ----------------------------------------------------------------------- //

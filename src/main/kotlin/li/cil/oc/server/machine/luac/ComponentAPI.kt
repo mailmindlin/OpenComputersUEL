@@ -83,7 +83,7 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
   }
 
   private fun withComponent(address: String, f: (Component) -> Int): Int {
-    val component = node.network().node(address)
+    val component = node.network()!!.node(address)
     return if (component != null && component is Component && (component.canBeReachedFrom(node) || component == node)) {
       f(component)
     } else {

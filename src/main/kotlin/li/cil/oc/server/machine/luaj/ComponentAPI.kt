@@ -79,7 +79,7 @@ class ComponentAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
   }
 
   private fun withComponent(address: String, f: (Component) -> Varargs): Varargs {
-    val component = node.network().node(address)
+    val component = node.network()!!.node(address)
     if (component is Component && (component.canBeSeenFrom(node) || component == node)) {
       return f(component)
     }
