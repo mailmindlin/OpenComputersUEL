@@ -32,8 +32,8 @@ internal interface InputBuffer : DisplayBuffer {
         Keyboard.enableRepeatEvents(true)
     }
 
-    fun drawBufferLayerWithInput() {
-        drawBufferLayer()
+    override fun drawBufferLayer() {
+        super.drawBufferLayer()
 
         if (System.currentTimeMillis() - showKeyboardMissing < 1000) {
             Textures.bind(Textures.GUI.KeyboardMissing)
@@ -57,7 +57,7 @@ internal interface InputBuffer : DisplayBuffer {
         }
     }
 
-    fun onGuiClosedInputBuffer() {
+    fun onGuiClosed() {
         if (buffer != null) {
             for ((code, char) in pressedKeys) {
                 buffer!!.keyUp(char, code, null)
@@ -66,37 +66,37 @@ internal interface InputBuffer : DisplayBuffer {
         Keyboard.enableRepeatEvents(false)
     }
 
-    fun handleKeyboardInputBuffer(screen: Any) {
-        if (screen is GuiContainer && ItemSearch.isInputFocused()) return
+    fun handleKeyboardInput() {
+        if (this is GuiContainer && ItemSearch.isInputFocused()) return
 
         val code = Keyboard.getEventKey()
-        if (buffer != null && code != Keyboard.KEY_ESCAPE && code != Keyboard.KEY_F11) {
-            if (hasKeyboard) {
-                if (Keyboard.getEventKeyState()) {
-                    val char = Keyboard.getEventCharacter()
-                    if (!pressedKeys.containsKey(code) || !ignoreRepeat(char, code)) {
-                        buffer!!.keyDown(char, code, null)
-                        pressedKeys[code] = char
-                    }
-                } else {
-                    val char = pressedKeys.remove(code)
-                    if (char != null) {
-                        buffer!!.keyUp(char, code, null)
-                    }
-                    // Else: Wasn't pressed while viewing the screen.
-                }
-
-                if (KeyBindings.isPastingClipboard) {
-                    buffer!!.clipboard(GuiScreen.getClipboardString(), null)
-                }
-            } else {
-                showKeyboardMissing = System.currentTimeMillis()
+        val buffer = buffer ?: return
+        if (code == Keyboard.KEY_ESCAPE || code == Keyboard.KEY_F11) return
+        if (!hasKeyboard) {
+            showKeyboardMissing = System.currentTimeMillis()
+            return
+        }
+        if (Keyboard.getEventKeyState()) {
+            val char = Keyboard.getEventCharacter()
+            if (!pressedKeys.containsKey(code) || !ignoreRepeat(char, code)) {
+                buffer.keyDown(char, code, null)
+                pressedKeys[code] = char
             }
+        } else {
+            val char = pressedKeys.remove(code)
+            if (char != null) {
+                buffer.keyUp(char, code, null)
+            }
+            // Else: Wasn't pressed while viewing the screen.
+        }
+
+        if (KeyBindings.isPastingClipboard) {
+            buffer.clipboard(GuiScreen.getClipboardString(), null)
         }
     }
 
-    fun mouseClickedInputBuffer(x: Int, y: Int, button: Int) {
-        val isMiddleMouseButton = button == 2
+    fun mouseClicked(mouseX: Int, mouseY: Int, mouseButton: Int) {
+        val isMiddleMouseButton = mouseButton == 2
         val isBoundMouseButton = KeyBindings.isPastingClipboard
         if (buffer != null && (isMiddleMouseButton || isBoundMouseButton)) {
             if (hasKeyboard) {
