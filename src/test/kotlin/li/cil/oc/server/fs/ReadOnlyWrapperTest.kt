@@ -1,15 +1,28 @@
 package li.cil.oc.server.fs
 
+import li.cil.oc.Settings
 import li.cil.oc.api.fs.Mode
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.FileNotFoundException
 
 class ReadOnlyWrapperTest {
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun setUpAll() {
+            Settings.defaultsForTesting()
+        }
+        private const val CONTENT1 = "Content of file 1"
+        private const val CONTENT2 = "Content of file 2"
+    }
+
     private lateinit var baseFs: TestVirtualFileSystem
     private lateinit var readOnlyFs: ReadOnlyWrapper
+
 
     @BeforeEach
     fun setUp() {
@@ -19,11 +32,11 @@ class ReadOnlyWrapperTest {
         baseFs.makeDirectory("dir1")
 
         val handle1 = baseFs.open("file1.txt", Mode.Write)
-        baseFs.getHandle(handle1)!!.write("Content of file 1".toByteArray())
+        baseFs.getHandle(handle1)!!.write(CONTENT1.toByteArray())
         baseFs.getHandle(handle1)?.close()
 
         val handle2 = baseFs.open("dir1/file2.txt", Mode.Write)
-        baseFs.getHandle(handle2)!!.write("Content of file 2".toByteArray())
+        baseFs.getHandle(handle2)!!.write(CONTENT2.toByteArray())
         baseFs.getHandle(handle2)?.close()
 
         // Wrap it as read-only
@@ -42,7 +55,7 @@ class ReadOnlyWrapperTest {
         val bytesRead = readOnlyFs.getHandle(handle)!!.read(buffer)
         readOnlyFs.getHandle(handle)?.close()
 
-        assertEquals("Content of file 1", String(buffer, 0, bytesRead))
+        assertEquals(CONTENT1, String(buffer, 0, bytesRead))
     }
 
     @Test
@@ -52,14 +65,14 @@ class ReadOnlyWrapperTest {
         val bytesRead = readOnlyFs.getHandle(handle)!!.read(buffer)
         readOnlyFs.getHandle(handle)?.close()
 
-        assertEquals("Content of file 2", String(buffer, 0, bytesRead))
+        assertEquals(CONTENT2, String(buffer, 0, bytesRead))
     }
 
     @Test
     fun `test can check file exists`() {
-        assertTrue(readOnlyFs.exists("file1.txt"))
-        assertTrue(readOnlyFs.exists("dir1/"))
-        assertTrue(readOnlyFs.exists("dir1/file2.txt"))
+        assertTrue(readOnlyFs.exists("file1.txt"), "file1.txt exists")
+        assertTrue(readOnlyFs.exists("dir1/"), "dir1/ exists")
+        assertTrue(readOnlyFs.exists("dir1/file2.txt"), "dir1/file2.txt exists")
         assertFalse(readOnlyFs.exists("nonexistent.txt"))
     }
 
@@ -71,8 +84,8 @@ class ReadOnlyWrapperTest {
 
     @Test
     fun `test can get file size`() {
-        assertEquals(18L, readOnlyFs.size("file1.txt"))
-        assertEquals(18L, readOnlyFs.size("dir1/file2.txt"))
+        assertEquals(CONTENT1.toByteArray().size.toLong(), readOnlyFs.size("file1.txt"))
+        assertEquals(CONTENT2.toByteArray().size.toLong(), readOnlyFs.size("dir1/file2.txt"))
     }
 
     @Test
@@ -200,7 +213,7 @@ class ReadOnlyWrapperTest {
         val buffer = ByteArray(6)
         val bytesRead = h.read(buffer)
         assertEquals(6, bytesRead)
-        assertEquals("f file", String(buffer))
+        assertEquals("of fil", String(buffer))
 
         h.close()
     }

@@ -1,8 +1,10 @@
 package li.cil.oc.server.fs
 
+import li.cil.oc.Settings
 import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -11,8 +13,16 @@ import org.junit.jupiter.api.Test
  * This ensures that filesystems can be properly saved and loaded across game saves.
  */
 class NBTPersistenceTest {
-    private lateinit var fs: TestVirtualFileSystem
 
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun setUpAll() {
+            Settings.defaultsForTesting()
+        }
+    }
+
+    private lateinit var fs: TestVirtualFileSystem
     @BeforeEach
     fun setUp() {
         fs = TestVirtualFileSystem()
@@ -28,7 +38,7 @@ class NBTPersistenceTest {
 
         // Empty filesystem should list nothing at root
         val listing = loaded.list("")
-        assertTrue(listing == null || listing.isEmpty())
+        assertTrue(listing.isNullOrEmpty())
     }
 
     @Test

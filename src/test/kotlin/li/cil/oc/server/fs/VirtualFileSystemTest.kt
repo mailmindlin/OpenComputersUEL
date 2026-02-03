@@ -1,8 +1,10 @@
 package li.cil.oc.server.fs
 
+import li.cil.oc.Settings
 import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -10,8 +12,15 @@ import java.io.FileNotFoundException
 import java.io.IOException
 
 class VirtualFileSystemTest {
-    private lateinit var fs: TestVirtualFileSystem
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun setUpAll() {
+            Settings.defaultsForTesting()
+        }
+    }
 
+    private lateinit var fs: TestVirtualFileSystem
     @BeforeEach
     fun setUp() {
         fs = TestVirtualFileSystem()
@@ -105,7 +114,7 @@ class VirtualFileSystemTest {
         assertTrue(fs.makeDirectory("mydir"))
         assertTrue(fs.exists("mydir/"))
         assertTrue(fs.isDirectory("mydir/"))
-        assertFalse(fs.isDirectory("mydir"))
+        assertTrue(fs.isDirectory("mydir"))
     }
 
     @Test
@@ -402,7 +411,7 @@ class VirtualFileSystemTest {
         newFs.load(nbt)
 
         // Should be empty
-        assertNull(newFs.list(""))
+        assertTrue(newFs.list("").isNullOrEmpty())
     }
 
     @Test

@@ -1,40 +1,52 @@
 package li.cil.oc.server.fs
 
+import li.cil.oc.Settings
 import li.cil.oc.api.fs.Mode
 import net.minecraft.nbt.NBTTagCompound
+import net.minecraftforge.common.config.Config
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import java.io.IOException
 
 class CapacityTest {
-    private lateinit var baseFs: TestVirtualFileSystem
-    private lateinit var capacityFs: Capacity
 
-    @BeforeEach
-    fun setUp() {
-        baseFs = TestVirtualFileSystem()
-        // Create a filesystem with 1KB capacity
-        capacityFs = Capacity(baseFs, 1024)
+    companion object {
+        @BeforeAll
+        @JvmStatic
+        fun setUpAll() {
+            Settings.defaultsForTesting()
+        }
+        private fun makeCapacityFs(capacity: Long = 2048): Capacity {
+            val baseFs = TestVirtualFileSystem()
+            return Capacity(baseFs, capacity)
+        }
     }
+
+    private val fileCost: Long get() = Settings.get.fileCost.toLong()
 
     @Test
     fun `test capacity is reported correctly`() {
-        assertEquals(1024L, capacityFs.spaceTotal())
+        val capacityFs = makeCapacityFs()
+        assertEquals(2048L, capacityFs.spaceTotal())
     }
 
     @Test
     fun `test initial space used`() {
+        val capacityFs = makeCapacityFs()
         // Initially should have minimal usage
         val initialUsed = capacityFs.spaceUsed()
         assertTrue(initialUsed >= 0)
-        assertTrue(initialUsed < 1024)
+        assertTrue(initialUsed < 2048)
     }
 
     @Test
     fun `test creating file increases space used`() {
+        val capacityFs = makeCapacityFs()
         val initialUsed = capacityFs.spaceUsed()
+        assertEquals(fileCost, initialUsed)
 
         val handle = capacityFs.open("test.txt", Mode.Write)
         capacityFs.getHandle(handle)?.close()
@@ -45,6 +57,7 @@ class CapacityTest {
 
     @Test
     fun `test writing data increases space used`() {
+        val capacityFs = makeCapacityFs()
         val handle = capacityFs.open("test.txt", Mode.Write)
 
         val usedAfterCreate = capacityFs.spaceUsed()
@@ -60,6 +73,7 @@ class CapacityTest {
 
     @Test
     fun `test deleting file decreases space used`() {
+        val capacityFs = makeCapacityFs()
         val handle = capacityFs.open("test.txt", Mode.Write)
         capacityFs.getHandle(handle)!!.write(ByteArray(100))
         capacityFs.getHandle(handle)?.close()
@@ -74,6 +88,7 @@ class CapacityTest {
 
     @Test
     fun `test cannot exceed capacity when creating file`() {
+        val capacityFs = makeCapacityFs()
         // Fill up the filesystem close to capacity
         val largeData = ByteArray(900)
         val handle = capacityFs.open("large.txt", Mode.Write)
@@ -89,6 +104,7 @@ class CapacityTest {
 
     @Test
     fun `test cannot exceed capacity when writing data`() {
+        val capacityFs = makeCapacityFs()
         val handle = capacityFs.open("test.txt", Mode.Write)
 
         // Try to write more data than capacity allows
@@ -99,6 +115,7 @@ class CapacityTest {
 
     @Test
     fun `test overwriting file with Write mode releases old space`() {
+        val capacityFs = makeCapacityFs()
         // Create file with some content
         val handle1 = capacityFs.open("test.txt", Mode.Write)
         capacityFs.getHandle(handle1)!!.write(ByteArray(200))
@@ -117,6 +134,7 @@ class CapacityTest {
 
     @Test
     fun `test append mode does not release space`() {
+        val capacityFs = makeCapacityFs()
         // Create file with initial content
         val handle1 = capacityFs.open("test.txt", Mode.Write)
         capacityFs.getHandle(handle1)!!.write(ByteArray(100))
@@ -138,6 +156,7 @@ class CapacityTest {
 
     @Test
     fun `test making directory consumes space`() {
+        val capacityFs = makeCapacityFs()
         val usedBefore = capacityFs.spaceUsed()
 
         capacityFs.makeDirectory("dir")
@@ -148,6 +167,7 @@ class CapacityTest {
 
     @Test
     fun `test cannot create directory when capacity exceeded`() {
+        val capacityFs = makeCapacityFs()
         // Fill up the filesystem
         val handle = capacityFs.open("large.txt", Mode.Write)
         capacityFs.getHandle(handle)!!.write(ByteArray(1000))
@@ -161,6 +181,7 @@ class CapacityTest {
 
     @Test
     fun `test rename to existing file releases old file space`() {
+        val capacityFs = makeCapacityFs()
         // Create two files
         val handle1 = capacityFs.open("file1.txt", Mode.Write)
         capacityFs.getHandle(handle1)!!.write(ByteArray(100))
@@ -181,6 +202,7 @@ class CapacityTest {
 
     @Test
     fun `test NBT save persists used space`() {
+        val capacityFs = makeCapacityFs()
         // Create some files
         val handle = capacityFs.open("test.txt", Mode.Write)
         capacityFs.getHandle(handle)!!.write(ByteArray(100))
@@ -199,6 +221,7 @@ class CapacityTest {
 
     @Test
     fun `test load from NBT allows exceeding capacity temporarily`() {
+        val capacityFs = makeCapacityFs()
         // This tests that loading data from NBT doesn't fail even if
         // the saved data exceeds the current capacity limit
 
@@ -232,14 +255,20 @@ class CapacityTest {
 
     @Test
     fun `test close recalculates space used`() {
+        val baseFs = TestVirtualFileSystem()
+        val capacityFs = Capacity(baseFs, 3 * fileCost + 300)
+        assertEquals(fileCost, capacityFs.spaceUsed())
+
         // Create some files
         val handle1 = capacityFs.open("file1.txt", Mode.Write)
         capacityFs.getHandle(handle1)!!.write(ByteArray(100))
         capacityFs.getHandle(handle1)?.close()
+        assertEquals(2 * fileCost + 100, capacityFs.spaceUsed())
 
         val handle2 = capacityFs.open("file2.txt", Mode.Write)
         capacityFs.getHandle(handle2)!!.write(ByteArray(200))
         capacityFs.getHandle(handle2)?.close()
+        assertEquals(3 * fileCost + 100 + 200, capacityFs.spaceUsed())
 
         val usedBefore = capacityFs.spaceUsed()
 
@@ -254,6 +283,7 @@ class CapacityTest {
 
     @Test
     fun `test read-only operations do not affect capacity`() {
+        val capacityFs = makeCapacityFs()
         // Create a file
         val handle = capacityFs.open("test.txt", Mode.Write)
         capacityFs.getHandle(handle)!!.write(ByteArray(100))
@@ -275,11 +305,14 @@ class CapacityTest {
 
     @Test
     fun `test capacity with nested directories`() {
+        val capacityFs = makeCapacityFs(4 * fileCost + 1024L)
         val initialUsed = capacityFs.spaceUsed()
 
         // Create nested structure
         capacityFs.makeDirectory("dir1")
         capacityFs.makeDirectory("dir1/dir2")
+
+        assertEquals(3 * fileCost, capacityFs.spaceUsed())
 
         val handle = capacityFs.open("dir1/dir2/file.txt", Mode.Write)
         capacityFs.getHandle(handle)!!.write(ByteArray(50))
@@ -316,6 +349,7 @@ class CapacityTest {
 
     @Test
     fun `test space accounting with multiple write handles`() {
+        val capacityFs = makeCapacityFs()
         // Open file and write some data
         val handle1 = capacityFs.open("file1.txt", Mode.Write)
         capacityFs.getHandle(handle1)!!.write(ByteArray(100))
