@@ -6,10 +6,10 @@ import java.lang.annotation.Annotation;
 
 // Java class to avoid those stupid warnings.
 @SuppressWarnings("ClassExplicitlyAnnotation")
-public class PeripheralAnnotation implements Callback {
+class PeripheralAnnotation implements Callback {
     private final String name;
 
-    public PeripheralAnnotation(final String name) {
+    PeripheralAnnotation(final String name) {
         this.name = name;
     }
 
@@ -42,6 +42,9 @@ public class PeripheralAnnotation implements Callback {
     public boolean setter() {
         return false;
     }
+
+    @Override
+    public boolean auto() { return false; }
 
     @Override
     public Class<? extends Annotation> annotationType() {
