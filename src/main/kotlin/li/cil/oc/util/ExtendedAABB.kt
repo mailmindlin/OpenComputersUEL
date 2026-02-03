@@ -4,6 +4,8 @@ import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.AxisAlignedBB
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Vec3d
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.roundToInt
 
 object ExtendedAABB {
@@ -58,11 +60,11 @@ fun AxisAlignedBB.rotateY(count: Int): AxisAlignedBB {
     min = min.rotateYaw(count * Math.PI.toFloat() * 0.5f)
     max = max.rotateYaw(count * Math.PI.toFloat() * 0.5f)
     return AxisAlignedBB(
-        (kotlin.math.min(min.x + 0.5, max.x + 0.5) * 32).roundToInt() / 32f.toDouble(),
-        (kotlin.math.min(min.y + 0.5, max.y + 0.5) * 32).roundToInt() / 32f.toDouble(),
-        (kotlin.math.min(min.z + 0.5, max.z + 0.5) * 32).roundToInt() / 32f.toDouble(),
-        (kotlin.math.max(min.x + 0.5, max.x + 0.5) * 32).roundToInt() / 32f.toDouble(),
-        (kotlin.math.max(min.y + 0.5, max.y + 0.5) * 32).roundToInt() / 32f.toDouble(),
-        (kotlin.math.max(min.z + 0.5, max.z + 0.5) * 32).roundToInt() / 32f.toDouble()
+        (min(min.x + 0.5, max.x + 0.5) * 32).roundToInt() / 32.0,
+        (min(min.y + 0.5, max.y + 0.5) * 32).roundToInt() / 32.0,
+        (min(min.z + 0.5, max.z + 0.5) * 32).roundToInt() / 32.0,
+        (max(min.x + 0.5, max.x + 0.5) * 32).roundToInt() / 32.0,
+        (max(min.y + 0.5, max.y + 0.5) * 32).roundToInt() / 32.0,
+        (max(min.z + 0.5, max.z + 0.5) * 32).roundToInt() / 32.0,
     )
 }
