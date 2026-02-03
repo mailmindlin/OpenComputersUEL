@@ -402,15 +402,13 @@ class HandleValue : AbstractValue {
 
     override fun dispose(context: Context) {
         super.dispose(context)
-        if (context.node() != null && context.node().network() != null) {
-            val node = context.node().network().node(owner)
-            if (node != null) {
-                when (val host = node.host()) {
-                    is FileSystem -> try {
-                        host.close(context, handle)
-                    } catch (_: Throwable) {
-                        // Ignore, already closed.
-                    }
+        context.node()?.network()?.let { network ->
+            val node = network.node(owner)
+            (node?.host() as? FileSystem)?.let { host ->
+                try {
+                    host.close(context, handle)
+                } catch (_: Exception) {
+                    // Ignore, already closed.
                 }
             }
         }

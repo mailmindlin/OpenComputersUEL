@@ -16,16 +16,14 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
         val facing = checkSideForAction(args, 0)
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
-        return if (handler != null) {
-            val properties = args.optTankProperties(handler, 1)
-            if (properties is IFluidTankProperties) {
-                result(properties.contents?.amount ?: 0)
-            } else {
-                val total = handler.tankProperties.sumOf { it.contents?.amount ?: 0 }
-                result(total)
-            }
+            ?: return result(Unit, "no tank")
+
+        val properties = args.optTankProperties(handler, 1)
+        return if (properties is IFluidTankProperties) {
+            result(properties.contents?.amount ?: 0)
         } else {
-            result(null, "no tank")
+            val total = handler.tankProperties.sumOf { it.contents?.amount ?: 0 }
+            result(total)
         }
     }
 
@@ -34,54 +32,38 @@ interface WorldTankAnalytics : WorldAware, SideRestricted {
         val facing = checkSideForAction(args, 0)
 
         val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
-        return if (handler != null) {
-            val properties = args.optTankProperties(handler, 1)
-            if (properties is IFluidTankProperties) {
-                result(properties.capacity)
-            } else {
-                val maxCapacity = handler.tankProperties.maxByOrNull { it.capacity }?.capacity ?: 0
-                result(maxCapacity)
-            }
+            ?: return result(Unit, "no tank")
+        val properties = args.optTankProperties(handler, 1)
+        return if (properties is IFluidTankProperties) {
+            result(properties.capacity)
         } else {
-            result(null, "no tank")
+            val maxCapacity = handler.tankProperties.maxOfOrNull { it.capacity } ?: 0
+            result(maxCapacity)
         }
     }
 
     @Callback(doc = """function(side:number [, tank:number]):table -- Get a description of the fluid in the the tank on the specified side.""")
-    fun getFluidInTank(context: Context, args: Arguments): Array<Any?> {
-        return if (Settings.get.allowItemStackInspection) {
-            val facing = checkSideForAction(args, 0)
+    fun getFluidInTank(context: Context, args: Arguments): Result {
+        if (!Settings.get.allowItemStackInspection)
+            return result(Unit, "not enabled in config")
+        val facing = checkSideForAction(args, 0)
 
-            val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
-            if (handler != null) {
-                val properties = args.optTankProperties(handler, 1)
-                if (properties is IFluidTankProperties) {
-                    result(properties)
-                } else {
-                    result(handler.tankProperties)
-                }
-            } else {
-                result(null, "no tank")
-            }
-        } else {
-            result(null, "not enabled in config")
-        }
+        val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite) ?: return result(Unit, "no tank")
+        val properties = args.optTankProperties(handler, 1)
+        return result(
+            if (properties is IFluidTankProperties) properties
+            else handler.tankProperties
+        )
     }
 
     @Callback(doc = """function(side:number):number -- Get the number of tanks available on the specified side.""")
     fun getTankCount(context: Context, args: Arguments): Result {
         val facing = checkSideForAction(args, 0)
 
-        val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite)
-        return if (handler != null) {
-            val properties = handler.tankProperties
-            if (properties is Array<*>) {
-                result(properties.size)
-            } else {
-                result(null, "no tank")
-            }
-        } else {
-            result(null, "no tank")
-        }
+        val handler = FluidUtils.fluidHandlerAt(position.offset(facing), facing.opposite) ?: return result(Unit, "no tank")
+        val properties = handler.tankProperties
+            ?.takeIf { it.isNotEmpty() }
+            ?: return result(Unit, "no tank")
+        return result(properties.size)
     }
 }

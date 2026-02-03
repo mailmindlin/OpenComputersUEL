@@ -75,26 +75,25 @@ interface TankControl : TankAware {
         val fromTank = getTank(selectedTank)
         val toTank = getTank(index)
 
-        if (fromTank != null && toTank != null) {
-            val drained = fromTank.drain(count, false)
-            val transferred = toTank.fill(drained, true)
+        if (fromTank == null || toTank == null)
+            return result(Unit, "invalid index")
 
-            return if (transferred > 0) {
-                fromTank.drain(transferred, true)
-                result(true)
-            } else if (count >= fromTank.fluidAmount &&
-                       toTank.capacity >= fromTank.fluidAmount &&
-                       fromTank.capacity >= toTank.fluidAmount) {
-                // Swap.
-                val tmp = toTank.drain(toTank.fluidAmount, true)
-                toTank.fill(fromTank.drain(fromTank.fluidAmount, true), true)
-                fromTank.fill(tmp, true)
-                result(true)
-            } else {
-                result(null, "incompatible or no fluid")
-            }
+        val drained = fromTank.drain(count, false)
+        val transferred = toTank.fill(drained, true)
+
+        return if (transferred > 0) {
+            fromTank.drain(transferred, true)
+            result(true)
+        } else if (count >= fromTank.fluidAmount &&
+                   toTank.capacity >= fromTank.fluidAmount &&
+                   fromTank.capacity >= toTank.fluidAmount) {
+            // Swap.
+            val tmp = toTank.drain(toTank.fluidAmount, true)
+            toTank.fill(fromTank.drain(fromTank.fluidAmount, true), true)
+            fromTank.fill(tmp, true)
+            result(true)
+        } else {
+            result(Unit, "incompatible or no fluid")
         }
-
-        return result(null, "invalid index")
     }
 }

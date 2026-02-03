@@ -86,62 +86,56 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
     }
 
     @Callback(doc = """function(side:number, slot:number):table -- Get a description of the stack in the inventory on the specified side of the device.""")
-    fun getStackInSlot(context: Context, args: Arguments): Array<Any?> {
-        return if (Settings.get.allowItemStackInspection) {
-            val facing = checkSideForAction(args, 0)
-            withInventory(facing) { inventory ->
-                val slot = args.checkSlot(inventory, 1)
-                result(inventory.getStackInSlot(slot))
-            }
-        } else {
-            result(null, "not enabled in config")
+    fun getStackInSlot(context: Context, args: Arguments): Result {
+        if (!Settings.get.allowItemStackInspection)
+            return result(Unit, "not enabled in config")
+        val facing = checkSideForAction(args, 0)
+        return withInventory(facing) { inventory ->
+            val slot = args.checkSlot(inventory, 1)
+            result(inventory.getStackInSlot(slot))
         }
     }
 
     @Callback(doc = """function(side:number):userdata -- Get a description of all stacks in the inventory on the specified side of the device.""")
-    fun getAllStacks(context: Context, args: Arguments): Array<Any?> {
-        return if (Settings.get.allowItemStackInspection) {
-            val facing = checkSideForAction(args, 0)
-            withInventory(facing) { inventory ->
-                val stacks = Array(inventory.slots) { i ->
-                    inventory.getStackInSlot(i)
-                }
-                result(ItemStackArrayValue(stacks))
+    fun getAllStacks(context: Context, args: Arguments): Result {
+        if (!Settings.get.allowItemStackInspection)
+            return result(Unit, "not enabled in config")
+        val facing = checkSideForAction(args, 0)
+        return withInventory(facing) { inventory ->
+            val stacks = Array(inventory.slots) { i ->
+                inventory.getStackInSlot(i)
             }
-        } else {
-            result(null, "not enabled in config")
+            result(ItemStackArrayValue(stacks))
         }
     }
 
     @Callback(doc = """function(side:number):string -- Get the the name of the inventory on the specified side of the device.""")
-    fun getInventoryName(context: Context, args: Arguments): Array<Any?> {
-        return if (Settings.get.allowItemStackInspection) {
-            val facing = checkSideForAction(args, 0)
+    fun getInventoryName(context: Context, args: Arguments): Result {
+        if (!Settings.get.allowItemStackInspection)
+            return result(Unit, "not enabled in config")
+        val facing = checkSideForAction(args, 0)
 
-            fun blockAt(position: BlockPosition): Block? {
-                return position.world?.let { world ->
-                    if (world.blockExists(position)) {
-                        world.getBlock(position) as? Block
-                    } else null
-                }
+        fun blockAt(position: BlockPosition): Block? {
+            return position.world?.let { world ->
+                if (world.blockExists(position)) {
+                    world.getBlock(position) as? Block
+                } else null
             }
+        }
 
-            withInventorySource(facing) { inventorySource ->
-                when (inventorySource) {
-                    is BlockInventorySource -> {
-                        blockAt(inventorySource.position)?.let { block ->
-                            result(block.registryName)
-                        } ?: result(null, "Unknown")
-                    }
-                    is EntityInventorySource -> {
-                        val entry = EntityRegistry.getEntry(inventorySource.entity.javaClass)
-                        result(entry?.registryName)
-                    }
-                    else -> result(null, "Unknown")
+        return withInventorySource(facing) { inventorySource ->
+            when (inventorySource) {
+                is BlockInventorySource -> {
+                    blockAt(inventorySource.position)?.let { block ->
+                        result(block.registryName)
+                    } ?: result(Unit, "Unknown")
                 }
+                is EntityInventorySource -> {
+                    val entry = EntityRegistry.getEntry(inventorySource.entity.javaClass)
+                    result(entry?.registryName)
+                }
+                else -> result(Unit, "Unknown")
             }
-        } else {
-            result(null, "not enabled in config")
         }
     }
 
@@ -170,10 +164,11 @@ interface WorldInventoryAnalytics : WorldAware, SideRestricted, NetworkAware {
         return if (inventorySource != null && mayInteract(inventorySource)) {
             f(inventorySource)
         } else {
-            result(null, "no inventory")
+            result(Unit, "no inventory")
         }
     }
 
+    fun withInventory(side: EnumFacing, f: (IItemHandler) -> Result): Result {
         return withInventorySource(side) { inventorySource ->
             f(inventorySource.inventory)
         }

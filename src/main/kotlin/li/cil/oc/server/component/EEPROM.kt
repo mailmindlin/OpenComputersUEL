@@ -43,10 +43,10 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
     @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
     fun set(context: Context, args: Arguments): Result? {
         if (readonly) {
-            return result(null, "storage is readonly")
+            return result(Unit, "storage is readonly")
         }
         if (!node!!.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
-            return result(null, "not enough energy")
+            return result(Unit, "not enough energy")
         }
         val newData = args.optByteArray(0, ByteArray(0))
         if (newData.size > Settings.get.eepromSize) {
@@ -65,7 +65,7 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
     @Callback(doc = """function(data:string):string -- Set the label of the EEPROM.""")
     fun setLabel(context: Context, args: Arguments): Result {
         if (readonly) {
-            return result(null, "storage is readonly")
+            return result(Unit, "storage is readonly")
         }
         label = args.optString(0, "EEPROM").trim().take(24)
         if (label.isEmpty()) {
@@ -85,12 +85,10 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function(checksum:string):boolean -- Make this EEPROM readonly if it isn't already. This process cannot be reversed!""")
     fun makeReadonly(context: Context, args: Arguments): Result {
-        return if (args.checkString(0) == checksum) {
-            readonly = true
-            result(true)
-        } else {
-            result(null, "incorrect checksum")
-        }
+        if (args.checkString(0) != checksum)
+            return result(Unit, "incorrect checksum")
+        readonly = true
+        return result(true)
     }
 
     @Suppress("unused", "unused_parameter")
@@ -104,13 +102,11 @@ class EEPROM : ManagedEnvironmentKt(), DeviceInfo {
     @Suppress("unused")
     @Callback(doc = """function(data:string) -- Overwrite the currently stored byte array.""")
     fun setData(context: Context, args: Arguments): Result? {
-        if (!node!!.tryChangeBuffer(-Settings.get.eepromWriteCost)) {
-            return result(null, "not enough energy")
-        }
+        if (!node!!.tryChangeBuffer(-Settings.get.eepromWriteCost))
+            return result(Unit, "not enough energy")
         val newData = args.optByteArray(0, ByteArray(0))
-        if (newData.size > Settings.get.eepromDataSize) {
+        if (newData.size > Settings.get.eepromDataSize)
             throw IllegalArgumentException("not enough space")
-        }
         volatileData = newData
         context.pause(1.0) // deliberately slow to discourage use as normal storage medium
         return null

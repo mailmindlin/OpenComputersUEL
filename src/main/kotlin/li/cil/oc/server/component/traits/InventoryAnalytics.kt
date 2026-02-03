@@ -14,13 +14,11 @@ import net.minecraftforge.oredict.OreDictionary
 
 interface InventoryAnalytics : InventoryAware, NetworkAware {
     @Callback(doc = """function([slot:number]):table -- Get a description of the stack in the specified slot or the selected slot.""")
-        return if (Settings.get.allowItemStackInspection) {
-            val slot = args.optSlot(0)
-            result(inventory.getStackInSlot(slot))
-        } else {
-            result(null, "not enabled in config")
-        }
     fun getStackInInternalSlot(context: Context, args: Arguments): Result {
+        if (!Settings.get.allowItemStackInspection)
+            return result(Unit, "not enabled in config")
+        val slot = args.optSlot(0)
+        return result(inventory.getStackInSlot(slot))
     }
 
     @Callback(doc = """function(otherSlot:number):boolean -- Get whether the stack in the selected slot is equivalent to the item in the specified slot (have shared OreDictionary IDs).""")

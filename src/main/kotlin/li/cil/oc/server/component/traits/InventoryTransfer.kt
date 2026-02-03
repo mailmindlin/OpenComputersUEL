@@ -52,11 +52,8 @@ interface InventoryTransfer : WorldAware, SideRestricted {
             )
         }
 
-        return if (extractor != null) {
-            result(extractor())
-        } else {
-            result(null, "no inventory")
-        }
+        extractor ?: return result(Unit, "no inventory")
+        return result(extractor())
     }
 
     @Callback(doc = """function(sourceSide:number, sinkSide:number[, count:number [, sourceTank:number]]):boolean, number -- Transfer some fluid between two tanks. Returns operation result and filled amount""")

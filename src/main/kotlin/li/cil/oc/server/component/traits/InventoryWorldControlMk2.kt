@@ -19,26 +19,24 @@ interface InventoryWorldControlMk2 : InventoryAware, WorldAware, SideRestricted 
         val fromSide = args.optSideAny(3, facing.opposite)
         val stack = inventory.getStackInSlot(selectedSlot)
 
-        if (!stack.isEmpty && stack.count > 0) {
-            return withInventory(position.offset(facing), fromSide) { targetInventory ->
-                val slot = args.checkSlot(targetInventory, 1)
-                if (!InventoryUtils.insertIntoInventorySlot(stack, targetInventory, slot, count)) {
-                    // Cannot drop into that inventory.
-                    return@withInventory result(false, "inventory full/invalid slot")
-                } else if (stack.count == 0) {
-                    // Dropped whole stack.
-                    this.inventory.setInventorySlotContents(selectedSlot, ItemStack.EMPTY)
-                } else {
-                    // Dropped partial stack.
-                    this.inventory.markDirty()
-                }
-
-                context.pause(Settings.get.dropDelay)
-                result(true)
+        if (stack.isEmpty || stack.count <= 0)
+            return result(false)
+        return withInventory(position.offset(facing), fromSide) { targetInventory ->
+            val slot = args.checkSlot(targetInventory, 1)
+            if (!InventoryUtils.insertIntoInventorySlot(stack, targetInventory, slot, count)) {
+                // Cannot drop into that inventory.
+                return@withInventory result(false, "inventory full/invalid slot")
+            } else if (stack.count == 0) {
+                // Dropped whole stack.
+                this.inventory.setInventorySlotContents(selectedSlot, ItemStack.EMPTY)
+            } else {
+                // Dropped partial stack.
+                this.inventory.markDirty()
             }
-        }
 
-        return result(false)
+            context.pause(Settings.get.dropDelay)
+            result(true)
+        }
     }
 
     @Callback(doc = """function(facing:number, slot:number[, count:number[, fromSide:number]]):boolean -- Sucks items from the specified slot of an inventory.""")
@@ -77,7 +75,7 @@ interface InventoryWorldControlMk2 : InventoryAware, WorldAware, SideRestricted 
         return if (inventorySource != null && mayInteract(inventorySource)) {
             f(inventorySource.inventory)
         } else {
-            result(null, "no inventory")
+            result(Unit, "no inventory")
         }
     }
 }

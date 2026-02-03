@@ -317,7 +317,7 @@ open class GraphicsCard(val tier: Int): ManagedEnvironmentKt(), DeviceInfo {
   fun bind(context: Context, args: Arguments): Result {
     val address = args.checkString(0)
     val reset = args.optBoolean(1, true)
-    val host = (node!!.network().node(address)
+    val host = (node!!.network()!!.node(address)
       ?: return result(Unit, "invalid address"))
       .host() as? TextBuffer
       ?: return result(Unit, "not a screen");
