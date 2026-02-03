@@ -35,7 +35,7 @@ internal class Drone(
 
     protected var powerButton: ImageButton? = null
 
-    private val buffer = TextBuffer(20, 2, PackedColor.SingleBitFormat(0x33FF33u))
+    private val buffer = TextBufferData(20, 2, PackedColor.SingleBitFormat(0x33FF33u))
     private val bufferRenderer = object : TextBufferRenderData {
         private var _dirty = true
 
@@ -105,7 +105,7 @@ internal class Drone(
         RenderState.popAttrib()
     }
 
-    override fun changeSize(w: Double, h: Double, recompile: Boolean): Double = 2.0
+    override fun changeSize(w: Int, h: Int, recompile: Boolean): Double = 2.0
 
     override fun drawSecondaryForegroundLayer(mouseX: Int, mouseY: Int) {
         drawBufferLayer()
