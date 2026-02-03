@@ -14,3 +14,6 @@ internal object SideTracker {
         .isServer || serverThreads.contains(Thread.currentThread())
     fun isClient(): Boolean = !isServer()
 }
+
+internal inline fun <T> SideTracker.serverOnly(f: () -> T): T?
+    = if (isServer()) f() else null
