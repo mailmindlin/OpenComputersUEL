@@ -111,6 +111,8 @@ dependencies {
         exclude module: "ForgeMultipart"
     }
 
+    compileOnly('curse.maven:top-245211:2667280')
+
     implementation(':OC-LuaJ:20220907.1')
     implementation(':OC-JNLua:20230530.0')
     implementation(':OC-JNLua-Natives:20220928.1')

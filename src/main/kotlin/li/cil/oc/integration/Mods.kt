@@ -52,6 +52,7 @@ internal object Mods {
   internal val Thaumcraft = SimpleMod(IDs.Thaumcraft)
   internal val Charset = SimpleMod(IDs.Charset)
   internal val WirelessRedstoneCBE = SimpleMod(IDs.WirelessRedstoneCBE)
+  internal val TheOneProbe = SimpleMod(IDs.TheOneProbe)
 
   // ----------------------------------------------------------------------- //
 
@@ -71,6 +72,7 @@ internal object Mods {
     li.cil.oc.integration.mekanism.gas.ModMekanismGas,
     li.cil.oc.integration.minecraft.ModMinecraft,
     li.cil.oc.integration.waila.ModWaila,
+    li.cil.oc.integration.top.ModTheOneProbe,
     li.cil.oc.integration.projectred.ModProjectRed,
     li.cil.oc.integration.computercraft.ModComputerCraft,
     li.cil.oc.integration.enderstorage.ModEnderStorage,
@@ -127,6 +129,7 @@ internal object Mods {
     const val Thaumcraft = "thaumcraft"
     const val Charset = "charset"
     const val WirelessRedstoneCBE = "wrcbe"
+    const val TheOneProbe = "theoneprobe"
   }
 
   // ----------------------------------------------------------------------- //
