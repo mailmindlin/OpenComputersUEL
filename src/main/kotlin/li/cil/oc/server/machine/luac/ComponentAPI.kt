@@ -1,5 +1,6 @@
 package li.cil.oc.server.machine.luac
 
+import li.cil.oc.OpenComputers
 import li.cil.oc.api.network.Component
 
 class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
@@ -10,15 +11,20 @@ class ComponentAPI(owner: NativeLuaArchitecture): NativeLuaAPI(owner) {
       synchronized(components) {
         val filter = if (lua.isString(1)) lua.toString(1) else null
         val exact = if (lua.isBoolean(2)) lua.toBoolean(2) else true
+
+        val found = mutableListOf<Pair<String, String>>()
+
         lua.newTable(0, components.size)
-        fun matches (name: String) = if (exact) name == filter!! else name.contains(filter!!)
+        fun matches (name: String) = filter == null || if (exact) name == filter else name.contains(filter!!)
         for ((address, name) in components) {
-        if (filter?.isEmpty() != false || matches(name)) {
-          lua.pushString(address)
-          lua.pushString(name)
-          lua.rawSet(-3)
+          if (matches(name)) {
+            found.add(address to name)
+            lua.pushString(address)
+            lua.pushString(name)
+            lua.rawSet(-3)
+          }
         }
-      }
+        OpenComputers.log.debug("component.list(\"$filter\", $exact) -> {${found.joinToString { (address, name) -> "$address -> $name" }}}")
         1
       }
     }

@@ -28,19 +28,19 @@ class ComponentAPI(owner: LuaJLuaArchitecture): LuaJAPI(owner) {
 
     component.setClosure("type") { args ->
       synchronized(components) {
-        when (val name = components[args.checkjstring(1)]) {
-          is String -> LuaValue.valueOf(name)
-          else -> luaError("no such component")
-        }
+        val address = args.checkjstring(1)
+        val name = components[address] ?: return@synchronized luaError("no such component")
+        LuaValue.valueOf(name)
       }
     }
 
     component.setClosure("slot") { args ->
       synchronized(components) {
-        when (val address = components[args.checkjstring(1)]) {
-          is String -> LuaValue.valueOf(machine.host().componentSlot(address))
-          else -> luaError("no such component")
-        }
+        val address = args.checkjstring(1)
+        if (address in components)
+          LuaValue.valueOf(machine.host().componentSlot(address))
+        else
+          luaError("no such component")
       }
     }
 
