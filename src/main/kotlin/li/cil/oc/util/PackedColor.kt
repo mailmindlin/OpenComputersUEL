@@ -123,7 +123,7 @@ object PackedColor {
 
         override fun load(nbt: NBTTagCompound) {
             val loaded = nbt.getIntArray("palette")
-            System.arraycopy(loaded, 0, palette, 0, min(loaded.size, palette.size))
+            System.arraycopy(loaded, 0, palette.asIntArray(), 0, min(loaded.size, palette.size))
         }
 
         override fun save(nbt: NBTTagCompound) {
