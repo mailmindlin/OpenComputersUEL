@@ -2,6 +2,7 @@ package li.cil.oc.util
 
 import com.google.common.net.InetAddresses
 import java.net.InetAddress
+import kotlin.jvm.Throws
 
 // Originally by SquidDev
 internal class InetAddressRange private constructor(private val min: ByteArray, private val max: ByteArray) {
@@ -19,17 +20,12 @@ internal class InetAddressRange private constructor(private val min: ByteArray, 
 
     companion object {
         @JvmStatic
+        @Throws(IllegalArgumentException::class)
         fun parse(addressStr: String, prefixSizeStr: String): InetAddressRange {
-            val prefixSize: Int
-            try {
-                prefixSize = prefixSizeStr.toInt()
+            val prefixSize = try {
+                prefixSizeStr.toUInt().toInt()
             } catch (e: NumberFormatException) {
-                throw IllegalArgumentException(
-                    String.format(
-                        "Malformed address range entry '%s': Cannot extract size of CIDR mask from '%s'.",
-                        "$addressStr/$prefixSizeStr", prefixSizeStr
-                    )
-                )
+                throw IllegalArgumentException("Malformed address range entry '$addressStr/$prefixSizeStr': Cannot extract size of CIDR mask from '$prefixSizeStr'.", e)
             }
 
             val address = try {
