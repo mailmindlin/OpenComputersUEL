@@ -43,7 +43,7 @@ internal open class TextSegment(override val parent: Segment?, override val text
             if (match.range.first > textStart) {
                 result.add(TextSegment(this, text.substring(textStart, match.range.first)))
             }
-            textStart = match.range.last
+            textStart = match.range.last + 1
 
             // Create segment for formatted text.
             result.add(factory(this, match))
