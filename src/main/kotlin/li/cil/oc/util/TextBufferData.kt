@@ -10,12 +10,22 @@ import kotlin.math.max
 import kotlin.math.min
 
 /**
- * This stores chars in a 2D-Array and provides some manipulation functions.
+ * A 2D text buffer that stores characters and their associated colors, optimized for terminal-like displays.
  *
- * The main purpose of this is to allow moving most implementation detail to
- * the Lua side while keeping bandwidth costs low and still allowing for
- * relatively fast updates, given a smart algorithm (using copy()/fill()
- * instead of set()ing everything).
+ * This class provides efficient storage and manipulation of a character grid with per-cell color information.
+ * It's designed to minimize bandwidth costs by supporting bulk operations (copy, fill) rather than requiring
+ * individual cell updates. The buffer handles:
+ * - Wide characters (e.g., CJK characters that occupy 2 columns)
+ * - Multiple color depth formats (1-bit, 4-bit, 8-bit)
+ * - Efficient resizing with data preservation
+ * - NBT serialization for persistence
+ *
+ * @property width The current width of the buffer in columns (minimum 1)
+ * @property height The current height of the buffer in rows (minimum 1)
+ * @param initialFormat The color format to use for color packing
+ *
+ * @see PackedColor for color encoding details
+ * @see FontUtils.wcwidth for wide character handling
  */
 internal class TextBufferData(var width: Int, var height: Int, initialFormat: PackedColor.ColorFormat) {
     constructor(size: ScreenResolution, format: PackedColor.ColorFormat) : this(size.width, size.height, format)
@@ -166,7 +176,25 @@ internal class TextBufferData(var width: Int, var height: Int, initialFormat: Pa
         return changed
     }
 
-    /** Copies a portion of the buffer. */
+    /**
+     * Copies a rectangular region to another location within the buffer.
+     *
+     * This handles overlapping regions correctly by choosing the appropriate iteration direction.
+     * When copying a region that overlaps with its destination, the algorithm iterates in a
+     * direction that ensures source data isn't overwritten before being copied.
+     *
+     * Wide characters at region boundaries are handled specially:
+     * - If a wide character at the left edge of the destination would be split, it's cleared
+     * - Copied wide characters have their second column filled with spaces
+     *
+     * @param col Source column (0-indexed)
+     * @param row Source row (0-indexed)
+     * @param w Width of region
+     * @param h Height of region
+     * @param tx Horizontal translation offset
+     * @param ty Vertical translation offset
+     * @return true if any cells changed
+     */
     fun copy(col: Int, row: Int, w: Int, h: Int, tx: Int, ty: Int): Boolean {
         // Anything to do at all?
         if (w <= 0 || h <= 0) return false
@@ -222,7 +250,21 @@ internal class TextBufferData(var width: Int, var height: Int, initialFormat: Pa
         return changed
     }
 
-    // copy a portion of another buffer into this buffer
+    /**
+     * Copies a region from another buffer into this one.
+     *
+     * IMPORTANT: Unlike other methods, this uses 1-based indexing for Lua compatibility.
+     * If the source buffer has a different color format, colors are automatically converted.
+     *
+     * @param col Destination column in this buffer (1-based, not 0-based!)
+     * @param row Destination row in this buffer (1-based, not 0-based!)
+     * @param w Width of region
+     * @param h Height of region
+     * @param src Source buffer
+     * @param fromCol Source column (1-based, not 0-based!)
+     * @param fromRow Source row (1-based, not 0-based!)
+     * @return true if any cells changed
+     */
     fun rawcopy(col: Int, row: Int, w: Int, h: Int, src: TextBufferData, fromCol: Int, fromRow: Int): Boolean {
         var changed = false
         val colIndex = col - 1
@@ -251,6 +293,14 @@ internal class TextBufferData(var width: Int, var height: Int, initialFormat: Pa
         return changed
     }
 
+    /**
+     * Sets a character at position x, handling wide characters correctly.
+     *
+     * Wide character handling:
+     * - If the character is wide (2 columns), the next column is filled with space
+     * - Wide characters cannot be placed in the rightmost column
+     * - If placing this character would overwrite the second half of a wide char to the left, that char is cleared
+     */
     private fun setChar(line: IntArray, lineColor: ShortArray, x: Int, c: Int) {
         if (FontUtils.wcwidth(c) > 1 && x >= line.size - 1) {
             // Don't allow setting wide chars in right-most col.
