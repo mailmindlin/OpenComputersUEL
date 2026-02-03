@@ -17,4 +17,6 @@ internal class HeaderSegment(parent: Segment?, text: String, val level: Int) : T
         MarkupFormat.Markdown -> "${"#".repeat(level)} $text"
         MarkupFormat.IGWMod -> "[prefix{l}]$text [prefix{}]"
     }
+
+    override fun toString(): String = "HeaderSegment(level=$level, text=\"$text\")"
 }

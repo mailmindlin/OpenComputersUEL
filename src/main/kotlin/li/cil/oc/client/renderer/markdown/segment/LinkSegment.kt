@@ -28,6 +28,7 @@ internal class LinkSegment(parent: Segment?, text: String, val url: String) : Te
             return if (timeSinceHover > fadeTime) color
             else fadeColor(hoverColor, color, timeSinceHover / fadeTime.toFloat())
         }
+    internal val colorForTesting get() = color
 
     override val tooltip: String
         get() = url
@@ -72,4 +73,5 @@ internal class LinkSegment(parent: Segment?, text: String, val url: String) : Te
             if (url.startsWith("http://") || url.startsWith("https://")) text
             else "[link{${OpenComputers.ID}:$url}]$text [link{}]"
     }
+    override fun toString(): String = "LinkSegment(text=\"$text\", url=\"$url\")"
 }

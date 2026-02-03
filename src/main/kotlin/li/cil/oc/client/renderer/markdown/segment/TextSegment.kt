@@ -75,6 +75,9 @@ internal open class TextSegment(override val parent: Segment?, override val text
     protected open val format: String
         get() = ""
 
+    internal val formatForTesting: String get() = format
+    internal val scaleForTesting: Float? get() = scale
+
     private val resolvedColor: Int
         get() = color ?: (parent as? TextSegment)?.resolvedColor ?: 0xDDDDDD
 
@@ -86,4 +89,6 @@ internal open class TextSegment(override val parent: Segment?, override val text
 
     private val resolvedInteractive: InteractiveSegment?
         get() = this as? InteractiveSegment ?: (parent as? TextSegment)?.resolvedInteractive
+
+    override fun toString(): String = "${javaClass.simpleName}(text=\"$text\")"
 }
