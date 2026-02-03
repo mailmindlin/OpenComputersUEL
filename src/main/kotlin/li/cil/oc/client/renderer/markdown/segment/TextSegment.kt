@@ -79,7 +79,7 @@ internal open class TextSegment(override val parent: Segment?, override val text
         get() = color ?: (parent as? TextSegment)?.resolvedColor ?: 0xDDDDDD
 
     private val resolvedScale: Float
-        get() = (parent as? TextSegment)?.let { scale ?: 1f * it.resolvedScale } ?: 1f
+        get() = (parent as? TextSegment)?.let { (scale ?: 1f) * it.resolvedScale } ?: 1f
 
     private val resolvedFormat: String
         get() = (parent as? TextSegment)?.let { it.resolvedFormat + format } ?: format
