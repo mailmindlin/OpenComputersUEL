@@ -101,7 +101,7 @@ object GameTimeFormatter {
     }
 
     @JvmStatic
-    fun mktime(year: Int, mon: Int, mday: Int, hour: Int, min: Int, sec: Int): Int? {
+    fun mktime(year: Int, mon: Int, mday: Int, hour: Int, min: Int, sec: Int): Int {
         val calendar = GregorianCalendar(TimeZone.getTimeZone("UTC"))
         calendar.set(Calendar.YEAR, year)
         calendar.set(Calendar.MONTH, mon - 1)
