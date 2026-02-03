@@ -21,8 +21,7 @@ import li.cil.oc.util.checkSideForAction
 import li.cil.oc.common.tileentity.Robot as RobotTileEntity
 
 object UpgradeInventoryController {
-
-    interface Common : DeviceInfo {
+    sealed class Common() : ManagedEnvironmentKt(), DeviceInfo, WorldAware, SideRestricted {
         override fun getDeviceInfo() = Companion.deviceInfo
         companion object {
             val deviceInfo = mapOf(
@@ -34,7 +33,7 @@ object UpgradeInventoryController {
         }
     }
 
-    class Adapter(val host: EnvironmentHost) : ManagedEnvironmentKt(), WorldInventoryAnalytics, Common {
+    class Adapter(val host: EnvironmentHost) : Common(), WorldInventoryAnalytics {
         override val node = nodeFactory(Visibility.Network)
             .withComponent("inventory_controller", Visibility.Network)
             .create()
@@ -46,11 +45,11 @@ object UpgradeInventoryController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    class Drone(val host: EnvironmentHost) : ManagedEnvironmentKt(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
+    class Drone(val host: EnvironmentHost) : Common(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl {
         private val agent: Agent
             get() = host as Agent
 
-        override val node: Node = nodeFactory(Visibility.Network)
+        override val node: Component? = nodeFactory(Visibility.Network)
             .withComponent("inventory_controller", Visibility.Neighbors)
             .create()
 
@@ -67,7 +66,7 @@ object UpgradeInventoryController {
         override fun checkSideForAction(args: Arguments, n: Int) = args.checkSideAny(n)
     }
 
-    class Robot(val host: RobotTileEntity) : ManagedEnvironmentKt(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl, Common {
+    class Robot(val host: RobotTileEntity) : Common(), InventoryAnalytics, InventoryWorldControlMk2, WorldInventoryAnalytics, ItemInventoryControl {
         override val node = nodeFactory(Visibility.Network)
             .withComponent("inventory_controller", Visibility.Neighbors)
             .create()
