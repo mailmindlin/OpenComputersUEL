@@ -14,7 +14,8 @@ import li.cil.oc.api.network.SidedEnvironment
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.traits.*
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.init.SoundEvents
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -150,7 +151,7 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(settings:table):table -- set open state (true/false) of all sides in an array; index by direction. Returns previous states")
-    fun setSides(context: Context, args: Arguments): Array<Any?> {
+    fun setSides(context: Context, args: Arguments): Result {
         val settings = args.checkTable(0)
         val previous = currentStatus()
         for (side in EnumFacing.VALUES) {
@@ -168,9 +169,9 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = "function():table -- Returns current open/close state of all sides in an array, indexed by direction.")
-    fun getSides(context: Context, args: Arguments): Array<Any?> = result(currentStatus())
+    fun getSides(context: Context, args: Arguments): Result = result(currentStatus())
 
-    private fun setSideHelper(args: Arguments, value: Boolean): Array<Any?> {
+    private fun setSideHelper(args: Arguments, value: Boolean): Result {
         val sideIndex = args.checkInteger(0)
         if (sideIndex < 0 || sideIndex > 5)
             return result(Unit, "invalid direction")
@@ -180,9 +181,9 @@ class NetSplitter : TileEntityBase.TEEnvironmentBase(), TraitOpenSides, TraitRed
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(side: number):boolean -- Open the side, returns true if it changed to open.")
-    fun open(context: Context, args: Arguments): Array<Any?> = setSideHelper(args, value = true)
+    fun open(context: Context, args: Arguments): Result = setSideHelper(args, value = true)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = "function(side: number):boolean -- Close the side, returns true if it changed to close.")
-    fun close(context: Context, args: Arguments): Array<Any?> = setSideHelper(args, value = false)
+    fun close(context: Context, args: Arguments): Result = setSideHelper(args, value = false)
 }

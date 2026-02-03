@@ -32,7 +32,8 @@ import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
 import li.cil.oc.integration.Mods
 import li.cil.oc.integration.opencomputers.DriverLinkedCard
 import li.cil.oc.server.PacketSender
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.server.network.QuantumNetwork
 import li.cil.oc.server.network.QuantumNode
 import li.cil.oc.util.setNewTagList
@@ -135,22 +136,22 @@ class Relay : TileEntityBase.TEEnvironmentBase(), TraitHub, TraitComponentInvent
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- Get the signal strength (range) used when relaying messages.""")
-    fun getStrength(context: Context, args: Arguments): Array<Any?> = synchronized(this) { result(strength) }
+    fun getStrength(context: Context, args: Arguments): Result = synchronized(this) { result(strength) }
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(strength:number):number -- Set the signal strength (range) used when relaying messages.""")
-    fun setStrength(context: Context, args: Arguments): Array<Any?> = synchronized(this) {
+    fun setStrength(context: Context, args: Arguments): Result = synchronized(this) {
         strength = Math.max(0.0, Math.min(args.checkDouble(0), maxWirelessRange))
         result(strength)
     }
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():boolean -- Get whether the access point currently acts as a repeater (resend received wireless packets wirelessly).""")
-    fun isRepeater(context: Context, args: Arguments): Array<Any?> = synchronized(this) { result(isRepeater) }
+    fun isRepeater(context: Context, args: Arguments): Result = synchronized(this) { result(isRepeater) }
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(enabled:boolean):boolean -- Set whether the access point should act as a repeater.""")
-    fun setRepeater(context: Context, args: Arguments): Array<Any?> = synchronized(this) {
+    fun setRepeater(context: Context, args: Arguments): Result = synchronized(this) {
         isRepeater = args.checkBoolean(0)
         result(isRepeater)
     }

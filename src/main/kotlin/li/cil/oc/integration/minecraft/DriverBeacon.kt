@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.block.Block
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
@@ -32,17 +33,17 @@ object DriverBeacon : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(doc = "function():number -- Get the number of levels for this beacon.")
-        fun getLevels(context: Context, args: Arguments): Array<Any?> {
+        fun getLevels(context: Context, args: Arguments): Result {
             return result(tileEntity.getField(0))
         }
 
         @Callback(doc = "function():string -- Get the name of the active primary effect.")
-        fun getPrimaryEffect(context: Context, args: Arguments): Array<Any?> {
+        fun getPrimaryEffect(context: Context, args: Arguments): Result {
             return result(getEffectName(tileEntity.getField(1)))
         }
 
         @Callback(doc = "function():string -- Get the name of the active secondary effect.")
-        fun getSecondaryEffect(context: Context, args: Arguments): Array<Any?> {
+        fun getSecondaryEffect(context: Context, args: Arguments): Result {
             return result(getEffectName(tileEntity.getField(2)))
         }
 

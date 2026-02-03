@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.block.Block
 import net.minecraft.block.material.Material
 import net.minecraft.init.Blocks
@@ -32,18 +33,18 @@ object DriverNoteBlock : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(direct = true, doc = "function():number -- Get the currently set pitch on this note block.")
-        fun getPitch(context: Context, args: Arguments): Array<Any?> {
+        fun getPitch(context: Context, args: Arguments): Result {
             return result(tileEntity.note + 1)
         }
 
         @Callback(doc = "function(value:number) -- Set the pitch for this note block. Must be in the interval [1, 25].")
-        fun setPitch(context: Context, args: Arguments): Array<Any?> {
+        fun setPitch(context: Context, args: Arguments): Result {
             setPitch(args.checkInteger(0))
             return result(true)
         }
 
         @Callback(doc = "function([pitch:number]):boolean -- Triggers the note block if possible. Allows setting the pitch for to save a tick.")
-        fun trigger(context: Context, args: Arguments): Array<Any?> {
+        fun trigger(context: Context, args: Arguments): Result {
             if (args.count() > 0 && args.checkAny(0) != null) {
                 setPitch(args.checkInteger(0))
             }

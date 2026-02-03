@@ -21,8 +21,10 @@ import li.cil.oc.common.tileentity.traits.ComponentInventory
 import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.ComponentInventory as TraitComponentInventory
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.server.component.result
+import li.cil.oc.util.result
 import li.cil.oc.util.InventoryUtils
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.item.ItemStack
@@ -73,8 +75,9 @@ class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, T
 
     override fun node() = node
 
+    @Suppress("unused_parameter")
     @Callback(doc = "function():boolean -- Checks whether some medium is currently in the drive.")
-    fun isEmpty(context: Context, args: Arguments): Array<Any?> {
+    fun isEmpty(context: Context, args: Arguments): Result {
         return result(filesystemNode == null)
     }
 
@@ -98,7 +101,7 @@ class DiskDrive : TileEntityBase.TEEnvironmentBase(), TraitComponentInventory, T
     }
 
     @Callback(doc = "function(): string -- Return the internal floppy disk address")
-    fun media(context: Context, args: Arguments): Array<Any?> {
+    fun media(context: Context, args: Arguments): Result {
         val fsNode = filesystemNode ?: return result(Unit, "drive is empty")
         return result(fsNode.address())
     }

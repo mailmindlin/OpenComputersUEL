@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.block.Block
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
@@ -32,12 +33,12 @@ object DriverCommandBlock : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(direct = true, doc = "function():string -- Get the command currently set in this command block.")
-        fun getCommand(context: Context, args: Arguments): Array<Any?> {
+        fun getCommand(context: Context, args: Arguments): Result {
             return result(tileEntity.commandBlockLogic.command)
         }
 
         @Callback(doc = "function(value:string) -- Set the specified command for the command block.")
-        fun setCommand(context: Context, args: Arguments): Array<Any?> {
+        fun setCommand(context: Context, args: Arguments): Result {
             tileEntity.commandBlockLogic.command = args.checkString(0)
             tileEntity.world.notifyBlockUpdate(
                 tileEntity.pos,
@@ -49,7 +50,7 @@ object DriverCommandBlock : DriverSidedTileEntity() {
         }
 
         @Callback(doc = "function():number -- Execute the currently set command. This has a slight delay to allow the command block to properly update.")
-        fun executeCommand(context: Context, args: Arguments): Array<Any?> {
+        fun executeCommand(context: Context, args: Arguments): Result {
             context.pause(0.1)
             return if (!FMLCommonHandler.instance().minecraftServerInstance.isCommandBlockEnabled) {
                 result(null, "command blocks are disabled")

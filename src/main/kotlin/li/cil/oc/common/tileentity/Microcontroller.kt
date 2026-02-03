@@ -2,22 +2,14 @@ package li.cil.oc.common.tileentity
 
 import li.cil.oc.Constants
 import li.cil.oc.Settings
-import li.cil.oc.api.Items as ApiItems
-import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.api.Items
 import li.cil.oc.api.driver.DeviceInfo
 import li.cil.oc.api.driver.DeviceInfo.DeviceAttribute
 import li.cil.oc.api.driver.DeviceInfo.DeviceClass
-import li.cil.oc.api.internal.Microcontroller as InternalMicrocontroller
 import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
-import li.cil.oc.api.machine.Machine
-import li.cil.oc.api.network.Component
-import li.cil.oc.api.network.ComponentConnector
-import li.cil.oc.api.network.Connector
-import li.cil.oc.api.network.Message
-import li.cil.oc.api.network.Node
-import li.cil.oc.api.network.Visibility
+import li.cil.oc.api.network.*
 import li.cil.oc.common.Tier
 import li.cil.oc.common.item.data.MicrocontrollerData
 import li.cil.oc.common.tileentity.traits.Computer
@@ -25,7 +17,6 @@ import li.cil.oc.common.tileentity.traits.Hub
 import li.cil.oc.common.tileentity.traits.isServer
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
-import li.cil.oc.server.component.result
 import li.cil.oc.util.*
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.inventory.ISidedInventory
@@ -35,7 +26,10 @@ import net.minecraft.util.EnumFacing
 import net.minecraftforge.common.util.Constants.NBT
 import net.minecraftforge.fml.relauncher.Side
 import net.minecraftforge.fml.relauncher.SideOnly
-import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
+import li.cil.oc.api.Network as ApiNetwork
+import li.cil.oc.api.internal.Microcontroller as InternalMicrocontroller
 import li.cil.oc.common.tileentity.traits.Hub as TraitHub
 import li.cil.oc.common.tileentity.traits.PowerAcceptor as TraitPowerAcceptor
 
@@ -127,34 +121,34 @@ class Microcontroller : Computer(), TraitPowerAcceptor, TraitHub, ISidedInventor
 
     @Suppress("unused_parameter")
     @Callback(doc = """function():boolean -- Starts the microcontroller. Returns true if the state changed.""")
-    fun start(context: Context, args: Arguments): Array<Any?> =
+    fun start(context: Context, args: Arguments): Result =
         result(!machine!!.isPaused && machine!!.start())
 
     @Suppress("unused_parameter")
     @Callback(doc = """function():boolean -- Stops the microcontroller. Returns true if the state changed.""")
-    fun stop(context: Context, args: Arguments): Array<Any?> =
+    fun stop(context: Context, args: Arguments): Result =
         result(machine!!.stop())
 
     @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function():boolean -- Returns whether the microcontroller is running.""")
-    fun isRunning(context: Context, args: Arguments): Array<Any?> =
+    fun isRunning(context: Context, args: Arguments): Result =
         result(machine!!.isRunning)
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():string -- Returns the reason the microcontroller crashed, if applicable.""")
-    fun lastError(context: Context, args: Arguments): Array<Any?> =
+    fun lastError(context: Context, args: Arguments): Result =
         result(machine!!.lastError())
 
     @Suppress("unused_parameter")
     @Callback(direct = true, doc = """function(side:number):boolean -- Get whether network messages are sent via the specified side.""")
-    fun isSideOpen(context: Context, args: Arguments): Array<Any?> {
+    fun isSideOpen(context: Context, args: Arguments): Result {
         val side = args.checkSideExcept(0, facing)
         return result(outputSides[side.ordinal])
     }
 
     @Suppress("unused_parameter")
     @Callback(doc = """function(side:number, open:boolean):boolean -- Set whether network messages are sent via the specified side.""")
-    fun setSideOpen(context: Context, args: Arguments): Array<Any?> {
+    fun setSideOpen(context: Context, args: Arguments): Result {
         val side = args.checkSideExcept(0, facing)
         val oldValue = outputSides[side.ordinal]
         outputSides[side.ordinal] = args.checkBoolean(1)

@@ -11,8 +11,8 @@ import li.cil.oc.api.network.Environment
 import li.cil.oc.api.network.Message
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
-import li.cil.oc.server.component.Result
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.tis3d.api.ManualAPI
 import li.cil.tis3d.api.SerialAPI
 import li.cil.tis3d.api.prefab.manual.ResourceContentProvider

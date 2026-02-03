@@ -16,8 +16,9 @@ import li.cil.oc.common.template.AssemblerTemplates
 import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.power.AppliedEnergistics2
 import li.cil.oc.common.tileentity.traits.power.IndustrialCraft2Experimental
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
 import li.cil.oc.util.notEmpty
+import li.cil.oc.util.result
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
@@ -131,7 +132,7 @@ class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitI
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(): string, number or boolean -- The current state of the assembler, `busy' or `idle', followed by the progress or template validity, respectively.""")
-    fun status(context: Context, args: Arguments): Array<Any?> {
+    fun status(context: Context, args: Arguments): Result {
         return if (isAssembling) {
             result("busy", progress)
         } else {
@@ -143,7 +144,7 @@ class Assembler : TileEntityBase.TEEnvironmentBase(), TraitPowerAcceptor, TraitI
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean -- Start assembling, if possible. Returns whether assembly was started or not.""")
-    fun start(context: Context, args: Arguments): Array<Any?> = result(start())
+    fun start(context: Context, args: Arguments): Result = result(start())
 
     // ----------------------------------------------------------------------- //
 

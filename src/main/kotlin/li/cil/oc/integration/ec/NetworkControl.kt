@@ -7,8 +7,8 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.integration.appeng.AEUtil
-import li.cil.oc.server.component.Result
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.tileentity.TileEntity
 
 // Note to self: this trait is used by ExtraCells (and potentially others), do not rename / drastically change it.
@@ -26,7 +26,7 @@ interface NetworkControl<AETile : TileEntity> where AETile : IActionHost, AETile
             val gases = storageList.filterNotNull().map { it.gasStack }.toTypedArray()
             result(*gases)
         } else {
-            result(emptyArray<Any>())
+            result()
         }
     }
 }

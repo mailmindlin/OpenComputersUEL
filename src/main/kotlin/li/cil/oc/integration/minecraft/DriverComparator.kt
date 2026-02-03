@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.init.Items
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntityComparator
@@ -30,7 +31,7 @@ object DriverComparator : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(doc = "function():number -- Get the strength of the comparators output signal.")
-        fun getOutputSignal(context: Context, args: Arguments): Array<Any?> {
+        fun getOutputSignal(context: Context, args: Arguments): Result {
             return result(tileEntity.outputSignal)
         }
     }

@@ -16,7 +16,8 @@ import li.cil.oc.common.tileentity.traits.PowerInformation
 import li.cil.oc.common.tileentity.traits.RotatableTile
 import li.cil.oc.server.agent.Player
 import li.cil.oc.server.PacketSender as ServerPacketSender
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraftforge.common.capabilities.Capability
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler
 import net.minecraftforge.fluids.capability.IFluidHandler
@@ -103,19 +104,19 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
     // ----------------------------------------------------------------------- //
 
     @Callback(doc = """function():boolean -- Starts the robot. Returns true if the state changed.""")
-    fun start(context: Context, args: Arguments): Array<Any?> =
+    fun start(context: Context, args: Arguments): Result =
         result(!machine().isPaused && machine().start())
 
     @Callback(doc = """function():boolean -- Stops the robot. Returns true if the state changed.""")
-    fun stop(context: Context, args: Arguments): Array<Any?> =
+    fun stop(context: Context, args: Arguments): Result =
         result(machine().stop())
 
     @Callback(direct = true, doc = """function():boolean -- Returns whether the robot is running.""")
-    fun isRunning(context: Context, args: Arguments): Array<Any?> =
+    fun isRunning(context: Context, args: Arguments): Result =
         result(machine().isRunning)
 
     @Callback(doc = "function(name: string):string -- Sets a new name and returns the old name. Robot must not be running")
-    fun setName(context: Context, args: Arguments): Array<Any?> {
+    fun setName(context: Context, args: Arguments): Result {
         val oldName = robot.name()
         val newName: String = args.checkString(0)
         if (machine().isRunning) return result(Unit, "is running")
@@ -125,7 +126,7 @@ class RobotProxy(val robot: Robot = Robot()) : TraitComputer(), TraitPowerInform
     }
 
     @Callback(doc = "function():string -- Returns the robot name.")
-    fun getName(context: Context, args: Arguments): Array<Any?> = result(robot.name())
+    fun getName(context: Context, args: Arguments): Result = result(robot.name())
 
     override fun onMessage(message: Message) {
         super.onMessage(message)

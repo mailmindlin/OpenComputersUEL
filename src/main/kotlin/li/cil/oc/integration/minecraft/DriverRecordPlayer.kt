@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.block.Block
 import net.minecraft.block.BlockJukebox
 import net.minecraft.init.Blocks
@@ -33,7 +34,7 @@ object DriverRecordPlayer : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(doc = "function():string -- Get the title of the record currently in the jukebox.")
-        fun getRecord(context: Context, args: Arguments): Array<Any?>? {
+        fun getRecord(context: Context, args: Arguments): Result? {
             val record = tileEntity.record
             return if (record != null && record.item is ItemRecord) {
                 result((record.item as ItemRecord).recordNameLocal)
@@ -41,7 +42,7 @@ object DriverRecordPlayer : DriverSidedTileEntity() {
         }
 
         @Callback(doc = "function() -- Start playing the record currently in the jukebox.")
-        fun play(context: Context, args: Arguments): Array<Any?>? {
+        fun play(context: Context, args: Arguments): Result? {
             val record = tileEntity.record
             return if (record != null && record.item is ItemRecord) {
                 tileEntity.world.playEvent(null, 1010, tileEntity.pos, Item.getIdFromItem(record.item))
@@ -50,7 +51,7 @@ object DriverRecordPlayer : DriverSidedTileEntity() {
         }
 
         @Callback(doc = "function() -- Stop playing the record currently in the jukebox.")
-        fun stop(context: Context, args: Arguments): Array<Any?>? {
+        fun stop(context: Context, args: Arguments): Result? {
             tileEntity.world.playEvent(1010, tileEntity.pos, 0)
             tileEntity.world.playRecord(tileEntity.pos, null)
             return null

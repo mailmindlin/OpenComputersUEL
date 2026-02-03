@@ -17,7 +17,8 @@ import li.cil.oc.common.item.data.PrintData
 import li.cil.oc.common.tileentity.traits.Inventory
 import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.isClient
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.util.notEmpty
 import li.cil.oc.util.setNewCompoundTag
 import net.minecraft.inventory.ISidedInventory
@@ -112,7 +113,7 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function() -- Resets the configuration of the printer and stop printing (current job will finish).""")
-    fun reset(context: Context, args: Arguments): Array<Any?>? {
+    fun reset(context: Context, args: Arguments): Result? {
         data = PrintData()
         isActive = false // Needs committing.
         return null
@@ -120,7 +121,7 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:string) -- Set a label for the block being printed.""")
-    fun setLabel(context: Context, args: Arguments): Array<Any?>? {
+    fun setLabel(context: Context, args: Arguments): Result? {
         data.label = args.optString(0, null)?.take(24)?.let { if (it.isEmpty()) null else it }
         isActive = false // Needs committing.
         return null
@@ -128,11 +129,11 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():string -- Get the current label for the block being printed.""")
-    fun getLabel(context: Context, args: Arguments): Array<Any?> = result(data.label)
+    fun getLabel(context: Context, args: Arguments): Result = result(data.label)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:string) -- Set a tooltip for the block being printed.""")
-    fun setTooltip(context: Context, args: Arguments): Array<Any?>? {
+    fun setTooltip(context: Context, args: Arguments): Result? {
         data.tooltip = args.optString(0, null)?.take(128)?.let { if (it.isEmpty()) null else it }
         isActive = false // Needs committing.
         return null
@@ -140,11 +141,11 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():string -- Get the current tooltip for the block being printed.""")
-    fun getTooltip(context: Context, args: Arguments): Array<Any?> = result(data.tooltip)
+    fun getTooltip(context: Context, args: Arguments): Result = result(data.tooltip)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:number) -- Set what light level the printed block should have.""")
-    fun setLightLevel(context: Context, args: Arguments): Array<Any?>? {
+    fun setLightLevel(context: Context, args: Arguments): Result? {
         data.lightLevel = args.checkInteger(0).coerceIn(0, Settings.get.maxPrintLightLevel)
         isActive = false // Needs committing.
         return null
@@ -152,11 +153,11 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():number -- Get which light level the printed block should have.""")
-    fun getLightLevel(context: Context, args: Arguments): Array<Any?> = result(data.lightLevel)
+    fun getLightLevel(context: Context, args: Arguments): Result = result(data.lightLevel)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:boolean or number) -- Set whether the printed block should emit redstone when in its active state.""")
-    fun setRedstoneEmitter(context: Context, args: Arguments): Array<Any?>? {
+    fun setRedstoneEmitter(context: Context, args: Arguments): Result? {
         data.redstoneLevel = if (args.isBoolean(0)) {
             if (args.checkBoolean(0)) 15 else 0
         } else {
@@ -168,11 +169,11 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean, number -- Get whether the printed block should emit redstone when in its active state.""")
-    fun isRedstoneEmitter(context: Context, args: Arguments): Array<Any?> = result(data.emitRedstone, data.redstoneLevel)
+    fun isRedstoneEmitter(context: Context, args: Arguments): Result = result(data.emitRedstone, data.redstoneLevel)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:boolean) -- Set whether the printed block should automatically return to its off state.""")
-    fun setButtonMode(context: Context, args: Arguments): Array<Any?>? {
+    fun setButtonMode(context: Context, args: Arguments): Result? {
         data.isButtonMode = args.checkBoolean(0)
         isActive = false // Needs committing.
         return null
@@ -180,11 +181,11 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean -- Get whether the printed block should automatically return to its off state.""")
-    fun isButtonMode(context: Context, args: Arguments): Array<Any?> = result(data.isButtonMode)
+    fun isButtonMode(context: Context, args: Arguments): Result = result(data.isButtonMode)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(collideOff:boolean, collideOn:boolean) -- Set whether the printed block should be collidable or not.""")
-    fun setCollidable(context: Context, args: Arguments): Array<Any?>? {
+    fun setCollidable(context: Context, args: Arguments): Result? {
         val collideOff = args.checkBoolean(0)
         val collideOn = args.checkBoolean(1)
         data.noclipOff = !collideOff
@@ -194,11 +195,11 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():boolean, boolean -- Get whether the printed block should be collidable or not.""")
-    fun isCollidable(context: Context, args: Arguments): Array<Any?> = result(!data.noclipOff, !data.noclipOn)
+    fun isCollidable(context: Context, args: Arguments): Result = result(!data.noclipOff, !data.noclipOn)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(minX:number, minY:number, minZ:number, maxX:number, maxY:number, maxZ:number, texture:string[, state:boolean=false][,tint:number]) -- Adds a shape to the printers configuration, optionally specifying whether it is for the off or on state.""")
-    fun addShape(context: Context, args: Arguments): Array<Any?> {
+    fun addShape(context: Context, args: Arguments): Result {
         if (data.stateOff.size > Settings.get.maxPrintComplexity || data.stateOn.size > Settings.get.maxPrintComplexity) {
             return result(Unit, "model too complex")
         }
@@ -241,15 +242,15 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():number -- Get the number of shapes in the current configuration.""")
-    fun getShapeCount(context: Context, args: Arguments): Array<Any?> = result(data.stateOff.size, data.stateOn.size)
+    fun getShapeCount(context: Context, args: Arguments): Result = result(data.stateOff.size, data.stateOn.size)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function():number -- Get the maximum allowed number of shapes.""")
-    fun getMaxShapeCount(context: Context, args: Arguments): Array<Any?> = result(Settings.get.maxPrintComplexity)
+    fun getMaxShapeCount(context: Context, args: Arguments): Result = result(Settings.get.maxPrintComplexity)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function([count:number]):boolean -- Commit and begin printing the current configuration.""")
-    fun commit(context: Context, args: Arguments): Array<Any?> {
+    fun commit(context: Context, args: Arguments): Result {
         if (!canPrint) {
             return result(Unit, "model invalid")
         }
@@ -260,7 +261,7 @@ class Printer : TileEntityBase.TEEnvironmentBase(), TraitInventory, TraitRotatab
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(): string, number or boolean -- The current state of the printer, `busy' or `idle', followed by the progress or model validity, respectively.""")
-    fun status(context: Context, args: Arguments): Array<Any?> {
+    fun status(context: Context, args: Arguments): Result {
         return when {
             isPrinting -> result("busy", progress)
             canPrint -> result("idle", true)

@@ -7,9 +7,10 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Component
 import li.cil.oc.api.network.ManagedEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
 import li.cil.oc.util.checkSideAny
 import li.cil.oc.util.optSlot
+import li.cil.oc.util.result
 import net.minecraft.item.ItemStack
 import net.minecraftforge.items.IItemHandler
 
@@ -17,7 +18,7 @@ interface PartEnvironmentBase : ManagedEnvironment {
   val host: IPartHost
 
   // function(side:number[, slot:number]):table
-  fun <PartType> getPartConfig(context: Context, args: Arguments): Array<Any?>
+  fun <PartType> getPartConfig(context: Context, args: Arguments): Result
     where PartType : ISegmentedInventory {
     val side = args.checkSideAny(0)
     return when (val part = host.getPart(side)) {
@@ -32,7 +33,7 @@ interface PartEnvironmentBase : ManagedEnvironment {
   }
 
   // function(side:number[, slot:number][, database:address, entry:number[, size:number]]):boolean
-  fun <PartType> setPartConfig(context: Context, args: Arguments): Array<Any?>
+  fun <PartType> setPartConfig(context: Context, args: Arguments): Result
     where PartType : ISegmentedInventory {
     val side = args.checkSideAny(0)
     return when (val part = host.getPart(side)) {

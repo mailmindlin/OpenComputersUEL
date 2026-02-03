@@ -11,6 +11,7 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.integration.ManagedTileEntityEnvironment
+import li.cil.oc.util.Result
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
@@ -39,11 +40,11 @@ object DriverImportBus : DriverBlock {
     override fun priority() = 1
 
     @Callback(doc = "function(side:number[, slot:number]):boolean -- Get the configuration of the import bus pointing in the specified direction.")
-    fun getImportConfiguration(context: Context, args: Arguments): Array<Any?> =
+    fun getImportConfiguration(context: Context, args: Arguments): Result =
       getPartConfig<ISegmentedInventory>(context, args)
 
     @Callback(doc = "function(side:number[, slot:number][, database:address, entry:number]):boolean -- Configure the import bus pointing in the specified direction to import item stacks matching the specified descriptor.")
-    fun setImportConfiguration(context: Context, args: Arguments): Array<Any?> =
+    fun setImportConfiguration(context: Context, args: Arguments): Result =
       setPartConfig<ISegmentedInventory>(context, args)
   }
 

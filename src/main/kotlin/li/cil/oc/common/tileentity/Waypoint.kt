@@ -6,14 +6,14 @@ import li.cil.oc.api.machine.Arguments
 import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Component
-import li.cil.oc.api.network.Node
 import li.cil.oc.api.network.Visibility
 import li.cil.oc.common.EventHandler
 import li.cil.oc.common.tileentity.traits.RedstoneAware
 import li.cil.oc.common.tileentity.traits.Rotatable
 import li.cil.oc.common.tileentity.traits.isClient
 import li.cil.oc.common.tileentity.traits.position
-import li.cil.oc.server.component.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import li.cil.oc.server.network.Waypoints
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.util.EnumFacing
@@ -37,16 +37,14 @@ class Waypoint: TileEntityBase.TEEnvironmentBase(), TraitRotatable, TraitRedston
     @JvmField
     var label = ""
 
-    override val validFacings: Array<EnumFacing> = EnumFacing.values()
-
     // ----------------------------------------------------------------------- //
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(): string -- Get the current label of this waypoint.""")
-    fun getLabel(context: Context, args: Arguments): Array<Any?> = result(label)
+    fun getLabel(context: Context, args: Arguments): Result = result(label)
 
     @Callback(doc = """function(value:string) -- Set the label for this waypoint.""")
-    fun setLabel(context: Context, args: Arguments): Array<Any?>? {
+    fun setLabel(context: Context, args: Arguments): Result? {
         label = args.checkString(0).take(32)
         context.pause(0.5)
         return null

@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.block.Block
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
@@ -31,7 +32,7 @@ object DriverMobSpawner : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(doc = "function():string -- Get the name of the entity that is being spawned by this spawner.")
-        fun getSpawningMobName(context: Context, args: Arguments): Array<Any?> {
+        fun getSpawningMobName(context: Context, args: Arguments): Result {
             return result(tileEntity.spawnerBaseLogic.entityId)
         }
     }

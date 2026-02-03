@@ -179,7 +179,7 @@ class Hologram @JvmOverloads constructor(
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function() -- Clears the hologram.""")
     @Synchronized
-    fun clear(context: Context, args: Arguments): Array<Any?>? {
+    fun clear(context: Context, args: Arguments): Result? {
         for (i in volume.indices) volume[i] = 0
         ServerPacketSender.sendHologramClear(this)
         resetDirtyFlag()
@@ -190,16 +190,16 @@ class Hologram @JvmOverloads constructor(
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function(x:number, y:number, z:number):number -- Returns the value for the specified voxel.""")
     @Synchronized
-    fun get(context: Context, args: Arguments): Array<Any?> {
         val (x, y, z) = checkCoordinates(args)
         return result(getColor(x, y, z))
+    fun get(context: Context, args: Arguments): Result {
     }
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, limit = 256, doc = """function(x:number, y:number, z:number, value:number or boolean) -- Set the value for the specified voxel.""")
     @Synchronized
-    fun set(context: Context, args: Arguments): Array<Any?>? {
         val (x, y, z) = checkCoordinates(args)
+    fun set(context: Context, args: Arguments): Result? {
         val value = checkColor(args, 3)
         setColor(x, y, z, value)
         return null
@@ -208,8 +208,8 @@ class Hologram @JvmOverloads constructor(
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, limit = 128, doc = """function(x:number, z:number[, minY:number], maxY:number, value:number or boolean) -- Fills an interval of a column with the specified value.""")
     @Synchronized
-    fun fill(context: Context, args: Arguments): Array<Any?>? {
         val (x, _, z) = checkCoordinates(args, 0, -1, 1)
+    fun fill(context: Context, args: Arguments): Result? {
         val (minY, maxY, value) = if (args.count() > 4) {
             Triple(
                 minOf(32, maxOf(1, args.checkInteger(2))),
@@ -236,7 +236,7 @@ class Hologram @JvmOverloads constructor(
     @Suppress("unused")
     @Callback(doc = """function(data:string) -- Set the raw buffer to the specified byte array, where each byte represents a voxel color. Nesting is x,z,y.""")
     @Synchronized
-    fun setRaw(context: Context, args: Arguments): Array<Any?>? {
+    fun setRaw(context: Context, args: Arguments): Result? {
         val data = args.checkByteArray(0)
         for (x in 0 until width) {
             for (z in 0 until width) {
@@ -264,8 +264,8 @@ class Hologram @JvmOverloads constructor(
 
     @Callback(doc = """function(x:number, z:number, sx:number, sz:number, tx:number, tz:number) -- Copies an area of columns by the specified translation.""")
     @Synchronized
-    fun copy(context: Context, args: Arguments): Array<Any?>? {
         val (x, _, z) = checkCoordinates(args, 0, -1, 1)
+    fun copy(context: Context, args: Arguments): Result? {
         val w = args.checkInteger(2)
         val h = args.checkInteger(3)
         val tx = args.checkInteger(4)
@@ -312,24 +312,24 @@ class Hologram @JvmOverloads constructor(
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- Returns the render scale of the hologram.""")
-    fun getScale(context: Context, args: Arguments): Array<Any?> = result(scale)
+    fun getScale(context: Context, args: Arguments): Result = result(scale)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(value:number) -- Set the render scale. A larger scale consumes more energy.""")
-    fun setScale(context: Context, args: Arguments): Array<Any?>? {
         scale = maxOf(0.333333, minOf(Settings.get.hologramMaxScaleByTier[tier], args.checkDouble(0)))
+    fun setScale(context: Context, args: Arguments): Result? {
         ServerPacketSender.sendHologramScale(this)
         return null
     }
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number, number, number -- Returns the relative render projection offsets of the hologram.""")
-    fun getTranslation(context: Context, args: Arguments): Array<Any?> =
+    fun getTranslation(context: Context, args: Arguments): Result =
         result(translation.x, translation.y, translation.z)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(tx:number, ty:number, tz:number) -- Sets the relative render projection offsets of the hologram.""")
-    fun setTranslation(context: Context, args: Arguments): Array<Any?>? {
+    fun setTranslation(context: Context, args: Arguments): Result? {
         val maxTranslation = Settings.get.hologramMaxTranslationByTier[tier]
         val tx = maxOf(-maxTranslation, minOf(maxTranslation, args.checkDouble(0)))
         val ty = maxOf(0.0, minOf(maxTranslation * 2, args.checkDouble(1)))
@@ -343,11 +343,11 @@ class Hologram @JvmOverloads constructor(
 
     @Suppress("unused", "unused_parameter")
     @Callback(direct = true, doc = """function():number -- The color depth supported by the hologram.""")
-    fun maxDepth(context: Context, args: Arguments): Array<Any?> = result(tier + 1)
+    fun maxDepth(context: Context, args: Arguments): Result = result(tier + 1)
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(index:number):number -- Get the color defined for the specified value.""")
-    fun getPaletteColor(context: Context, args: Arguments): Array<Any?> {
+    fun getPaletteColor(context: Context, args: Arguments): Result {
         val index = args.checkInteger(0)
         if (index < 1 || index > colors.size) throw ArrayIndexOutOfBoundsException()
         return result(convertColor(colors[index - 1]))
@@ -355,7 +355,7 @@ class Hologram @JvmOverloads constructor(
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(index:number, value:number):number -- Set the color defined for the specified value.""")
-    fun setPaletteColor(context: Context, args: Arguments): Array<Any?> {
+    fun setPaletteColor(context: Context, args: Arguments): Result {
         val index = args.checkInteger(0)
         if (index < 1 || index > colors.size) throw ArrayIndexOutOfBoundsException()
         val value = args.checkInteger(1)
@@ -367,7 +367,7 @@ class Hologram @JvmOverloads constructor(
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(angle:number, x:number, y:number, z:number):boolean -- Set the base rotation of the displayed hologram.""")
-    fun setRotation(context: Context, args: Arguments): Array<Any?> {
+    fun setRotation(context: Context, args: Arguments): Result {
         return if (tier > 0) {
             val r = args.checkDouble(0) % 360
             val x = args.checkDouble(1)
@@ -388,7 +388,6 @@ class Hologram @JvmOverloads constructor(
 
     @Suppress("unused", "unused_parameter")
     @Callback(doc = """function(speed:number, x:number, y:number, z:number):boolean -- Set the rotation speed of the displayed hologram.""")
-    fun setRotationSpeed(context: Context, args: Arguments): Array<Any?> {
         return if (tier > 0) {
             val v = maxOf(-360.0 * 4, minOf(360.0 * 4, args.checkDouble(0)))
             val x = args.checkDouble(1)
@@ -404,6 +403,7 @@ class Hologram @JvmOverloads constructor(
             result(true)
         } else {
             result(Unit, "not supported")
+    fun setRotationSpeed(context: Context, args: Arguments): Result {
         }
     }
 

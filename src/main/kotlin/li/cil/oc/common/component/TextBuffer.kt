@@ -179,29 +179,29 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
     // ----------------------------------------------------------------------- //
 
     @Callback(direct = true, doc = """function():boolean -- Returns whether the screen is currently on.""")
-    fun isOn(computer: Context, args: Arguments): Array<Any?> = result(isDisplaying)
+    fun isOn(computer: Context, args: Arguments): Result = result(isDisplaying)
 
     @Callback(doc = """function():boolean -- Turns the screen on. Returns whether the state changed, and whether it is now on.""")
-    fun turnOn(computer: Context, args: Arguments): Array<Any?> {
+    fun turnOn(computer: Context, args: Arguments): Result {
         val oldPowerState = isDisplaying
         powerState = true
         return result(isDisplaying != oldPowerState, isDisplaying)
     }
 
     @Callback(doc = """function():boolean -- Turns off the screen. Returns whether the state changed, and whether it is now on.""")
-    fun turnOff(computer: Context, args: Arguments): Array<Any?> {
+    fun turnOff(computer: Context, args: Arguments): Result {
         val oldPowerState = isDisplaying
         powerState = false
         return result(isDisplaying != oldPowerState, isDisplaying)
     }
 
     @Callback(direct = true, doc = """function():number, number -- The aspect ratio of the screen. For multi-block screens this is the number of blocks, horizontal and vertical.""")
-    fun getAspectRatio(context: Context, args: Arguments): Array<Any?> = synchronized(this) {
+    fun getAspectRatio(context: Context, args: Arguments): Result = synchronized(this) {
         result(aspectRatio.first, aspectRatio.second)
     }
 
     @Callback(doc = """function():table -- The list of keyboards attached to the screen.""")
-    fun getKeyboards(context: Context, args: Arguments): Array<Any?> {
+    fun getKeyboards(context: Context, args: Arguments): Result {
         context.pause(0.25)
         return when (host) {
             is TEScreen -> {
@@ -217,10 +217,10 @@ open class TextBuffer(val host: EnvironmentHost) : ManagedEnvironmentKt(), TextB
     }
 
     @Callback(direct = true, doc = """function():boolean -- Returns whether the screen is in high precision mode (sub-pixel mouse event positions).""")
-    fun isPrecise(computer: Context, args: Arguments): Array<Any?> = result(precisionMode)
+    fun isPrecise(computer: Context, args: Arguments): Result = result(precisionMode)
 
     @Callback(doc = """function(enabled:boolean):boolean -- Set whether to use high precision mode (sub-pixel mouse event positions).""")
-    fun setPrecise(computer: Context, args: Arguments): Array<Any?> {
+    fun setPrecise(computer: Context, args: Arguments): Result {
         // Available for T3 screens only... easiest way to check for us is to
         // base it off of the maximum color depth.
         return if (maxDepth == Settings.screenDepthsByTier[Tier.Three]) {

@@ -7,8 +7,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.server.component.Result
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import mods.railcraft.common.blocks.machine.worldspike.TileWorldspike
 import mods.railcraft.common.blocks.machine.worldspike.WorldspikeVariant
 import net.minecraft.util.EnumFacing

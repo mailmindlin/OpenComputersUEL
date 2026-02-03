@@ -8,7 +8,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.block.Block
 import net.minecraft.init.Blocks
 import net.minecraft.item.ItemStack
@@ -31,27 +32,27 @@ object DriverFurnace : DriverSidedTileEntity() {
         override fun priority(): Int = 0
 
         @Callback(doc = "function():number -- The number of ticks that the furnace will keep burning from the last consumed fuel.")
-        fun getBurnTime(context: Context, args: Arguments): Array<Any?> {
+        fun getBurnTime(context: Context, args: Arguments): Result {
             return result(tileEntity.getField(0))
         }
 
         @Callback(doc = "function():number -- The number of ticks that the currently burning fuel lasts in total.")
-        fun getCurrentItemBurnTime(context: Context, args: Arguments): Array<Any?> {
+        fun getCurrentItemBurnTime(context: Context, args: Arguments): Result {
             return result(tileEntity.getField(1))
         }
 
         @Callback(doc = "function():number -- The number of ticks that the current item has been cooking for.")
-        fun getCookTime(context: Context, args: Arguments): Array<Any?> {
+        fun getCookTime(context: Context, args: Arguments): Result {
             return result(tileEntity.getField(2))
         }
 
         @Callback(doc = "function():number -- The number of ticks that the current item needs to cook.")
-        fun getTotalCookTime(context: Context, args: Arguments): Array<Any?> {
+        fun getTotalCookTime(context: Context, args: Arguments): Result {
             return result(tileEntity.getField(3))
         }
 
         @Callback(doc = "function():boolean -- Get whether the furnace is currently active.")
-        fun isBurning(context: Context, args: Arguments): Array<Any?> {
+        fun isBurning(context: Context, args: Arguments): Result {
             return result(tileEntity.isBurning)
         }
     }

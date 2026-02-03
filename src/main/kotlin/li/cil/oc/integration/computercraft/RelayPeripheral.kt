@@ -9,11 +9,12 @@ import li.cil.oc.api.Network
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Component
 import li.cil.oc.common.tileentity.Relay
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
+import li.cil.oc.util.result
 import net.minecraft.util.EnumFacing
 
 class RelayPeripheral(val relay: Relay) : IPeripheral {
-    private val methods = mapOf<String, (IComputerAccess, ILuaContext, Array<Any?>) -> Array<Any?>?>(
+    private val methods = mapOf<String, (IComputerAccess, ILuaContext, Array<Any?>) -> Result?>(
         // Generic modem methods.
         "open" to { computer, context, arguments ->
             val port = checkPort(arguments, 0)
@@ -118,7 +119,7 @@ class RelayPeripheral(val relay: Relay) : IPeripheral {
 
     override fun getMethodNames(): Array<String> = methodNames
 
-    override fun callMethod(computer: IComputerAccess, context: ILuaContext, method: Int, arguments: Array<Any?>): Array<Any?> =
+    override fun callMethod(computer: IComputerAccess, context: ILuaContext, method: Int, arguments: Array<Any?>): Result =
         try {
             methods[methodNames[method]]?.invoke(computer, context, arguments) ?: emptyArray()
         } catch (e: LuaException) {

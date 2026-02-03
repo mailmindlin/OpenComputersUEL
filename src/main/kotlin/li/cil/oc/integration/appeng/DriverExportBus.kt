@@ -22,11 +22,8 @@ import li.cil.oc.api.machine.Callback
 import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.BlockPosition
-import li.cil.oc.util.InventoryUtils
-import li.cil.oc.util.ResultWrapper.result
-import li.cil.oc.util.checkSideAny
-import li.cil.oc.util.optSlot
+import li.cil.oc.util.*
+import li.cil.oc.util.Result
 import net.minecraft.item.ItemStack
 import net.minecraft.util.EnumFacing
 import net.minecraft.util.math.BlockPos
@@ -56,11 +53,11 @@ object DriverExportBus : DriverBlock {
     override fun priority() = 2
 
     @Callback(doc = "function(side:number, [ slot:number]):boolean -- Get the configuration of the export bus pointing in the specified direction.")
-    fun getExportConfiguration(context: Context, args: Arguments): Array<Any?> =
+    fun getExportConfiguration(context: Context, args: Arguments): Result =
       getPartConfig<ISegmentedInventory>(context, args)
 
     @Callback(doc = "function(side:number[, slot:number][, database:address, entry:number):boolean -- Configure the export bus pointing in the specified direction to export item stacks matching the specified descriptor.")
-    fun setExportConfiguration(context: Context, args: Arguments): Array<Any?> =
+    fun setExportConfiguration(context: Context, args: Arguments): Result =
       setPartConfig<ISegmentedInventory>(context, args)
 
     private fun doExport(
@@ -97,7 +94,7 @@ object DriverExportBus : DriverBlock {
     }
 
     @Callback(doc = "function(side:number, [slot:number]):boolean -- Make the export bus facing the specified direction perform a single export operation into the specified slot.")
-    fun exportIntoSlot(context: Context, args: Arguments): Array<Any?> {
+    fun exportIntoSlot(context: Context, args: Arguments): Result {
       val side = args.checkSideAny(0)
       val part = host.getPart(side)
 

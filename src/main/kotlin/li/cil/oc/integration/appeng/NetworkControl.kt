@@ -23,11 +23,8 @@ import li.cil.oc.api.machine.Context
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.prefab.AbstractValue
 import li.cil.oc.common.EventHandler
-import li.cil.oc.server.component.Result
 import li.cil.oc.server.driver.Registry
-import li.cil.oc.server.driver.Registry.convert
 import li.cil.oc.util.*
-import li.cil.oc.util.ResultWrapper.result
 import net.minecraft.item.ItemStack
 import net.minecraft.nbt.NBTTagCompound
 import net.minecraft.tileentity.TileEntity
@@ -139,7 +136,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   @Callback(doc = """function():table -- Get a list of tables representing the available CPUs in the network.""")
-  fun getCpus(context: Context, args: Arguments): Array<Any?> {
+  fun getCpus(context: Context, args: Arguments): Result {
     val buffer = mutableListOf<Map<String, Any>>()
     AEUtil.getGridCrafting(tile.getGridNode(pos)!!.grid).cpus.forEach { cpu ->
       buffer.add(
@@ -155,7 +152,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   @Callback(doc = """function([filter:table]):table -- Get a list of known item recipes. These can be used to issue crafting requests.""")
-  fun getCraftables(context: Context, args: Arguments): Array<Any?> {
+  fun getCraftables(context: Context, args: Arguments): Result {
     val filter = getFilter(args, 0)
     return result(
       allCraftables()
@@ -166,7 +163,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   @Callback(doc = """function([filter:table]):table -- Get a list of the stored items in the network.""")
-  fun getItemsInNetwork(context: Context, args: Arguments): Array<Any?> {
+  fun getItemsInNetwork(context: Context, args: Arguments): Result {
     val filter = getFilter(args, 0)
     return result(
       allItems()
@@ -177,7 +174,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   @Callback(doc = """function([filter:table, dbAddress:string, startSlot:number, count:number]): bool -- Store items in the network matching the specified filter in the database with the specified address.""")
-  fun store(context: Context, args: Arguments): Array<Any?> {
+  fun store(context: Context, args: Arguments): Result {
     val filter = getFilter(args, 0)
     val database = when (val address = args.optString(1, null)) {
       is String -> DatabaseAccess.database(node()!!, address)
@@ -202,7 +199,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
   }
 
   @Callback(doc = """function():table -- Get a list of the stored fluids in the network.""")
-  fun getFluidsInNetwork(context: Context, args: Arguments): Array<Any?> =
+  fun getFluidsInNetwork(context: Context, args: Arguments): Result =
     result(
       AEUtil.getGridStorage(tile.getGridNode(pos)!!.grid)
         .getInventory(AEUtil.fluidStorageChannel)
@@ -213,31 +210,31 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
     )
 
   @Callback(doc = """function():number -- Get the average power injection into the network.""")
-  fun getAvgPowerInjection(context: Context, args: Arguments): Array<Any?> =
+  fun getAvgPowerInjection(context: Context, args: Arguments): Result =
     result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).avgPowerInjection)
 
   @Callback(doc = """function():number -- Get the average power usage of the network.""")
-  fun getAvgPowerUsage(context: Context, args: Arguments): Array<Any?> =
+  fun getAvgPowerUsage(context: Context, args: Arguments): Result =
     result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).avgPowerUsage)
 
   @Callback(doc = """function():number -- Get the idle power usage of the network.""")
-  fun getIdlePowerUsage(context: Context, args: Arguments): Array<Any?> =
+  fun getIdlePowerUsage(context: Context, args: Arguments): Result =
     result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).idlePowerUsage)
 
   @Callback(doc = """function():number -- Get the maximum stored power in the network.""")
-  fun getMaxStoredPower(context: Context, args: Arguments): Array<Any?> =
+  fun getMaxStoredPower(context: Context, args: Arguments): Result =
     result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).maxStoredPower)
 
   @Callback(doc = """function():number -- Get the stored power in the network. """)
-  fun getStoredPower(context: Context, args: Arguments): Array<Any?> =
+  fun getStoredPower(context: Context, args: Arguments): Result =
     result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).storedPower)
 
   @Callback(doc = """function():boolean -- True if the AE network is considered online""")
-  fun isNetworkPowered(context: Context, args: Arguments): Array<Any?> =
+  fun isNetworkPowered(context: Context, args: Arguments): Result =
     result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).isNetworkPowered)
 
   @Callback(direct = false, doc = """function():number -- Returns the energy demand on the AE network""")
-  fun getEnergyDemand(context: Context, args: Arguments): Array<Any?> {
+  fun getEnergyDemand(context: Context, args: Arguments): Result {
     context.consumeCallBudget(1.5)
     return result(AEUtil.getGridEnergy(tile.getGridNode(pos)!!.grid).getEnergyDemand(Double.MAX_VALUE))
   }
@@ -345,7 +342,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
 
       // ----------------------------------------------------------------------- //
 
-      private fun withController(f: (TileEntity) -> Array<Any?>): Array<Any?> {
+      private fun withController(f: (TileEntity) -> Result): Result {
         return if (delayData != null) {
           result(Unit, "waiting for ae network to load")
         } else {
@@ -358,7 +355,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
         }
       }
 
-      private fun withGridNode(f: (IGridNode) -> Array<Any?>): Array<Any?> {
+      private fun withGridNode(f: (IGridNode) -> Result): Result {
         return withController { c ->
           (c as? IGridHost)?.getGridNode(pos!!)?.let { grid -> f(grid) }
             ?: result(Unit, "no ae grid")
@@ -366,10 +363,10 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
       }
 
       @Callback(doc = """function():table -- Returns the item stack representation of the crafting result.""")
-      fun getItemStack(context: Context, args: Arguments): Array<Any?> = arrayOf(stack?.createItemStack())
+      fun getItemStack(context: Context, args: Arguments): Result = arrayOf(stack?.createItemStack())
 
       @Callback(doc = """function():number -- Returns the number of requests in progress.""")
-      fun requesting(context: Context, args: Arguments): Array<Any?> {
+      fun requesting(context: Context, args: Arguments): Result {
         return withGridNode { gridNode ->
           val craftingGrid = AEUtil.getGridCrafting(gridNode.grid)
           result(craftingGrid.requesting(stack!!))
@@ -377,7 +374,7 @@ interface NetworkControl<AETile> where AETile : TileEntity, AETile : IActionHost
       }
 
       @Callback(doc = """function([amount:int=1, prioritizePower:boolean=true, cpuName:string]):userdata -- Requests item to be crafted, returning an object that allows tracking the crafting status.""")
-      fun request(context: Context, args: Arguments): Array<Any?> {
+      fun request(context: Context, args: Arguments): Result {
         return withGridNode { gridNode ->
           val prioritizePower = args.optBoolean(1, true)
           val count = args.optInteger(0, 1)

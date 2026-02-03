@@ -16,8 +16,9 @@ import li.cil.oc.api.network.ManagedEnvironment
 import li.cil.oc.api.network.Node
 import li.cil.oc.api.prefab.DriverSidedTileEntity
 import li.cil.oc.integration.ManagedTileEntityEnvironment
-import li.cil.oc.util.ResultWrapper.result
+import li.cil.oc.util.Result
 import li.cil.oc.util.optSlot
+import li.cil.oc.util.result
 import net.minecraft.item.ItemStack
 import net.minecraft.tileentity.TileEntity
 import net.minecraft.util.EnumFacing
@@ -51,7 +52,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
     override fun priority() = 5
 
     @Callback(doc = "function([slot:number]):table -- Get the configuration of the interface.")
-    fun getInterfaceConfiguration(context: Context, args: Arguments): Array<Any?> {
+    fun getInterfaceConfiguration(context: Context, args: Arguments): Result {
       val config: IItemHandler = tile.getInventoryByName("config")
       val slot = args.optSlot(config, 0, 0)
       val stack = config.getStackInSlot(slot)
@@ -59,7 +60,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
     }
 
     @Callback(doc = "function([slot:number][, database:address, entry:number[, size:number]]):boolean -- Configure the interface.")
-    fun setInterfaceConfiguration(context: Context, args: Arguments): Array<Any?> {
+    fun setInterfaceConfiguration(context: Context, args: Arguments): Result {
       val config: IItemHandler = tile.getInventoryByName("config")
       val slot = if (args.isString(0)) 0 else args.optSlot(config, 0, 0)
       val stack = if (args.count() > 1) {
@@ -69,7 +70,7 @@ object DriverBlockInterface : DriverSidedTileEntity() {
           else
             Triple(args.checkString(1), args.checkInteger(2), args.optInteger(3, 1))
 
-        when (val component = node()!!.network().node(address)) {
+        when (val component = node()!!.network()!!.node(address)) {
           is Component -> when (val componentHost = component.host()) {
             is Database -> {
               val dbStack = componentHost.getStackInSlot(entry - 1)
